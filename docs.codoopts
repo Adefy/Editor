@@ -1,0 +1,7 @@
+--name    "AdefyEditor"
+--readme  Readme.md
+--title   "Adefy Ad Edtiro Documentation"
+--private
+--quiet
+--output-dir ./doc
+./lib

@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "adefy_editor.js",
+  "sourceRoot": "../build/",
+  "sources": [
+    "build-concat.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAA"
+}
