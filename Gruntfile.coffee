@@ -12,8 +12,8 @@ module.exports = (grunt) ->
 
   # Intermediate vars
   __awglOut = {}
-  __awglOut["#{buildDir}/build-concat.coffee"] = [ "#{libDir}/AWGL.coffee" ]
-  __awglOut["#{devDir}/build-concat.coffee"] = [ "#{libDir}/AWGL.coffee" ]
+  __awglOut["#{buildDir}/build-concat.coffee"] = [ "#{libDir}/coffee/AEditor.coffee" ]
+  __awglOut["#{devDir}/build-concat.coffee"] = [ "#{libDir}/coffee/AEditor.coffee" ]
 
   __coffeeConcatFiles = {}
 
@@ -25,14 +25,18 @@ module.exports = (grunt) ->
 
   # 1 to 1 compiled files, for unit tests
   __coffeeFiles = [
-    "#{libDir}/*.coffee"
-    "#{libDir}/**/*.coffee"
+    "#{libDir}/coffee/*.coffee"
+    "#{libDir}/coffee/**/*.coffee"
   ]
   __testFiles = {}
   __testFiles["#{buildDir}/test/spec.js"] = [
     "#{testDir}/spec/*.coffee"
     "#{testDir}/spec/**/*.coffee"
   ]
+
+  stylusSrc = {}
+  stylusSrc["#{buildDir}/adefy_editor.css"] = "#{libDir}/stylus/style.styl"
+  stylusSrc["#{devDir}/adefy_editor.css"] = "#{libDir}/stylus/style.styl"
 
   grunt.initConfig
     pkg: grunt.file.readJSON "package.json"
@@ -86,6 +90,12 @@ module.exports = (grunt) ->
           "#{testDir}/*.coffee"
         ]
         tasks: ["concat_in_order", "coffeelint", "coffee", "mocha", "codo"]
+      stylus:
+        files: [
+          "#{libDir}/stylus/*.styl",
+          "#{libDir}/stylus/**/*.styl"
+        ]
+        tasks: ["stylus"]
 
     connect:
       server:
@@ -110,6 +120,26 @@ module.exports = (grunt) ->
           src: [ "**" ]
           dest: "#{buildDir}/#{testDir}"
         ]
+      static:
+        files: [
+          expand: true
+          cwd: "#{libDir}"
+          src: [
+            "static/**"
+          ]
+          dest: "#{buildDir}"
+        ,
+          expand: true
+          cwd: "#{libDir}/static"
+          src: [
+            "**"
+          ]
+          dest: "#{devDir}"
+        ]
+
+    stylus:
+      compile:
+        files: stylusSrc
 
     clean: [
       buildDir
@@ -123,6 +153,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-contrib-clean"
   grunt.loadNpmTasks "grunt-concat-in-order"
   grunt.loadNpmTasks "grunt-contrib-copy"
+  grunt.loadNpmTasks "grunt-contrib-stylus"
   grunt.loadNpmTasks "grunt-mocha"
 
   grunt.registerTask "codo", "build html documentation", ->
@@ -132,6 +163,23 @@ module.exports = (grunt) ->
       done err
 
   # Perform a full build
-  grunt.registerTask "default", ["concat_in_order", "coffee", "mocha"]
-  grunt.registerTask "full", ["clean", "codo", "copy:test_page", "concat_in_order", "coffee", "mocha"]
-  grunt.registerTask "dev", ["connect", "copy:test_page", "watch"]
+  grunt.registerTask "default", [
+    "concat_in_order"
+    "coffee"
+    "mocha"
+  ]
+  grunt.registerTask "full", [
+    "clean"
+    "codo"
+    "copy:test_page"
+    "copy:static"
+    "concat_in_order"
+    "coffee"
+    "mocha"
+  ]
+  grunt.registerTask "dev", [
+    "connect"
+    "copy:test_page"
+    "copy:static"
+    "watch"
+  ]
