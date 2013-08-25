@@ -4,19 +4,29 @@
   background linear-gradient(top, #393939, #303030)
 
   color #ccc
-  border-top 2px solid #99cc00
   text-shadow 0 0 2px #505050
 
   width 100%
   height 30px
   font-size 13px
   line-height 14px
+  padding-top 2px
 
   z-index $Z_amainbar
 
   *
     display inline-block
     vertical-align top
+
+  // Decorater, used to be a border on the mainbar, but moved into a seperate
+  // element to not mess with the height of it. It turned out to mess with the
+  // height anyways, but at this point, not going to move it again
+  #ambdecorater
+    height 2px
+    width 100%
+    position absolute
+    top 0
+    background-color #99cc00
 
   // Logo is always displayed using Oleo Script
   .logo

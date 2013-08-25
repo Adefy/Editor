@@ -105,8 +105,9 @@ class AWidgetMainbar extends AWidget
     _detail = [] # Like above, except this time one level lower
 
     # Render primary children first
-    _html = "<span class=\"logo\">Adefy</span>"
-    _html += "<ul class=\"amainbar-primary\">"
+    _html = "<div id=\"ambdecorater\"></div>"     # That nice green line
+    _html += "<span class=\"logo\">Adefy</span>"  # Adefy logo
+    _html += "<ul class=\"amainbar-primary\">"    # Our actual primary list
 
     for i in @_items
       if i._role != "primary"
