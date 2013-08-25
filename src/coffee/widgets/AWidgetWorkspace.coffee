@@ -18,7 +18,7 @@ class AWidgetWorkspace extends AWidget
     AWidgetWorkspace.__exists = true
 
     param.required parent
-    super "aworkspace", parent
+    super "aworkspace", parent, [ "awidgetworkspace" ]
 
   # Simply takes the navbar into account, and sets the height accordingly
   onResize: ->
