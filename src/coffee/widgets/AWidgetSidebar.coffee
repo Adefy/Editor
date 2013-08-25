@@ -24,20 +24,16 @@ class AWidgetSidebar extends AWidget
     @_hiddenX = 0
     @_visibleX = 0
 
-    # Calculate X offsets
-    @onResize()
-
-    # Set us up as initially visible
-    @show()
-
     @setWidth @_width
+    @show null, false     # Set us up as initially visible
+    @onResize()           # Calculate X offsets
 
   # Take the navbar into account, and always position ourselves below it
   onResize: ->
 
     # Re-size
-    $(@_sel).height $(window).height() - $("#amainbar").height()
-    $(@_sel).css { top: $("#amainbar").height() }
+    $(@_sel).height $(window).height() - $("#amainbar").height() - 2
+    $(@_sel).css { top: $("#amainbar").height() + 2 }
 
     # Re-position
     if @_origin == "right"
