@@ -34,9 +34,7 @@ class AWidgetMainbar extends AWidget
     # Create our template
     @_templateSrc =  "<span class=\"logo\">Adefy</span><ul>"
     @_templateSrc += "{{#each items}}"
-    @_templateSrc += "<a data-id=\"{{this.id}}\" href=\"{{this.href}}\">"
-    @_templateSrc += "<li>{{this.label}}</li>"
-    @_templateSrc += "</a>"
+    @_templateSrc += "{{{this.render}}}"
     @_templateSrc += "{{/each}}"
     @_templateSrc += "</ul>"
     @_template = Handlebars.compile @_templateSrc
@@ -50,7 +48,7 @@ class AWidgetMainbar extends AWidget
   # @param [String] label text that appears as the item
   # @param [String] link href content, defaults to #
   # @param [String,Number] id optional, set using an internal counter
-  # @return [String,Number] id use this to manipulate the object
+  # @return [AWidgetMainbarItem] item created item
   addItem: (label, link, id) ->
 
     param.required label
@@ -59,16 +57,14 @@ class AWidgetMainbar extends AWidget
 
     # Ensure id is unique
     for i in @_items
-      if i.id == id
+      if i._id == id
         AUtilLog.warn "id in use, overriding supplied id"
         id = @_nextID++
 
-    @_items.push
-      label: label
-      href: link
-      id: id
+    child = new AWidgetMainbarItem id, null, @, "primary", label, link
+    @_items.push child
 
-    id
+    child
 
   # Removes an item using an id, returns false if the item is not found
   #
@@ -94,30 +90,95 @@ class AWidgetMainbar extends AWidget
 #  - Detail     [Item in a sub-menu to the dropdown]
 class AWidgetMainbarItem
 
-  # @property [String] label text that appears as the item
-  label: null
-
-  # @property [String] href link url
-  href: null
-
-  # @property [String,Number] id unique id set by the mainbar
-  id: undefined
-
-  # Role is used internally, either Primary, Secondary or Detail
-  _role: undefined
-
   # Creates item, does not render it!
   #
   # @param [String,Number] id unique id
+  # @param [AWidgetMainbarItem] parent parent, null if the item is primary
+  # @param [AWidgetMainbar] menubar menubar object
   # @param [String] role role is either 'primary', 'secondary', or 'detail'
   # @param [String] label text to appear as the item
   # @param [String] href url the item points to
-  constructor: (@id, @role, label, href) ->
+  constructor: (@_id, @_parent, @_menubar, @_role, label, href) ->
 
-    param.required @id
-    param.required @role, [ "primary", "secondary", "detail" ]
+    # Child items, added/removed using accessor functions
+    @_children = []
 
-    label = param.optional label, ""
-    href = param.optional href, "#"
+    param.required @_id
+    param.required @_parent
+    param.required @_menubar
+    param.required @_role, [ "primary", "secondary", "detail" ]
 
+    # Not sure how to add instanceof checks to the param utility
+    if @_menubar !instanceof AWidgetMainbar
+      throw new Error "You need to use an existing menubar to create an item!"
+
+    @label = param.optional label, ""
+    @href = param.optional href, "#"
+
+    # Disallow children on detail items
+    if @_role == "detail" then @_children = undefined
+
+  # Render function, returns HTML representing the item.
+  # For nested items, the parent item decides where this HTML is inserted
+  #
+  # @return [String] html rendered item
   render: ->
+
+    _html = ""
+
+    switch @_role
+
+      when "primary"
+        _html += "<a data-id=\"#{@_id}\" href=\"#{@href}\">"
+        _html += "<li>#{@label}</li>"
+        _html += "</a>"
+
+      when "secondary"
+        _html += ""
+
+      when "detail"
+        _html += ""
+
+      else
+        throw new Error "Tried to render invalid menubar item [#{@_role}]"
+
+    for c in @_children
+      _html += c.render()
+
+    _html
+
+  # Create a child item if possible. A unique id and correct tree-level is
+  # insured
+  #
+  # @param [String] label text to appear as the item
+  # @param [String] href url the item points to
+  # @return [AWidgetMainbarItem] item null if the item could not be created
+  createChild: (label, href) ->
+
+    # BAIL BAIL BAIL
+    if @_role == "detail" then return null
+
+    # Setup role
+    role = "secondary"
+    if @_role == "secondary" then role = "detail"
+
+    child = new AWidgetMainbarItem @_menubar._nextID++, @, @_menubar, role
+    child.label = param.optional label, ""
+    child.href = param.optional href, "#"
+
+    # Register it
+    @_children.push child
+
+    child
+
+  # Delete child using id, returns false if the child was not found
+  #
+  # @param [String,Number] id child id
+  removeChild: (id) ->
+
+    for i in [0...@_children.length]
+      if @_children[i].id == id
+        @_children.splice i, 1
+        return true
+
+    false
