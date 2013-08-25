@@ -1,7 +1,7 @@
 module.exports = (grunt) ->
 
   # Output
-  libName = "adefy_editor.js"
+  libName = "aeditor.js"
 
   # Directories
   buildDir = "build"
@@ -35,8 +35,8 @@ module.exports = (grunt) ->
   ]
 
   stylusSrc = {}
-  stylusSrc["#{buildDir}/adefy_editor.css"] = "#{libDir}/stylus/style.styl"
-  stylusSrc["#{devDir}/adefy_editor.css"] = "#{libDir}/stylus/style.styl"
+  stylusSrc["#{buildDir}/css/aeditor.css"] = "#{libDir}/stylus/style.styl"
+  stylusSrc["#{devDir}/css/aeditor.css"] = "#{libDir}/stylus/style.styl"
 
   grunt.initConfig
     pkg: grunt.file.readJSON "package.json"
@@ -167,6 +167,7 @@ module.exports = (grunt) ->
     "concat_in_order"
     "coffee"
     "mocha"
+    "stylus"
   ]
   grunt.registerTask "full", [
     "clean"
@@ -175,6 +176,7 @@ module.exports = (grunt) ->
     "copy:static"
     "concat_in_order"
     "coffee"
+    "stylus"
     "mocha"
   ]
   grunt.registerTask "dev", [

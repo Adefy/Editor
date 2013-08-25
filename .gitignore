@@ -1,7 +1,7 @@
 build/*
 doc/*
 node_modules
-dev/adefy_editor.js
-dev/adefy_editor.js.map
-dev/adefy_editor.css
+dev/aeditor.js
+dev/aeditor.js.map
+dev/css/aeditor.css
 dev/build-concat.coffee
