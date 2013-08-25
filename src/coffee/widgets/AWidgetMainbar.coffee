@@ -30,13 +30,33 @@ class AWidgetMainbar extends AWidget
     # Register listeners
     $(document).ready ->
 
+      # Mouseup listener to close menu when clicked outside
+      $(document).mouseup (e) ->
+
+        seco = $(".amainbar-secondary")
+        deta = $(".amainbar-detail")
+
+        if seco
+          seco_open = $(".amainbar-primary .open")
+          if !seco.is(e.target) && seco.has(e.target).length == 0
+            seco.hide()
+            seco_open.removeClass "open"
+        if deta
+          deta_open = $(".amainbar-secondary .open")
+          if !deta.is(e.target) && deta.has(e.target).length == 0
+            deta.hide()
+            deta_open.removeClass "open"
+
+      # Click listener to open/close menu items
       $(document).on "click", ".amb-primary-has-children", ->
-        if $(@).hasClass("open") then return
-
         _menu = $(".amainbar-secondary[data-owner=\"#{$(@).attr("id")}\"")
-        _menu.show()
 
-        $(@).addClass "open"
+        if $(@).hasClass "open"
+          _menu.hide()
+          $(@).removeClass "open"
+        else
+          _menu.show()
+          $(@).addClass "open"
 
     # Note that we don't render initially. This gives the engine the freedom
     # to set up initial items, and then render us appropriatly
