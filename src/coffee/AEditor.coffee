@@ -1,7 +1,7 @@
 # The main class, AdefyEditor instantiates everything else and gets things
 # rolling.
 #
-# Single dependency is Zepto
+# Dependencies are JQuery and JQuery UI
 #
 # @depend util/AUtilLog.coffee
 # @depend util/AUtilParam.coffee
@@ -20,8 +20,8 @@ class AdefyEditor
     @widgets = []
 
     # Dep check
-    if window.Zepto == undefined or window.Zepto == null
-      throw new Error "Zepto not found!"
+    if window.jQuery == undefined or window.jQuery == null
+      throw new Error "JQuery not found!"
 
     # CSS selector pointing to our DOM element
     @sel = param.optional sel, "#aeditor"
