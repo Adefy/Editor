@@ -6,12 +6,45 @@
 # and attached to the window object as 'param'
 class AUtilParam
 
-  @required: (p) ->
+  # Defines an argument as required. Ensures it is defined and valid
+  #
+  # @param [Object] p parameter to check
+  # @param [Array] valid optional array of valid values the param can have
+  @required: (p, valid) ->
     if p == undefined then throw new error "Required argument missing!"
+
+    # Check for validity if required
+    if valid instanceof Array
+      isVaid = false
+      for v in valid
+        if p == v
+          isValid = true
+          break
+      if not isValid
+        throw new error "Required argument is not of a valid value!"
+
+    # Ship
     p
 
-  @optional: (p, def) ->
+  # Defines an argument as optional. Sets a default value if it is not
+  # supplied, and ensures validity (post-default application)
+  #
+  # @param [Object] p parameter to check
+  # @param [Object] def default value to use if necessary
+  # @param [Array] valid optional array of valid values the param can have
+  @optional: (p, def, valid) ->
     if p == undefined then p = def
+
+    # Check for validity if required
+    if valid instanceof Array
+      isVaid = false
+      for v in valid
+        if p == v
+          isValid = true
+          break
+      if not isValid
+        throw new error "Required argument is not of a valid value!"
+
     p
 
 window.param = AUtilParam
