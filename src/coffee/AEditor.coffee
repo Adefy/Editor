@@ -40,7 +40,14 @@ class AdefyEditor
     workspace = new AWidgetWorkspace @sel
 
     # Set up the menubar
-    menubar.addItem "File"
+    fileMenu = menubar.addItem "File"
+    menubar.addItem "Edit"
+    menubar.addItem "View"
+    menubar.addItem "Tools"
+    menubar.addItem "Help"
+
+    save = fileMenu.createChild "Save"
+
     menubar.render()
 
     # Push widgets

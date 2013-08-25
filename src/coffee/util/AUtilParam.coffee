@@ -11,7 +11,7 @@ class AUtilParam
   # @param [Object] p parameter to check
   # @param [Array] valid optional array of valid values the param can have
   @required: (p, valid) ->
-    if p == undefined then throw new error "Required argument missing!"
+    if p == undefined then throw new Error "Required argument missing!"
 
     # Check for validity if required
     if valid instanceof Array
