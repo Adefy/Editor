@@ -96,8 +96,6 @@ class AWidgetSidebar extends AWidget
 
     $(@_sel).css { left: @_visibleX }
 
-    console.log "displayed at #{@_visibleX}"
-
     @_visiblity = true
 
   # Hide the sidebar with an optional animation
