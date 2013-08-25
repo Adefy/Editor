@@ -34,6 +34,8 @@ class AdefyEditor
     # Create widgets
     menubar = new AWidgetMainbar @sel
     workspace = new AWidgetWorkspace @sel
+    leftSidebar = new AWidgetSidebar @sel, "left", 200
+    rightSidebar = new AWidgetSidebar @sel, "right", 300
 
     # Set up the menubar
     fileMenu = menubar.addItem "File"
@@ -56,6 +58,8 @@ class AdefyEditor
     # Push widgets
     @widgets.push menubar
     @widgets.push workspace
+    @widgets.push leftSidebar
+    @widgets.push rightSidebar
 
     # Register resize handler
     me = @

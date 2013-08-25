@@ -12,6 +12,8 @@
   font-size 13px
   line-height 14px
 
+  z-index $Z_amainbar
+
   *
     display inline-block
     vertical-align top
@@ -28,6 +30,9 @@
     padding 8px
 
   .amainbar-primary
+    z-index $Z_amainbar_primary
+    position relative
+
     a
       display inline-block
       padding 8px 12px
@@ -43,8 +48,6 @@
       text-shadow 0 0 3px #222
 
     a.open
-      z-index 10000
-      position relative
       padding-bottom 9px
       border-left 1px solid #333
       background-color #505050
@@ -59,6 +62,7 @@
     box-shadow 0 2px 8px 0 rgba(0, 0, 0, 0.8)
     border 1px solid #333
     display none
+    z-index $Z_amainbar_secondary
 
     a
       width 128px
