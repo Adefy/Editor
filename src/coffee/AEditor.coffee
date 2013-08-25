@@ -31,42 +31,52 @@ class AdefyEditor
       log.warn "#{@sel} not found, creating it and continuing"
       $("body").prepend "<div id=\"#{@sel.replace('#', '')}\"></div>"
 
-    # Create widgets
-    menubar = new AWidgetMainbar @sel
-    workspace = new AWidgetWorkspace @sel
-    leftSidebar = new AWidgetSidebar @sel, "left", 200
-    rightSidebar = new AWidgetSidebar @sel, "right", 300
-
-    # Set up the menubar
-    fileMenu = menubar.addItem "File"
-    menubar.addItem "Edit"
-    menubar.addItem "View"
-    menubar.addItem "Tools"
-    menubar.addItem "Help"
-
-    fileMenu.createChild "Test item 1"
-    fileMenu.createChild "Test item 2"
-    fileMenu.createChild "Test item 3"
-    fileMenu.createChild "Test item 4"
-    fileMenu.createChild "Test item 5"
-    fileMenu.createChild "Test item 6"
-    fileMenu.createChild "Test item 7"
-    fileMenu.createChild "Test item 8"
-
-    menubar.render()
-
-    # Push widgets
-    @widgets.push menubar
-    @widgets.push workspace
-    @widgets.push leftSidebar
-    @widgets.push rightSidebar
-
-    # Register resize handler
     me = @
-    @onResize()
-    $(window).resize -> me.onResize()
+    $(document).ready ->
 
-    log.info "Adefy editor created on #{@sel}"
+      # Create mainbar first
+      menubar = new AWidgetMainbar me.sel
+
+      # Set up the menubar
+      fileMenu = menubar.addItem "File"
+      menubar.addItem "Edit"
+      menubar.addItem "View"
+      menubar.addItem "Tools"
+      menubar.addItem "Help"
+
+      fileMenu.createChild "Test item 1"
+      fileMenu.createChild "Test item 2"
+      fileMenu.createChild "Test item 3"
+      fileMenu.createChild "Test item 4"
+      fileMenu.createChild "Test item 5"
+      fileMenu.createChild "Test item 6"
+      fileMenu.createChild "Test item 7"
+      fileMenu.createChild "Test item 8"
+
+      menubar.render()
+
+      # Create workspace and sidebars
+      workspace = new AWidgetWorkspace me.sel
+      leftSidebar = new AWidgetSidebar me.sel, "left", 200
+      rightSidebar = new AWidgetSidebar me.sel, "right", 300
+
+      # Push widgets
+      me.widgets.push menubar
+      me.widgets.push workspace
+      me.widgets.push leftSidebar
+      me.widgets.push rightSidebar
+
+      # Register resize handler
+      me.onResize()
+      $(window).resize -> me.onResize()
+
+      # For some reason, it has to be called a second time for things to settle
+      # properly (I'm looking at you AWidgetSidebar), so call it again
+      setTimeout ->
+        me.onResize()
+      , 10
+
+      log.info "Adefy editor created on #{me.sel}"
 
   # This function gets called immediately upon creation, and whenever
   # our parent element is resized. Other elements register listeners are to be
