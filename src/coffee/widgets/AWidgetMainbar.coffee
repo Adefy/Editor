@@ -85,3 +85,39 @@ class AWidgetMainbar extends AWidget
 
   # Renders the menu
   render: -> $(@sel).html @_template { items: @_items }
+
+# Mainbar item class
+#
+# The item can be in one of three states
+#  - Primary    [On the mainbar itself]
+#  - Secondary  [Item in a mainbar dropdown]
+#  - Detail     [Item in a sub-menu to the dropdown]
+class AWidgetMainbarItem
+
+  # @property [String] label text that appears as the item
+  label: null
+
+  # @property [String] href link url
+  href: null
+
+  # @property [String,Number] id unique id set by the mainbar
+  id: undefined
+
+  # Role is used internally, either Primary, Secondary or Detail
+  _role: undefined
+
+  # Creates item, does not render it!
+  #
+  # @param [String,Number] id unique id
+  # @param [String] role role is either 'primary', 'secondary', or 'detail'
+  # @param [String] label text to appear as the item
+  # @param [String] href url the item points to
+  constructor: (@id, @role, label, href) ->
+
+    param.required @id
+    param.required @role, [ "primary", "secondary", "detail" ]
+
+    label = param.optional label, ""
+    href = param.optional href, "#"
+
+  render: ->
