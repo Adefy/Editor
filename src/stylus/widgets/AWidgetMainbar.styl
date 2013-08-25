@@ -27,16 +27,51 @@
     border-right 2px solid #252525
     padding 8px
 
-  a
-    display inline-block
-    padding 8px 12px
+  .amainbar-primary
+    a
+      display inline-block
+      padding 8px 12px
 
-  a:first-child
-    margin-left 16px
+    a:first-child
+      margin-left 16px
 
-  a:hover
-    padding 8px 11px
-    border-left 1px solid #292929
-    border-right 1px solid #292929
-    background linear-gradient(top, #484848, #383838)
-    text-shadow 0 0 3px #222
+    a:hover:not(.open)
+      padding 8px 11px
+      border-left 1px solid #292929
+      border-right 1px solid #292929
+      background linear-gradient(top, #484848, #383838)
+      text-shadow 0 0 3px #222
+
+    a.open
+      z-index 10000
+      position relative
+      padding-bottom 9px
+      border-left 1px solid #333
+      background-color #505050
+
+    a.open:first-child
+      padding-left 9px
+      margin-left 18px
+
+  .amainbar-secondary
+    position absolute
+    top 32px
+    box-shadow 0 2px 8px 0 rgba(0, 0, 0, 0.8)
+    border 1px solid #333
+    display none
+
+    a
+      width 128px
+      padding 7px 32px
+      background-color #505050
+      display block
+
+      li
+        color white
+        text-shadow 0 0 4px rgba(0, 0, 0, 0.4)
+
+    a:hover
+      background-color #303030
+
+      li
+        color #bbee22

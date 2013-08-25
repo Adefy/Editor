@@ -12,7 +12,7 @@ class AWidget
     # container selector, defaults to no container
     @sel = null
 
-    @parent = param.optional @parent, "body"
+    @parent = param.optional parent, "body"
 
     if typeof id == "string" and id.length > 0
       @sel = "##{id}"

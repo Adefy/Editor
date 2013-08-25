@@ -1,7 +1,7 @@
 # The main class, AdefyEditor instantiates everything else and gets things
 # rolling.
 #
-# Dependencies are Zepto and Handlebars
+# Single dependency is Zepto
 #
 # @depend util/AUtilLog.coffee
 # @depend util/AUtilParam.coffee
@@ -22,8 +22,6 @@ class AdefyEditor
     # Dep check
     if window.Zepto == undefined or window.Zepto == null
       throw new Error "Zepto not found!"
-    if window.Handlebars == undefined or window.Handlebars == null
-      throw new Error "Handlebars not found!"
 
     # CSS selector pointing to our DOM element
     @sel = param.optional sel, "#aeditor"
@@ -44,7 +42,14 @@ class AdefyEditor
     menubar.addItem "Tools"
     menubar.addItem "Help"
 
-    save = fileMenu.createChild "Save"
+    fileMenu.createChild "Test item 1"
+    fileMenu.createChild "Test item 2"
+    fileMenu.createChild "Test item 3"
+    fileMenu.createChild "Test item 4"
+    fileMenu.createChild "Test item 5"
+    fileMenu.createChild "Test item 6"
+    fileMenu.createChild "Test item 7"
+    fileMenu.createChild "Test item 8"
 
     menubar.render()
 
