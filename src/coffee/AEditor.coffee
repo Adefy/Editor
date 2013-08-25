@@ -10,17 +10,14 @@
 # @depend widgets/AWidgetMainbar.coffee
 class AdefyEditor
 
-  # @property [String] CSS selector pointing to our DOM element
-  sel: null
-
-  # @property [Array<AWidget>] array of widgets to be managed internally
-  widgets: []
-
   # Editor execution starts here. We spawn all other objects ourselves. If a
   # selector is not supplied, we go with #aeditor
   #
   # @param [String] sel container selector, created if non-existent
   constructor: (sel) ->
+
+    # Array of widgets to be managed internally
+    @widgets = []
 
     # Dep check
     if window.Zepto == undefined or window.Zepto == null
@@ -28,6 +25,7 @@ class AdefyEditor
     if window.Handlebars == undefined or window.Handlebars == null
       throw new Error "Handlebars not found!"
 
+    # CSS selector pointing to our DOM element
     @sel = param.optional sel, "#aeditor"
     log = AUtilLog
 

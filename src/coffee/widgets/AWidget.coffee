@@ -1,12 +1,6 @@
 # Widgets are the building blocks of the editor's interface
 class AWidget
 
-  # @property container selector, defaults to no container
-  sel: null
-
-  # @property parent parent selector, defaults to body on container creation
-  parent: null
-
   # Optionally appends a new div to the body to be used as the container for
   # the widget
   #
@@ -15,12 +9,13 @@ class AWidget
   # @param [Array<String>] classes an array containing classes to be applied
   constructor: (id, parent, classes) ->
 
+    # container selector, defaults to no container
+    @sel = null
+
+    @parent = param.optional @parent, "body"
+
     if typeof id == "string" and id.length > 0
       @sel = "##{id}"
-
-      # Default to body as parent if not otherwise instructed
-      if typeof parent == "string" and parent.length > 0 then @parent = parent
-      else @parent = "body"
 
       $(@parent).append "<div id=\"#{id}\"></div>"
 
