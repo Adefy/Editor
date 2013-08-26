@@ -1,25 +1,24 @@
 # Generic sidebar, needs to be specialized to be useful
 #
-# @depend AWidget.coffee
+# @depend AWidgetSidebarItem.coffee
 class AWidgetSidebar extends AWidget
 
   # Creates a new sidebar with a given origin. The element's id is randomized
-  # to sbar#{Math.floor(Math.random() * 1000)}
+  # to sbar + Math.floor(Math.random() * 1000)
   #
   # @param [String] parent parent element selector
   # @param [String] origin 'left' or 'right', default is left
   # @param [Number] width
   constructor: (parent, origin, width) ->
 
+    # Sidebar items of class AWidgetSidebarItem (or implementations)
+    @_items = []
+
     @_origin = param.optional origin, "left", [ "left", "right" ]
     @_width = param.optional width, 300
 
-    # Assign ourselves a pseudo-unique id
-    @_id = "sbar#{Math.floor(Math.random() * 1000)}"
-    @_sel = "##{@_id}"
-
     param.required parent
-    super @_id, parent, [ "asidebar" ]
+    super prefId("asidebar"), parent, [ "asidebar" ]
 
     @_hiddenX = 0
     @_visibleX = 0
@@ -28,12 +27,60 @@ class AWidgetSidebar extends AWidget
     @show null, false     # Set us up as initially visible
     @onResize()           # Calculate X offsets
 
+  # Add an item to the sidebar and re-render. An item is any object with a
+  # render function that returns HTML. Note that the function should not
+  # inject it as it will be injected into the sidebar on render!
+  #
+  # @param [Object] item item with render() and getId() methods
+  addItem: (item) ->
+    param.required item
+
+    if item.render == undefined or item.render == null
+      throw new Error "Item must have a render function!"
+
+    if item.getId == undefined or item.getId == null
+      throw new Error "Item must supply a getId() function!"
+
+    # Test out the render function, ensure it returns a string
+    test = item.render()
+    if typeof test != "string"
+      throw new Error "Item render function must return a string!"
+
+    @_items.push item
+    @render()
+
+  # Remove item using id. Note that the id can be anything, since we don't
+  # specify what it should be when adding the item. Also re-renders the sidebar
+  #
+  # @param [Object] id
+  # @return [Boolean] success false if item is not found
+  removeItem: (id) ->
+    param.required id
+
+    for i in [0...@_items.length]
+      if @_items[i].getId() == i
+        if typeof @_items[i].getId() == typeof i # Probably overkill
+          @_items.splice i, 1
+          @render()
+          return true
+
+    false
+
+  # Render! Fill the sidebar with html from the items rendered in order.
+  render: ->
+
+    _html = ""
+    for i in @_items
+      _html += i.render()
+
+    $(@_sel).html _html
+
   # Take the navbar into account, and always position ourselves below it
   onResize: ->
 
     # Re-size
-    $(@_sel).height $(window).height() - $("#amainbar").height() - 2
-    $(@_sel).css { top: $("#amainbar").height() + 2 }
+    $(@_sel).height $(window).height() - $(".amainbar").height() - 2
+    $(@_sel).css { top: $(".amainbar").height() + 2 }
 
     # Re-position
     if @_origin == "right"

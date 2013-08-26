@@ -3,11 +3,16 @@
 #
 # Dependencies are JQuery and JQuery UI
 #
+# @depend util/AUtilId.coffee
 # @depend util/AUtilLog.coffee
 # @depend util/AUtilParam.coffee
+#
+# @depend widgets/AWidget.coffee
 # @depend widgets/AWidgetWorkspace.coffee
-# @depend widgets/AWidgetSidebar.coffee
-# @depend widgets/AWidgetMainbar.coffee
+# @depend widgets/sidebar/AWidgetSidebar.coffee
+# @depend widgets/sidebar/AWidgetSidebarObject.coffee
+# @depend widgets/sidebar/AWidgetSidebarObjectGroup.coffee
+# @depend widgets/mainbar/AWidgetMainbar.coffee
 class AdefyEditor
 
   # Editor execution starts here. We spawn all other objects ourselves. If a
@@ -38,9 +43,9 @@ class AdefyEditor
       menubar = new AWidgetMainbar me.sel
 
       # Set up the menubar
-      fileMenu = menubar.addItem "File"
+      menubar.addItem "File"
       menubar.addItem "Edit"
-      menubar.addItem "View"
+      fileMenu = menubar.addItem "View"
       menubar.addItem "Tools"
       menubar.addItem "Help"
 
@@ -59,6 +64,12 @@ class AdefyEditor
       workspace = new AWidgetWorkspace me.sel
       leftSidebar = new AWidgetSidebar me.sel, "left", 200
       rightSidebar = new AWidgetSidebar me.sel, "right", 300
+
+      # Add some items to the left sidebar
+      testGroup = new AWidgetSidebarObjectGroup "Test Group 1", leftSidebar
+      testGroup.createItem "Test 1"
+      testGroup.createItem "Test 2"
+      testGroup.createItem "Test 3"
 
       # Push widgets
       me.widgets.push menubar

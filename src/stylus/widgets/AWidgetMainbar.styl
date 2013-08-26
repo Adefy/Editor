@@ -1,5 +1,5 @@
 // Top navigation bar, holds the logo and menu items
-.awidgetmainbar
+.amainbar
   background #393939
   background linear-gradient(top, #393939, #303030)
 
@@ -12,6 +12,7 @@
   line-height 14px
   padding-top 2px
 
+  position relative
   z-index $Z_amainbar
 
   *
@@ -60,11 +61,12 @@
     a.open
       padding-bottom 9px
       border-left 1px solid #333
+      padding-left 11px
       background-color #505050
 
     a.open:first-child
-      padding-left 9px
-      margin-left 18px
+      padding-left 11px
+      margin-left 16px
 
   .amainbar-secondary
     position absolute

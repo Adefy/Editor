@@ -1,6 +1,4 @@
 # Workspace widget
-#
-# @depend AWidget.coffee
 class AWidgetWorkspace extends AWidget
 
   # Set to true upon instantiation, prevents more than one instance
@@ -18,7 +16,7 @@ class AWidgetWorkspace extends AWidget
     AWidgetWorkspace.__exists = true
 
     param.required parent
-    super "aworkspace", parent, [ "awidgetworkspace" ]
+    super prefId("aworkspace"), parent, [ "aworkspace" ]
 
   # Simply takes the navbar into account, and sets the height accordingly
   onResize: -> $(@sel).height $(window).height() - $("#amainbar").height()
