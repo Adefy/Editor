@@ -15,7 +15,7 @@ class AUtilParam
 
     # Check for validity if required
     if valid instanceof Array
-      isVaid = false
+      isValid = false
       for v in valid
         if p == v
           isValid = true
@@ -37,7 +37,7 @@ class AUtilParam
 
     # Check for validity if required
     if valid instanceof Array
-      isVaid = false
+      isValid = false
       for v in valid
         if p == v
           isValid = true
