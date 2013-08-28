@@ -13,6 +13,17 @@ class AManipulatable
     # Set manipulatable-global properties here
     @_properties = {}
 
+    # Basic right-click menu functions
+    @_ctx =
+      "Delete": -> alert "Not implemented yet!"
+
+    # Give ourselves a unique id so we can be discovered on the body
+    @_id = prefId "amanipulatable"
+
+    # Attach ourselves to the body
+    me = @
+    $(document).ready -> $("body").data me_id, me
+
   # Return the html representation to show when dropped on the workspace.
   # This gets appended to the workspace, and is automatically positioned
   # at the drop point. Since we are a base class, this function is called by
@@ -30,7 +41,7 @@ class AManipulatable
     y = param.optional y, 0
     inner = param.optional inner, ""
 
-    return "<div class=\"amanipulatable\">#{inner}</div>"
+    return "<div id=\"#{@_id}\" class=\"amanipulatable\">#{inner}</div>"
 
   # Returns an object representing the modifiable properties the object holds,
   # in key/value form. Default values are set in the constructor, after that
@@ -60,3 +71,11 @@ class AManipulatable
     for s of css
       _html += "#{s}:#{css[s]};"
     _html += "\""
+
+  # Get an object containing key/value pairs of contextual functions, in the
+  # form name: cb
+  #
+  # These will be displayed in the context menu when the object is right
+  # cliecked on. Again, just like the properties, global properties may be
+  # applied by ancestors
+  getContextFunctions: -> @_ctx

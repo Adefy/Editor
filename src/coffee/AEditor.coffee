@@ -26,8 +26,11 @@ class AdefyEditor
   # @param [String] sel container selector, created if non-existent
   constructor: (sel) ->
 
-    # Array of widgets to be managed internally
-    @widgets = []
+    # We can't run properly in Opera, as it does not let us override the
+    # right-click context menu. Notify the user
+    _agent = navigator.userAgent
+    if _agent.search("Opera") != -1 || _agent.search("OPR") != -1
+      alert "Opera does not fully support our editor, please use Chrome or FF!"
 
     # Dep check
     if window.jQuery == undefined or window.jQuery == null
@@ -38,6 +41,9 @@ class AdefyEditor
     # CSS selector pointing to our DOM element
     @sel = param.optional sel, "#aeditor"
     log = AUtilLog
+
+    # Array of widgets to be managed internally
+    @widgets = []
 
     if $(@sel).length == 0
       log.warn "#{@sel} not found, creating it and continuing"

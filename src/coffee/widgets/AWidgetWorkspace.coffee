@@ -44,5 +44,26 @@ class AWidgetWorkspace extends AWidget
 
           $(@).append _obj.dropped "workspace", _x, _y
 
+      # Bind a contextmenu listener
+      $(".aworkspace").bind "contextmenu", (e) ->
+
+        # Check to see if the object we are clicking has functions for the
+        # context menu
+        if $(e.target).hasClass "amanipulatable"
+
+          # We right clicked on a manipulatable, check for context functions on
+          # the manipulatable after grabbing it from the body's data
+          _obj = $("body").data $(e.target).attr("id")
+
+          if not jQuery.isEmptyObject _obj.getContextFunctions()
+
+            # Prevent the default handler from taking effect
+            e.preventDefault()
+
+            # Instantiate a new context menu, and append it to the body.
+
+            # Whoop
+            return false
+
   # Simply takes the navbar into account, and sets the height accordingly
   onResize: -> $(@_sel).height $(window).height() - $(".amainbar").height()
