@@ -138,9 +138,14 @@ class AWidgetMainbar extends AWidget
       _html += "</ul>"
       $(@_sel).append _html
 
+      # Note that chrome requires 4px of extra padding, so we need to calc the
+      # real offset depending on the browser
+      _realOff = $("##{i.getId()}").offset().left
+      if navigator.userAgent.search("Chrome") != -1 then _realOff += 4
+
       # Position
       $("##{_menuId}").css
-        left: $("##{i.getId()}").offset().left
+        left: _realOff
 
     # Finally, render detail items
     for i in _detail

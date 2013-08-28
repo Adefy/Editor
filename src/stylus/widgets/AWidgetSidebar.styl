@@ -1,8 +1,5 @@
-$lblue = #33b5E5
-$dblue = #0099cc
-
 .asidebar
-  background-color $dblue
+  background-color $col_sidebar_bg
   position absolute
   color white
 
@@ -12,7 +9,7 @@ $dblue = #0099cc
     padding 4px 8px
 
   hr
-    background-color $lblue
+    background-color $col_sidebar_hr_bg
     padding 0
     border none
     height 1px
@@ -20,15 +17,15 @@ $dblue = #0099cc
 
   // Sidebar name
   .as-name
-    background-color $lblue
+    background-color $col_sidebar_name_bg
     display block
     font-size 18px
     margin-bottom 8px
-    border-bottom 2px solid #99cc00
+    border-bottom 2px solid $col_sidebar_name_border
 
   // Group of objects in the sidebar
   .as-objgroup
-    border-left 2px solid #99cc00
+    border-left 2px solid $col_sidebar_objgroup_border
 
     // Category name
     .asog-catname
@@ -41,10 +38,10 @@ $dblue = #0099cc
       font-size 14px
       padding 4px 0 4px 16px
       margin 4px 0 4px 16px
-      border-left 2px solid $lblue
+      border-left 2px solid $col_sidebar_obj_name_border
 
     .aso-name:hover
-      background-color $lblue
+      background-color $col_sidebar_obj_name_hover_bg
       cursor hand
       cursor pointer
       margin-left 0
