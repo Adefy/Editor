@@ -20,3 +20,4 @@ The general way of things
 * Object classes should be prefixed with all major initals. i.e. `AWidgetSidebarObjectGroup` has a class `asog-catname` for the group name.
 * Specify all colors in `colors.styl`, and define actual color codes seperate from their useages
 * For widgets with at least one related/child widget class, put all files pertaining to it in their own folder
+* All widgets are bound as data on the body element, under a key matching their selector

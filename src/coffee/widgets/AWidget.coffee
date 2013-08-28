@@ -33,6 +33,10 @@ class AWidget
         for c in classes
           $(@_sel).addClass c
 
+    # Bind a pointer to ourselves on the body, under a key matching our @_sel
+    me = @
+    $(document).ready -> $("body").data me._sel, me
+
   # Retrieve widget selector (typically the id)
   #
   # @return [String] sel
