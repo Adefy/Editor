@@ -29,13 +29,14 @@ class AWidgetSidebarObjectGroup extends AWidgetSidebarItem
   # @return [String] html html representation of the category
   render: ->
 
-    _html =  "<span class=\"asog-catname\">#{@_name}</span>"
+    _html =  "<div class=\"as-objgroup\">"
+    _html += "<span class=\"asog-catname\">#{@_name}</span>"
     _html += "<ul>"
 
     for i in @_items
       _html += "<li>#{i.render()}</li>"
 
-    _html += "</ul>"
+    _html += "</ul></div>"
 
   # Sets a new category name, and re-renders the group
   #

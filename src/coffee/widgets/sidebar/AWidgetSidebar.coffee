@@ -7,13 +7,15 @@ class AWidgetSidebar extends AWidget
   # to sbar + Math.floor(Math.random() * 1000)
   #
   # @param [String] parent parent element selector
+  # @param [String] name sidebar name
   # @param [String] origin 'left' or 'right', default is left
   # @param [Number] width
-  constructor: (parent, origin, width) ->
+  constructor: (parent, name, origin, width) ->
 
     # Sidebar items of class AWidgetSidebarItem (or implementations)
     @_items = []
 
+    @_name = param.optional name, "Sidebar"
     @_origin = param.optional origin, "left", [ "left", "right" ]
     @_width = param.optional width, 300
 
@@ -26,6 +28,18 @@ class AWidgetSidebar extends AWidget
     @setWidth @_width
     @show null, false     # Set us up as initially visible
     @onResize()           # Calculate X offsets
+
+  # Set sidebar name, re-renders it
+  #
+  # @param [String] name
+  setName: (name) ->
+    @_name = param.required name
+    @render()
+
+  # Get sidebar name
+  #
+  # @return [String] name
+  getName: -> @_name
 
   # Add an item to the sidebar and re-render. An item is any object with a
   # render function that returns HTML. Note that the function should not
@@ -69,7 +83,7 @@ class AWidgetSidebar extends AWidget
   # Render! Fill the sidebar with html from the items rendered in order.
   render: ->
 
-    _html = ""
+    _html = "<div class=\"as-name\">#{@_name}</div>"
     for i in @_items
       _html += i.render()
 

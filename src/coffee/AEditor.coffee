@@ -62,8 +62,8 @@ class AdefyEditor
 
       # Create workspace and sidebars
       workspace = new AWidgetWorkspace me.sel
-      leftSidebar = new AWidgetSidebar me.sel, "left", 200
-      rightSidebar = new AWidgetSidebar me.sel, "right", 300
+      leftSidebar = new AWidgetSidebar me.sel, "Objects", "left", 256
+      rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
 
       # Add some items to the left sidebar
       testGroup = new AWidgetSidebarObjectGroup "Test Group 1", leftSidebar

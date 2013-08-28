@@ -1,5 +1,51 @@
+$lblue = #33b5E5
+$dblue = #0099cc
+
 .asidebar
-  background-color #557755
+  background-color $dblue
   position absolute
+  color white
 
   z-index $Z_asidebar
+
+  > *
+    padding 4px 8px
+
+  hr
+    background-color $lblue
+    padding 0
+    border none
+    height 1px
+    margin 0
+
+  // Sidebar name
+  .as-name
+    background-color $lblue
+    display block
+    font-size 18px
+    margin-bottom 8px
+    border-bottom 2px solid #99cc00
+
+  // Group of objects in the sidebar
+  .as-objgroup
+    border-left 2px solid #99cc00
+
+    // Category name
+    .asog-catname
+      font-size 16px
+      display block
+      margin-bottom 4px
+
+    // Object name
+    .aso-name
+      font-size 14px
+      padding 4px 0 4px 16px
+      margin 4px 0 4px 16px
+      border-left 2px solid $lblue
+
+    .aso-name:hover
+      background-color $lblue
+      cursor hand
+      cursor pointer
+      margin-left 0
+      padding-left 32px

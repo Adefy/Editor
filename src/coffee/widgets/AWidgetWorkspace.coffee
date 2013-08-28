@@ -19,4 +19,4 @@ class AWidgetWorkspace extends AWidget
     super prefId("aworkspace"), parent, [ "aworkspace" ]
 
   # Simply takes the navbar into account, and sets the height accordingly
-  onResize: -> $(@sel).height $(window).height() - $("#amainbar").height()
+  onResize: -> $(@_sel).height $(window).height() - $(".amainbar").height()
