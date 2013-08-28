@@ -46,3 +46,12 @@ class AWidget
   #
   # @return [String] id
   getId: -> "#{@_id}"
+
+  # Called when the item is dropped on a receiving droppable. Most often,
+  # this is the "workspace"
+  #
+  # @param [String] target droppable identifier, usually "workspace"
+  # @param [Number] x x coordinate of drop point
+  # @param [Number] y y coordinate of drop point
+  # @param [String] html rendered version of ourselves
+  dropped: (target, x, y) -> ""

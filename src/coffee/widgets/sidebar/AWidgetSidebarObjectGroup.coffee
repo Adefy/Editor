@@ -34,7 +34,7 @@ class AWidgetSidebarObjectGroup extends AWidgetSidebarItem
     _html += "<ul>"
 
     for i in @_items
-      _html += "<li>#{i.render()}</li>"
+      _html += "<li class=\"aworkspace-drag\">#{i.render()}</li>"
 
     _html += "</ul></div>"
 

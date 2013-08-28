@@ -7,6 +7,11 @@
 # @depend util/AUtilLog.coffee
 # @depend util/AUtilParam.coffee
 #
+# Manipulatables! Whoop!
+# @depend manipulatable/AManipulatable.coffee
+# @depend manipulatable/actors/AMBaseActor.coffee
+#
+# Widgets!
 # @depend widgets/AWidget.coffee
 # @depend widgets/AWidgetWorkspace.coffee
 # @depend widgets/sidebar/AWidgetSidebar.coffee
