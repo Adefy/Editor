@@ -3,8 +3,8 @@ Adefy Editor
 
 Part of the adefy backend, this editor is used for building adefy ads and
 deploying them to the adefy servers. It is built as a JS module, and creates
-all the necessary HTML itself on instantiation. The only dependency at the
-moment is JQuery, but that will expand to include script.aculo.us in leu of JQuery UI. In the future we might also swap out JQuery for Zepto, if possible.
+all the necessary HTML itself on instantiation. The only dependencies at the
+moment are JQuery and JQuery UI.
 
 Building
 --------
