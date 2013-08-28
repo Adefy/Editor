@@ -27,6 +27,8 @@ class AdefyEditor
     # Dep check
     if window.jQuery == undefined or window.jQuery == null
       throw new Error "JQuery not found!"
+    if $.ui == undefined or $.ui == null
+      throw new Error "JQuery UI not found!"
 
     # CSS selector pointing to our DOM element
     @sel = param.optional sel, "#aeditor"
