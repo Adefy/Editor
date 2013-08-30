@@ -1,0 +1,17 @@
+// Context menu that appears when right-clicking a manipulatable
+.actxmenu
+  position absolute
+  font-size 12px
+  display none // We animate ourselves into existence
+
+  li
+    width 130px
+    padding 8px
+    background-color $col_ctxmenu_bg
+    color $dwhite
+
+  li:hover
+    cursor hand
+    cursor pointer
+    background-color $col_ctxmenu_hover_bg
+    color $col_ctxmenu_hover_color

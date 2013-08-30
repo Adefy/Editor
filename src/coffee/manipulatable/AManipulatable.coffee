@@ -16,6 +16,8 @@ class AManipulatable
     # Basic right-click menu functions
     @_ctx =
       "Delete": -> alert "Not implemented yet!"
+      "Test 1": -> #
+      "Test 2": -> #
 
     # Give ourselves a unique id so we can be discovered on the body
     @_id = prefId "amanipulatable"
