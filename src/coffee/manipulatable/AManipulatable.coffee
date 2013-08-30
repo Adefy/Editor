@@ -22,7 +22,7 @@ class AManipulatable
 
     # Attach ourselves to the body
     me = @
-    $(document).ready -> $("body").data me_id, me
+    $(document).ready -> $("body").data me._id, me
 
   # Return the html representation to show when dropped on the workspace.
   # This gets appended to the workspace, and is automatically positioned

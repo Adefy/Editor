@@ -55,7 +55,7 @@ class AWidgetWorkspace extends AWidget
           # the manipulatable after grabbing it from the body's data
           _obj = $("body").data $(e.target).attr("id")
 
-          if not jQuery.isEmptyObject _obj.getContextFunctions()
+          if not $.isEmptyObject _obj.getContextFunctions()
 
             # Prevent the default handler from taking effect
             e.preventDefault()
