@@ -14,10 +14,9 @@ class AManipulatable
     @_properties = {}
 
     # Basic right-click menu functions
+    me = @
     @_ctx =
-      "Delete": -> alert "Not implemented yet!"
-      "Test 1": -> #
-      "Test 2": -> #
+      "Delete": -> me.delete()
 
     # Give ourselves a unique id so we can be discovered on the body
     @_id = prefId "amanipulatable"
@@ -25,6 +24,13 @@ class AManipulatable
     # Attach ourselves to the body
     me = @
     $(document).ready -> $("body").data me._id, me
+
+  # Removes actor from the workspace
+  delete: ->
+
+    # For now, this is simple, we just delete the node. In the future, we will
+    # need to remove associated manipulatables, such as timeline elements
+    $("##{@_id}").remove()
 
   # Return the html representation to show when dropped on the workspace.
   # This gets appended to the workspace, and is automatically positioned
