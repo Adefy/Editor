@@ -15,9 +15,12 @@
 # @depend widgets/AWidget.coffee
 # @depend widgets/AWidgetWorkspace.coffee
 # @depend widgets/AWidgetContextMenu.coffee
+#
 # @depend widgets/sidebar/AWidgetSidebar.coffee
 # @depend widgets/sidebar/AWidgetSidebarObject.coffee
 # @depend widgets/sidebar/AWidgetSidebarObjectGroup.coffee
+# @depend widgets/sidebar/AWidgetSidebarProperties.coffee
+#
 # @depend widgets/mainbar/AWidgetMainbar.coffee
 class AdefyEditor
 
@@ -84,6 +87,9 @@ class AdefyEditor
       testGroup.createItem "Test 1"
       testGroup.createItem "Test 2"
       testGroup.createItem "Test 3"
+
+      # Create a property widget on the right sidebar
+      new AWidgetSidebarProperties rightSidebar
 
       # Push widgets
       me.widgets.push menubar

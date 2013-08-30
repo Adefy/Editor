@@ -6,7 +6,6 @@ class AWidgetSidebarItem extends AWidget
   # @param [AWidgetSidebar] parent sidebar parent
   # @param [Array<String>] classes optional array of classes
   constructor: (parent, classes) ->
-
     param.required parent
 
     if not parent instanceof AWidgetSidebar
