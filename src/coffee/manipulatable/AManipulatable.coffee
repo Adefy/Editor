@@ -32,6 +32,13 @@ class AManipulatable
     # need to remove associated manipulatables, such as timeline elements
     $("##{@_id}").remove()
 
+    # Also remove ourselves from the body's object list
+    $(document).ready -> $("body").data @_id, undefined
+
+  # Global manipulatable onClick function, called by manipulatables if they
+  # wish to take advantage of its functionality.
+  _onClick: -> #
+
   # Return the html representation to show when dropped on the workspace.
   # This gets appended to the workspace, and is automatically positioned
   # at the drop point. Since we are a base class, this function is called by

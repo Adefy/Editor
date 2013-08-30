@@ -22,6 +22,32 @@ class AMBaseActor extends AManipulatable
     @_properties["psyx"] = false
     @_properties["verts"] = []
 
+    # Register our click and deselect handlers
+    me = @
+    $(document).on "click", "##{@_id}", -> me._onClick()
+    $(document).mouseup (e) ->
+
+      us = $("##{me._id}")
+
+      if us != undefined
+        if !us.is(e.target) && us.has(e.target).length == 0
+          $("##{me._id} .amba-selected").removeClass "active"
+
+  # Our onclick handler. It's broken out so we can make a call to super(), and
+  # therefore have some global click functionality. Namely, property editing
+  #
+  # The special part of this is setting up an indicator of selection
+  _onClick: ->
+    $("##{@_id} .amba-selected").addClass "active"
+    super()
+
+  # We require an extra step upon destruction, namely a call to unbind our
+  # click listener. We call through to super at the end
+  destroy: ->
+    $(document).off "click", "##{@_id}"
+    # TODO: Clear the properties panel if necessary
+    super()
+
   # Returns the html representation to show when dropped on the workspace.
   # Note that anyone extending us should also extend this method! The
   # AManipulatable base class offers a version of this method that wraps us
@@ -54,4 +80,9 @@ class AMBaseActor extends AManipulatable
       left: "#{x}px"
       top: "#{y}px"
 
-    super "<div #{@_convertCSS(_css)}>#{inner}</div>"
+    # We have a surrounding div, which we use to display our selected state
+    _html =  "<div #{@_convertCSS(_css)}>"
+    _html +=   "<div class=\"amba-selected\">#{inner}</div>"
+    _html += "</div>"
+
+    super _html
