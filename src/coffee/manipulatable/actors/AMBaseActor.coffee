@@ -10,17 +10,51 @@ class AMBaseActor extends AManipulatable
 
     # Default actor properties, common to all actors
     @_properties["position"] =
-      x: 0
-      y: 0
+      type:"composite"
+      components:
+        x:
+          type: "number"
+          float: true
+          default: 0
+        y:
+          type: "number"
+          float: true
+          default: 0
 
-    @_properties["rotation"] = 0
+    @_properties["rotation"] =
+      type: "number"
+      min: 0
+      max: 360
+      float: true
+      default: 0
+
     @_properties["color"] =
-      r: 0
-      g: 0
-      b: 0
+      type:"composite"
+      components:
+        r:
+          type: "number"
+          min: 0
+          max: 255
+          float: false
+          default: 0
+        g:
+          type: "number"
+          min: 0
+          max: 255
+          float: false
+          default: 0
+        b:
+          type: "number"
+          min: 0
+          max: 255
+          float: false
+          default: 0
 
-    @_properties["psyx"] = false
-    @_properties["verts"] = []
+    @_properties["psyx"] =
+      type: "bool"
+      default: false
+
+    #@_properties["verts"] = []
 
     # Register our click and deselect handlers
     me = @
