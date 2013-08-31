@@ -10,6 +10,9 @@
 # Manipulatables! Whoop!
 # @depend manipulatable/AManipulatable.coffee
 # @depend manipulatable/actors/AMBaseActor.coffee
+# @depend manipulatable/actors/AMTriangle.coffee
+# @depend manipulatable/actors/AMRectangle.coffee
+# @depend manipulatable/actors/AMNGon.coffee
 #
 # Widgets!
 # @depend widgets/AWidget.coffee

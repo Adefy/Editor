@@ -10,7 +10,7 @@ class AMBaseActor extends AManipulatable
 
     # Default actor properties, common to all actors
     @_properties["position"] =
-      type:"composite"
+      type: "composite"
       components:
         x:
           type: "number"
@@ -29,7 +29,7 @@ class AMBaseActor extends AManipulatable
       default: 0
 
     @_properties["color"] =
-      type:"composite"
+      type: "composite"
       components:
         r:
           type: "number"
@@ -103,20 +103,28 @@ class AMBaseActor extends AManipulatable
   renderWorkspace: (inner, x, y) ->
     param.required x
     param.required y
+
     inner = param.optional inner, ""
+    _html = ""
 
-    _css =
-      width: "100px"
-      height: "100px"
-      "background-color": "red"
-      border: "2px solid black"
-      "border-radius": "5px"
-      left: "#{x}px"
-      top: "#{y}px"
+    # If inner content is provided, then just pass it down
+    if inner.length > 0
+      _html = inner
+    else
 
-    # We have a surrounding div, which we use to display our selected state
-    _html =  "<div #{@_convertCSS(_css)}>"
-    _html +=   "<div class=\"amba-selected\">#{inner}</div>"
-    _html += "</div>"
+      # Provide a default inner, an obnoxious red box
+      _css =
+        width: "100px"
+        height: "100px"
+        "background-color": "red"
+        border: "2px solid black"
+        "border-radius": "5px"
+        left: "#{x}px"
+        top: "#{y}px"
+
+      # We have a surrounding div, which we use to display our selected state
+      _html =  "<div #{@_convertCSS(_css)}>"
+      _html +=   "<div class=\"amba-selected\">#{inner}</div>"
+      _html += "</div>"
 
     super _html
