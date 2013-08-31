@@ -1,7 +1,7 @@
 .asidebar
   background-color $col_sidebar_bg
   position absolute
-  color white
+  color $col_sidebar_color
 
   z-index $Z_asidebar
 
@@ -21,7 +21,7 @@
     display block
     font-size 18px
     margin-bottom 8px
-    border-bottom 2px solid $col_sidebar_name_border
+    color $col_sidebar_name_color
 
   // Group of objects in the sidebar
   .as-objgroup
@@ -42,11 +42,53 @@
 
     .aso-name:hover
       background-color $col_sidebar_obj_name_hover_bg
+      color $col_sidebar_obj_name_hover_color
       cursor hand
       cursor pointer
       margin-left 0
       padding-left 32px
 
   .ui-draggable-dragging
-    background-color $lblue
+    background-color $col_sidebar_obj_name_hover_bg
+    color $col_sidebar_obj_name_hover_color
     min-width 200px
+
+  // Manipulatable properties widget
+  .as-properties
+
+    // A group of controls for a single object property (can be composite)
+    .asp-control-group
+      margin-bottom 16px
+      padding-bottom 4px
+      border-bottom 1px solid $col_sidebar_property_group_border
+
+      // Single control, with a label and input field
+      .asp-control
+        margin-bottom 8px
+
+        label, input
+          display inline-block
+          vertical-align top
+
+        label
+          width 75px
+          padding-right 8px
+          text-align right
+
+        input
+          width 160px
+          margin 0
+          padding 0 8px
+          border none
+          border-radius 8px
+          outline 0
+
+        input:after, input:focus
+          box-shadow 0 0 1px 1px $col_sidebar_property_input_focus_shadow
+
+        input[type="checkbox"]
+          width auto
+
+        .aspc-composite-name
+          text-align center
+          margin-bottom 8px
