@@ -18,6 +18,18 @@ class AWidgetWorkspace extends AWidget
     param.required parent
     super prefId("aworkspace"), parent, [ "aworkspace" ]
 
+    # Create an AWGL instance on ourselves
+    me = @
+    if window.ajax == undefined then window.ajax = microAjax
+
+    AUtilLog.info "Starting AWGL instance..."
+    @_awgl = new AWGLEngine null, 4, ->
+      me._engineInit()
+    , @_id
+
+    # The following is obselete, we are moving forward with a canvas
+    # workspace, with the help of AWGL. Picking just got 100x more complex
+    ###
     # Set up our dragging functionality
     $(document).ready ->
 
@@ -61,6 +73,13 @@ class AWidgetWorkspace extends AWidget
 
           # Whoop
           return false
+    ###
+
+  # Called by AWGLEngine as soon as it's up and running, we continue our own
+  # init from here.
+  _engineInit: ->
+    AUtilLog.info "AWGL instance up, initializing workspace"
 
   # Simply takes the navbar into account, and sets the height accordingly
+  # Note that this does NOT resize the canvas
   onResize: -> $(@_sel).height $(window).height() - $(".amainbar").height()
