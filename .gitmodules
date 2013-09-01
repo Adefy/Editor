@@ -1,0 +1,3 @@
+[submodule "awgl"]
+	path = awgl
+	url = git@github.com:Mirceam94/AdefyWebGL.git
