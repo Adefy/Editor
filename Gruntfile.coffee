@@ -9,6 +9,7 @@ module.exports = (grunt) ->
   testDir = "test"
   devDir = "dev"
   docDir = "doc"
+  awglDir = "awgl"
 
   # Intermediate vars
   __awglOut = {}
@@ -136,6 +137,16 @@ module.exports = (grunt) ->
           ]
           dest: "#{devDir}"
         ]
+      awgl:
+        files: [
+          expand: false
+          src: "#{awglDir}/build/awgl.js"
+          dest: "#{buildDir}/static/js/awgl.js"
+        ,
+          expand: false
+          src: "#{awglDir}/build/awgl.js"
+          dest: "#{devDir}/static/js/awgl.js"
+        ]
 
     stylus:
       compile:
@@ -174,6 +185,7 @@ module.exports = (grunt) ->
     "codo"
     "copy:test_page"
     "copy:static"
+    "copy:awgl"
     "concat_in_order"
     "coffee"
     "stylus"
@@ -183,5 +195,6 @@ module.exports = (grunt) ->
     "connect"
     "copy:test_page"
     "copy:static"
+    "copy:awgl"
     "watch"
   ]

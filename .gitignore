@@ -5,3 +5,4 @@ dev/aeditor.js
 dev/aeditor.js.map
 dev/css/aeditor.css
 dev/build-concat.coffee
+dev/static/js/awgl.js
