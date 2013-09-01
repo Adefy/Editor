@@ -94,6 +94,12 @@ class AdefyEditor
       # Create a property widget on the right sidebar
       new AWidgetSidebarProperties rightSidebar
 
+      # Set up workspace padding to take sidebars into account
+      # NOTE: This needs to change in the future, to allow for sliding sidebars
+      $(workspace.getSel()).css
+        "padding-left": 256
+        "padding-right": 300
+
       # Push widgets
       me.widgets.push menubar
       me.widgets.push workspace

@@ -30,17 +30,16 @@ class AWidgetSidebarObject extends AWidgetSidebarItem
     @_parent.render()
 
   # Called when the item is dropped on a receiving droppable. Most often,
-  # this is the "workspace". Returns the html representation of the object to
-  # be injected into the target.
+  # this is the "workspace".
   #
   # @param [String] target droppable identifier, usually "workspace"
   # @param [Number] x x coordinate of drop point
   # @param [Number] y y coordinate of drop point
-  # @param [String] html rendered version of ourselves
+  # @param [AManipulatable] obj created manipulatable
   dropped: (target, x, y) ->
     param.required target
     param.required x
     param.required y
 
-    a = new AMBaseActor
-    a.renderWorkspace "", x, y
+    # Default sidebar object, return a base actor
+    new AMBaseActor

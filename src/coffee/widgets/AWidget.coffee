@@ -53,5 +53,5 @@ class AWidget
   # @param [String] target droppable identifier, usually "workspace"
   # @param [Number] x x coordinate of drop point
   # @param [Number] y y coordinate of drop point
-  # @param [String] html rendered version of ourselves
-  dropped: (target, x, y) -> ""
+  # @param [AManipulatable] manipulatable created manipuatable
+  dropped: (target, x, y) -> null
