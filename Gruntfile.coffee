@@ -149,12 +149,20 @@ module.exports = (grunt) ->
           dest: "#{devDir}/js/awgl.js"
         ,
           expand: false
+          src: "#{awglDir}/build/awgl-concat.coffee"
+          dest: "#{buildDir}/static/js/awgl-concat.coffee"
+        ,
+          expand: false
           src: "#{awglDir}/build/awgl.js.map"
           dest: "#{buildDir}/static/js/awgl.js.map"
         ,
           expand: false
           src: "#{awglDir}/build/awgl.js.map"
           dest: "#{devDir}/js/awgl.js.map"
+        ,
+          expand: false
+          src: "#{awglDir}/build/awgl-concat.coffee"
+          dest: "#{devDir}/js/awgl-concat.coffee"
         ]
       adefyjs:
         files: [
@@ -167,12 +175,20 @@ module.exports = (grunt) ->
           dest: "#{buildDir}/static/js/adefy.js"
         ,
           expand: false
+          src: "#{adefyjsDir}/build/ajs-concat.coffee"
+          dest: "#{buildDir}/static/js/ajs-concat.coffee"
+        ,
+          expand: false
           src: "#{adefyjsDir}/build/adefy.js.map"
           dest: "#{devDir}/js/adefy.js.map"
         ,
           expand: false
           src: "#{adefyjsDir}/build/adefy.js"
           dest: "#{devDir}/js/adefy.js"
+        ,
+          expand: false
+          src: "#{adefyjsDir}/build/ajs-concat.coffee"
+          dest: "#{devDir}/js/ajs-concat.coffee"
         ]
 
     stylus:
