@@ -145,7 +145,7 @@ module.exports = (grunt) ->
         ,
           expand: false
           src: "#{awglDir}/build/awgl.js"
-          dest: "#{devDir}/static/js/awgl.js"
+          dest: "#{devDir}/js/awgl.js"
         ]
 
     stylus:
