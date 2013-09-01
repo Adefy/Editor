@@ -10,6 +10,7 @@ module.exports = (grunt) ->
   devDir = "dev"
   docDir = "doc"
   awglDir = "awgl"
+  adefyjsDir = "adefyjs"
 
   # Intermediate vars
   __awglOut = {}
@@ -146,6 +147,32 @@ module.exports = (grunt) ->
           expand: false
           src: "#{awglDir}/build/awgl.js"
           dest: "#{devDir}/js/awgl.js"
+        ,
+          expand: false
+          src: "#{awglDir}/build/awgl.js.map"
+          dest: "#{buildDir}/static/js/awgl.js.map"
+        ,
+          expand: false
+          src: "#{awglDir}/build/awgl.js.map"
+          dest: "#{devDir}/js/awgl.js.map"
+        ]
+      adefyjs:
+        files: [
+          expand: false
+          src: "#{adefyjsDir}/build/adefy.js.map"
+          dest: "#{buildDir}/static/js/adefy.js.map"
+        ,
+          expand: false
+          src: "#{adefyjsDir}/build/adefy.js"
+          dest: "#{buildDir}/static/js/adefy.js"
+        ,
+          expand: false
+          src: "#{adefyjsDir}/build/adefy.js.map"
+          dest: "#{devDir}/js/adefy.js.map"
+        ,
+          expand: false
+          src: "#{adefyjsDir}/build/adefy.js"
+          dest: "#{devDir}/js/adefy.js"
         ]
 
     stylus:
@@ -186,6 +213,7 @@ module.exports = (grunt) ->
     "copy:test_page"
     "copy:static"
     "copy:awgl"
+    "copy:adefyjs"
     "concat_in_order"
     "coffee"
     "stylus"
@@ -196,5 +224,6 @@ module.exports = (grunt) ->
     "copy:test_page"
     "copy:static"
     "copy:awgl"
+    "copy:adefyjs"
     "watch"
   ]
