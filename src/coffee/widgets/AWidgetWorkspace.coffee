@@ -99,7 +99,7 @@ class AWidgetWorkspace extends AWidget
       # Set up our own capture of draggable objects
       $(".aworkspace canvas").droppable
         accept: ".aworkspace-drag"
-        drop: (event, ui) ->
+        drop: (event, ui) =>
           # $.ui.ddmanager.current.cancelHelperRemoval = true
 
           # Get the associated widget object
@@ -107,10 +107,7 @@ class AWidgetWorkspace extends AWidget
           _obj = $("body").data _sel
 
           # Calculate workspace coordinates
-          _x = ui.position.left - $(@).position().left
-          _y = ui.position.top - $(@).position().top
-
-          _truePos = me.domToGL _x, _y
+          _truePos = me.domToGL ui.position.left, ui.position.top
 
           # TODO: Consider cleaning this up to just pass the domToGL result
           manipulatable = _obj.dropped "workspace", _truePos.x, _truePos.y
@@ -120,6 +117,8 @@ class AWidgetWorkspace extends AWidget
           #       that can't happen. Yay.
           if manipulatable instanceof AMBaseActor
 
+            console.log _truePos
+
             new AJSRectangle
               psyx: false
               mass: 0
@@ -127,8 +126,14 @@ class AWidgetWorkspace extends AWidget
               elasticity: 0.4
               w: 100
               h: 100
-              position: new AJSVector2 100, 300
+              position: new AJSVector2 _truePos.x, _truePos.y
               color: new AJSColor3 255, 0, 0
+
+      # Actor picking!
+      $(".aworkspace canvas").click (e) ->
+
+        # Calculate workspace coordinates
+        _truePos = me.domToGL e.pageX, e.pageY
 
     # Start rendering
     @_awgl.startRendering()
@@ -152,7 +157,7 @@ class AWidgetWorkspace extends AWidget
 
     ret =
       x: x - canvasLeft
-      y: y - canvasTop
+      y: @_awgl.getHeight() - (y - canvasTop)
 
   # Simply takes the navbar into account, and sets the height accordingly
   # Note that this does NOT resize the canvas
