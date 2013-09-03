@@ -23,7 +23,7 @@ class AManipulatable
 
     # Attach ourselves to the body
     me = @
-    $(document).ready -> $("body").data me._id, me
+    $(document).ready -> $("body").data me.getId, me
 
   # Removes actor from the workspace
   delete: ->

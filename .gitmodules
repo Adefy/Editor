@@ -1,6 +1,6 @@
 [submodule "awgl"]
 	path = awgl
-	url = git@github.com:Mirceam94/AdefyWebGL.git
+	url = https://github.com/Mirceam94/AdefyWebGL.git
 [submodule "adefyjs"]
 	path = adefyjs
-	url = git@github.com:Mirceam94/AdefyJS.git
+	url = https://github.com/Mirceam94/AdefyJS.git
