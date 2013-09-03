@@ -170,8 +170,11 @@ class AWidgetWorkspace extends AWidget
             , gl.UNSIGNED_BYTE, pick
           gl.bindFramebuffer gl.FRAMEBUFFER, null
 
-          # Objects have a blue component of 248
-          if pick[2] != 248 then return
+          # Objects have a blue component of 248. If this is not an object,
+          # perform the necessary clearing and continue
+          if pick[2] != 248
+            $("body").data("default-properties").clear()
+            return
 
           # Id is stored as a sector and an offset. Recover proper object id
           _id = pick[0] + (pick[1] * 255)
@@ -181,7 +184,7 @@ class AWidgetWorkspace extends AWidget
             if o.getActorId() == _id
 
               # Fill in property list!
-              o._onClick()
+              o.onClick()
 
     # Start rendering
     @_awgl.startRendering()

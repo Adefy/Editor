@@ -37,7 +37,7 @@ class AManipulatable
 
   # Global manipulatable onClick function, called by manipulatables if they
   # wish to take advantage of its functionality.
-  _onClick: ->
+  onClick: ->
 
     # If a properties widget is avaliable, ship ourselves
     if $("body").data("default-properties") != undefined

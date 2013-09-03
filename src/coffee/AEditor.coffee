@@ -88,6 +88,7 @@ class AdefyEditor
       # Add some items to the left sidebar
       testGroup = new AWidgetSidebarObjectGroup "Primitives", leftSidebar
       rectPrimitive = testGroup.createItem "Rectangle"
+      ngonPrimitive = testGroup.createItem "N-Sided Polgyon"
 
       rectPrimitive.dropped = (target, x, y) ->
         param.required target
@@ -97,6 +98,15 @@ class AdefyEditor
         if target != "workspace" then return null
 
         new AMRectangle 100, 100, x, y
+
+      ngonPrimitive.dropped = (target, x, y) ->
+        param.required target
+        param.required x
+        param.required y
+
+        if target != "workspace" then return null
+
+        new AMNGon 5, 100, x, y
 
       # Create a property widget on the right sidebar
       new AWidgetSidebarProperties rightSidebar

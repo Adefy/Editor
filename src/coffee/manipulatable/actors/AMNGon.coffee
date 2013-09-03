@@ -2,7 +2,22 @@
 class AMNGon extends AMBaseActor
 
   # Defines a variable-sided actor, psicktually
-  constructor: ->
+  #
+  # @param [Number] sides the n in ngon
+  # @param [Number] radius ngon radius
+  # @param [Number] x x starting coordinate
+  # @param [Number] y y starting coordinate
+  constructor: (sides, radius, x, y) ->
+    param.required sides
+    param.required radius
+    param.required x
+    param.required y
+
+    if sides < 3
+      throw new Error "Can't create an ngon with less than 3 sides"
+
+    # Negate negative radius
+    if radius < 0 then radius *= -1
 
     # Take advantage of generic actor properties
     super()
@@ -11,32 +26,21 @@ class AMNGon extends AMBaseActor
     @_properties["sides"] =
       type: "number"
       min: 3
-      default: 5
+      default: sides
       float: false
 
-  # Override the render function to draw an appropriate ngon
-  # Note that 'inner' should normally never be set, we just accept it since we
-  # have to, in order to maintain the proper definition. If, for some reason,
-  # in the future, if the US hasn't gone to war with Syria and such, we decide
-  # to pass inner content to this render function. Then shame on us. Shame.
-  #
-  # @param [String] inner shameful html to wrap
-  # @param [Number] x x coordinate of resulting object
-  # @param [Number] y y coordinate of resulting object
-  # @return [String] html visible representation
-  renderWorkpace: (inner, x, y) ->
-    param.required x
-    param.required y
+    @_properties["radius"] =
+      type: "number"
+      min: 0
+      default: radius
+      float: true
 
-    _html = ""
-
-    # This is where an epiphany occured. I didn't realize you can't render
-    # arbitrary shapes in HTML (crazy).
-    #
-    # The first idea I had was to go with SVG, but then we can't texture
-    # things, and implementing support for 3D will mean essentially building
-    # a new editor.
-    #
-    # AWGL it is. Tomorrow. Too tired now.
-
-    super _html
+    @_actor = new AJSNGon
+      psyx: false
+      mass: 0
+      friction: 0.3
+      elasticity: 0.4
+      radius: radius
+      segments: sides
+      position: new AJSVector2 x, y
+      color: new AJSColor3 255, 255, 255

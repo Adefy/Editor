@@ -43,6 +43,11 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
     @_builtHMTL += "</ul>"
     @_parent.render()
 
+  # Clear the property widget
+  clear: ->
+    @_builtHMTL = ""
+    @_parent.render()
+
   # Return internally pre-rendered HTML. We need to pre-render since we rely
   # upon object data to be meaningful (note comment in the constructor)
   #
