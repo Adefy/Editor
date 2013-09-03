@@ -85,6 +85,41 @@ class AWidgetWorkspace extends AWidget
 
     AUtilLog.info "AWGL instance up, initializing workspace"
 
+    # Create our picking framebuffer
+    # http://learningwebgl.com/blog/?p=1786
+    gl = @_awgl.getGL()
+    @_pickBuffer = gl.createFramebuffer()
+    @_pickTexture = gl.createTexture()
+
+    gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
+    gl.bindTexture gl.TEXTURE_2D, @_pickTexture
+
+    gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR
+    gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER \
+      , gl.LINEAR_MIPMAP_NEAREST
+
+    # Framebuffer is 512x512
+    gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, 512, 512, 0, gl.RGBA \
+      , gl.UNSIGNED_BYTE, null
+
+    gl.generateMipmap gl.TEXTURE_2D
+
+    # Set up a depth buffer, bind it and whatnot
+    _renderBuff = gl.createRenderbuffer()
+    gl.bindRenderbuffer gl.RENDERBUFFER, _renderBuff
+    gl.renderbufferStorage gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, 512, 512
+
+    gl.framebufferTexture2D gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 \
+      , gl.TEXTURE_2D, @_pickTexture, _renderBuff
+
+    gl.framebufferRenderbuffer gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT \
+      , gl.RENDERBUFFER, _renderBuff
+
+    # Cleanup
+    gl.bindTexture gl.TEXTURE_2D, null
+    gl.bindRenderbuffer gl.RENDERBUFFER, null
+    gl.bindFramebuffer gl.FRAMEBUFFER, null
+
     # Bind manipulatable handlers
     me = @
     $(document).ready ->
@@ -117,8 +152,6 @@ class AWidgetWorkspace extends AWidget
           #       that can't happen. Yay.
           if manipulatable instanceof AMBaseActor
 
-            console.log _truePos
-
             new AJSRectangle
               psyx: false
               mass: 0
@@ -130,10 +163,23 @@ class AWidgetWorkspace extends AWidget
               color: new AJSColor3 255, 0, 0
 
       # Actor picking!
+      # NOTE: This should only be allowed when the scene is not being animated!
       $(".aworkspace canvas").click (e) ->
 
         # Calculate workspace coordinates
         _truePos = me.domToGL e.pageX, e.pageY
+
+        # Request a pick render from AWGL, continue once we get it
+        me._awgl.requestPickingRender me._pickBuffer, ->
+
+          pick = new Uint8Array 4
+
+          gl.bindFramebuffer gl.FRAMEBUFFER, me._pickBuffer
+          gl.readPixels _truePos.x, _truePos.y, 1, 1, gl.RGBA \
+            , gl.UNSIGNED_BYTE, pick
+          gl.bindFramebuffer gl.FRAMEBUFFER, null
+
+          console.log "#{pick[0]}, #{pick[1]}, #{pick[2]}, #{pick[3]}"
 
     # Start rendering
     @_awgl.startRendering()
