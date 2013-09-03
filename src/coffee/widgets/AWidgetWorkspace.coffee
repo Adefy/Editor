@@ -4,6 +4,10 @@ class AWidgetWorkspace extends AWidget
   # Set to true upon instantiation, prevents more than one instance
   @__exists: false
 
+  # We store a static reference to ourselves, since some objects need to notify
+  # us of their demise (muahahahahaha)
+  @__instance: null
+
   # Creates a new workspace if one does not already exist
   #
   # @param [String] parent parent element selector
@@ -14,6 +18,7 @@ class AWidgetWorkspace extends AWidget
       return
 
     AWidgetWorkspace.__exists = true
+    AWidgetWorkspace.__instance = @
 
     param.required parent
     super prefId("aworkspace"), parent, [ "aworkspace" ]
@@ -30,53 +35,23 @@ class AWidgetWorkspace extends AWidget
       @_engineInit()
     , @_id
 
-    # The following is obselete, we are moving forward with a canvas
-    # workspace, with the help of AWGL. Picking just got 100x more complex
-    ###
-    # Set up our dragging functionality
-    $(document).ready ->
+  # Fetch our static instance
+  #
+  # @return [AWidgetWorkspace] me
+  @getMe: -> @__instance
 
-      # Set up draggable objects
-      $(".aworkspace-drag").draggable
-        addClasses: false
-        helper: "clone"
-        revert: "invalid"
-        cursor: "pointer"
+  # Any objects that need to tell us about their death have to do so by calling
+  # this method and passing themselves in.
+  #
+  # @param [Object] obj dying object
+  notifyDemise: (obj) ->
 
-      # Set up our own capture of draggable objects
-      $(".aworkspace").droppable
-        accept: ".aworkspace-drag"
-        drop: (event, ui) ->
-          # $.ui.ddmanager.current.cancelHelperRemoval = true
-
-          # Get the associated widget object
-          _sel = $(ui.draggable).children("div").attr("id")
-          _obj = $("body").data _sel
-
-          # Calculate workspace coordinates
-          _x = ui.position.left - $(@).position().left
-          _y = ui.position.top - $(@).position().top
-
-          $(@).append _obj.dropped "workspace", _x, _y
-
-      # Bind a contextmenu listener
-      $(document).on "contextmenu", ".amanipulatable", (e) ->
-
-        # We right clicked on a manipulatable, check for context functions on
-        # the manipulatable after grabbing it from the body's data
-        _obj = $("body").data $(e.target).parent().attr("id")
-
-        if not $.isEmptyObject _obj.getContextFunctions()
-
-          # Prevent the default handler from taking effect
-          e.preventDefault()
-
-          # Instantiate a new context menu, it handles the rest
-          new AWidgetContextMenu e.pageX, e.pageY, _obj
-
-          # Whoop
-          return false
-    ###
+    # We keep track of actors internally, splice them out of our array
+    if obj instanceof AMBaseActor
+      for o, i in @actorObjects
+        if o.getId() == obj.getId()
+          @actorObjects.splice i, 1
+          return
 
   # Called by AWGLEngine as soon as it's up and running, we continue our own
   # init from here.

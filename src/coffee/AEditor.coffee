@@ -89,6 +89,7 @@ class AdefyEditor
       testGroup = new AWidgetSidebarObjectGroup "Primitives", leftSidebar
       rectPrimitive = testGroup.createItem "Rectangle"
       ngonPrimitive = testGroup.createItem "N-Sided Polgyon"
+      triPrimitive = testGroup.createItem "Triangle"
 
       rectPrimitive.dropped = (target, x, y) ->
         param.required target
@@ -107,6 +108,15 @@ class AdefyEditor
         if target != "workspace" then return null
 
         new AMNGon 5, 100, x, y
+
+      triPrimitive.dropped = (target, x, y) ->
+        param.required target
+        param.required x
+        param.required y
+
+        if target != "workspace" then return null
+
+        new AMTriangle 20, 30, x, y
 
       # Create a property widget on the right sidebar
       new AWidgetSidebarProperties rightSidebar

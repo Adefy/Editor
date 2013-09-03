@@ -57,6 +57,21 @@ class AMBaseActor extends AManipulatable
     # Note that we don't create an actual actor!
     @_actor = null
 
+  delete: ->
+
+    # For now, this is simple, we just delete the actor. In the future, we will
+    # need to remove associated manipulatables, such as timeline elements
+    if @_actor != null
+
+      # Notify the workspace
+      AWidgetWorkspace.getMe().notifyDemise @
+
+      # Go through and remove ourselves from
+      @_actor.destroy()
+      @_actor = null
+
+    super()
+
   # Get internal actors' id. Note that the actor must exist for this!
   #
   # @return [Number] id

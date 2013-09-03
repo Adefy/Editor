@@ -23,14 +23,17 @@ class AManipulatable
 
     # Attach ourselves to the body
     me = @
-    $(document).ready -> $("body").data me.getId, me
+    $(document).ready -> $("body").data me.getId(), me
 
-  # Removes actor from the workspace
+  # Get our id. TODO: Consider giving us a base class, possible giving doing
+  # the same to AWidget
+  #
+  # @return [String] id
+  getId: -> @_id
+
+  # Cleans us up. Any classes extending us should also extend this method, and
+  # clean up anything it instantiates (I'm looking at you AMBaseActor)
   delete: ->
-
-    # For now, this is simple, we just delete the node. In the future, we will
-    # need to remove associated manipulatables, such as timeline elements
-    $("##{@_id}").remove()
 
     # Also remove ourselves from the body's object list
     $(document).ready -> $("body").data @_id, undefined
