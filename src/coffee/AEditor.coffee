@@ -18,7 +18,12 @@
 # @depend widgets/AWidget.coffee
 # @depend widgets/AWidgetWorkspace.coffee
 # @depend widgets/AWidgetContextMenu.coffee
-# @depend widgets/AWidgetControlBar.coffee
+#
+# @depend widgets/controlbar/AWidgetControlBar.coffee
+# @depend widgets/controlbar/AWidgetControlBarControl.coffee
+# @depend widgets/controlbar/AWidgetControlCanvas.coffee
+# @depend widgets/controlbar/AWidgetControlPhysics.coffee
+# @depend widgets/controlbar/AWidgetControlRender.coffee
 #
 # @depend widgets/sidebar/AWidgetSidebar.coffee
 # @depend widgets/sidebar/AWidgetSidebarObject.coffee

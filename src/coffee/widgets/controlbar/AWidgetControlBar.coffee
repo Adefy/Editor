@@ -29,40 +29,42 @@ class AWidgetControlBar extends AWidget
 
     super prefId("awcontrolbar"), parent, [ "awcontrolbar" ], true
 
+    # Controls add themselves through our @addControl
+    @_controls = []
+
+    # Since we're awesome, we'll define controls ourselves
+    new AWidgetControlCanvas
+    new AWidgetControlRender
+    new AWidgetControlPhysics
+
     # For the time being, we render ourselves, since there is nothing too
     # dynamic about our existence.
+    @render()
+
+  # Add a control to our list, then trigger a re-render. Note that there is
+  # currently no method to remove existing controls! So don't go crazy with it.
+  #
+  # @param [AWidgetControlBarControl] control
+  addControl: (control) ->
+    @_controls.push control
     @render()
 
   # Our miniscule render function
   render: ->
 
     _h = ""
-    _h += "<ul><div class=\"awcb-inner\">"
-    _h +=   "<div class=\"awcb-section\">"
-    _h +=     "<div class=\"awcb-section-title\">Renderer</div>"
-    _h +=     "<li id=\"awcb-awgl-render-play\" class=\"awcb-control on\">"
-    _h +=       "Start"
-    _h +=       "<i class=\"icon-play\"></i>"
-    _h +=     "</li>"
-    _h +=     "<li id=\"awcb-awgl-render-stop\" class=\"awcb-control off\">"
-    _h +=       "Stop"
-    _h +=       "<i class=\"icon-stop\"></i>"
-    _h +=     "<li class=\"awcb-control-status off\">Stopped</li>"
-    _h +=     "</li>"
-    _h +=   "</div>"
-    _h +=   "<div class=\"awcb-section\">"
-    _h +=     "<div class=\"awcb-section-title\">Physics</div>"
-    _h +=     "<li id=\"awcb-awgl-physics-play\" class=\"awcb-control on\">"
-    _h +=       "Start"
-    _h +=       "<i class=\"icon-play\"></i>"
-    _h +=     "</li>"
-    _h +=     "<li id=\"awcb-awgl-physics-stop\" class=\"awcb-control off\">"
-    _h +=       "Stop"
-    _h +=       "<i class=\"icon-stop\"></i>"
-    _h +=     "</li>"
-    _h +=     "<li class=\"awcb-control-status off\">Stopped</li>"
-    _h +=   "</div>"
-    _h += "</div></ul>"
+    _h += "<div class=\"awcb-inner\">"
+
+    # Get the current canvas size. Note that this render function should really
+    # only ever be called once; after it is, we will update our displayed
+    # canvas size manually. Only initially do we need to read it in.
+    _cW = @_parent.getCanvasWidth()
+    _cH = @_parent.getCanvasHeight()
+
+    for o in @_controls
+      _h += o.render()
+
+    _h += "</div>"
 
     $(@_sel).html _h
 

@@ -31,10 +31,44 @@ class AWidgetWorkspace extends AWidget
     me = @
     if window.ajax == undefined then window.ajax = microAjax
 
+    # NOTE: We start by default with a 720x1280 canvas size
+    @_cWidth = 720
+    @_cHeight = 1280
+
+    # Inject our canvas container, along with its status bar
+    # Although we currently don't add anything else to the container besides
+    # the canvas itself, it might prove useful in the future.
+    _html = ""
+    _html += "<div id=\"aw-canvas-container\">"
+    _html += "</div"
+
+    $(@_sel).html _html
+
     AUtilLog.info "Starting AWGL instance..."
     new AWGLEngine null, 4, (@_awgl) =>
+      @_applyCanvasSizeUpdate()
       @_engineInit()
-    , @_id
+    , "aw-canvas-container", @_cWidth, @_cHeight
+
+  # Retrieve canvas width
+  #
+  # @return [Number] width canvas width
+  getCanvasWidth: -> @_cWidth
+
+  # Retrieve canvas height
+  #
+  # @return [Number] height canvas height
+  getCanvasHeight: -> @_cHeight
+
+  # Update the canvas status, and alter the width of the canvas container
+  # This should be called either after instantiation, or after a canvas
+  # resize
+  _applyCanvasSizeUpdate: ->
+
+    # Resize canvas container
+    $("#aw-canvas-container").css
+      height: "#{@_cHeight}px"
+      width: "#{@_cWidth}px"
 
   # Fetch our static instance
   #
