@@ -73,7 +73,7 @@ class AWidgetMainbar extends AWidget
 
     # Ensure id is unique
     for i in @_items
-      if i._id == id
+      if i.getId == id
         AUtilLog.warn "id in use, overriding supplied id"
         id = nextId()
 
@@ -89,7 +89,7 @@ class AWidgetMainbar extends AWidget
   removeItem: (id) ->
 
     for i in [0...@_items.length]
-      if @_items[i].id == id
+      if @_items[i].getId == id
         @_items.splice i, 1
         return true
 

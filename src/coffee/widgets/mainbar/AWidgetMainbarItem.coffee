@@ -93,7 +93,7 @@ class AWidgetMainbarItem
   removeChild: (id) ->
 
     for i in [0...@_children.length]
-      if @_children[i].id == id
+      if @_children[i].getId() == id
         @_children.splice i, 1
         return true
 

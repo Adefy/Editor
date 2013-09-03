@@ -81,7 +81,7 @@ class AWidgetSidebarObjectGroup extends AWidgetSidebarItem
     param.required id
 
     for i in [0...@_items.length]
-      if @_items[i].getId() == id
+      if @_items[i].getId == id
         @_items.splice i, 1
         @_parent.render()   # Update!
         return true

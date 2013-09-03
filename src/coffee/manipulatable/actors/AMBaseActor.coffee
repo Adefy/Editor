@@ -65,7 +65,7 @@ class AMBaseActor extends AManipulatable
 
       if us != undefined
         if !us.is(e.target) && us.has(e.target).length == 0
-          $("##{me._id} .amba-selected").removeClass "active"
+          $("##{me.getId} .amba-selected").removeClass "active"
 
   # Our onclick handler. It's broken out so we can make a call to super(), and
   # therefore have some global click functionality. Namely, property editing
