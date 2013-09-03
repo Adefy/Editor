@@ -18,9 +18,8 @@ class AWidgetWorkspace extends AWidget
     param.required parent
     super prefId("aworkspace"), parent, [ "aworkspace" ]
 
-    # Keep track of objects in the workspace. TODO: Decide in what format to
-    # do so; for the time being, this is a flat array of AJS objects
-    @objects = []
+    # Keep track of spawned manipulatable actor objects
+    @actorObjects = []
 
     # Create an AWGL instance on ourselves
     me = @
@@ -152,15 +151,7 @@ class AWidgetWorkspace extends AWidget
           #       that can't happen. Yay.
           if manipulatable instanceof AMBaseActor
 
-            new AJSRectangle
-              psyx: false
-              mass: 0
-              friction: 0.3
-              elasticity: 0.4
-              w: 100
-              h: 100
-              position: new AJSVector2 _truePos.x, _truePos.y
-              color: new AJSColor3 255, 0, 0
+            me.actorObjects.push manipulatable
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
@@ -179,7 +170,18 @@ class AWidgetWorkspace extends AWidget
             , gl.UNSIGNED_BYTE, pick
           gl.bindFramebuffer gl.FRAMEBUFFER, null
 
-          console.log "#{pick[0]}, #{pick[1]}, #{pick[2]}, #{pick[3]}"
+          # Objects have a blue component of 248
+          if pick[2] != 248 then return
+
+          # Id is stored as a sector and an offset. Recover proper object id
+          _id = pick[0] + (pick[1] * 255)
+
+          # Find the actor in question
+          for o in me.actorObjects
+            if o.getActorId() == _id
+
+              # Fill in property list!
+              o._onClick()
 
     # Start rendering
     @_awgl.startRendering()
