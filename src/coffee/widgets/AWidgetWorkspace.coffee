@@ -160,24 +160,16 @@ class AWidgetWorkspace extends AWidget
         # Calculate workspace coordinates
         _truePos = me.domToGL e.pageX, e.pageY
 
-        # Request a pick render from AWGL, continue once we get it
-        me._awgl.requestPickingRender me._pickBuffer, ->
-
-          pick = new Uint8Array 4
-
-          gl.bindFramebuffer gl.FRAMEBUFFER, me._pickBuffer
-          gl.readPixels _truePos.x, _truePos.y, 1, 1, gl.RGBA \
-            , gl.UNSIGNED_BYTE, pick
-          gl.bindFramebuffer gl.FRAMEBUFFER, null
+        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
 
           # Objects have a blue component of 248. If this is not an object,
           # perform the necessary clearing and continue
-          if pick[2] != 248
+          if b != 248
             $("body").data("default-properties").clear()
             return
 
           # Id is stored as a sector and an offset. Recover proper object id
-          _id = pick[0] + (pick[1] * 255)
+          _id = r + (g * 255)
 
           # Find the actor in question
           for o in me.actorObjects
@@ -186,8 +178,55 @@ class AWidgetWorkspace extends AWidget
               # Fill in property list!
               o.onClick()
 
+      # Bind a contextmenu listener
+      $(document).on "contextmenu", ".aworkspace canvas", (e) ->
+        e.preventDefault()
+
+        # We right clicked on the canvas, pick the object at our click position
+        # and get its associated manipulatable
+        _truePos = me.domToGL e.pageX, e.pageY
+
+        # Pick
+        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+
+          # Extract id if valid
+          if b != 248 then return
+          _id = r + (g * 255)
+
+          # Find the actor in question
+          for o in me.actorObjects
+            if o.getActorId() == _id
+
+              # We clicked on a manipulatable, check for context functions
+              if not $.isEmptyObject o.getContextFunctions()
+
+                # Instantiate a new context menu, it handles the rest
+                new AWidgetContextMenu e.pageX, e.pageY, o
+
+              return
+
+        false
+
     # Start rendering
     @_awgl.startRendering()
+
+  # Helper function to perform a pick at the specified canvas coordinates
+  #
+  # @param [Number] x x coordinate
+  # @param [Number] y y coordinate
+  # @param [Method] cb callback to call afterwards, passing r/g/b
+  _performPick: (x, y, cb) ->
+    # Request a pick render from AWGL, continue once we get it
+    @_awgl.requestPickingRender @_pickBuffer, =>
+
+      pick = new Uint8Array 4
+
+      gl = @_awgl.getGL()
+      gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
+      gl.readPixels x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pick
+      gl.bindFramebuffer gl.FRAMEBUFFER, null
+
+      cb pick[0], pick[1], pick[2]
 
   # Converts document-relative coordinates to AWGL coordinates
   # NOTE: This does not currently take into account any camera transformation!
