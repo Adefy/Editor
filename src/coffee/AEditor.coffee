@@ -18,6 +18,7 @@
 # @depend widgets/AWidget.coffee
 # @depend widgets/AWidgetWorkspace.coffee
 # @depend widgets/AWidgetContextMenu.coffee
+# @depend widgets/AWidgetControlBar.coffee
 #
 # @depend widgets/sidebar/AWidgetSidebar.coffee
 # @depend widgets/sidebar/AWidgetSidebarObject.coffee
@@ -84,6 +85,7 @@ class AdefyEditor
       workspace = new AWidgetWorkspace me.sel
       leftSidebar = new AWidgetSidebar me.sel, "Objects", "left", 256
       rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
+      controlBar = new AWidgetControlBar workspace
 
       # Add some items to the left sidebar
       testGroup = new AWidgetSidebarObjectGroup "Primitives", leftSidebar

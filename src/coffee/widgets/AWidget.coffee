@@ -8,8 +8,10 @@ class AWidget
   # @param [String] id container id
   # @param [Object] parent container parent, defaults to "body"
   # @param [Array<String>] classes an array containing classes to be applied
-  constructor: (@_id, parent, classes) ->
+  # @param [Boolean] prepend if true, we are prepended to the parent
+  constructor: (@_id, parent, classes, prepend) ->
     @_parent = param.optional parent, "body"
+    prepend = param.optional prepend, false
 
     # container selector, defaults to no container
     @_sel = null
@@ -26,7 +28,10 @@ class AWidget
       else
         throw new Error "Invalid parent specified!"
 
-      $(_parent_sel).append "<div id=\"#{@_id}\"></div>"
+      if prepend
+        $(_parent_sel).prepend "<div id=\"#{@_id}\"></div>"
+      else
+        $(_parent_sel).append "<div id=\"#{@_id}\"></div>"
 
       # Ship classes
       if classes instanceof Array

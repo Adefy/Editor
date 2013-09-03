@@ -17,10 +17,11 @@ class AWidgetWorkspace extends AWidget
       AUtilLog.warn "A workspace already exists, refusing to continue!"
       return
 
+    param.required parent
+
     AWidgetWorkspace.__exists = true
     AWidgetWorkspace.__instance = @
 
-    param.required parent
     super prefId("aworkspace"), parent, [ "aworkspace" ]
 
     # Keep track of spawned manipulatable actor objects
