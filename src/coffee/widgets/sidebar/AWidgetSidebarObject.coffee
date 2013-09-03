@@ -41,5 +41,7 @@ class AWidgetSidebarObject extends AWidgetSidebarItem
     param.required x
     param.required y
 
-    # Default sidebar object, return a base actor
-    new AMBaseActor
+    # Default sidebar object, return null. This used to return a base object,
+    # but it doesn't make sense since the AMBaseActor doesn't register itself
+    # properly.
+    null
