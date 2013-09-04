@@ -11,6 +11,7 @@ class AHBaseActor extends AHandle
     # Default actor properties, common to all actors
     @_properties["position"] =
       type: "composite"
+      preview: true
       components:
         x:
           type: "number"
@@ -23,6 +24,7 @@ class AHBaseActor extends AHandle
 
     @_properties["rotation"] =
       type: "number"
+      preview: true
       min: 0
       max: 360
       float: true
@@ -30,6 +32,7 @@ class AHBaseActor extends AHandle
 
     @_properties["color"] =
       type: "composite"
+      preview: true
       components:
         r:
           type: "number"
@@ -52,6 +55,7 @@ class AHBaseActor extends AHandle
 
     @_properties["psyx"] =
       type: "bool"
+      preview: false
       default: false
 
     # Note that we don't create an actual actor!

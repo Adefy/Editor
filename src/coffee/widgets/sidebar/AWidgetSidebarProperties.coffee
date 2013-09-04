@@ -59,7 +59,10 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
   # @param [String] name
   # @param [Object] value
   # @return [String] html rendered widget
-  _generateControl: (name, value) ->
+  _generateControl: (name, value, __recurse) ->
+    # Note we have an extra, undocumented parameter! It is set to true when
+    # the method is called by itself.
+    __recurse = param.optional __recurse, false
     param.required name
     param.required value
 
@@ -82,7 +85,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
       # Build the control by recursing and concating the result
       for p of value.components
-        _html += @_generateControl p, value.components[p]
+        _html += @_generateControl p, value.components[p], true
 
     else
 
@@ -93,6 +96,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
       # Set up optional values
       if value.max == undefined then value.max = null
       if value.min == undefined then value.min = null
+      if value.preview == undefined then value.preview = false
 
       if value.type == "number"
 
@@ -133,5 +137,11 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
       else
         AUtilLog.warn "Unrecognized property type #{value.type}"
+
+    if not __recurse and value.preview
+      _html += "<div class=\"aspc-preview\">"
+      _html +=   "<label for=\"preview-#{name}\">Preview</label>"
+      _html +=   "<input name=\"preview-#{name}\" type=\"checkbox\">"
+      _html += "</div>"
 
     _html += "</div>"
