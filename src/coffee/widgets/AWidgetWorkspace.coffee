@@ -35,6 +35,10 @@ class AWidgetWorkspace extends AWidget
     @_cWidth = 720
     @_cHeight = 1280
 
+    # Picking resources
+    @_pickBuffer = null
+    @_pickTexture = null
+
     # Inject our canvas container, along with its status bar
     # Although we currently don't add anything else to the container besides
     # the canvas itself, it might prove useful in the future.
@@ -46,8 +50,8 @@ class AWidgetWorkspace extends AWidget
 
     AUtilLog.info "Starting AWGL instance..."
     new AWGLEngine null, 4, (@_awgl) =>
-      @_applyCanvasSizeUpdate()
       @_engineInit()
+      @_applyCanvasSizeUpdate()
     , "aw-canvas-container", @_cWidth, @_cHeight
 
   # Retrieve canvas width
@@ -70,6 +74,9 @@ class AWidgetWorkspace extends AWidget
       height: "#{@_cHeight}px"
       width: "#{@_cWidth}px"
 
+    # Rebuild our picking resources
+    @_buildPickBuffer()
+
   # Fetch our static instance
   #
   # @return [AWidgetWorkspace] me
@@ -88,17 +95,25 @@ class AWidgetWorkspace extends AWidget
           @actorObjects.splice i, 1
           return
 
-  # Called by AWGLEngine as soon as it's up and running, we continue our own
-  # init from here.
-  _engineInit: ->
+  # Builds the framebuffer and texture needed to preform picking, deleting
+  # them if they already exist. This needs to be called whenever AWGLs' canvas
+  # is resized
+  #
+  # http://learningwebgl.com/blog/?p=1786
+  _buildPickBuffer: ->
 
-    AUtilLog.info "AWGL instance up, initializing workspace"
-
-    # Create our picking framebuffer
-    # http://learningwebgl.com/blog/?p=1786
     gl = @_awgl.getGL()
+
+    # Delete them if they already exist
+    if @_pickTexture != null then gl.deleteTexture @_pickTexture
+    if @_pickBuffer != null then gl.deleteFramebuffer @_pickBuffer
+
+    # Gogo
     @_pickBuffer = gl.createFramebuffer()
     @_pickTexture = gl.createTexture()
+
+    _w = @_awgl.getWidth()
+    _h = @_awgl.getHeight()
 
     gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
     gl.bindTexture gl.TEXTURE_2D, @_pickTexture
@@ -108,7 +123,7 @@ class AWidgetWorkspace extends AWidget
       , gl.LINEAR_MIPMAP_NEAREST
 
     # Framebuffer is 512x512
-    gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, 512, 512, 0, gl.RGBA \
+    gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, _w, _h, 0, gl.RGBA \
       , gl.UNSIGNED_BYTE, null
 
     gl.generateMipmap gl.TEXTURE_2D
@@ -116,7 +131,7 @@ class AWidgetWorkspace extends AWidget
     # Set up a depth buffer, bind it and whatnot
     _renderBuff = gl.createRenderbuffer()
     gl.bindRenderbuffer gl.RENDERBUFFER, _renderBuff
-    gl.renderbufferStorage gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, 512, 512
+    gl.renderbufferStorage gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, _w, _h
 
     gl.framebufferTexture2D gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 \
       , gl.TEXTURE_2D, @_pickTexture, _renderBuff
@@ -129,7 +144,14 @@ class AWidgetWorkspace extends AWidget
     gl.bindRenderbuffer gl.RENDERBUFFER, null
     gl.bindFramebuffer gl.FRAMEBUFFER, null
 
-    # Bind handles handlers
+
+  # Called by AWGLEngine as soon as it's up and running, we continue our own
+  # init from here.
+  _engineInit: ->
+
+    AUtilLog.info "AWGL instance up, initializing workspace"
+
+    # Bind manipulatable handlers
     me = @
     $(document).ready ->
 
@@ -261,4 +283,5 @@ class AWidgetWorkspace extends AWidget
 
   # Simply takes the navbar into account, and sets the height accordingly
   # Note that this does NOT resize the canvas
-  onResize: -> $(@_sel).height $(window).height() - $(".amainbar").height()
+  onResize: ->
+    $(@_sel).height $(document).height() - $(".amainbar").height()
