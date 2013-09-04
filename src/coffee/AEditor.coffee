@@ -69,20 +69,41 @@ class AdefyEditor
       menubar = new AWidgetMainbar me.sel
 
       # Set up the menubar
-      menubar.addItem "File"
-      menubar.addItem "Edit"
-      fileMenu = menubar.addItem "View"
-      menubar.addItem "Tools"
-      menubar.addItem "Help"
+      fileMenu = menubar.addItem "File"
+      viewMenu = menubar.addItem "View"
+      toolsMenu = menubar.addItem "Tools"
+      helpMenu = menubar.addItem "Help"
 
-      fileMenu.createChild "Test item 1"
-      fileMenu.createChild "Test item 2"
-      fileMenu.createChild "Test item 3"
-      fileMenu.createChild "Test item 4"
-      fileMenu.createChild "Test item 5"
-      fileMenu.createChild "Test item 6"
-      fileMenu.createChild "Test item 7"
-      fileMenu.createChild "Test item 8"
+      # File menu options
+      fileMenu.createChild "New Ad..."
+      fileMenu.createChild "New From Template..."
+
+      fileMenu.createChild "Save"
+      fileMenu.createChild "Save As..."
+      fileMenu.createChild "Export..."
+
+      fileMenu.createChild "Quit"
+
+      # View menu options
+      viewMenu.createChild "Toggle Objects Sidebar"
+      viewMenu.createChild "Toggle Properties Sidebar"
+      viewMenu.createChild "Toggle Controlbar"
+
+      viewMenu.createChild "Fullscreen"
+
+      # Tools menu options
+      toolsMenu.createChild "Preview..."
+      toolsMenu.createChild "Calculate device support..."
+      toolsMenu.createChild "Change canvas size..."
+
+      # Help menu options
+      helpMenu.createChild "About AdefyEditor"
+      helpMenu.createChild "Changelog"
+
+      helpMenu.createChild "Take a Guided Tour"
+      helpMenu.createChild "Quick Start"
+      helpMenu.createChild "Tutorials"
+      helpMenu.createChild "Documentation"
 
       menubar.render()
 
