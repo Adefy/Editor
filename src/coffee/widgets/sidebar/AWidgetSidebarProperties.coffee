@@ -40,7 +40,9 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
       _controlHTML = @_generateControl p, properties[p]
       @_builtHMTL += "<li class=\"asp-control-group\">#{_controlHTML}</li>"
 
+    @_builtHMTL += "<button class=\"asp-save\">Save</button>"
     @_builtHMTL += "</ul>"
+
     @_parent.render()
 
   # Clear the property widget
