@@ -5,7 +5,7 @@
   color $col_mainbar_color
 
   width 100%
-  height 30px
+  height 26px
   font-size 13px
   line-height 14px
   padding-top 2px
@@ -31,7 +31,7 @@
   .logo
     font-family "Oleo Script", serif
     font-size 16px
-    padding 8px
+    padding 6px
 
     background $col_mainbar_logo_bg
 
@@ -41,7 +41,7 @@
 
     a
       display inline-block
-      padding 8px 12px
+      padding 6px 12px
 
     a:first-child
       margin-left 16px
@@ -50,27 +50,26 @@
       background $col_mainbar_link_hover_bg
 
     a.open
-      padding-bottom 9px
       background-color $col_mainbar_primary_open_bg
-
-    a.open:first-child
-      padding-left 11px
-      margin-left 16px
 
   .amainbar-secondary
     position absolute
-    top 32px
+    top 28px
     display none
     z-index $Z_amainbar_secondary
 
     a
       width 128px
-      padding 7px 32px
+      padding 4px 24px
       background-color $col_mainbar_primary_open_bg
       display block
+      font-size 11px
 
       li
         color white
+
+    a:last-child
+      padding-bottom 8px
 
     a:hover
       background-color $col_mainbar_secondary_hover_bg
