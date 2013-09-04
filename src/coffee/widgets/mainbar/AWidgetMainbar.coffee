@@ -133,7 +133,6 @@ class AWidgetMainbar extends AWidget
       # Note that chrome requires 4px of extra padding, so we need to calc the
       # real offset depending on the browser
       _realOff = $("##{i.getId()}").offset().left
-      if navigator.userAgent.search("Chrome") != -1 then _realOff += 4
 
       # Position
       $("##{_menuId}").css
