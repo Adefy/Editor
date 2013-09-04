@@ -9,8 +9,8 @@ module.exports = (grunt) ->
   testDir = "test"
   devDir = "dev"
   docDir = "doc"
-  awglDir = "awgl"
-  adefyjsDir = "adefyjs"
+  awglDir = "../AdefyWebGL"
+  adefyjsDir = "../AdefyJS"
 
   # Intermediate vars
   __awglOut = {}
