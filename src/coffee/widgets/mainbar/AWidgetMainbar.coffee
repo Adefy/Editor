@@ -69,7 +69,7 @@ class AWidgetMainbar extends AWidget
     link = param.optional link, "#"
 
     _id = prefId "amb-item"
-    child = new AWidgetMainbarItem _id, null, @, "primary", label, link
+    child = new AWidgetMainbarItem _id, "#", @, "primary", label, link
     @_items.push child
 
     child

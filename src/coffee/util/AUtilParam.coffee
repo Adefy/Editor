@@ -10,18 +10,25 @@ class AUtilParam
   #
   # @param [Object] p parameter to check
   # @param [Array] valid optional array of valid values the param can have
-  @required: (p, valid) ->
-    if p == undefined then throw new Error "Required argument missing!"
+  # @param [Boolean] canBeNull true if the value can be null
+  # @return [Object] p
+  @required: (p, valid, canBeNull) ->
+
+    if p == null and canBeNull != true
+      throw new Error "Required argument can not be null!"
+    if p == undefined
+      throw new Error "Required argument missing!"
 
     # Check for validity if required
     if valid instanceof Array
-      isValid = false
-      for v in valid
-        if p == v
-          isValid = true
-          break
-      if not isValid
-        throw new error "Required argument is not of a valid value!"
+      if valid.length > 0
+        isValid = false
+        for v in valid
+          if p == v
+            isValid = true
+            break
+        if not isValid
+          throw new Error "Required argument is not of a valid value!"
 
     # Ship
     p
@@ -32,18 +39,23 @@ class AUtilParam
   # @param [Object] p parameter to check
   # @param [Object] def default value to use if necessary
   # @param [Array] valid optional array of valid values the param can have
-  @optional: (p, def, valid) ->
+  # @param [Boolean] canBeNull true if the value can be null
+  # @return [Object] p
+  @optional: (p, def, valid, canBeNull) ->
+
+    if p == null and canBeNull != true then p = undefined
     if p == undefined then p = def
 
     # Check for validity if required
     if valid instanceof Array
-      isValid = false
-      for v in valid
-        if p == v
-          isValid = true
-          break
-      if not isValid
-        throw new error "Required argument is not of a valid value!"
+      if valid.length > 0
+        isValid = false
+        for v in valid
+          if p == v
+            isValid = true
+            break
+        if not isValid
+          throw new Error "Required argument is not of a valid value!"
 
     p
 
