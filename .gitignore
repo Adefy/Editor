@@ -11,3 +11,4 @@ dev/js/awgl-concat.coffee
 dev/js/adefy.js
 dev/js/adefy.js.map
 dev/js/ajs-concat.coffee
+Gruntfile.js

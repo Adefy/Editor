@@ -1,5 +1,5 @@
 # N-sided actor
-class AMNGon extends AMBaseActor
+class AHNGon extends AHBaseActor
 
   # Defines a variable-sided actor, psicktually
   #

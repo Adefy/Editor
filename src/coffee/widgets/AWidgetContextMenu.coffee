@@ -1,4 +1,4 @@
-# Context menu widget, created when a manipulatable is right-clicked and
+# Context menu widget, created when a handle is right-clicked and
 # supports actions
 class AWidgetContextMenu extends AWidget
 
@@ -18,18 +18,18 @@ class AWidgetContextMenu extends AWidget
   #
   # @param [Number] x x coordinate to spawn at
   # @param [Number] y y coordinate to spawn at
-  # @param [AManipulatable] manipulatable object to create menu for
-  constructor: (x, y, manipulatable) ->
+  # @param [AHandle] handle object to create menu for
+  constructor: (x, y, handle) ->
     param.required x
     param.required y
-    param.required manipulatable
+    param.required handle
 
     # Sanity check
-    if manipulatable.getContextFunctions == undefined
+    if handle.getContextFunctions == undefined
       AUtilLog.warn "Object has no getContextFunctions, can't create ctx menu"
       return
 
-    @functions = manipulatable.getContextFunctions() # Grab functions
+    @functions = handle.getContextFunctions() # Grab functions
     @alive = true # Set to false upon removal
 
     # Silently drop out, empty ctx menu is allowed, we just do nothing

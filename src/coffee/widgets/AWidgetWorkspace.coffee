@@ -24,7 +24,7 @@ class AWidgetWorkspace extends AWidget
 
     super prefId("aworkspace"), parent, [ "aworkspace" ]
 
-    # Keep track of spawned manipulatable actor objects
+    # Keep track of spawned handle actor objects
     @actorObjects = []
 
     # Create an AWGL instance on ourselves
@@ -144,6 +144,7 @@ class AWidgetWorkspace extends AWidget
     gl.bindRenderbuffer gl.RENDERBUFFER, null
     gl.bindFramebuffer gl.FRAMEBUFFER, null
 
+
   # Called by AWGLEngine as soon as it's up and running, we continue our own
   # init from here.
   _engineInit: ->
@@ -175,14 +176,14 @@ class AWidgetWorkspace extends AWidget
           _truePos = me.domToGL ui.position.left, ui.position.top
 
           # TODO: Consider cleaning this up to just pass the domToGL result
-          manipulatable = _obj.dropped "workspace", _truePos.x, _truePos.y
+          handle = _obj.dropped "workspace", _truePos.x, _truePos.y
 
           # TODO: Provide some flexibility here, take different actions if
           #       something besides an actor is dropped. For the time being,
           #       that can't happen. Yay.
-          if manipulatable instanceof AMBaseActor
+          if handle instanceof AHBaseActor
 
-            me.actorObjects.push manipulatable
+            me.actorObjects.push handle
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
@@ -214,7 +215,7 @@ class AWidgetWorkspace extends AWidget
         e.preventDefault()
 
         # We right clicked on the canvas, pick the object at our click position
-        # and get its associated manipulatable
+        # and get its associated handle
         _truePos = me.domToGL e.pageX, e.pageY
 
         # Pick
@@ -228,7 +229,7 @@ class AWidgetWorkspace extends AWidget
           for o in me.actorObjects
             if o.getActorId() == _id
 
-              # We clicked on a manipulatable, check for context functions
+              # We clicked on a handle, check for context functions
               if not $.isEmptyObject o.getContextFunctions()
 
                 # Instantiate a new context menu, it handles the rest

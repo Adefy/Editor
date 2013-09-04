@@ -7,12 +7,12 @@
 # @depend util/AUtilLog.coffee
 # @depend util/AUtilParam.coffee
 #
-# Manipulatables! Whoop!
-# @depend manipulatable/AManipulatable.coffee
-# @depend manipulatable/actors/AMBaseActor.coffee
-# @depend manipulatable/actors/AMTriangle.coffee
-# @depend manipulatable/actors/AMRectangle.coffee
-# @depend manipulatable/actors/AMNGon.coffee
+# Handles! Whoop!
+# @depend handles/AHandle.coffee
+# @depend handles/actors/AHBaseActor.coffee
+# @depend handles/actors/AHTriangle.coffee
+# @depend handles/actors/AHRectangle.coffee
+# @depend handles/actors/AHNGon.coffee
 #
 # Widgets!
 # @depend widgets/AWidget.coffee
@@ -126,7 +126,7 @@ class AdefyEditor
 
         if target != "workspace" then return null
 
-        new AMRectangle 100, 100, x, y
+        new AHRectangle 100, 100, x, y
 
       ngonPrimitive.dropped = (target, x, y) ->
         param.required target
@@ -135,7 +135,7 @@ class AdefyEditor
 
         if target != "workspace" then return null
 
-        new AMNGon 5, 100, x, y
+        new AHNGon 5, 100, x, y
 
       triPrimitive.dropped = (target, x, y) ->
         param.required target
@@ -144,7 +144,7 @@ class AdefyEditor
 
         if target != "workspace" then return null
 
-        new AMTriangle 20, 30, x, y
+        new AHTriangle 20, 30, x, y
 
       # Create a property widget on the right sidebar
       new AWidgetSidebarProperties rightSidebar
