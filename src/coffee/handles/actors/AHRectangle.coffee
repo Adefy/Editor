@@ -1,5 +1,5 @@
 # Rectangular actor
-class AMRectangle extends AMBaseActor
+class AHRectangle extends AHBaseActor
 
   # Instantiates an AJSRectangle and keeps track of it
   #

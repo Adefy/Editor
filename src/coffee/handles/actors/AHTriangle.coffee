@@ -1,5 +1,5 @@
 # Trianglular actor
-class AMTriangle extends AMBaseActor
+class AHTriangle extends AHBaseActor
 
   # Creates an AJSTriangle and keeps track of it
   #

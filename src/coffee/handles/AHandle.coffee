@@ -1,7 +1,5 @@
 # Base class for all elements that can be manipulated by the editor
-# Sexy name, eh? Didn't really know what else to call it. Watch out for
-# spelling mistakes.
-class AManipulatable
+class AHandle
 
   # Instantiates us, should never be called directly. We serve mearly
   # as a base class. Properties are setup here, so set up the property object
@@ -10,7 +8,7 @@ class AManipulatable
   constructor: ->
 
     # User modifiable properties
-    # Set manipulatable-global properties here
+    # Set handle-global properties here
     @_properties = {}
 
     # Basic right-click menu functions
@@ -19,7 +17,7 @@ class AManipulatable
       "Delete": -> me.delete()
 
     # Give ourselves a unique id so we can be discovered on the body
-    @_id = prefId "amanipulatable"
+    @_id = prefId "ahandle"
 
     # Attach ourselves to the body
     me = @
@@ -38,7 +36,7 @@ class AManipulatable
     # Also remove ourselves from the body's object list
     $(document).ready -> $("body").data @_id, undefined
 
-  # Global manipulatable onClick function, called by manipulatables if they
+  # Global handle onClick function, called by handles if they
   # wish to take advantage of its functionality.
   onClick: ->
 
@@ -50,7 +48,7 @@ class AManipulatable
   # This gets appended to the workspace, and is automatically positioned
   # at the drop point. Since we are a base class, this function is called by
   # anyone extending us, with 'inner' being their final render. We wrap that in
-  # a class identifying the div as a manipulatable object.
+  # a class identifying the div as a handle object.
   #
   # @param [String] inner html to wrap
   # @param [Number] x x coordinate of resulting object
@@ -63,7 +61,7 @@ class AManipulatable
     y = param.optional y, 0
     inner = param.optional inner, ""
 
-    return "<div id=\"#{@_id}\" class=\"amanipulatable\">#{inner}</div>"
+    return "<div id=\"#{@_id}\" class=\"ahandle\">#{inner}</div>"
 
   # Returns an object representing the modifiable properties the object holds,
   # in key/value form. Default values are set in the constructor, after that

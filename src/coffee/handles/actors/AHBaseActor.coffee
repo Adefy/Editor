@@ -1,5 +1,5 @@
 # Base manipulateable class for actors
-class AMBaseActor extends AManipulatable
+class AHBaseActor extends AHandle
 
   # Defines a raw actor, with no shape information or any other presets.
   # This serves as the base for the other actor classes
