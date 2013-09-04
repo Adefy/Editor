@@ -58,26 +58,18 @@ class AWidgetMainbar extends AWidget
     # Note that we don't render initially. This gives the engine the freedom
     # to set up initial items, and then render us appropriatly
 
-  # Adds a menu item, id is set using an internal counter if not otherwise
-  # specified. Note that this function does not call render()!
+  # Adds a menu item. Note that this function does not call render()!
   #
   # @param [String] label text that appears as the item
   # @param [String] link href content, defaults to #
-  # @param [String,Number] id optional, set using an internal counter
   # @return [AWidgetMainbarItem] item created item
-  addItem: (label, link, id) ->
+  addItem: (label, link) ->
 
     param.required label
     link = param.optional link, "#"
-    id = param.optional nextId()
 
-    # Ensure id is unique
-    for i in @_items
-      if i.getId == id
-        AUtilLog.warn "id in use, overriding supplied id"
-        id = nextId()
-
-    child = new AWidgetMainbarItem id, null, @, "primary", label, link
+    _id = prefId "amb-item"
+    child = new AWidgetMainbarItem _id, null, @, "primary", label, link
     @_items.push child
 
     child
