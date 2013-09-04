@@ -282,4 +282,5 @@ class AWidgetWorkspace extends AWidget
 
   # Simply takes the navbar into account, and sets the height accordingly
   # Note that this does NOT resize the canvas
-  onResize: -> $(@_sel).height $(window).height() - $(".amainbar").height()
+  onResize: ->
+    $(@_sel).height $(document).height() - $(".amainbar").height()
