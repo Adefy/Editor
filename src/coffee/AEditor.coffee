@@ -76,18 +76,18 @@ class AdefyEditor
 
       # File menu options
       fileMenu.createChild "New Ad..."
-      fileMenu.createChild "New From Template..."
+      fileMenu.createChild "New From Template...", null, true
 
       fileMenu.createChild "Save"
       fileMenu.createChild "Save As..."
-      fileMenu.createChild "Export..."
+      fileMenu.createChild "Export...", null, true
 
       fileMenu.createChild "Quit"
 
       # View menu options
       viewMenu.createChild "Toggle Objects Sidebar"
       viewMenu.createChild "Toggle Properties Sidebar"
-      viewMenu.createChild "Toggle Controlbar"
+      viewMenu.createChild "Toggle Controlbar", null, true
 
       viewMenu.createChild "Fullscreen"
 
@@ -98,7 +98,7 @@ class AdefyEditor
 
       # Help menu options
       helpMenu.createChild "About AdefyEditor"
-      helpMenu.createChild "Changelog"
+      helpMenu.createChild "Changelog", null, true
 
       helpMenu.createChild "Take a Guided Tour"
       helpMenu.createChild "Quick Start"

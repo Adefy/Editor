@@ -14,7 +14,8 @@ class AWidgetMainbarItem
   # @param [String] role role is either 'primary', 'secondary', or 'detail'
   # @param [String] label text to appear as the item
   # @param [String] href url the item points to
-  constructor: (@_id, @_parent, @_menubar, @_role, label, href) ->
+  # @param [Boolean] sectionEnd if true, marks the end of a section
+  constructor: (@_id, @_parent, @_menubar, @_role, label, href, sectionEnd) ->
 
     # Child items, added/removed using accessor functions
     @_children = []
@@ -30,6 +31,7 @@ class AWidgetMainbarItem
 
     @label = param.optional label, ""
     @href = param.optional href, "#"
+    @sectionEnd = param.optional sectionEnd, false
 
     # Disallow children on detail items
     if @_role == "detail" then @_children = undefined
@@ -53,7 +55,14 @@ class AWidgetMainbarItem
         _html += "</a>"
 
       when "secondary"
-        _html += "<a id=\"#{@_id}\" href=\"#{@href}\"><li>#{@label}</li></a>"
+
+        # Nice way of setting this up. The last item in a section
+        # gets a special class, so we can style a nice divider
+        _sEnd = if @sectionEnd then "class=\"ambc-section-end\"" else ""
+
+        _html += "<a #{_sEnd} id=\"#{@_id}\" href=\"#{@href}\">"
+        _html +=   "<li>#{@label}</li>"
+        _html += "</a>"
 
       when "detail"
         _html += ""
@@ -64,12 +73,16 @@ class AWidgetMainbarItem
     _html
 
   # Create a child item if possible. A unique id and correct tree-level is
-  # insured
+  # ensured
   #
   # @param [String] label text to appear as the item
   # @param [String] href url the item points to
+  # @param [Boolean] sectionEnd if true, child marks the end of a section
   # @return [AWidgetMainbarItem] item null if the item could not be created
-  createChild: (label, href) ->
+  createChild: (label, href, sectionEnd) ->
+    sectionEnd = param.optional sectionEnd, false
+    label = param.optional label, ""
+    href = param.optional href, "#", [], false
 
     # BAIL BAIL BAIL
     if @_role == "detail" then return null
@@ -78,9 +91,10 @@ class AWidgetMainbarItem
     role = "secondary"
     if @_role == "secondary" then role = "detail"
 
-    child = new AWidgetMainbarItem nextId(), @, @_menubar, role
-    child.label = param.optional label, ""
-    child.href = param.optional href, "#"
+    child = new AWidgetMainbarItem prefId("amb-item"), @, @_menubar, role
+    child.label = label
+    child.href = href
+    child.sectionEnd = sectionEnd
 
     # Register it
     @_children.push child
