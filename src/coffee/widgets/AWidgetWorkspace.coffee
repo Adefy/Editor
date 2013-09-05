@@ -89,7 +89,7 @@ class AWidgetWorkspace extends AWidget
   notifyDemise: (obj) ->
 
     # We keep track of actors internally, splice them out of our array
-    if obj instanceof AMBaseActor
+    if obj instanceof AHBaseActor
       for o, i in @actorObjects
         if o.getId() == obj.getId()
           @actorObjects.splice i, 1

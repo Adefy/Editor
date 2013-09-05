@@ -30,7 +30,7 @@ class AHandle
   getId: -> @_id
 
   # Cleans us up. Any classes extending us should also extend this method, and
-  # clean up anything it instantiates (I'm looking at you AMBaseActor)
+  # clean up anything it instantiates (I'm looking at you AHBaseActor)
   delete: ->
 
     # Also remove ourselves from the body's object list

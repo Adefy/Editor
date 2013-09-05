@@ -35,13 +35,13 @@ class AWidgetSidebarObject extends AWidgetSidebarItem
   # @param [String] target droppable identifier, usually "workspace"
   # @param [Number] x x coordinate of drop point
   # @param [Number] y y coordinate of drop point
-  # @param [AManipulatable] obj created manipulatable
+  # @param [AHandle] obj created manipulatable
   dropped: (target, x, y) ->
     param.required target
     param.required x
     param.required y
 
     # Default sidebar object, return null. This used to return a base object,
-    # but it doesn't make sense since the AMBaseActor doesn't register itself
+    # but it doesn't make sense since the AHBaseActor doesn't register itself
     # properly.
     null
