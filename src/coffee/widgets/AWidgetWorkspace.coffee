@@ -185,31 +185,6 @@ class AWidgetWorkspace extends AWidget
 
             me.actorObjects.push handle
 
-      # Actor picking!
-      # NOTE: This should only be allowed when the scene is not being animated!
-      $(".aworkspace canvas").click (e) ->
-
-        # Calculate workspace coordinates
-        _truePos = me.domToGL e.pageX, e.pageY
-
-        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
-
-          # Objects have a blue component of 248. If this is not an object,
-          # perform the necessary clearing and continue
-          if b != 248
-            $("body").data("default-properties").clear()
-            return
-
-          # Id is stored as a sector and an offset. Recover proper object id
-          _id = r + (g * 255)
-
-          # Find the actor in question
-          for o in me.actorObjects
-            if o.getActorId() == _id
-
-              # Fill in property list!
-              o.onClick()
-
       # Actor dragging, whoop
       __drag_start_x = 0      # Keeps track of the initial drag point, so
       __drag_start_y = 0      # we know when to start listening
@@ -222,6 +197,10 @@ class AWidgetWorkspace extends AWidget
 
       # When true, enables logic in mousemove()
       __drag_sys_active = false
+
+      # When true, disables the normal click listener. This is reset a moment
+      # after dragging actually stops
+      __dragging = false
 
       # On mousedown, we need to setup pre-dragging state, perform a pick,
       # and wait for movement
@@ -264,14 +243,22 @@ class AWidgetWorkspace extends AWidget
             # Activate
             __drag_sys_active = true
 
-      # Reset state
+      # Reset state after, dragging after 1ms, leaving time to prevent the
+      # click handler from taking effect
       $(".aworkspace canvas").mouseup (e) ->
+
         __drag_sys_active = false
         __drag_obj_id = -1
+
+        setTimeout ->
+          __dragging = false
+        , 1
 
       # Core of the dragging logic
       $(".aworkspace canvas").mousemove (e) ->
         if __drag_sys_active
+
+          __dragging = true
 
           if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
           or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
@@ -284,6 +271,34 @@ class AWidgetWorkspace extends AWidget
 
             # Update!
             me.actorObjects[__drag_obj_id].setPosition _newX, _newY
+
+      # Actor picking!
+      # NOTE: This should only be allowed when the scene is not being animated!
+      $(".aworkspace canvas").click (e) ->
+
+        # If we are dragging, gtfo
+        if __dragging then return
+
+        # Calculate workspace coordinates
+        _truePos = me.domToGL e.pageX, e.pageY
+
+        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+
+          # Objects have a blue component of 248. If this is not an object,
+          # perform the necessary clearing and continue
+          if b != 248
+            $("body").data("default-properties").clear()
+            return
+
+          # Id is stored as a sector and an offset. Recover proper object id
+          _id = r + (g * 255)
+
+          # Find the actor in question
+          for o in me.actorObjects
+            if o.getActorId() == _id
+
+              # Fill in property list!
+              o.onClick()
 
       # Bind a contextmenu listener
       $(document).on "contextmenu", ".aworkspace canvas", (e) ->
