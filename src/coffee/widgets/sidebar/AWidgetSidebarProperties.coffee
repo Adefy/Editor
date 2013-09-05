@@ -211,6 +211,9 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
       _html += "<label #{_data} #{_class} >#{displayName}</label>"
 
+      # Update component values
+      value.getValue()
+
       # Build the control by recursing and concating the result
       for p of value.components
         _html += @_generateControl p, value.components[p], true
@@ -240,7 +243,8 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
         _html +=   "data-min=\"#{value.min}\" "
         _html +=   "data-control=\"number\" "
         _html +=   "data-float=\"#{value.float}\" "
-        _html +=   "value=\"#{value.default}\" "
+        _html +=   "placeholder=\"#{value.default}\" "
+        _html +=   "value=\"#{value.getValue()}\" "
         _html += " />"
 
       else if value.type == "bool"
@@ -251,7 +255,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
         _html +=   "name=\"#{_inputName}\" "
         _html +=   "type=\"checkbox\" "
         _html +=   "data-control=\"bool\" "
-        _html +=   value.default ? "checked " : ""
+        _html +=   value.getValue() ? "checked " : ""
         _html += " />"
 
       else if value.type == "text"
@@ -262,7 +266,8 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
         _html +=   "name=\"#{_inputName}\" "
         _html +=   "type=\"text\" "
         _html +=   "data-control=\"text\" "
-        _html +=   "value=\"#{value.default}\" "
+        _html +=   "placeholder=\"#{value.default}\" "
+        _html +=   "value=\"#{value.getValue()}\" "
         _html += " />"
 
       else

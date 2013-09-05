@@ -11,6 +11,12 @@ class AHBaseActor extends AHandle
     # Note that we don't create an actual actor!
     @_actor = null
 
+    me = @
+
+    # Properties are interesting, and complex enough to warrant a description
+    #
+    # TODO: Decribe
+
     # Default actor properties, common to all actors
     @_properties["position"] =
       type: "composite"
@@ -19,19 +25,34 @@ class AHBaseActor extends AHandle
         x:
           type: "number"
           float: true
-          default: 0
+          placeholder: 0
+          getValue: -> @_value
         y:
           type: "number"
           float: true
-          default: 0
+          placeholder: 0
+          getValue: -> @_value
+
+      # Fetch actor position
+      getValue: ->
+
+        if me._actor != null
+          pos = me._actor.getPosition()
+
+          @components.x._value = pos.x
+          @components.y._value = pos.y
 
       # Position update, we expect val to be a composite
-      update: (v) =>
+      update: (v) ->
         param.required v
         param.required v.x
         param.required v.y
 
-        if @_actor != null then @_actor.setPosition new AJSVector2(v.x, v.y)
+        @components.x._value = v.x
+        @components.y._value = v.y
+
+        if me._actor != null
+          me._actor.setPosition new AJSVector2(v.x, v.y)
 
     @_properties["rotation"] =
       type: "number"
@@ -39,13 +60,16 @@ class AHBaseActor extends AHandle
       min: 0
       max: 360
       float: true
-      default: 0
+      placeholder: 0
+
+      # Fetch our angle from our actor
+      getValue: -> @_value = me._actor.getRotation()
 
       # Val simply contains our new angle in degrees
-      update: (v) =>
-        param.required v
+      update: (v) ->
+        @_value = param.required v
 
-        if @_actor != null then @_actor.setRotation v
+        if me._actor != null then me._actor.setRotation v
 
     @_properties["color"] =
       type: "composite"
@@ -56,68 +80,107 @@ class AHBaseActor extends AHandle
           min: 0
           max: 255
           float: false
-          default: 255
+          placeholder: 255
+          getValue: -> @_value
         g:
           type: "number"
           min: 0
           max: 255
           float: false
-          default: 255
+          placeholder: 255
+          getValue: -> @_value
         b:
           type: "number"
           min: 0
           max: 255
           float: false
-          default: 255
+          placeholder: 255
+          getValue: -> @_value
+
+      # We fetch color information from our actor, and set composite
+      # values accordingly
+      getValue: ->
+
+        if me._actor != null
+          col = me._actor.getColor()
+
+          @components.r._value = col.getR()
+          @components.g._value = col.getG()
+          @components.b._value = col.getB()
+
+        null
 
       # Color update, expect val to be composite
-      update: (v) =>
+      update: (v) ->
         param.required v
-        param.required v.r
-        param.required v.g
-        param.required v.b
 
-        if @_actor != null then @_actor.setColor new AJSColor3 v.r, v.g, v.b
+        @components.r._value = param.required v.r
+        @components.g._value = param.required v.g
+        @components.b._value = param.required v.b
+
+        if me._actor != null
+          me._actor.setColor new AJSColor3 v.r, v.g, v.b
 
     @_properties["psyx"] =
       type: "composite"
       preview: false
+
+      # We cache component values locally, and just pass those through
       components:
         mass:
           type: "number"
           min: 0
           float: true
-          default: 50
+          placeholder: 50
+          _value: 50
+          getValue: -> @_value
         elasticity:
           type: "number"
           min: 0
           max: 1
           float: true
-          default: 0.3
+          placeholder: 0.3
+          _value: 0.3
+          getValue: -> @_value
         friction:
           type: "number"
           min: 0
           max: 1
           float: true
-          default: 0.2
+          placeholder: 0.2
+          _value: 0.2
+          getValue: -> @_value
         enabled:
           type: "bool"
           default: "false"
+          _value: false
+          getValue: -> @_value
+
+      # Physics values are stored locally, and only changed when we change them
+      # As such, we cache everything internally and just pass that to our
+      # properties panel. Because of this, our outer composite getValue()
+      # does nothing
+      getValue: -> # dud
 
       # Physics update! Composite and fanciness, preview is disabled so all
       # values are updated at once (yay!)
-      update: (v) =>
+      update: (v) ->
         param.required v
-        param.required v.mass
-        param.required v.elasticity
-        param.required v.friction
-        param.required v.enabled
 
-        if @_actor != null
+        # Save values internally
+        @components.mass._value = param.required v.mass
+        @components.elasticity._value = param.required v.elasticity
+        @components.friction._value = param.required v.friction
+        @components.enabled._value = param.required v.enabled
+
+        if me._actor != null
+
+          # Note that we re-create the physics body every time!
+          # TODO: Optimize this
+          me._actor.disablePsyx()
+
           if v.enabled
-            @_actor.enablePsyx v.mass, v.friction, v.elasticity
-          else
-            @_actor.disablePsyx()
+            me._actor.enablePsyx v.mass, v.friction, v.elasticity
 
   delete: ->
 
