@@ -68,6 +68,21 @@ class AHandle
   # modifications are made through the other accessor.
   getProperties: -> @_properties
 
+  # Called once new property values are ready for us, most often by the
+  # properties sidebar widget. The update can effect any number of our
+  # properties, so we just call their update() methods as needed, after
+  # validation
+  #
+  # @param [Object] updates object containing property:value pairs
+  updateProperties: (updates) ->
+    param.required updates
+
+    # Ship if we can
+    for u of updates
+      if @_properties[u] != undefined
+        if typeof @_properties[u].update == "function"
+          @_properties[u].update updates[u]
+
   # Set property in key, value form. Note that new properties can not be
   # created!
   #

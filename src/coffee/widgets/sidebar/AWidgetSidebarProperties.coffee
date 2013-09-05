@@ -3,6 +3,9 @@
 # @depend AWidgetSidebarItem.coffee
 class AWidgetSidebarProperties extends AWidgetSidebarItem
 
+  # Prevents us from binding event listeners twice
+  @__exists: false
+
   # Instantiates, but does not set data!
   #
   # @param [AWidgetSidebar] parent sidebar parent
@@ -24,17 +27,134 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
     # been notified of an object with any properties
     @_parent.addItem @
 
+    # Object that we are displaying properties for
+    @_curObject = null
+
+    if AWidgetSidebarProperties.__exists == false
+      AWidgetSidebarProperties.__exists = true
+      me = @
+
+      # Event listeners!
+      $(document).ready ->
+        $(document).on "click", ".asp-save", -> me.save @
+
+  # Called either externally, or when our save button is clicked. The
+  # clicked object is passed in as our 'clicked'
+  #
+  # @param [Object] clicked clicked object
+  save: (clicked) ->
+    param.required clicked
+
+    if @_curObject == null
+      AUtilLog.warn "Save requested with no associated object!"
+      return
+
+    # Iterate over each parent control, calling our @saveControl method
+    me = @
+    $(clicked).parent().find(".asp-control-group > .asp-control").each ->
+      me.saveControl @
+
+  # Called either externally, or when a control is changed and preview is
+  # enabled. This method applies the state of the control to our current object
+  #
+  # Internally, we just build an object of property:value pairs, and then
+  # pass it to the object we are representing, at which points it uses the
+  # values how it sees fit. For composites, we loop through and do the
+  # same for each sub control, and just add those as an object on the composite
+  #
+  # @param [Object] control control to save
+  saveControl: (control, _recurse) ->
+    param.required control
+
+    if @_curObject == null
+      AUtilLog.warn "Save requested with no associated object!"
+      return
+
+    # Note that we have an undocumented parameter! When _recurse is et to true,
+    # that signifies that we have been called by ourselves. Knowing this, we
+    # will return our results instead of shipping them to the object.
+    _recurse = param.optional _recurse, false
+
+    type = $(control).attr "data-type"
+
+    # Saves space below, expects a single result, throws an error otherwise
+    #
+    # @param [Object] result jquery element search result
+    # @param [String] type type of what we are looking for, used in messages
+    # @return [Boolean] success true if there is a single result
+    _formatCheck = (result, type) ->
+      if result.length == 0
+        AUtilLog.error "No #{type} found! #{control}"
+        return false
+      else if result.length > 1
+        AUtilLog.error "Too many of type #{type} found! #{control}"
+        return false
+      true
+
+    _valCheck = (value) -> _formatCheck value, "value"
+    _labelCheck = (label) -> _formatCheck label, "label"
+
+    # This is what we pass to our current object in the end, at which point
+    # it does as it pleases with the values
+    _retValues = {}
+
+    # All field types have a label
+    # NOTE: We don't break out the value as well, since not all fields use
+    #       the same element for value manipulation. select/input/textarea/etc
+    label = $(control).find "> label"
+
+    # Integrity check, bail if necessary
+    if not _labelCheck(label) then return
+
+    # Pull out the actual label
+    label = $(label[0]).attr("data-name")
+
+    # Standard input field .val()
+    if type == "number" or type == "text"
+      value = $(control).find "> input"
+
+      # Verify integrity, then ship
+      if _valCheck value
+        _retValues[label] = $(value[0]).val()
+
+    # Still an input field, but requires .is() to check
+    else if type == "bool"
+      value = $(control).find "> input"
+
+      if _valCheck value
+        _retValues[label] = $(value[0]).is ":checked"
+
+    # For composites, we just recurse for each individual control, and build
+    # our result set out of that.
+    else if type == "composite"
+      _subControls = $(control).find(".asp-control")
+
+      # Set up object
+      _retValues[label] = {}
+
+      # Merge results with our own collection
+      for c in _subControls
+        $.extend _retValues[label], @saveControl(c, true)
+
+    # If we are recursing, just return what we've parsed so far
+    if _recurse
+      return _retValues
+    else
+
+      # Ship the results to our object
+      @_curObject.updateProperties _retValues
+
   # Refresh widget data using a manipulatable, not that this function is
   # not where injection occurs! We request a refresh from our parent for that
   #
-  # @param [AManipulatable] obj
+  # @param [AHandle] obj
   refresh: (obj) ->
-    param.required obj
+    @_curObject = param.required obj
 
     properties = obj.getProperties()
 
     # Generate html to inject
-    @_builtHMTL = "<ul class=\"as-properties\">"
+    @_builtHMTL = "<ul id=\"#{@_id}\" class=\"as-properties\">"
 
     for p of properties
       _controlHTML = @_generateControl p, properties[p]
@@ -48,6 +168,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
   # Clear the property widget
   clear: ->
     @_builtHMTL = ""
+    @_curObject = null
     @_parent.render()
 
   # Return internally pre-rendered HTML. We need to pre-render since we rely
@@ -71,19 +192,24 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
     # We require a type to do anything
     param.required value.type
 
+    # We might capitalize the first letter of the name for display purposes,
+    # make a new var for this so we keep track of the original name
+    displayName = name
+
     # Capitalize first letter if appropriate
     if name.length > 3
-      name = name.charAt(0).toUpperCase() + name.substring 1
+      displayName = name.charAt(0).toUpperCase() + name.substring 1
 
     _html =  ""
-    _html += "<div class=\"asp-control\">"
+    _html += "<div data-type=\"#{value.type}\" class=\"asp-control\">"
 
     # Iterate
     if value.type == "composite"
-
       param.required value.components
+      _data = "data-name=\"#{name}\""
+      _class = "class=\"aspc-composite-name\""
 
-      _html += "<div class=\"aspc-composite-name\">#{name}</div>"
+      _html += "<label #{_data} #{_class} >#{displayName}</label>"
 
       # Build the control by recursing and concating the result
       for p of value.components
@@ -93,7 +219,9 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
       # Generate a unique name for the input, to properly target its' label
       _inputName = prefId "aspc"
-      _html += "<label for=\"#{_inputName}\">#{name}</label>"
+      _data = "data-name=\"#{name}\""
+
+      _html += "<label #{_data} for=\"#{_inputName}\">#{displayName}</label>"
 
       # Set up optional values
       if value.max == undefined then value.max = null
