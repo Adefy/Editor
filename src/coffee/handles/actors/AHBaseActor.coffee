@@ -15,6 +15,29 @@ class AHBaseActor extends AHandle
 
     # Properties are interesting, and complex enough to warrant a description
     #
+    # Currently, there are 3 basic types avaliable.
+    #
+    #   'number' - appears as a numeric input field
+    #     'max'         - the number can have an optional enforced maximum
+    #     'min'         - the number can have an optional enformed minimum
+    #     'float'       - if false, input is enforced as integer-only
+    #     'placeholder' - optional placeholder to display on the input
+    #
+    #   'text' - appears as a standard text input field
+    #   'bool' - appears as a checkbox
+    #
+    # There is a 4th complex type named 'composite', which has a property
+    # named 'components', full of other basic types. Composite nesting has
+    # not been tested as of 9/5/2013, but in theory should be possible.
+    #
+    # Each type needs to have a getValue() method, and an update() method.
+    # Components of composites shouldn't provide an update() method, as the
+    # parent composite takes care of updating all components.
+    #
+    # All top-level properties should fetch up-to-date information in their
+    # getValue() methods, and save it locally as _value. Composites doing this
+    # must perform the saving for their children.
+    #
     # TODO: Decribe
 
     # Default actor properties, common to all actors
