@@ -192,7 +192,7 @@ class AWidgetWorkspace extends AWidget
       __drag_orig_x = 0       # Original object pos x so we can calculate dx
       __drag_orig_y = 0       # Original object pos y so we can calculate dy
 
-      __drag_obj_id = -1      # Id of the object we are dragging
+      __drag_obj_index = -1   # Index of the object we are dragging
       __drag_tolerance = 5    # How far the mouse should move before we pick up
 
       # When true, enables logic in mousemove()
@@ -224,21 +224,21 @@ class AWidgetWorkspace extends AWidget
           _id = r + (g * 255)
 
           # Find the actor in question
-          for o in me.actorObjects
+          for o, i in me.actorObjects
             if o.getActorId() == _id
-              __drag_obj_id = _id
+              __drag_obj_index = i
               break
 
           # If we are above an object, wait for mouse movement
-          if __drag_obj_id != -1
+          if __drag_obj_index != -1
 
             # Save beginning drag point
             __drag_start_x = e.pageX
             __drag_start_y = e.pageY
 
             # Save initial actor position
-            __drag_orig_x = me.actorObjects[__drag_obj_id].getPosition().x
-            __drag_orig_y = me.actorObjects[__drag_obj_id].getPosition().y
+            __drag_orig_x = me.actorObjects[__drag_obj_index].getPosition().x
+            __drag_orig_y = me.actorObjects[__drag_obj_index].getPosition().y
 
             # Activate
             __drag_sys_active = true
@@ -248,7 +248,7 @@ class AWidgetWorkspace extends AWidget
       $(".aworkspace canvas").mouseup (e) ->
 
         __drag_sys_active = false
-        __drag_obj_id = -1
+        __drag_obj_index = -1
 
         setTimeout ->
           __dragging = false
@@ -270,7 +270,7 @@ class AWidgetWorkspace extends AWidget
             _newY = Number(__drag_orig_y + ((e.pageY - __drag_start_y) * -1))
 
             # Update!
-            me.actorObjects[__drag_obj_id].setPosition _newX, _newY
+            me.actorObjects[__drag_obj_index].setPosition _newX, _newY
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
