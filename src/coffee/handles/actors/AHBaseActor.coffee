@@ -222,4 +222,27 @@ class AHBaseActor extends AHandle
   # Get internal actors' id. Note that the actor must exist for this!
   #
   # @return [Number] id
-  getActorId: -> @_actor.getId()
+  getActorId: ->
+    if @_actor != null then return @_actor.getId()
+    AUtilLog.warn "No actor, can't get id!"
+
+  # Return actor position as (x,y) relative to the GL world
+  #
+  # @return [Object]
+  getPosition: ->
+
+    if @_actor != null
+      _pos = @_actor.getPosition()
+      return { x: _pos.x, y: _pos.y }
+
+    AUtilLog.warn "No actor, can't get position!"
+
+  # Set actor position, relative to the GL world!
+  #
+  # @param [Number] x x coordinate
+  # @param [Number] y y coordinate
+  setPosition: (x, y) ->
+    if @_actor != null
+      @_actor.setPosition new AJSVector2(x, y)
+    else
+      AUtilLog.warn "No actor, can't set position!"

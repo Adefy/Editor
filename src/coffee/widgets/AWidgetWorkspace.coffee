@@ -210,6 +210,81 @@ class AWidgetWorkspace extends AWidget
               # Fill in property list!
               o.onClick()
 
+      # Actor dragging, whoop
+      __drag_start_x = 0      # Keeps track of the initial drag point, so
+      __drag_start_y = 0      # we know when to start listening
+
+      __drag_orig_x = 0       # Original object pos x so we can calculate dx
+      __drag_orig_y = 0       # Original object pos y so we can calculate dy
+
+      __drag_obj_id = -1      # Id of the object we are dragging
+      __drag_tolerance = 5    # How far the mouse should move before we pick up
+
+      # When true, enables logic in mousemove()
+      __drag_sys_active = false
+
+      # On mousedown, we need to setup pre-dragging state, perform a pick,
+      # and wait for movement
+      $(".aworkspace canvas").mousedown (e) ->
+
+        # Calculate workspace coordinates
+        _truePos = me.domToGL e.pageX, e.pageY
+
+        # Note this can be slightly inefficient, since two picks are performed
+        # on any click. Not when dragging, but when clicking both this and
+        # the click() event above fire.
+        #
+        # TODO: Optimise. Consider performing the pick here, and saving the
+        #       outcome for the click listener.
+        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+
+          # Not over an object, just return
+          if b != 248 then return
+
+          # Id is stored as a sector and an offset. Recover proper object id
+          _id = r + (g * 255)
+
+          # Find the actor in question
+          for o in me.actorObjects
+            if o.getActorId() == _id
+              __drag_obj_id = _id
+              break
+
+          # If we are above an object, wait for mouse movement
+          if __drag_obj_id != -1
+
+            # Save beginning drag point
+            __drag_start_x = e.pageX
+            __drag_start_y = e.pageY
+
+            # Save initial actor position
+            __drag_orig_x = me.actorObjects[__drag_obj_id].getPosition().x
+            __drag_orig_y = me.actorObjects[__drag_obj_id].getPosition().y
+
+            # Activate
+            __drag_sys_active = true
+
+      # Reset state
+      $(".aworkspace canvas").mouseup (e) ->
+        __drag_sys_active = false
+        __drag_obj_id = -1
+
+      # Core of the dragging logic
+      $(".aworkspace canvas").mousemove (e) ->
+        if __drag_sys_active
+
+          if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
+          or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
+
+            # Calc new coords (orig + offset)
+            _newX = Number(__drag_orig_x + (e.pageX - __drag_start_x))
+
+            # Note we need to invert the vertical offset
+            _newY = Number(__drag_orig_y + ((e.pageY - __drag_start_y) * -1))
+
+            # Update!
+            me.actorObjects[__drag_obj_id].setPosition _newX, _newY
+
       # Bind a contextmenu listener
       $(document).on "contextmenu", ".aworkspace canvas", (e) ->
         e.preventDefault()
