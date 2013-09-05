@@ -152,7 +152,6 @@ class AHBaseActor extends AHandle
           getValue: -> @_value
         enabled:
           type: "bool"
-          default: "false"
           _value: false
           getValue: -> @_value
 

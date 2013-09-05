@@ -22,18 +22,38 @@ class AHNGon extends AHBaseActor
     # Take advantage of generic actor properties
     super()
 
+    me = @
+
     # Add our side count, at the very least we are a triangle, no shame in that
+    #
+    # Sides and radius are cached locally
     @_properties["sides"] =
       type: "number"
       min: 3
-      default: sides
+      placeholder: 5
       float: false
+      _value: sides
+      getValue: -> @_value
+
+      # Side count updated! Rebuild, muahahaha
+      update: (v) ->
+        @_value = param.required v
+
+        if me._actor != null then me._actor.setSegments Number(v)
 
     @_properties["radius"] =
       type: "number"
       min: 0
-      default: radius
+      default: 50
       float: true
+      _value: radius
+      getValue: -> @_value
+
+      # Radius updated, rebuild
+      update: (v) ->
+        @_value = param.required v
+
+        if me._actor != null then me._actor.setRadius Number(v)
 
     @_actor = new AJSNGon
       psyx: false
