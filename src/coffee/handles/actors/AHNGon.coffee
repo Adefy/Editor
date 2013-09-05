@@ -22,6 +22,16 @@ class AHNGon extends AHBaseActor
     # Take advantage of generic actor properties
     super()
 
+    @_actor = new AJSNGon
+      psyx: false
+      mass: 0
+      friction: 0.3
+      elasticity: 0.4
+      radius: radius
+      segments: sides
+      position: new AJSVector2 x, y
+      color: new AJSColor3 255, 255, 255
+
     me = @
 
     # Add our side count, at the very least we are a triangle, no shame in that
@@ -54,13 +64,3 @@ class AHNGon extends AHBaseActor
         @_value = param.required v
 
         if me._actor != null then me._actor.setRadius Number(v)
-
-    @_actor = new AJSNGon
-      psyx: false
-      mass: 0
-      friction: 0.3
-      elasticity: 0.4
-      radius: radius
-      segments: sides
-      position: new AJSVector2 x, y
-      color: new AJSColor3 255, 255, 255

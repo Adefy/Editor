@@ -27,3 +27,32 @@ class AHTriangle extends AHBaseActor
       height: h
       position: new AJSVector2 x, y
       color: new AJSColor3 255, 255, 255
+
+    me = @
+
+    # Add our base and height as editable properties
+    @_properties["base"] =
+      type: "number"
+      min: 0
+      placeholder: 30
+      float: true
+      getValue: -> @_value = me._actor.getBase()
+
+      # Update base, rebuild
+      update: (v) ->
+        @_value = param.required v
+
+        if me._actor != null then me._actor.setBase Number(v)
+
+    @_properties["height"] =
+      type: "number"
+      min: 0
+      placeholder: 60
+      float: true
+      getValue: -> @_value = me._actor.getHeight()
+
+      # Update height, rebuild
+      update: (v) ->
+        @_value = param.required v
+
+        if me._actor != null then me._actor.setHeight Number(v)

@@ -27,3 +27,32 @@ class AHRectangle extends AHBaseActor
       h: h
       position: new AJSVector2 x, y
       color: new AJSColor3 255, 255, 255
+
+    me = @
+
+    # Add our width and height as editable properties
+    @_properties["width"] =
+      type: "number"
+      min: 0
+      placeholder: 100
+      float: true
+      getValue: -> @_value = me._actor.getWidth()
+
+      # Update width, rebuild
+      update: (v) ->
+        @_value = param.required v
+
+        if me._actor != null then me._actor.setWidth Number(v)
+
+    @_properties["height"] =
+      type: "number"
+      min: 0
+      placeholder: 100
+      float: true
+      getValue: -> @_value = me._actor.getHeight()
+
+      # Update height, rebuild
+      update: (v) ->
+        @_value = param.required v
+
+        if me._actor != null then me._actor.setHeight Number(v)
