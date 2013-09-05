@@ -115,7 +115,10 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
       # Verify integrity, then ship
       if _valCheck value
-        _retValues[label] = $(value[0]).val()
+        if type == "number"
+          _retValues[label] = Number($(value[0]).val())
+        else
+          _retValues[label] = $(value[0]).val()
 
     # Still an input field, but requires .is() to check
     else if type == "bool"
