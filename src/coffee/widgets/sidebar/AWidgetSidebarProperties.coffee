@@ -36,7 +36,68 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
       # Event listeners!
       $(document).ready ->
+
+        # Save
         $(document).on "click", ".asp-save", -> me.save @
+
+        # Numeric drag modification
+        # This is very similar to actor dragging, see AWidgetWorkspace
+        __drag_start_x = 0      # Keeps track of the initial drag point, so
+        __drag_start_y = 0      # we know when to start listening
+
+        __drag_target = null      # Input we need to effect
+        __drag_orig_val = -1      # Value of the input when dragging started
+
+        __drag_tolerance = 5  # How far the mouse should move before we pick up
+        __drag_sys_active = true
+
+        # Start of dragging
+        $(document).on "mousedown", ".drag_mod", (e) ->
+
+          # Attempt to find a valid target input
+          __drag_target = $(@).parent().find("> input")[0]
+
+          if __drag_target == null
+            AUtilLog.warn "Drag start on a label with no input!"
+          else
+
+            # Store initial cursor position
+            __drag_start_x = e.pageX
+            __drag_start_y = e.pageY
+
+            # Store our target's value
+            __drag_orig_val = Number($(__drag_target).val())
+
+            # Enable mousemove listener
+            __drag_sys_active = true
+
+            # Tack on a permanent drag cursor, which is taken off when the drag
+            # ends
+            $("body").css "cursor", "e-resize"
+
+            # Prevent highlighting of the page and whatnot
+            e.preventDefault()
+            return false
+
+        # The following are global listeners, since mouseup and mousemove can
+        # happen anywhere on the page, yet still relate to us
+        $(document).mousemove (e) ->
+          if __drag_sys_active
+
+            e.preventDefault()
+
+            if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
+            or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
+
+              # Set val!
+              $(__drag_target).val __drag_orig_val + (e.pageX - __drag_start_x)
+
+            return false
+
+        $(document).mouseup ->
+          __drag_sys_active = false
+          __drag_target = null
+          $("body").css "cursor", "auto"
 
   # Called either externally, or when our save button is clicked. The
   # clicked object is passed in as our 'clicked'
@@ -225,9 +286,12 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
       # Generate a unique name for the input, to properly target its' label
       _inputName = prefId "aspc"
-      _data = "data-name=\"#{name}\""
+      _opts = "data-name=\"#{name}\""
 
-      _html += "<label #{_data} for=\"#{_inputName}\">#{displayName}</label>"
+      # Give ourselves the drag_mod class, for drag manipulation
+      if value.type == "number" then _opts += " class=\"drag_mod\""
+
+      _html += "<label #{_opts} for=\"#{_inputName}\">#{displayName}</label>"
 
       # Set up optional values
       if value.max == undefined then value.max = null
