@@ -49,7 +49,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
         __drag_orig_val = -1      # Value of the input when dragging started
 
         __drag_tolerance = 5  # How far the mouse should move before we pick up
-        __drag_sys_active = true
+        __drag_sys_active = false
 
         # Start of dragging
         $(document).on "mousedown", ".drag_mod", (e) ->
@@ -91,6 +91,14 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
               # Set val!
               $(__drag_target).val __drag_orig_val + (e.pageX - __drag_start_x)
+
+              # Save the control. Traverse upwards until we find the proper
+              # parent
+              control = $(__drag_target).parent()
+              while $(control).parent().hasClass("asp-control")
+                control = $(control).parent()
+
+              me.saveControl control
 
             return false
 
