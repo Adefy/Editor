@@ -195,6 +195,9 @@ class AWidgetWorkspace extends AWidget
       __drag_obj_index = -1   # Index of the object we are dragging
       __drag_tolerance = 5    # How far the mouse should move before we pick up
 
+      __drag_update_props = false # Whether or not to update properties
+      __drag_props = null         # Handle on the properties widget
+
       # When true, enables logic in mousemove()
       __drag_sys_active = false
 
@@ -232,6 +235,14 @@ class AWidgetWorkspace extends AWidget
           # If we are above an object, wait for mouse movement
           if __drag_obj_index != -1
 
+            # Check if the actor is present in the sidebar. If so, store a
+            # handle on the sidebar and enable property updating
+            props = $("body").data "default-properties"
+            if props instanceof AWidgetSidebarProperties
+              if props.wspaceIface("get_id") == _id
+                __drag_update_props = true
+                __drag_props = props
+
             # Save beginning drag point
             __drag_start_x = e.pageX
             __drag_start_y = e.pageY
@@ -249,6 +260,8 @@ class AWidgetWorkspace extends AWidget
 
         __drag_sys_active = false
         __drag_obj_index = -1
+        __drag_props = null
+        __drag_update_props = false
 
         setTimeout ->
           __dragging = false
@@ -271,6 +284,10 @@ class AWidgetWorkspace extends AWidget
 
             # Update!
             me.actorObjects[__drag_obj_index].setPosition _newX, _newY
+
+            # Update properties as well, if needed
+            if __drag_update_props
+              __drag_props.wspaceIface "update_position", _newX, _newY
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!

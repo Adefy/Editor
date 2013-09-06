@@ -347,3 +347,36 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
       _html += "</div>"
 
     _html += "</div>"
+
+  ## The following is only meant to be called by the workspace when updating
+  ## object information! As such, parameters are not documented.
+  wspaceIface: (action, val1, val2) ->
+    param.required action
+
+    # "action" can either be "update_position" or "get_id"
+    #
+    # This can be expanded in the future, but for now it works. Note that
+    # this is a tad fugly on purpose; Haveing multiple methods purely to
+    # serve the workspace seems wrong, as does documenting them.
+    if action == "update_position"
+
+      # Note mapping
+      x = param.required val1
+      y = param.required val2
+
+      # We don't assume we actually have a position control, the update simply
+      # doesn't occur if jquery can't find it
+      #
+      # Grab labels
+      _xL = $("#{@_sel} label[data-name=\"x\"]")
+      _yL = $("#{@_sel} label[data-name=\"y\"]")
+
+      if _xL.length > 0 and _yL.length > 0
+        $(_xL).parent().find("input")[0].value = x
+        $(_yL).parent().find("input")[0].value = y
+
+    # If we have a current object, return its' id
+    else if action == "get_id"
+      if @_curObject then return @_curObject.getActorId()
+
+    null
