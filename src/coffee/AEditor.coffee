@@ -17,6 +17,7 @@
 # Widgets!
 # @depend widgets/AWidget.coffee
 # @depend widgets/AWidgetContextMenu.coffee
+# @depend widgets/AWidgetTimeline.coffee
 #
 # @depend widgets/workspace/AWidgetWorkspace.coffee
 #
@@ -108,11 +109,12 @@ class AdefyEditor
 
       menubar.render()
 
-      # Create workspace and sidebars
+      # Create workspace, sidebars, controlbar, and timeline
       workspace = new AWidgetWorkspace me.sel
       leftSidebar = new AWidgetSidebar me.sel, "Objects", "left", 256
       rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
       controlBar = new AWidgetControlBar workspace
+      timeline = new AWidgetTimeline me.sel
 
       # Add some items to the left sidebar
       testGroup = new AWidgetSidebarObjectGroup "Primitives", leftSidebar

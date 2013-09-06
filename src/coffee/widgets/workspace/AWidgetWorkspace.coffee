@@ -80,7 +80,7 @@ class AWidgetWorkspace extends AWidget
   # Fetch our static instance
   #
   # @return [AWidgetWorkspace] me
-  @getMe: -> @__instance
+  @getMe: -> AWidgetWorkspace.__instance
 
   # Any objects that need to tell us about their death have to do so by calling
   # this method and passing themselves in.
