@@ -92,13 +92,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
               # Set val!
               $(__drag_target).val __drag_orig_val + (e.pageX - __drag_start_x)
 
-              # Save the control. Traverse upwards until we find the proper
-              # parent
-              control = $(__drag_target).parent()
-              while $(control).parent().hasClass("asp-control")
-                control = $(control).parent()
-
-              me.saveControl control
+              me._executeLive $(__drag_target).parent().find("> input")[0]
 
             return false
 
@@ -106,6 +100,28 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
           __drag_sys_active = false
           __drag_target = null
           $("body").css "cursor", "auto"
+
+        # Property update listeners, used when live is active
+        $(document).on "input", ".asp-control > input", ->
+          me._executeLive $(@).parent().find("> input")[0]
+
+  # Updates an input on change, called either as a result of a drag, or
+  # manual manipulation. Only works if the input has a checked live box!
+  #
+  # @param [Object] input updated input
+  _executeLive: (input) ->
+
+    # Traverse upwards until we find the proper parent
+    control = $(input).parent()
+    while $(control).parent().hasClass("asp-control")
+      control = $(control).parent()
+
+    # Check if we have the live option, and if it is enabled
+    _live = $(control).find ".aspc-live input"
+
+    # Continue if live is checked
+    if _live.length == 1
+      if $(_live[0]).is(":checked") then @saveControl control
 
   # Called either externally, or when our save button is clicked. The
   # clicked object is passed in as our 'clicked'
@@ -123,7 +139,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
     $(clicked).parent().find(".asp-control-group > .asp-control").each ->
       me.saveControl @
 
-  # Called either externally, or when a control is changed and preview is
+  # Called either externally, or when a control is changed and live is
   # enabled. This method applies the state of the control to our current object
   #
   # Internally, we just build an object of property:value pairs, and then
@@ -304,7 +320,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
       # Set up optional values
       if value.max == undefined then value.max = null
       if value.min == undefined then value.min = null
-      if value.preview == undefined then value.preview = false
+      if value.live == undefined then value.live = false
 
       if value.type == "number"
 
@@ -348,10 +364,11 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
       else
         AUtilLog.warn "Unrecognized property type #{value.type}"
 
-    if not __recurse and value.preview
-      _html += "<div class=\"aspc-preview\">"
-      _html +=   "<label for=\"preview-#{name}\">Preview</label>"
-      _html +=   "<input name=\"preview-#{name}\" type=\"checkbox\">"
+    # Note that live defaults to on!
+    if not __recurse and value.live
+      _html += "<div class=\"aspc-live\">"
+      _html +=   "<label for=\"live-#{name}\">Live</label>"
+      _html +=   "<input name=\"live-#{name}\" type=\"checkbox\" checked>"
       _html += "</div>"
 
     _html += "</div>"

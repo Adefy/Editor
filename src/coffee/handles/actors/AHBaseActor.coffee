@@ -43,7 +43,7 @@ class AHBaseActor extends AHandle
     # Default actor properties, common to all actors
     @_properties["position"] =
       type: "composite"
-      preview: true
+      live: true
       components:
         x:
           type: "number"
@@ -79,7 +79,7 @@ class AHBaseActor extends AHandle
 
     @_properties["rotation"] =
       type: "number"
-      preview: true
+      live: true
       min: 0
       max: 360
       float: true
@@ -96,7 +96,7 @@ class AHBaseActor extends AHandle
 
     @_properties["color"] =
       type: "composite"
-      preview: true
+      live: true
       components:
         r:
           type: "number"
@@ -146,7 +146,7 @@ class AHBaseActor extends AHandle
 
     @_properties["psyx"] =
       type: "composite"
-      preview: false
+      live: false
 
       # We cache component values locally, and just pass those through
       components:
@@ -184,7 +184,7 @@ class AHBaseActor extends AHandle
       # does nothing
       getValue: -> # dud
 
-      # Physics update! Composite and fanciness, preview is disabled so all
+      # Physics update! Composite and fanciness, live is disabled so all
       # values are updated at once (yay!)
       update: (v) ->
         param.required v
