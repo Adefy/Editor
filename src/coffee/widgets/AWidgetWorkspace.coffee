@@ -239,7 +239,7 @@ class AWidgetWorkspace extends AWidget
             # handle on the sidebar and enable property updating
             props = $("body").data "default-properties"
             if props instanceof AWidgetSidebarProperties
-              if props.wspaceIface("get_id") == _id
+              if props.privvyIface("get_id") == _id
                 __drag_update_props = true
                 __drag_props = props
 
@@ -287,7 +287,7 @@ class AWidgetWorkspace extends AWidget
 
             # Update properties as well, if needed
             if __drag_update_props
-              __drag_props.wspaceIface "update_position", _newX, _newY
+              __drag_props.privvyIface "update_position", _newX, _newY
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!

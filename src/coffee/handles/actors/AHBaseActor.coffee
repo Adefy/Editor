@@ -204,14 +204,20 @@ class AHBaseActor extends AHandle
           if v.enabled
             me._actor.enablePsyx v.mass, v.friction, v.elasticity
 
+  # Deletes us, muahahahaha. We notify the workspace, clear the properties
+  # panel if it is targetting us, and destroy our actor.
   delete: ->
 
-    # For now, this is simple, we just delete the actor. In the future, we will
-    # need to remove associated manipulatables, such as timeline elements
     if @_actor != null
 
       # Notify the workspace
       AWidgetWorkspace.getMe().notifyDemise @
+
+      # Clear the properties panel if it is tied to us
+      _prop = $("body").data "default-properties"
+      if _prop instanceof AWidgetSidebarProperties
+        if _prop.privvyIface("get_id") == @_actor.getId()
+          _prop.clear()
 
       # Go through and remove ourselves from
       @_actor.destroy()

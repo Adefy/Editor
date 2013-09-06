@@ -373,9 +373,10 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
     _html += "</div>"
 
-  ## The following is only meant to be called by the workspace when updating
-  ## object information! As such, parameters are not documented.
-  wspaceIface: (action, val1, val2) ->
+  # The following is only meant to be called by the workspace when updating
+  # object information, or objects when they die! As such, parameters are not
+  # documented.
+  privvyIface: (action, val1, val2) ->
     param.required action
 
     # "action" can either be "update_position" or "get_id"
