@@ -16,8 +16,9 @@
 #
 # Widgets!
 # @depend widgets/AWidget.coffee
-# @depend widgets/AWidgetWorkspace.coffee
 # @depend widgets/AWidgetContextMenu.coffee
+#
+# @depend widgets/workspace/AWidgetWorkspace.coffee
 #
 # @depend widgets/controlbar/AWidgetControlBar.coffee
 # @depend widgets/controlbar/AWidgetControlBarControl.coffee
