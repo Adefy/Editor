@@ -53,7 +53,7 @@ module.exports = (grunt) ->
         expand: true
         options:
           bare: true
-        src: __coffeeFiles
+        src: [__coffeeFiles]
         dest: buildDir
         ext: ".js"
       tests:
@@ -84,14 +84,18 @@ module.exports = (grunt) ->
           onlyConcatRequiredFiles: true
 
     watch:
+      awgl:
+        files: ["#{awglDir}/build/awgl.js"]
+        tasks: ["copy:awgl"]
+      adefyjs:
+        files: ["#{adefyjsDir}/build/adefy.js"]
+        tasks: ["copy:adefyjs"]
       coffeescript:
         files: [
           "#{libDir}/**/*.coffee"
           "#{libDir}/*.coffee"
-          "#{testDir}/**/*.coffee"
-          "#{testDir}/*.coffee"
         ]
-        tasks: ["concat_in_order", "coffeelint", "coffee", "mocha"]
+        tasks: ["concat_in_order", "coffeelint", "coffee"]
       stylus:
         files: [
           "#{libDir}/stylus/*.styl",
