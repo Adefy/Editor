@@ -17,7 +17,8 @@
 # Widgets!
 # @depend widgets/AWidget.coffee
 # @depend widgets/AWidgetContextMenu.coffee
-# @depend widgets/AWidgetTimeline.coffee
+
+# @depend widgets/timeline/AWidgetTimeline.coffee
 #
 # @depend widgets/workspace/AWidgetWorkspace.coffee
 #

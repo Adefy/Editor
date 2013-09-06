@@ -2,6 +2,8 @@
 #
 # OH GAWD this is going to be complex.
 # 9/6/2013: Escape while you still can
+#
+# @depend ABezier.coffee
 class AWidgetTimeline extends AWidget
 
   # Only one instance can ever exist
