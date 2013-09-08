@@ -40,10 +40,25 @@ class AWidgetTimeline extends AWidget
     # Inject our layout
     @renderStructure()
 
+    # Enable cursor dragging
+    $("#att-cursor").draggable
+      axis: "x"
+      containment: "parent"
+
   # Return our instance (assuming we exist)
   #
   # @return [AWidgetTimeline] instance
   @getMe: -> AWidgetTimeline.__instance
+
+  # Register actor, causes it to appear on the timeline starting from the
+  # current cursor position.
+  #
+  # @param [AHBaseActor] actor
+  registerActor: (actor) ->
+    param.required actor
+
+    if not actor instanceof AHBaseActor
+      throw new Error "Actor must be an instance of AHBaseActor!"
 
   # Render initial structure.
   # Note that calling this clears the timeline visually, and does not render
