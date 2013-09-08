@@ -197,6 +197,7 @@ class AWidgetWorkspace extends AWidget
 
       __drag_update_props = false # Whether or not to update properties
       __drag_props = null         # Handle on the properties widget
+      __drag_psyx = false         # Whether or not the object had a psyx body
 
       # When true, enables logic in mousemove()
       __drag_sys_active = false
@@ -258,10 +259,14 @@ class AWidgetWorkspace extends AWidget
       # click handler from taking effect
       $(".aworkspace canvas").mouseup (e) ->
 
+        if __drag_psyx
+          me.actorObjects[__drag_obj_index].getActor().enablePsyx()
+
         __drag_sys_active = false
         __drag_obj_index = -1
         __drag_props = null
         __drag_update_props = false
+        __drag_psyx = false
 
         setTimeout ->
           __dragging = false
@@ -269,9 +274,18 @@ class AWidgetWorkspace extends AWidget
 
       # Core of the dragging logic
       $(".aworkspace canvas").mousemove (e) ->
+
+        # Means we also have a valid object id
         if __drag_sys_active
 
-          __dragging = true
+          # Perform an initial check, destroy the physics body if there is one
+          if not __dragging
+
+            if me.actorObjects[__drag_obj_index].getActor().hasPsyx()
+              __drag_psyx = true
+              me.actorObjects[__drag_obj_index].getActor().disablePsyx()
+
+            __dragging = true
 
           if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
           or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance

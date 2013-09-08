@@ -252,3 +252,8 @@ class AHBaseActor extends AHandle
       @_actor.setPosition new AJSVector2(x, y)
     else
       AUtilLog.warn "No actor, can't set position!"
+
+  # Get our internal actor
+  #
+  # @param [AJSBaseActor] actor
+  getActor: -> @_actor
