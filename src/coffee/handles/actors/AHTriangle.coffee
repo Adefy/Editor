@@ -18,6 +18,8 @@ class AHTriangle extends AHBaseActor
     # Set up generic actor properties
     super()
 
+    @name = "Triangle #{@_id.replace("ahandle", "")}"
+
     @_actor = new AJSTriangle
       psyx: false
       mass: 0

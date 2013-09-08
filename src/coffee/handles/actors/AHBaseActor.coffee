@@ -11,8 +11,10 @@ class AHBaseActor extends AHandle
     # Note that we don't create an actual actor!
     @_actor = null
 
-    me = @
+    # Our name as it appears in the timeline actor list and properties panel
+    @name = "Base Actor #{@_id.replace("ahandle", "")}"
 
+    me = @
     # Properties are interesting, and complex enough to warrant a description
     #
     # Currently, there are 3 basic types avaliable.

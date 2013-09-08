@@ -18,6 +18,8 @@ class AHRectangle extends AHBaseActor
     # Set up generic actor properties
     super()
 
+    @name = "Rectangle #{@_id.replace("ahandle", "")}"
+
     @_actor = new AJSRectangle
       psyx: false
       mass: 0
