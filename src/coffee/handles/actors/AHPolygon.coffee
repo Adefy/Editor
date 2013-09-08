@@ -3,11 +3,12 @@ class AHPolygon extends AHBaseActor
 
   # Defines a variable-sided actor, psicktually
   #
+  # @param [Number] birth time in ms at which we are to be created
   # @param [Number] sides the n in ngon
   # @param [Number] radius ngon radius
   # @param [Number] x x starting coordinate
   # @param [Number] y y starting coordinate
-  constructor: (sides, radius, x, y) ->
+  constructor: (birth, sides, radius, x, y) ->
     param.required sides
     param.required radius
     param.required x
@@ -20,7 +21,7 @@ class AHPolygon extends AHBaseActor
     if radius < 0 then radius *= -1
 
     # Take advantage of generic actor properties
-    super()
+    super birth
 
     @name = "Polygon #{@_id.replace("ahandle", "")}"
 

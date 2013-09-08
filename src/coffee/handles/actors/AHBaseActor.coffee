@@ -3,7 +3,10 @@ class AHBaseActor extends AHandle
 
   # Defines a raw actor, with no shape information or any other presets.
   # This serves as the base for the other actor classes
-  constructor: ->
+  #
+  # @param [Number] lifetimeStart time at which we are created, in ms
+  # @param [Number] lifetimeEnd time we are destroyed, defaults to end of ad
+  constructor: (lifetimestart, lifetimeEnd) ->
 
     # Set up properties object (global defaults set)
     super()
@@ -13,6 +16,16 @@ class AHBaseActor extends AHandle
 
     # Our name as it appears in the timeline actor list and properties panel
     @name = "Base Actor #{@_id.replace("ahandle", "")}"
+
+    # Lifetime properties, defines how we appear in the timeline and how we are
+    # handled by the engine according to the current cursor position
+    #
+    # These are ms values, with -1 symbolizing the end of the scene
+    @lifetimeStart = param.required lifetimestart
+    @lifetimeEnd = param.optional lifetimeEnd, -1
+
+    # If passed -1 as our death, get the current timeline duration and use it
+    @lifetimeEnd = AWidgetTimeline.getMe().getDuration()
 
     me = @
     # Properties are interesting, and complex enough to warrant a description

@@ -16,7 +16,8 @@ class AWidgetTimeline extends AWidget
   # positioned, and adds padding to the body accordingly.
   #
   # @param [String] parent parent element selector
-  constructor: (parent) ->
+  # @param [Number] duration ad length in ms, can be expensively modified later
+  constructor: (parent, duration) ->
 
     if AWidgetTimeline.__exists
       throw new Error "Only one timeline can exist at any one time!"
@@ -26,6 +27,12 @@ class AWidgetTimeline extends AWidget
     AWidgetTimeline.__instance = @
 
     param.required parent
+    @_duration = Number param.required(duration)
+
+    # Enforce minimum duration of 250ms
+    if @_duration < 250
+      throw new Error "Ad must be longer than 250ms!"
+      # Although I have no idea who would want an ad 251ms long
 
     super prefId("atimeline"), parent, [ "atimeline" ]
 
@@ -53,6 +60,19 @@ class AWidgetTimeline extends AWidget
   # @return [AWidgetTimeline] instance
   @getMe: -> AWidgetTimeline.__instance
 
+  # Return current cursor time in ms (relative to duration)
+  #
+  # @return [Number] time cursor time in ms
+  getCursorTime: ->
+
+    # I thought about making this a warning and just returning '0', but that
+    # would mess up thing elsewhere (whoever uses our return value would be
+    # screwed). This makes the most sense
+    if $("#att-cursor").length == 0
+      throw new Error "Cursor not visible can't return time!"
+
+    @_duration * ($("#att-cursor").position().left / $("#att-space").width())
+
   # Register actor, causes it to appear on the timeline starting from the
   # current cursor position.
   #
@@ -66,8 +86,8 @@ class AWidgetTimeline extends AWidget
     # Ship to our array
     @_actors.push actor
 
-    # Re-render internals
-    @render()
+    # Render actor internals
+    @_renderActorSpace @_actors.length - 1
 
   # Remove an actor by id, re-renders timeline internals. Note that this
   # utilizies the ID of the AJS actor!
@@ -82,7 +102,14 @@ class AWidgetTimeline extends AWidget
         @_actors.splice i, 1
         return true
 
+    # TODO: Remove any renderings of the actor (space, list)
+
     false
+
+  # Get current timeline duration
+  #
+  # @return [Number] duration
+  getDuration: -> @_duration
 
   # Render initial structure.
   # Note that calling this clears the timeline visually, and does not render
@@ -110,14 +137,7 @@ class AWidgetTimeline extends AWidget
     _html +=   "<div id=\"att-cursor\"></div>"
 
     # Proper timeline space, actor timelines are contained here.
-    _html +=   "<ul id=\"att-space\">"
-
-    # Testing
-    _html +=   "<div class=\"atts-outer\">"
-    _html +=     "<div class=\"attso-inner\"></div>"
-    _html +=   "</div>"
-
-    _html += "</ul>"
+    _html +=   "<ul id=\"att-space\"></ul>"
 
     _html += "</div>"
 
@@ -139,8 +159,67 @@ class AWidgetTimeline extends AWidget
 
     _h = ""
 
+    for a, i in @_actors
+      _h += "<li data-index=\"#{i}\">#{a.getName()}</li>"
+
     # Ship
     $("#at-actors").html _h
+
+  # Renders an individual actor timebar, used when registering new actors,
+  # preventing a full re-render of the space. Also called internally by
+  # @_renderSpace.
+  #
+  # @param [Number] index index of the actor whose space we are to render
+  #
+  # @private
+  _renderActorSpace: (index, notouch) ->
+    # notouch is an undocumented param, set to true when we are called from
+    # @_renderSpace. When it is true, we simply return our generated html
+    # instead of injecting it
+    notouch = param.optional notouch, false
+    param.required index
+
+    if index < 0 or index >= @_actors.length
+      throw new Error "Invalid index, no actor at #{index}, can't render space"
+
+    _h = ""
+    spaceW = $("#att-space").width()
+
+    a = @_actors[index]
+
+    # TODO: Consider moving the following two checks into our registerActor
+    #       method. The only possible concern with that is the fact that
+    #       the lifetime can change outside of our supervision (it is public
+    #       and whatnot).
+    #
+    #       A possible remedy to this would be to make the lifetime private,
+    #       and only allow modification through ourselves. Hmmm....
+
+    # Sanity check, actor must die after it is created
+    if a.lifetimeEnd < a.lifetimeStart
+      throw new Error "Actor lifetime end must come after lifetime start! " +\
+                      "start: #{a.lifetimeStart}, end: #{a.lifetimeEnd}"
+
+    # Make sure actors' lifetime is contained in our duration!
+    #
+    # TODO: In the future, we can allow for actor deaths after our duration,
+    #       to ease timeline resizing.
+    if a.lifetimeStart < 0 or a.lifetimeEnd > @_duration
+      throw new Error "Actor exists beyond our duration!"
+
+    # Calculate actor x offset
+    _start = spaceW * (a.lifetimeStart / @_duration)
+    _length = spaceW * ((a.lifetimeEnd - a.lifetimeStart) / @_duration)
+
+    # Build style
+    style = "style=\"left:#{_start}px; width:#{_length}px\""
+
+    # Injectify
+    _h += "<div data-index=\"#{index}\" class=\"atts-outer\">"
+    _h +=   "<div #{style} class=\"attso-inner\">"
+
+    if notouch then return _h
+    else $("#att-space").append _h
 
   # Render the timeline space. Should never be called by itself, only by
   # @render()
@@ -149,6 +228,13 @@ class AWidgetTimeline extends AWidget
   _renderSpace: ->
 
     _h = ""
+
+    spaceW = $("#att-space").width()
+
+    # Create a time bar for each actor, positioned according to their birth and
+    # death.
+    for a, i in @_actors
+      _h += @_renderActorSpace i, true
 
     # Ship
     $("#att-space").html _h

@@ -183,7 +183,11 @@ class AWidgetWorkspace extends AWidget
           #       that can't happen. Yay.
           if handle instanceof AHBaseActor
 
+            # Register actor with ourselves
             me.actorObjects.push handle
+
+            # Register actor with the timeline
+            AWidgetTimeline.getMe().registerActor handle
 
       # Actor dragging, whoop
       __drag_start_x = 0      # Keeps track of the initial drag point, so

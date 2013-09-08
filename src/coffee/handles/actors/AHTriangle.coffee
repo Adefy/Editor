@@ -3,11 +3,12 @@ class AHTriangle extends AHBaseActor
 
   # Creates an AJSTriangle and keeps track of it
   #
+  # @param [Number] birth time in ms at which we are to be created
   # @param [Number] b base width
   # @param [Number] h triangle height
   # @param [Number] x x starting coordinate
   # @param [Number] y y starting coordinate
-  constructor: (b, h, x, y) ->
+  constructor: (birth, b, h, x, y) ->
     param.required b
     param.required h
     param.required x
@@ -16,7 +17,7 @@ class AHTriangle extends AHBaseActor
     if b <= 0 or h <= 0 then throw new Error "Base/Height must be >0!"
 
     # Set up generic actor properties
-    super()
+    super birth
 
     @name = "Triangle #{@_id.replace("ahandle", "")}"
 

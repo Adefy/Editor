@@ -111,11 +111,13 @@ class AdefyEditor
       menubar.render()
 
       # Create workspace, sidebars, controlbar, and timeline
+      #
+      # For testing, the timeline is for a 5s ad
       workspace = new AWidgetWorkspace me.sel
       leftSidebar = new AWidgetSidebar me.sel, "Objects", "left", 256
       rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
       controlBar = new AWidgetControlBar workspace
-      timeline = new AWidgetTimeline me.sel
+      timeline = new AWidgetTimeline me.sel, 5000
 
       # Add some items to the left sidebar
       testGroup = new AWidgetSidebarObjectGroup "Primitives", leftSidebar
@@ -130,7 +132,7 @@ class AdefyEditor
 
         if target != "workspace" then return null
 
-        new AHRectangle 100, 100, x, y
+        new AHRectangle AWidgetTimeline.getMe().getCursorTime(), 100, 100, x, y
 
       ngonPrimitive.dropped = (target, x, y) ->
         param.required target
@@ -139,7 +141,7 @@ class AdefyEditor
 
         if target != "workspace" then return null
 
-        new AHPolygon 5, 100, x, y
+        new AHPolygon AWidgetTimeline.getMe().getCursorTime(), 5, 100, x, y
 
       triPrimitive.dropped = (target, x, y) ->
         param.required target
@@ -148,7 +150,7 @@ class AdefyEditor
 
         if target != "workspace" then return null
 
-        new AHTriangle 20, 30, x, y
+        new AHTriangle AWidgetTimeline.getMe().getCursorTime(), 20, 30, x, y
 
       # Create a property widget on the right sidebar
       new AWidgetSidebarProperties rightSidebar
