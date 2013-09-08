@@ -29,6 +29,9 @@ class AWidgetTimeline extends AWidget
 
     super prefId("atimeline"), parent, [ "atimeline" ]
 
+    # Actor array, access through registerActor/removeActor
+    @_actors = []
+
     # Check for any existing padding on the body (and format accordingly)
     @_bodyPadding = $("body").css "padding-bottom"
     if @_bodyPadding == "auto" then @_bodyPadding = 0
@@ -59,6 +62,27 @@ class AWidgetTimeline extends AWidget
 
     if not actor instanceof AHBaseActor
       throw new Error "Actor must be an instance of AHBaseActor!"
+
+    # Ship to our array
+    @_actors.push actor
+
+    # Re-render internals
+    @render()
+
+  # Remove an actor by id, re-renders timeline internals. Note that this
+  # utilizies the ID of the AJS actor!
+  #
+  # @param [Number] id
+  # @return [Boolean] success
+  removeActor: (id) ->
+    param.required id
+
+    for a, i in @_actors
+      if a.getActorId() == id
+        @_actors.splice i, 1
+        return true
+
+    false
 
   # Render initial structure.
   # Note that calling this clears the timeline visually, and does not render
@@ -97,12 +121,37 @@ class AWidgetTimeline extends AWidget
 
     _html += "</div>"
 
-    # Now the list of preset animations. Dragging any of them onto an actor
-    # will apply them from the current time onwards.
-    _html += "<ul id=\"at-animations\"></ul>"
-
     # Ship
     $(@_sel).html _html
+
+  # Proper render function, fills in timeline internals. Since we have two
+  # distinct sections, each is rendered by a seperate method. This helps
+  # divide the necessary logic, into @_renderActors() and @_renderSpace(). This
+  # function simply calls both.
+  render: ->
+    @renderActors()
+    @renderSpace()
+
+  # Render the actor list Should never be called by itself, only by @render()
+  #
+  # @private
+  _renderActors: ->
+
+    _h = ""
+
+    # Ship
+    $("#at-actors").html _h
+
+  # Render the timeline space. Should never be called by itself, only by
+  # @render()
+  #
+  # @private
+  _renderSpace: ->
+
+    _h = ""
+
+    # Ship
+    $("#att-space").html _h
 
   # Resize and apply our height to the body
   #
