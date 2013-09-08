@@ -12,6 +12,14 @@ class AWidgetTimeline extends AWidget
   # Always useful
   @__instance: null
 
+  # Timebar color classes, styled in colors.styl
+  @_timebarColors: [
+    "atimebar-color-1"
+    "atimebar-color-2"
+    "atimebar-color-3"
+    "atimebar-color-4"
+  ]
+
   # Creates a timeline at the bottom of the screen. Note that it is absolutely
   # positioned, and adds padding to the body accordingly.
   #
@@ -59,6 +67,13 @@ class AWidgetTimeline extends AWidget
   #
   # @return [AWidgetTimeline] instance
   @getMe: -> AWidgetTimeline.__instance
+
+  # Get a random timebar color index, used when setting default actor timebar
+  # color
+  #
+  # @return [Number] colIndex
+  @getRandomTimebarColor: ->
+    Math.floor(Math.random() * AWidgetTimeline._timebarColors.length)
 
   # Return current cursor time in ms (relative to duration)
   #
@@ -214,9 +229,11 @@ class AWidgetTimeline extends AWidget
     # Build style
     style = "style=\"left:#{_start}px; width:#{_length}px\""
 
+    _colorClass = AWidgetTimeline._timebarColors[a.timebarColor]
+
     # Injectify
     _h += "<div data-index=\"#{index}\" class=\"atts-outer\">"
-    _h +=   "<div #{style} class=\"attso-inner\">"
+    _h +=   "<div #{style} class=\"attso-inner #{_colorClass}\">"
 
     if notouch then return _h
     else $("#att-space").append _h

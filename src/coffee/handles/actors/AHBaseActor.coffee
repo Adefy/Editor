@@ -27,6 +27,11 @@ class AHBaseActor extends AHandle
     # If passed -1 as our death, get the current timeline duration and use it
     @lifetimeEnd = AWidgetTimeline.getMe().getDuration()
 
+    # Our timebar color, can be changed freely (timeline requires notification)
+    # To see avaliable colors, check AWidgetTimeline for their declarations,
+    # and colors.styl for their definitions
+    @timebarColor = AWidgetTimeline.getRandomTimebarColor()
+
     me = @
     # Properties are interesting, and complex enough to warrant a description
     #
