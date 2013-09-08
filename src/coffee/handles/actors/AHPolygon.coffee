@@ -1,5 +1,5 @@
 # N-sided actor
-class AHNGon extends AHBaseActor
+class AHPolygon extends AHBaseActor
 
   # Defines a variable-sided actor, psicktually
   #
@@ -22,7 +22,9 @@ class AHNGon extends AHBaseActor
     # Take advantage of generic actor properties
     super()
 
-    @_actor = new AJSNGon
+    @name = "Polygon #{@_id.replace("ahandle", "")}"
+
+    @_actor = new AJSPolygon
       psyx: false
       mass: 0
       friction: 0.3

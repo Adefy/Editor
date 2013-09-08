@@ -12,7 +12,7 @@
 # @depend handles/actors/AHBaseActor.coffee
 # @depend handles/actors/AHTriangle.coffee
 # @depend handles/actors/AHRectangle.coffee
-# @depend handles/actors/AHNGon.coffee
+# @depend handles/actors/AHPolygon.coffee
 #
 # Widgets!
 # @depend widgets/AWidget.coffee
@@ -139,7 +139,7 @@ class AdefyEditor
 
         if target != "workspace" then return null
 
-        new AHNGon 5, 100, x, y
+        new AHPolygon 5, 100, x, y
 
       triPrimitive.dropped = (target, x, y) ->
         param.required target
