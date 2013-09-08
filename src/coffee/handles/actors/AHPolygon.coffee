@@ -23,7 +23,7 @@ class AHPolygon extends AHBaseActor
     # Take advantage of generic actor properties
     super birth
 
-    @name = "Polygon #{@_id.replace("ahandle", "")}"
+    @name = "Polygon #{@_id.replace("ahandle-", "")}"
 
     @_actor = new AJSPolygon
       psyx: false

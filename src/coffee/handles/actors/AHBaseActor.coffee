@@ -15,7 +15,7 @@ class AHBaseActor extends AHandle
     @_actor = null
 
     # Our name as it appears in the timeline actor list and properties panel
-    @name = "Base Actor #{@_id.replace("ahandle", "")}"
+    @name = "Base Actor #{@_id.replace("ahandle-", "")}"
 
     # Lifetime properties, defines how we appear in the timeline and how we are
     # handled by the engine according to the current cursor position

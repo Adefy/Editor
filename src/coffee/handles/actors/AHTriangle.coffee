@@ -19,7 +19,7 @@ class AHTriangle extends AHBaseActor
     # Set up generic actor properties
     super birth
 
-    @name = "Triangle #{@_id.replace("ahandle", "")}"
+    @name = "Triangle #{@_id.replace("ahandle-", "")}"
 
     @_actor = new AJSTriangle
       psyx: false

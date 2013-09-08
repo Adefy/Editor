@@ -63,6 +63,29 @@ class AWidgetTimeline extends AWidget
       axis: "x"
       containment: "parent"
 
+    # Set up event listeners (this is where the magic happens)
+    me = @
+    $(document).ready ->
+      $(document).on "click", ".atts-outer", (e) ->me._outerClicked e, @
+
+  # Timebar click handler, magic and whatnot
+  #
+  # @param [Object] e click event
+  # @param [Object] element dom element that was clicked
+  _outerClicked: (e, element) ->
+    param.required e
+    param.required element
+
+    # Grab and validate index
+    index = Number $(element).attr("data-index")
+    if index < 0 or index > @_actors.length - 1 or isNaN(index)
+      AUtilLog.warn "Clicked timebar has an invalid index, bailing [#{index}]"
+      return
+
+    actor = @_actors[index]
+
+    alert "#{actor.name} clicked"
+
   # Return our instance (assuming we exist)
   #
   # @return [AWidgetTimeline] instance
