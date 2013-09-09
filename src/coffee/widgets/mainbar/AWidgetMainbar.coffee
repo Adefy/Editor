@@ -55,6 +55,21 @@ class AWidgetMainbar extends AWidget
           _menu.show()
           $(@).addClass "open"
 
+      # Hover listener, opens menus with children when hovered (if another is
+      # already open)
+      $(document).on "mouseover", ".amb-primary-has-children", ->
+
+        # Check if any primaries are open
+        if $(".amb-primary-has-children.open").length > 0
+
+          # Hide existing menus, remove class
+          $(".amainbar-secondary").hide()
+          $(".amb-primary-has-children.open").removeClass "open"
+
+          # Show our submenu, attach clas
+          $(".amainbar-secondary[data-owner=\"#{$(@).attr("id")}\"]").show()
+          $(@).addClass "open"
+
     # Note that we don't render initially. This gives the engine the freedom
     # to set up initial items, and then render us appropriatly
 
