@@ -9,6 +9,7 @@
 
   position relative
   z-index $Z_amainbar
+  padding-bottom 2px
 
   *
     display inline-block
@@ -28,6 +29,7 @@
     z-index $Z_amainbar_primary
     position relative
     border-bottom 1px solid $col_divider_bot
+    top 2px
 
     a
       display inline-block
@@ -44,7 +46,7 @@
 
   .amainbar-secondary
     position absolute
-    top 28px
+    top 24px
     display none
     z-index $Z_amainbar_secondary
 
@@ -52,8 +54,8 @@
       border-bottom 1px solid $col_mainbar_secondary_section_border
 
     a
-      width 128px
-      padding 4px 24px
+      width 140px
+      padding 3px 24px
       background-color $col_mainbar_primary_open_bg
       display block
       font-size 11px
@@ -66,6 +68,3 @@
 
     a:hover
       background-color $col_mainbar_secondary_hover_bg
-
-      li
-        color $col_mainbar_secondary_hover_color

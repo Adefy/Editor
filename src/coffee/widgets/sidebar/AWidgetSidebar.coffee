@@ -101,7 +101,7 @@ class AWidgetSidebar extends AWidget
 
     # Re-size
     $(@_sel).height $(window).height() - $(".amainbar").height() - 2
-    $(@_sel).css { top: $(".amainbar").height() }
+    $(@_sel).css { top: $(".amainbar").height() + 2 }
 
     # Re-position
     if @_origin == "right"
