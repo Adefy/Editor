@@ -3,7 +3,6 @@
   bottom 0
   left 0
   width 100%
-  background-color #ccc
   z-index $Z_atimeline
 
   // Shared properties
@@ -12,28 +11,64 @@
     vertical-align top
     height 100%
 
-  // Toolbar
-  #at-toolbar
-    height 24px
-    width 100%
-    background-color #262626
-    border-top 2px solid #09c
-
-  #at-toolbar:hover
-    cursor hand
-    cursor pointer
-    cursor s-resize
-
   // Actor list
   #at-actors
-    width 15%
-    background-color #f6f6f6
+    width 20%
+    background-color $col_timeline_actors_bg
+    color $col_timeline_actors_col
+    border-right 1px solid $col_divider_bot
+    margin-left -1px
+
+    #ata-title
+      padding 3px 0
+      text-align center
 
   // Timeline itself
   #at-timeline
-    width 85%
-    background-color #363636
+    width 80%
+    background-color $col_timeline_bg
+    border-top 1px solid $col_divider_top
+    border-left 1px solid $col_divider_top
+    margin-right -1px
     position relative
+
+    // Toolbar
+    #att-toolbar
+      padding 5px 0 4px 0
+      color $col_timeline_toolbar_col
+      width 100%
+      background-color $col_timeline_bg
+      border-bottom 1px solid $col_timeline_divider_bot
+      font-size 14px
+      position relative
+      z-index $Z_atimeline_toolbar
+
+      #attt-cursor-time
+        float left
+        margin-left 8px
+
+      .icon-cog
+        float right
+        margin-right 8px
+
+      .icon-cog:hover
+        cursor hand
+        cursor pointer
+
+      #attt-name
+        margin 0 auto
+        text-align center
+        display block
+
+      .attt-third
+        width 33%
+        display inline-block
+        vertical-align top
+
+    #att-toolbar:hover
+      cursor hand
+      cursor pointer
+      cursor s-resize
 
     // Cursor
     #att-cursor
@@ -52,6 +87,7 @@
 
     // Actual timeline space
     #att-space
+      border-top 1px solid $col_divider_top
 
       // Actor row
       .atts-outer

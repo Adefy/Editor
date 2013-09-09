@@ -83,7 +83,14 @@ class AWidgetSidebar extends AWidget
   # Render! Fill the sidebar with html from the items rendered in order.
   render: ->
 
-    _html = "<div class=\"as-name\">#{@_name}</div>"
+    icon = "<i class=\"icon-double-angle"
+
+    if @_origin == "left"
+      icon += "-left\"></i>"
+    else
+      icon += "-right\"><i>"
+
+    _html = "<div class=\"as-name\">#{@_name}#{icon}</div><hr>"
     for i in @_items
       _html += i.render()
 
@@ -94,7 +101,7 @@ class AWidgetSidebar extends AWidget
 
     # Re-size
     $(@_sel).height $(window).height() - $(".amainbar").height() - 2
-    $(@_sel).css { top: $(".amainbar").height() + 2 }
+    $(@_sel).css { top: $(".amainbar").height() }
 
     # Re-position
     if @_origin == "right"

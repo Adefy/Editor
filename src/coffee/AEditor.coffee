@@ -74,6 +74,7 @@ class AdefyEditor
       # Set up the menubar
       fileMenu = menubar.addItem "File"
       viewMenu = menubar.addItem "View"
+      timelineMenu = menubar.addItem "Timeline"
       toolsMenu = menubar.addItem "Tools"
       helpMenu = menubar.addItem "Help"
 
@@ -88,7 +89,7 @@ class AdefyEditor
       fileMenu.createChild "Quit"
 
       # View menu options
-      viewMenu.createChild "Toggle Objects Sidebar"
+      viewMenu.createChild "Toggle Toolbox Sidebar"
       viewMenu.createChild "Toggle Properties Sidebar"
       viewMenu.createChild "Toggle Controlbar", null, true
 
@@ -114,16 +115,22 @@ class AdefyEditor
       #
       # For testing, the timeline is for a 5s ad
       workspace = new AWidgetWorkspace me.sel
-      leftSidebar = new AWidgetSidebar me.sel, "Objects", "left", 256
+      leftSidebar = new AWidgetSidebar me.sel, "Toolbox", "left", 256
       rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
-      controlBar = new AWidgetControlBar workspace
+      #controlBar = new AWidgetControlBar workspace
       timeline = new AWidgetTimeline me.sel, 5000
 
       # Add some items to the left sidebar
       testGroup = new AWidgetSidebarObjectGroup "Primitives", leftSidebar
       rectPrimitive = testGroup.createItem "Rectangle"
-      ngonPrimitive = testGroup.createItem "N-Sided Polgyon"
+      ngonPrimitive = testGroup.createItem "Polgyon"
       triPrimitive = testGroup.createItem "Triangle"
+
+      rectPrimitive.icon = "img/icon_rectangle.png"
+      ngonPrimitive.icon = "img/icon_hexagon.png"
+      triPrimitive.icon = "img/icon_triangle.png"
+
+      leftSidebar.render()
 
       rectPrimitive.dropped = (target, x, y) ->
         param.required target

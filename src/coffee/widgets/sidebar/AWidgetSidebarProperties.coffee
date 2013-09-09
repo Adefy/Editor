@@ -246,9 +246,9 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
     for p of properties
       _controlHTML = @_generateControl p, properties[p]
-      @_builtHMTL += "<li class=\"asp-control-group\">#{_controlHTML}</li>"
+      @_builtHMTL += "<li class=\"asp-control-group\">#{_controlHTML}</li><hr>"
 
-    @_builtHMTL += "<button class=\"asp-save\">Save</button>"
+    @_builtHMTL += "<button class=\"asp-save\">Save</button><hr>"
     @_builtHMTL += "</ul>"
 
     @_parent.render()
@@ -280,13 +280,8 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
     # We require a type to do anything
     param.required value.type
 
-    # We might capitalize the first letter of the name for display purposes,
-    # make a new var for this so we keep track of the original name
-    displayName = name
-
-    # Capitalize first letter if appropriate
-    if name.length > 3
-      displayName = name.charAt(0).toUpperCase() + name.substring 1
+    # Capitalize first letter
+    displayName = name.charAt(0).toUpperCase() + name.substring 1
 
     _html =  ""
     _html += "<div data-type=\"#{value.type}\" class=\"asp-control\">"
@@ -312,8 +307,11 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
       _inputName = prefId "aspc"
       _opts = "data-name=\"#{name}\""
 
-      # Give ourselves the drag_mod class, for drag manipulation
-      if value.type == "number" then _opts += " class=\"drag_mod\""
+      # Give ourselves a class to notify the user of draggability on hover,
+      # and prepend a drag icon
+      if value.type == "number"
+        _opts += " class=\"drag_mod\""
+        displayName = "<i class=\"icon-resize-horizontal\"></i> #{displayName}"
 
       _html += "<label #{_opts} for=\"#{_inputName}\">#{displayName}</label>"
 

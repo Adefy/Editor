@@ -156,20 +156,35 @@ class AWidgetTimeline extends AWidget
 
     _html = ""
 
-    # Our toolbar, serving both as an edge to resize ourselves with, and a
-    # container for generic timeline functions. Also displays current cursor
-    # position (time)
-    _html += "<div id=\"at-toolbar\"></div>"
-
     # First up comes the actor listing. This is simply a flat list of all
     # actors in the scene. Clicking an actor selects it in the workspace, and
     # highlights its' timeline row.
-    _html += "<ul id=\"at-actors\"></ul>"
+    _html += "<ul id=\"at-actors\">"
+    _html +=  "<hr>"
+    _html +=   "<div id=\"ata-title\">Actors</div>"
+    _html +=  "<hr>"
+    _html +=   "<div id=\"ata-body\"></div>"
+    _html += "</ul>"
 
     # Next we have the timeline itself. This is one wild beast of functionality
     # Or at least it is planned to be at the time of this comment. Hopefully,
     # in a week or so, it'll be alive and working. Hopefully.
     _html += "<div id=\"at-timeline\">"
+
+    # Our toolbar, serving both as an edge to resize ourselves with, and a
+    # container for generic timeline functions. Also displays current cursor
+    # position (time)
+    _html +=   "<div id=\"att-toolbar\">"
+    _html +=     "<div class=\"attt-third\">"
+    _html +=       "<span id=\"attt-cursor-time\">Cursor: 2.554s</span>"
+    _html +=     "</div>"
+    _html +=     "<div class=\"attt-third\">"
+    _html +=       "<span id=\"attt-name\">Timeline</span>"
+    _html +=     "</div>"
+    _html +=     "<div class=\"attt-third\">"
+    _html +=       "<i class=\"icon-cog\"></i>"
+    _html +=     "</div>"
+    _html +=   "</div>"
 
     # Timeline cursor, designates current time, draggable, sexy
     _html +=   "<div id=\"att-cursor\"></div>"
@@ -201,7 +216,7 @@ class AWidgetTimeline extends AWidget
       _h += "<li data-index=\"#{i}\">#{a.getName()}</li>"
 
     # Ship
-    $("#at-actors").html _h
+    $("#ata-body").html _h
 
   # Renders an individual actor timebar, used when registering new actors,
   # preventing a full re-render of the space. Also called internally by

@@ -9,9 +9,11 @@ class AWidgetSidebarObject extends AWidgetSidebarItem
   #
   # @param [String] name
   # @param [AWidgetSidebarObjectGroup] parent parent object group instance
-  constructor: (name, parent) ->
+  # @param [String] icon optional path to an icon to display
+  constructor: (name, parent, icon) ->
     @_name = param.required name
     @_parent = param.required parent
+    @icon = param.optional icon, ""
 
     super @_parent.getParent(), [ "as-obj" ]
 
@@ -20,7 +22,14 @@ class AWidgetSidebarObject extends AWidgetSidebarItem
   # Render item HTML and return it. Note that this does NOT inject it anywhere!
   #
   # @return [String] html
-  render: -> "<div id=\"#{@_sel}\" class=\"aso-name\">#{@_name}</div>"
+  render: ->
+    caret = "<i class=\"icon-caret-down\"></i>"
+
+    img = ""
+    if @icon.length > 0
+      img = "<img height=\"16\" src=\"#{@icon}\" class=\"awso-i\">"
+
+    "<div id=\"#{@_sel}\" class=\"aso-name\">#{img}#{@_name}#{caret}</div>"
 
   # Set item name
   #

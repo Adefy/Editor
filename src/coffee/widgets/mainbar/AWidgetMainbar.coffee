@@ -95,7 +95,6 @@ class AWidgetMainbar extends AWidget
 
     # Render primary children first
     _html = "<div id=\"ambdecorater\"></div>"     # That nice green line
-    _html += "<span class=\"logo\">Adefy</span>"  # Adefy logo
     _html += "<ul class=\"amainbar-primary\">"    # Our actual primary list
 
     for i in @_items

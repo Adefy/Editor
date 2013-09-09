@@ -11,4 +11,8 @@ dev/js/awgl-concat.coffee
 dev/js/adefy.js
 dev/js/adefy.js.map
 dev/js/ajs-concat.coffee
+dev/img/icon_circle.png
+dev/img/icon_triangle.png
+dev/img/icon_rectangle.png
+dev/img/icon_hexagon.png
 Gruntfile.js
