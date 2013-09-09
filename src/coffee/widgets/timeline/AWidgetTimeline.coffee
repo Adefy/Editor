@@ -20,6 +20,15 @@ class AWidgetTimeline extends AWidget
     "atimebar-color-4"
   ]
 
+  # Timebar bg color classes, styled in colors.styl
+  @_timebarBGColors: [
+    "atimebar-color-1-bg"
+    "atimebar-color-2-bg"
+    "atimebar-color-3-bg"
+    "atimebar-color-4-bg"
+  ]
+
+
   # Creates a timeline at the bottom of the screen. Note that it is absolutely
   # positioned, and adds padding to the body accordingly.
   #
@@ -36,6 +45,13 @@ class AWidgetTimeline extends AWidget
 
     param.required parent
     @_duration = Number param.required(duration)
+
+    # Sanity check on our internal color arrays
+    _l1 = AWidgetTimeline._timebarColors.length
+    _l2 = AWidgetTimeline._timebarBGColors.length
+
+    if _l1 != _l2
+      throw new Error "Timeline color count != timeline bg color count!"
 
     # Enforce minimum duration of 250ms
     if @_duration < 250
@@ -58,20 +74,47 @@ class AWidgetTimeline extends AWidget
     # Inject our layout
     @renderStructure()
 
+    # Set initial time
+    @_updateCursorTime()
+
+    me = @
+
     # Enable cursor dragging
     $("#att-cursor").draggable
       axis: "x"
       containment: "parent"
+      drag: (e, ui) ->
+        me._onCursorDrag e, ui
 
     # Set up event listeners (this is where the magic happens)
-    me = @
     $(document).ready ->
-      $(document).on "click", ".atts-outer", (e) ->me._outerClicked e, @
+
+      # Outer timebar click
+      $(document).on "click", ".atts-outer", (e) -> me._outerClicked e, @
+
+  # Cursor drag event
+  #
+  # @param [Event] e
+  # @param [Object] ui
+  # @private
+  _onCursorDrag: (e, ui) ->
+
+    # Update our cursor time
+    @_updateCursorTime()
+
+    # Apply time somehow
+
+  # Update displayed cursor time
+  # @private
+  _updateCursorTime: ->
+    time = (@getCursorTime() / 1000.0).toFixed 3
+    $("#attt-cursor-time").text "Cursor: #{time}s"
 
   # Timebar click handler, magic and whatnot
   #
   # @param [Object] e click event
   # @param [Object] element dom element that was clicked
+  # @private
   _outerClicked: (e, element) ->
     param.required e
     param.required element
@@ -127,6 +170,9 @@ class AWidgetTimeline extends AWidget
     # Render actor internals
     @_renderActorSpace @_actors.length - 1
 
+    # Ship actor to the actor list
+    @_renderActors @_actors.length - 1
+
   # Remove an actor by id, re-renders timeline internals. Note that this
   # utilizies the ID of the AJS actor!
   #
@@ -176,7 +222,7 @@ class AWidgetTimeline extends AWidget
     # position (time)
     _html +=   "<div id=\"att-toolbar\">"
     _html +=     "<div class=\"attt-third\">"
-    _html +=       "<span id=\"attt-cursor-time\">Cursor: 2.554s</span>"
+    _html +=       "<span id=\"attt-cursor-time\"></span>"
     _html +=     "</div>"
     _html +=     "<div class=\"attt-third\">"
     _html +=       "<span id=\"attt-name\">Timeline</span>"
@@ -205,6 +251,35 @@ class AWidgetTimeline extends AWidget
     @renderActors()
     @renderSpace()
 
+  # Refresh spacer length and actor color in the actor list
+  # @private
+  _refreshActorRows: ->
+
+    me = @
+    $(".atab-spacer").each ->
+      name = $(@).parent().find(".atab-name")[0]
+      a = me._actors[Number($(@).parent().attr("data-index"))]
+
+      # Set width
+      $(@).width $(@).parent().width() - $(name).width() - 24
+
+      # Remove current color
+      for c in AWidgetTimeline._timebarBGColors
+        $(@).removeClass c
+
+      # Ship new color
+      $(@).addClass AWidgetTimeline._timebarBGColors[a.timebarColor]
+
+    $(".atab-name").each ->
+      a = me._actors[Number($(@).parent().attr("data-index"))]
+
+      # Remove current color
+      for c in AWidgetTimeline._timebarColors
+        $(@).removeClass c
+
+      # Ship new color
+      $(@).addClass AWidgetTimeline._timebarColors[a.timebarColor]
+
   # Render the actor list Should never be called by itself, only by @render()
   #
   # @private
@@ -213,17 +288,39 @@ class AWidgetTimeline extends AWidget
     _h = ""
 
     for a, i in @_actors
-      _h += "<li data-index=\"#{i}\">#{a.getName()}</li>"
+      _h += @_renderSingleActor i, true
 
     # Ship
     $("#ata-body").html _h
+
+    @_refreshActorRows()
+
+  # Appends a single actor to the actor list, used after registering an actor
+  # and rendering their timebar
+  #
+  # @param [Number] index index of the actor to append to the list
+  # @privvate
+  _renderSingleActor: (index, notouch) ->
+    # notouch is an undocumented param, set to true when we are called from
+    # @_renderActors. When it is true, we simply return our generated html
+    # instead of injecting it
+    notouch = param.optional notouch, false
+    param.required index
+
+    spacer = "<div class=\"atab-spacer\"></div>"
+    name = "<div class=\"atab-name\">#{@_actors[index].name}</div>"
+    _h = "<li data-index=\"#{index}\">#{name}#{spacer}</li>"
+
+    if notouch then return _h
+
+    $("#ata-body").append _h
+    @_refreshActorRows()
 
   # Renders an individual actor timebar, used when registering new actors,
   # preventing a full re-render of the space. Also called internally by
   # @_renderSpace.
   #
   # @param [Number] index index of the actor whose space we are to render
-  #
   # @private
   _renderActorSpace: (index, notouch) ->
     # notouch is an undocumented param, set to true when we are called from
@@ -267,7 +364,7 @@ class AWidgetTimeline extends AWidget
     # Build style
     style = "style=\"left:#{_start}px; width:#{_length}px\""
 
-    _colorClass = AWidgetTimeline._timebarColors[a.timebarColor]
+    _colorClass = AWidgetTimeline._timebarBGColors[a.timebarColor]
 
     # Injectify
     _h += "<div data-index=\"#{index}\" class=\"atts-outer\">"

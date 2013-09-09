@@ -88,7 +88,7 @@ class AWidgetSidebar extends AWidget
     if @_origin == "left"
       icon += "-left\"></i>"
     else
-      icon += "-right\"><i>"
+      icon += "-right\"></i>"
 
     _html = "<div class=\"as-name\">#{@_name}#{icon}</div><hr>"
     for i in @_items
