@@ -31,9 +31,12 @@ class AWidgetWorkspace extends AWidget
     me = @
     if window.ajax == undefined then window.ajax = microAjax
 
-    # NOTE: We start by default with a 720x1280 canvas size
-    @_cWidth = 720
-    @_cHeight = 1280
+    # The canvas is the same size as ourselves
+    @_cWidth = $(@_sel).width()
+    @_cHeight = $(window).height() - $(".amainbar").height() - \
+      $(".atimeline").height() - 2
+
+    console.log @_sel + " " + @_cWidth
 
     # Picking resources
     @_pickBuffer = null
@@ -409,4 +412,4 @@ class AWidgetWorkspace extends AWidget
   # Simply takes the navbar into account, and sets the height accordingly
   # Note that this does NOT resize the canvas
   onResize: ->
-    $(@_sel).height $(document).height() - $(".amainbar").height()
+    $(@_sel).height $(document).height() - $(".amainbar").height() - 2

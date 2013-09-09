@@ -100,7 +100,9 @@ class AWidgetSidebar extends AWidget
   onResize: ->
 
     # Re-size
-    $(@_sel).height $(window).height() - $(".amainbar").height() - 2
+    $(@_sel).height $(window).height() - $(".amainbar").height() - \
+      $(".atimeline").height() - 2
+
     $(@_sel).css { top: $(".amainbar").height() + 2 }
 
     # Re-position

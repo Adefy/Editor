@@ -114,11 +114,10 @@ class AdefyEditor
       # Create workspace, sidebars, controlbar, and timeline
       #
       # For testing, the timeline is for a 5s ad
-      workspace = new AWidgetWorkspace me.sel
+      timeline = new AWidgetTimeline me.sel, 5000
       leftSidebar = new AWidgetSidebar me.sel, "Toolbox", "left", 256
       rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
       #controlBar = new AWidgetControlBar workspace
-      timeline = new AWidgetTimeline me.sel, 5000
 
       # Add some items to the left sidebar
       testGroup = new AWidgetSidebarObjectGroup "Primitives", leftSidebar
@@ -162,11 +161,7 @@ class AdefyEditor
       # Create a property widget on the right sidebar
       new AWidgetSidebarProperties rightSidebar
 
-      # Set up workspace padding to take sidebars into account
-      # NOTE: This needs to change in the future, to allow for sliding sidebars
-      $(workspace.getSel()).css
-        "padding-left": 256
-        "padding-right": 300
+      workspace = new AWidgetWorkspace me.sel
 
       # Push widgets
       me.widgets.push menubar
