@@ -38,6 +38,7 @@ class AHTriangle extends AHBaseActor
       type: "number"
       min: 0
       placeholder: 30
+      live: true
       float: true
       getValue: -> @_value = me._actor.getBase()
 
@@ -51,6 +52,7 @@ class AHTriangle extends AHBaseActor
       type: "number"
       min: 0
       placeholder: 60
+      live: true
       float: true
       getValue: -> @_value = me._actor.getHeight()
 

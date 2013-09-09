@@ -46,6 +46,7 @@ class AHPolygon extends AHBaseActor
       placeholder: 5
       float: false
       _value: sides
+      live: true
       getValue: -> @_value
 
       # Side count updated! Rebuild, muahahaha
@@ -59,6 +60,7 @@ class AHPolygon extends AHBaseActor
       min: 0
       default: 50
       float: true
+      live: true
       _value: radius
       getValue: -> @_value
 

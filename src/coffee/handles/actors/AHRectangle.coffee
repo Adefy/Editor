@@ -39,6 +39,7 @@ class AHRectangle extends AHBaseActor
       min: 0
       placeholder: 100
       float: true
+      live: true
       getValue: -> @_value = me._actor.getWidth()
 
       # Update width, rebuild
@@ -52,6 +53,7 @@ class AHRectangle extends AHBaseActor
       min: 0
       placeholder: 100
       float: true
+      live: true
       getValue: -> @_value = me._actor.getHeight()
 
       # Update height, rebuild
