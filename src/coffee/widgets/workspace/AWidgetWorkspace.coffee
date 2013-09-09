@@ -36,7 +36,9 @@ class AWidgetWorkspace extends AWidget
     @_cHeight = $(window).height() - $(".amainbar").height() - \
       $(".atimeline").height() - 2
 
-    console.log @_sel + " " + @_cWidth
+    # Starting phone size is 800x480
+    @_pWidth = 800
+    @_pHeight = 480
 
     # Picking resources
     @_pickBuffer = null
@@ -47,6 +49,8 @@ class AWidgetWorkspace extends AWidget
     # the canvas itself, it might prove useful in the future.
     _html = ""
     _html += "<div id=\"aw-canvas-container\">"
+    _html +=   "<div id=\"awcc-outline-text\"></div>"
+    _html +=   "<div id=\"awcc-outline\"></div>"
     _html += "</div"
 
     $(@_sel).html _html
@@ -409,7 +413,35 @@ class AWidgetWorkspace extends AWidget
       x: x - canvasLeft
       y: @_awgl.getHeight() - (y - canvasTop)
 
-  # Simply takes the navbar into account, and sets the height accordingly
+  # Resizes the display outline
+  updateOutline: ->
+
+    # Center
+    _t = (($(@_sel).height() / 2) - 2) - ($("#awcc-outline").height() / 2)
+    _l = (($(@_sel).width() / 2) - 2) - ($("#awcc-outline").width() / 2)
+
+    $("#awcc-outline").css
+      top: _t
+      left: _l
+      width: @_pWidth
+      height: @_pHeight
+
+    # Update text
+    $("#awcc-outline-text").css
+      top: _t - 16
+      left: _l
+
+    $("#awcc-outline-text").text "#{@_pWidth}x#{@_pHeight}"
+
+  # Takes other widgets into account, and sets the height accordingly. Also
+  # centers the phone outline
+  #
   # Note that this does NOT resize the canvas
   onResize: ->
-    $(@_sel).height $(document).height() - $(".amainbar").height() - 2
+
+    # Our height
+    $(@_sel).height $(document).height() - $(".amainbar").height() - 2 - \
+      $(".atimeline").height()
+
+    # Center phone outline
+    @updateOutline()
