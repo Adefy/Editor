@@ -100,6 +100,10 @@ class AWidgetWorkspace extends AWidget
       for o, i in @actorObjects
         if o.getId() == obj.getId()
           @actorObjects.splice i, 1
+
+          # Remove actor from the timeline
+          AWidgetTimeline.getMe().removeActor obj.getActorId()
+
           return
 
   # Builds the framebuffer and texture needed to preform picking, deleting

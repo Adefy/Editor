@@ -183,10 +183,14 @@ class AWidgetTimeline extends AWidget
 
     for a, i in @_actors
       if a.getActorId() == id
-        @_actors.splice i, 1
-        return true
 
-    # TODO: Remove any renderings of the actor (space, list)
+        # Remove actor from our internal array
+        @_actors.splice i, 1
+
+        @_renderActors()
+        @_renderSpace()
+
+        return true
 
     false
 
@@ -368,7 +372,8 @@ class AWidgetTimeline extends AWidget
 
     # Injectify
     _h += "<div data-index=\"#{index}\" class=\"atts-outer\">"
-    _h +=   "<div #{style} class=\"attso-inner #{_colorClass}\">"
+    _h +=   "<div #{style} class=\"attso-inner #{_colorClass}\"></div>"
+    _h += "</div>"
 
     if notouch then return _h
     else $("#att-space").append _h
@@ -380,8 +385,6 @@ class AWidgetTimeline extends AWidget
   _renderSpace: ->
 
     _h = ""
-
-    spaceW = $("#att-space").width()
 
     # Create a time bar for each actor, positioned according to their birth and
     # death.
