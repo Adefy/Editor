@@ -122,8 +122,8 @@ class AHBaseActor extends AHandle
       # Position update, we expect val to be a composite
       update: (v) ->
         param.required v
-        param.required v.x
-        param.required v.y
+        v.x = param.optional v.x, @components.x._value
+        v.y = param.optional v.y, @components.y._value
 
         @components.x._value = v.x
         @components.y._value = v.y
@@ -191,9 +191,13 @@ class AHBaseActor extends AHandle
       update: (v) ->
         param.required v
 
-        @components.r._value = param.required v.r
-        @components.g._value = param.required v.g
-        @components.b._value = param.required v.b
+        v.r = param.optional v.r, @components.r._value
+        v.g = param.optional v.g, @components.g._value
+        v.b = param.optional v.b, @components.b._value
+
+        @components.r._value = v.r
+        @components.g._value = v.g
+        @components.b._value = v.b
 
         if me._actor != null
           me._actor.setColor new AJSColor3 v.r, v.g, v.b
@@ -473,8 +477,6 @@ class AHBaseActor extends AHandle
         if pos > cursor and (pos < right or (right == -1 and pos != left))
           right = pos
 
-      console.log "#{left} #{right}"
-
       # If we didn't find any animation to the right of ourselves, that means
       # that we should keep the state as set by the cursor. As such, bail
       if left == -1 or right == -1 then return
@@ -505,23 +507,33 @@ class AHBaseActor extends AHandle
         if @_propBuffer[String(right)][p] == undefined
           throw new Error "Animation references prop not present on end cap!"
 
+        t = offsetTime / (right - left)
+
         # The property to be animated is composite. Apply the state change
         # to each component individually.
         if _prop.type == "composite" and _prop.components != undefined
-          # NOT HANDLED
+
+          val = {}
+
+          for c of _prop.components
+            val[c] = (anim[p].components[c].eval t).y
+            console.log "Change #{p}.#{c} to #{JSON.stringify val[c]} [#{t}]"
+
+            # Store new value
+            @_properties[p].update val
+
         else
 
           # Evaluate new property value
-          t = offsetTime / (Number(right) - Number(left))
           val = anim[p].eval t
-          console.log "Got #{val.y} for t of #{t}"
+          console.log "Change #{p} to #{val.y} [#{t}]"
 
           # Store new value
           @_properties[p].update val.y
 
-          # Update property bar, whooooo
-          # TODO: Update individual properties
-          $("body").data("default-properties").refresh @
+        # Update property bar, wooooo
+        # TODO: Update individual properties
+        $("body").data("default-properties").refresh @
 
   # Calculates new prop buffer state, using current prop snapshot, cursor
   # position and existing properties.
@@ -584,7 +596,7 @@ class AHBaseActor extends AHandle
         @_animations["#{@_lastTemporalState}"] = {}
 
         # Go through and set up individual variable beziers. Note that for
-        # composites the bezier is applied to each component in an identical
+        # composites the same bezier is made for each component in an identical
         # manner! Since we assume linear interpolation, we fill in blank
         # objects with no control points.
         for p in delta
@@ -598,17 +610,40 @@ class AHBaseActor extends AHandle
           # _findNearestPropReference...
           trueStart = @_findNearestPropReference p, @_lastTemporalState
 
-          _start =
-            x: Number trueStart
-            y: @_propBuffer[String(trueStart)][p].value
+          _startP = @_propBuffer[String(trueStart)][p]
+          _endP = @_propBuffer[@_lastTemporalState][p]
 
-          _end =
-            x: Number @_lastTemporalState
-            y: @_propBuffer[@_lastTemporalState][p].value
+          # Create multiple beziers if so required
+          if _endP.components != undefined
+            @_animations["#{@_lastTemporalState}"][p] = { components: {} }
+            for c of _endP.components
 
-          # Note that we enable buffering!
-          lilBezzie = new ABezier _start, _end, 0, [], true
-          @_animations["#{@_lastTemporalState}"][p] = lilBezzie
+              console.log "start: #{JSON.stringify _endP}"
+              console.log "end: #{JSON.stringify _endP}"
+
+              _start =
+                x: Number trueStart
+                y: _startP.components[c].value
+
+              _end =
+                x: Number @_lastTemporalState
+                y: _endP.components[c].value
+
+              # Note that we enable buffering!
+              bezzie = new ABezier _start, _end, 0, [], true
+              @_animations["#{@_lastTemporalState}"][p].components[c] = bezzie
+          else
+            _start =
+              x: Number trueStart
+              y: _startP.value
+
+            _end =
+              x: Number @_lastTemporalState
+              y: _endP.value
+
+            # Note that we enable buffering!
+            bezzie = new ABezier _start, _end, 0, [], true
+            @_animations["#{@_lastTemporalState}"][p] = bezzie
 
   # Find the nearest prop buffer entry that defines the specified property, to
   # the left (before) the supplied start position. At worst case, this is
