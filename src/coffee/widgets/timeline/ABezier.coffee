@@ -103,9 +103,9 @@ class ABezier
       # [x, y] = [(1 - t)^3]P0 + 3[(1 - t)^2]P1 + 3(1 - t)(t^2)P2 + (t^3)P3
       val =
         x: (_Mt3 * @_start.x) + (3 * _Mt2 * t * @_control[0].x) \
-           + (3 * _Mt * _t2 + @_control[1].x) + (_t3 * @_end.x)
+           + (3 * _Mt * _t2 * @_control[1].x) + (_t3 * @_end.x)
         y: (_Mt3 * @_start.y) + (3 * _Mt2 * t * @_control[0].y) \
-           + (3 * _Mt * _t2 + @_control[1].y) + (_t3 * @_end.y)
+           + (3 * _Mt * _t2 * @_control[1].y) + (_t3 * @_end.y)
 
       # Buffer if requested
       if @_buffer then @_bufferData[String(t)] = val
