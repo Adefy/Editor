@@ -61,3 +61,6 @@ class AHRectangle extends AHBaseActor
         @_value = param.required v
 
         if me._actor != null then me._actor.setHeight Number(v)
+
+    # Finish our initialization
+    @postInit()

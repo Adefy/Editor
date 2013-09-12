@@ -50,7 +50,7 @@ class ABezier
   # http://devmag.org.za/2011/04/05/bzier-curves-a-tutorial/
   #
   # @param [Number] t position on the curve, 0.0 - 1.0
-  # @return [Object] pos position as an object with (x, y) keys
+  # @return [Object] pos position as an object with (time, value) keys
   eval: (t) ->
     param.required t
 

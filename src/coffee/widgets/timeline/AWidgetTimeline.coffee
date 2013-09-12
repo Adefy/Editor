@@ -85,6 +85,8 @@ class AWidgetTimeline extends AWidget
       containment: "parent"
       drag: (e, ui) ->
         me._onCursorDrag e, ui
+      stop: (e, ui) ->
+        me._onCursorDragStop e, ui
 
     # Set up event listeners (this is where the magic happens)
     $(document).ready ->
@@ -103,6 +105,19 @@ class AWidgetTimeline extends AWidget
     @_updateCursorTime()
 
     # Apply time somehow
+
+  # Cursor drag stop event, updates all living
+  #
+  # @param [Event] e
+  # @param [Object] ui
+  # @private
+  _onCursorDragStop: (e, ui) ->
+
+    # TODO: Apply update to only existing actors.
+    #       Calculate actor births and deaths seperately (after this)
+
+    for a in @_actors
+      a.updateInTime()
 
   # Update displayed cursor time
   # @private

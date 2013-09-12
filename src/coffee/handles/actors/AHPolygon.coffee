@@ -69,3 +69,6 @@ class AHPolygon extends AHBaseActor
         @_value = param.required v
 
         if me._actor != null then me._actor.setRadius Number(v)
+
+    # Finish our initialization
+    @postInit()
