@@ -510,32 +510,36 @@ class AHBaseActor extends AHandle
         val = {}
 
         for c of _prop.components
-
           _start = anim[v.name].components[c]._start.x
+
+          # Ensure animation starts before us
+          if _start <= cursor
+            t = (cursor - _start) / (v.end - _start)
+
+            console.log "#{cursor} #{_start} #{v.end} #{t}"
+
+            val[c] = (anim[v.name].components[c].eval t).y
+            label = "#{_start}-|#{cursor}|-#{v.end}"
+            console.log "#{label} #{v.name}.#{c} #{val[c]}"
+
+            # Store new value
+            @_properties[v.name].update val
+
+      else
+        _start = anim[v.name]._start.x
+
+        if _start <= cursor
           t = (cursor - _start) / (v.end - _start)
 
-          val[c] = (anim[v.name].components[c].eval t).y
-          label = "#{_start}-|#{cursor}|-#{v.end}"
-          console.log "#{label} #{v.name}.#{c} #{val[c]}"
+          val = (anim[v.name].eval t).y
+          console.log "Change #{v.name} to #{val} [#{t}]"
 
           # Store new value
           @_properties[v.name].update val
 
-      else
-
-        # Evaluate new property value
-        _start = anim[v.name]._start.x
-        t = (cursor - _start) / (v.end - _start)
-
-        val = (anim[v.name].eval t).y
-        console.log "Change #{v.name} to #{val} [#{t}]"
-
-        # Store new value
-        @_properties[v.name].update val
-
-      # Update property bar, wooooo
-      # TODO: Update individual properties
-      $("body").data("default-properties").refresh @
+    # Update property bar, wooooo
+    # TODO: Update individual properties
+    $("body").data("default-properties").refresh @
 
   # Calculates new prop buffer state, using current prop snapshot, cursor
   # position and existing properties.
@@ -598,6 +602,9 @@ class AHBaseActor extends AHandle
         # composites the same bezier is made for each component in an identical
         # manner! Since we assume linear interpolation, we fill in blank
         # objects with no control points.
+        #
+        # If we are between two end points in which the property changes, split
+        # the animation appropriately
         for p in delta
 
           # Create a bezier class; this would be the place to do that
@@ -605,12 +612,42 @@ class AHBaseActor extends AHandle
           #
           # We find our start value by going back through our prop buffer and
           # finding the nearest reference to the property we now modify
-          #
-          # _findNearestPropReference...
           trueStart = @_findNearestState @_lastTemporalState, false, p
+
+          # Check if we are in the middle of an animation ourselves. If so,
+          # split it
+          animCheck = @_findNearestState @_lastTemporalState, true, p
 
           _startP = @_propBuffer[String(trueStart)][p]
           _endP = @_propBuffer[@_lastTemporalState][p]
+
+          if animCheck != -1
+
+            # An animation overlaps us. Perform an integrity check on it, then
+            # split.
+            anim = @_animations[animCheck]
+
+            if anim[p].components != undefined
+              for c of anim[p].components
+                if anim[p].components[c]._start.x != Number(trueStart)
+                  throw new Error "Existing animation invalid!"
+
+                # Rebase animation by calculating new start value
+                _newX = @_lastTemporalState
+                _newY = _endP.components[c].value
+
+                @_animations[animCheck][p].components[c]._start.x = _newX
+                @_animations[animCheck][p].components[c]._start.y = _newY
+
+            else
+              if anim[p]._start.x != trueStart
+                throw new Error "Existing animation invalid!"
+
+              _newX = @_lastTemporalState
+              _newY = _endP.value
+
+              @_animations[animCheck][p]._start.x = _newX
+              @_animations[animCheck][p]._start.y = _newY
 
           # Create multiple beziers if so required
           if _endP.components != undefined
