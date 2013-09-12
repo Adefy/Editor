@@ -540,9 +540,6 @@ class AHBaseActor extends AHandle
 
     else
 
-      # Ensure we are not at birth!
-      if @_lastTemporalState == Math.floor @lifetimeStart then return
-
       # Check which properties have changed
       # NOTE: We expect the prop snapshot to be valid, and contain the
       #       structure required by each property in it!
@@ -577,6 +574,9 @@ class AHBaseActor extends AHandle
         console.log "delta: #{delta}"
 
         @_propBuffer[@_lastTemporalState] = @_serializeProperties delta
+
+        # Ensure we are not at birth!
+        if @_lastTemporalState == Math.floor @lifetimeStart then return
 
         # Define our animation
         # Note that an animation is an object with a bezier function for
