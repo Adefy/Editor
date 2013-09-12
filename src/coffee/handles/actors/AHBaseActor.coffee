@@ -359,10 +359,8 @@ class AHBaseActor extends AHandle
     next = @_lastTemporalState
     while next != state
       next = @_findNearestState next, right
-      if next == -1 then throw new Error "shit"
       if Number(next) != Math.floor @lifetimeStart
         intermediaryStates.push next
-      console.log "t #{next}"
 
     # Now sort accordingly
     intermediaryStates.sort (a, b) ->
@@ -383,18 +381,13 @@ class AHBaseActor extends AHandle
           return -1
         else return 0
 
-    console.log "applying inter. #{intermediaryStates.length}"
-
     # Now apply our states in the order presented
     for s in intermediaryStates
-
-      console.log "inter #{s}"
 
       # Go through and update values
       for p of @_propBuffer[s]
 
         _prop = @_propBuffer[s][p]
-        console.log JSON.stringify _prop
 
         if _prop.components != undefined
 
@@ -402,14 +395,12 @@ class AHBaseActor extends AHandle
           _update = {}
           for c of _prop.components
             _update[c] = _prop.components[c].value
-            console.log "#{p} #{c} #{_update[c]}"
 
           @_properties[p].update _update
 
         # No components, update directly
         else
           @_properties[p]._value = _prop.value
-          console.log "non-c #{_prop.value}"
 
   # Updates our state according to the current cursor position. Goes through
   # our prop buffer, and calculates a new snapshot and property object
@@ -450,9 +441,7 @@ class AHBaseActor extends AHandle
     cursor = Math.floor AWidgetTimeline.getMe().getCursorTime()
 
     # If we haven't moved, drop out early
-    if cursor == @_lastTemporalState
-      console.log "No state change"
-      return
+    if cursor == @_lastTemporalState then return
 
     # If we don't have a saved state at the current cursor position, find the
     # nearest and calculate our time offset. Worst case, the closest state
@@ -465,16 +454,12 @@ class AHBaseActor extends AHandle
     @_applyKnownState nearest
 
     # Return if we have nothing else to do (cursor is at a known state)
-    if nearest == cursor
-      console.log "State pre-calculated, returning"
-      return
+    if nearest == cursor then return
 
     ##
     ## Next, bail if there are no states to the right of ourselves
     ##
-    if @_findNearestState(cursor, true) == -1
-      console.log "No states to the right of #{cursor}"
-      return
+    if @_findNearestState(cursor, true) == -1 then return
 
     # Reset the cursor value
     cursor = Math.floor AWidgetTimeline.getMe().getCursorTime()
@@ -503,7 +488,6 @@ class AHBaseActor extends AHandle
     ## Now that we've built that list, go through and apply the delta of each
     ## property to ourselves
     ##
-    console.log "Varying: #{JSON.stringify varying}"
     for v in varying
 
       anim = @_animations["#{v.end}"]
@@ -598,8 +582,6 @@ class AHBaseActor extends AHandle
       # cursor is our last temporal state, since the current cursor position
       # is not where the properties were set!
       if delta.length > 0
-
-        console.log "delta: #{delta}"
 
         _serialized = @_serializeProperties delta
         @_propBuffer[@_lastTemporalState] = _serialized
