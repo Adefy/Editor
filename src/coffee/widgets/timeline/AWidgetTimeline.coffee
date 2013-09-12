@@ -252,7 +252,7 @@ class AWidgetTimeline extends AWidget
     _html +=   "</div>"
 
     # Timeline cursor, designates current time, draggable, sexy
-    _html +=   "<div id=\"att-cursor\"></div>"
+    _html +=   "<div id=\"att-cursor\"><div></div></div>"
 
     # Proper timeline space, actor timelines are contained here.
     _html +=   "<ul id=\"att-space\"></ul>"
