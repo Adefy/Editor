@@ -498,7 +498,7 @@ class AHBaseActor extends AHandle
         throw new Error "We don't have the property #{v.name}!"
 
       if anim == undefined
-        throw new Error "Animation does not exist for #{right}!"
+        throw new Error "Animation does not exist for #{v.end}!"
 
       if anim[v.name] == undefined
         throw new Error "Animation doesn't effect #{v.name}!"
