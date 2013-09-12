@@ -92,7 +92,9 @@ class AHBaseActor extends AHandle
     # getValue() methods, and save it locally as _value. Composites doing this
     # must perform the saving for their children.
     #
-    # TODO: Decribe
+    # Note that we expect composite update methods to take an object containing
+    # the same keys as the composite has components. i.e. position takes (x, y)
+    # and color takes (r, g, b)
 
     # Default actor properties, common to all actors
     @_properties["position"] =
@@ -371,8 +373,6 @@ class AHBaseActor extends AHandle
     cursor = Math.floor AWidgetTimeline.getMe().getCursorTime()
     _origCursor = Math.floor AWidgetTimeline.getMe().getCursorTime()
 
-    console.log "State update request #{cursor}"
-
     # If we haven't moved, drop out early
     if String(cursor) == @_lastTemporalState then return
 
@@ -460,8 +460,7 @@ class AHBaseActor extends AHandle
     # property changes, and apply
     if offsetTime > -1
 
-      # Reset the cursor value, storing left cap we found earlier
-      left = cursor
+      # Reset the cursor value
       cursor = _origCursor
 
       # Find our nearest two states. Note that the old cursor is one of them,
@@ -479,9 +478,7 @@ class AHBaseActor extends AHandle
 
       # If we didn't find any animation to the right of ourselves, that means
       # that we should keep the state as set by the cursor. As such, bail
-      if left == -1 or right == -1 then return
-
-      console.log "prop change incoming! #{left}-|#{cursor}|-#{right}"
+      if right == -1 then return
 
       # Get our animation bezier function
       anim = @_animations["#{right}"]
@@ -494,18 +491,23 @@ class AHBaseActor extends AHandle
       # our next state (right)
       for p of anim
 
+        # Find the true left cap for the current property
+        left = @_findNearestPropReference p, right
+
+        console.log "prop change incoming! #{left}-|#{cursor}|-#{right}"
+
         _prop = @_properties[p]
 
         # Sanity checks, ensures we have the property and that it is present
         # on both end caps
         if _prop == undefined
-          throw new Error "Animation references a property we don't have!"
+          throw new Error "Animation references a #{_prop} we don't have!"
 
         if @_propBuffer[String(left)][p] == undefined
-          throw new Error "Animation references prop not present on start cap!"
+          throw new Error "Animation references #{p} not present on start cap!"
 
         if @_propBuffer[String(right)][p] == undefined
-          throw new Error "Animation references prop not present on end cap!"
+          throw new Error "Animation references #{p} not present on end cap!"
 
         t = offsetTime / (right - left)
 
@@ -540,8 +542,6 @@ class AHBaseActor extends AHandle
   #
   # @private
   _updatePropBuffer: ->
-
-    console.log "Prop update request"
 
     # propSnapshot is null when we have just been initialized, current
     # properties are defaults. Set up our birth state
@@ -585,7 +585,8 @@ class AHBaseActor extends AHandle
 
         console.log "delta: #{delta}"
 
-        @_propBuffer[@_lastTemporalState] = @_serializeProperties delta
+        _serialized = @_serializeProperties delta
+        @_propBuffer[@_lastTemporalState] = _serialized
 
         # Ensure we are not at birth!
         if @_lastTemporalState == Math.floor @lifetimeStart then return
@@ -617,9 +618,6 @@ class AHBaseActor extends AHandle
           if _endP.components != undefined
             @_animations["#{@_lastTemporalState}"][p] = { components: {} }
             for c of _endP.components
-
-              console.log "start: #{JSON.stringify _endP}"
-              console.log "end: #{JSON.stringify _endP}"
 
               _start =
                 x: Number trueStart
@@ -653,19 +651,21 @@ class AHBaseActor extends AHandle
   # @param [String] start prop buffer entry name to start from
   # @return [String] nearest key into @_propBuffer
   # @private
-  _findNearestPropReference: (p, start) ->
-    param.required p
+  _findNearestPropReference: (prop, start) ->
+    param.required prop
     param.required start
 
-    if @_properties[p] == undefined
+    if @_properties[prop] == undefined
       throw new Error "Can't find nearest reference, prop not valid! #{p}"
 
     start = Number(start)
     nearest = -1
 
     for p of @_propBuffer
-      if Number(p) < start and Number(p) > nearest
-        nearest = p
+      if @_propBuffer[p] != undefined
+        if @_propBuffer[p][prop] != undefined
+          if Number(p) < start and Number(p) > nearest
+            nearest = p
 
     if nearest == -1
       throw new Error "Nearest ref not found, prop does not exist at birth!"
