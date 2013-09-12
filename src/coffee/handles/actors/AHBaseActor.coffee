@@ -313,7 +313,7 @@ class AHBaseActor extends AHandle
     @_genSnapshot()
 
     cursor = AWidgetTimeline.getMe().getCursorTime()
-    @_lastTemporalState = Number(Math.floor(cursor))
+    @_lastTemporalState = Number Math.floor(cursor)
 
   # Generates a new snapshot from our current properties
   # @private
@@ -345,33 +345,30 @@ class AHBaseActor extends AHandle
   _applyKnownState: (state) ->
     param.required state
 
+    if Number(state) == @_lastTemporalState then return
+
     # Apply saved state. Find all stored states between our previous state
     # and the current one. Then sort, and finally apply in order.
     #
     # NOTE: The order of application varies depending on the direction in
     #       time in which we moved!
-
-    # Figure out state caps
-    start = -1
-    end = -1
-
-    if state > @_lastTemporalState
-      start = @_lastTemporalState
-      end = state
-    else
-      start = state
-      end = @_lastTemporalState
+    if state > @_lastTemporalState then right = true else right = false
 
     # Figure out intermediary states
     intermediaryStates = []
-    for b of @_propBuffer
-      if Number(b) < start and Number(b) > end then intermediaryStates.push b
+    next = @_lastTemporalState
+    while next != state
+      next = @_findNearestState next, right
+      if next == -1 then throw new Error "shit"
+      if Number(next) != Math.floor @lifetimeStart
+        intermediaryStates.push next
+      console.log "t #{next}"
 
     # Now sort accordingly
     intermediaryStates.sort (a, b) ->
 
       # We moved back in time, lastTemporalState is in front of the state
-      if start == state
+      if right == false
         if Number(a) > Number(b)
           return -1
         else if Number(a) < Number(b)
@@ -386,23 +383,33 @@ class AHBaseActor extends AHandle
           return -1
         else return 0
 
+    console.log "applying inter. #{intermediaryStates.length}"
+
     # Now apply our states in the order presented
     for s in intermediaryStates
+
+      console.log "inter #{s}"
 
       # Go through and update values
       for p of @_propBuffer[s]
 
         _prop = @_propBuffer[s][p]
+        console.log JSON.stringify _prop
 
-        if _prop.type == "composite" and _prop.components != undefined
+        if _prop.components != undefined
 
           # Update component-wise
+          _update = {}
           for c of _prop.components
+            _update[c] = _prop.components[c].value
+            console.log "#{p} #{c} #{_update[c]}"
 
-            @_properties[p].components[c]._value = _prop.components[c].value
+          @_properties[p].update _update
 
         # No components, update directly
-        else @_properties[p]._value = _prop.value
+        else
+          @_properties[p]._value = _prop.value
+          console.log "non-c #{_prop.value}"
 
   # Updates our state according to the current cursor position. Goes through
   # our prop buffer, and calculates a new snapshot and property object
@@ -436,116 +443,115 @@ class AHBaseActor extends AHandle
   # @private
   _updateActorState: ->
 
-    # Grab the cursor state twice, since we'll modify cursor later on
+    ##
+    ## First, apply intermediary states
+    ##
+
     cursor = Math.floor AWidgetTimeline.getMe().getCursorTime()
-    _origCursor = Math.floor AWidgetTimeline.getMe().getCursorTime()
 
     # If we haven't moved, drop out early
-    if String(cursor) == @_lastTemporalState then return
+    if cursor == @_lastTemporalState
+      console.log "No state change"
+      return
 
-    offsetTime = -1
-
-    # Check for a saved state at the current position, set our offsetTime
-    # if we have one
+    # If we don't have a saved state at the current cursor position, find the
+    # nearest and calculate our time offset. Worst case, the closest state
+    # is our birth
+    nearest = cursor
     if @_propBuffer[String(cursor)] == undefined
+      nearest = @_findNearestState cursor
 
-      # Find the nearest state in the time behind our cursor position. Worst
-      # case, this is our initial state
-      nearest = -1
-      for b of @_propBuffer
-        if Number(b) > nearest and Number(b) <= cursor
-          nearest = Number(b)
-
-      if nearest == -1 then throw new Error "Nearest state not found!"
-
-      # Calculate offset between the nearest state and our cursor
-      offsetTime = cursor - nearest
-
-      # Move the cursor to the nearest state
-      cursor = nearest
-
+    # Apply intermediary states (up to ourselves if we have a state)
     @_applyKnownState nearest
 
-    # Check if we have an offset time. If we do, calculate the required
-    # property changes, and apply
-    if offsetTime > -1
+    # Return if we have nothing else to do (cursor is at a known state)
+    if nearest == cursor
+      console.log "State pre-calculated, returning"
+      return
 
-      # Reset the cursor value
-      cursor = _origCursor
+    ##
+    ## Next, bail if there are no states to the right of ourselves
+    ##
+    if @_findNearestState(cursor, true) == -1
+      console.log "No states to the right of #{cursor}"
+      return
 
-      # Find our nearest two states. Note that the old cursor is one of them,
-      # capping the start of our animation, so find the immediate state after
-      # the cursor.
-      #
-      # NOTE: If there is a state between the immediate state we find and the
-      #       cursor, then we did not position the cursor correctly! It should
-      #       be the state to the immediate left of ourselves
-      right = -1
-      for b of @_propBuffer
-        pos = Number(b)
-        if pos > cursor and (pos < right or (right == -1 and pos != left))
-          right = pos
+    # Reset the cursor value
+    cursor = Math.floor AWidgetTimeline.getMe().getCursorTime()
 
-      # If we didn't find any animation to the right of ourselves, that means
-      # that we should keep the state as set by the cursor. As such, bail
-      if right == -1 then return
+    ##
+    ## Now the fun part; find all values defined to the right of us
+    ##
+    ## Varying stores objects containing a property name and end cap
+    varying = []
 
-      # Get our animation bezier function
-      anim = @_animations["#{right}"]
+    # Helper
+    _pushUnique = (p) ->
+      unique = true
+      for v in varying
+        if v == p.name
+          unique = false
+          break
+      if unique then varying.push p
+
+    from = String(cursor)
+    while (from = @_findNearestState(from, true)) != -1
+      for p of @_propBuffer[from]
+        _pushUnique { name: p, end: from }
+
+    ##
+    ## Now that we've built that list, go through and apply the delta of each
+    ## property to ourselves
+    ##
+    console.log "Varying: #{JSON.stringify varying}"
+    for v in varying
+
+      anim = @_animations["#{v.end}"]
+      _prop = @_properties[v.name]
+
+      # Sanity checks
+      if _prop == undefined
+        throw new Error "We don't have the property #{v.name}!"
 
       if anim == undefined
         throw new Error "Animation does not exist for #{right}!"
 
-      # We rely on the animation to store all info pertinent to our values. In
-      # reality, the same properties should be listed in it as are listed in
-      # our next state (right)
-      for p of anim
+      if anim[v.name] == undefined
+        throw new Error "Animation doesn't effect #{v.name}!"
 
-        # Find the true left cap for the current property
-        left = @_findNearestPropReference p, right
+      # The property to be animated is composite. Apply the state change
+      # to each component individually.
+      if _prop.type == "composite" and _prop.components != undefined
 
-        console.log "prop change incoming! #{left}-|#{cursor}|-#{right}"
+        val = {}
 
-        _prop = @_properties[p]
+        for c of _prop.components
 
-        # Sanity checks, ensures we have the property and that it is present
-        # on both end caps
-        if _prop == undefined
-          throw new Error "Animation references a #{_prop} we don't have!"
+          _start = anim[v.name].components[c]._start.x
+          t = (cursor - _start) / (v.end - _start)
 
-        if @_propBuffer[String(left)][p] == undefined
-          throw new Error "Animation references #{p} not present on start cap!"
-
-        if @_propBuffer[String(right)][p] == undefined
-          throw new Error "Animation references #{p} not present on end cap!"
-
-        t = offsetTime / (right - left)
-
-        # The property to be animated is composite. Apply the state change
-        # to each component individually.
-        if _prop.type == "composite" and _prop.components != undefined
-
-          val = {}
-
-          for c of _prop.components
-            val[c] = (anim[p].components[c].eval t).y
-            console.log "Change #{p}.#{c} to #{JSON.stringify val[c]} [#{t}]"
-
-            # Store new value
-            @_properties[p].update val
-
-        else
-
-          # Evaluate new property value
-          val = anim[p].eval t
-          console.log "Change #{p} to #{val.y} [#{t}]"
+          val[c] = (anim[v.name].components[c].eval t).y
+          label = "#{_start}-|#{cursor}|-#{v.end}"
+          console.log "#{label} #{v.name}.#{c} #{val[c]}"
 
           # Store new value
-          @_properties[p].update val.y
+          @_properties[v.name].update val
 
-        # Update property bar, wooooo
-        # TODO: Update individual properties
-        $("body").data("default-properties").refresh @
+      else
+
+        # Evaluate new property value
+        _start = anim[v.name]._start.x
+        t = (cursor - _start) / (v.end - _start)
+
+        val = (anim[v.name].eval t).y
+        console.log "Change #{v.name} to #{val} [#{t}]"
+
+        # Store new value
+        @_properties[v.name].update val
+
+      # Update property bar, wooooo
+      # TODO: Update individual properties
+      $("body").data("default-properties").refresh @
 
   # Calculates new prop buffer state, using current prop snapshot, cursor
   # position and existing properties.
@@ -619,7 +625,7 @@ class AHBaseActor extends AHandle
           # finding the nearest reference to the property we now modify
           #
           # _findNearestPropReference...
-          trueStart = @_findNearestPropReference p, @_lastTemporalState
+          trueStart = @_findNearestState @_lastTemporalState, false, p
 
           _startP = @_propBuffer[String(trueStart)][p]
           _endP = @_propBuffer[@_lastTemporalState][p]
@@ -653,34 +659,35 @@ class AHBaseActor extends AHandle
             bezzie = new ABezier _start, _end, 0, [], true
             @_animations["#{@_lastTemporalState}"][p] = bezzie
 
-  # Find the nearest prop buffer entry that defines the specified property, to
-  # the left (before) the supplied start position. At worst case, this is
-  # our birth object. Validation of the property is also performed
+  # Find the nearest prop buffer entry to the left/right of the supplied state
+  # An optional property can be passed in, adding its existence as a criteria
+  # for the returned state. Validation of the property is also performed
   #
-  # @param [String] p property name
   # @param [String] start prop buffer entry name to start from
-  # @return [String] nearest key into @_propBuffer
+  # @param [Boolean] right search to the right, defaults to false
+  # @param [String] prop property name
+  # @return [String] nearest key into @_propBuffer, or -1 if not found
   # @private
-  _findNearestPropReference: (prop, start) ->
-    param.required prop
+  _findNearestState: (start, right, prop) ->
     param.required start
-
-    if @_properties[prop] == undefined
-      throw new Error "Can't find nearest reference, prop not valid! #{p}"
+    right = param.optional right, false
+    prop = param.optional prop, null
 
     start = Number(start)
     nearest = -1
 
     for p of @_propBuffer
       if @_propBuffer[p] != undefined
-        if @_propBuffer[p][prop] != undefined
+        if right
+          if Number(p) > start and (Number(p) < nearest or nearest == -1)
+            if prop == null then nearest = p
+            else if @_propBuffer[p][prop] != undefined then nearest = p
+        else
           if Number(p) < start and Number(p) > nearest
-            nearest = p
+            if prop == null then nearest = p
+            else if @_propBuffer[p][prop] != undefined then nearest = p
 
-    if nearest == -1
-      throw new Error "Nearest ref not found, prop does not exist at birth!"
-
-    String nearest
+    if nearest == -1 then return -1 else return String nearest
 
   # Prepares our properties object for injection into the buffer. In essence,
   # builds a new object containing only current values, and returns it for
