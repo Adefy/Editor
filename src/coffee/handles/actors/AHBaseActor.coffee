@@ -337,6 +337,73 @@ class AHBaseActor extends AHandle
 
       @_propSnapshot[p] = _Sp
 
+  # Finds states between our last temporal state, and the supplied state, and
+  # applies them in order
+  #
+  # @param [Number] state
+  # @private
+  _applyKnownState: (state) ->
+    param.required state
+
+    # Apply saved state. Find all stored states between our previous state
+    # and the current one. Then sort, and finally apply in order.
+    #
+    # NOTE: The order of application varies depending on the direction in
+    #       time in which we moved!
+
+    # Figure out state caps
+    start = -1
+    end = -1
+
+    if state > @_lastTemporalState
+      start = @_lastTemporalState
+      end = state
+    else
+      start = state
+      end = @_lastTemporalState
+
+    # Figure out intermediary states
+    intermediaryStates = []
+    for b of @_propBuffer
+      if Number(b) < start and Number(b) > end then intermediaryStates.push b
+
+    # Now sort accordingly
+    intermediaryStates.sort (a, b) ->
+
+      # We moved back in time, lastTemporalState is in front of the state
+      if start == state
+        if Number(a) > Number(b)
+          return -1
+        else if Number(a) < Number(b)
+          return 1
+        else return 0
+
+      # We moved forwards in time, lastTemporalState is behind our state
+      else
+        if Number(a) > Number(b)
+          return 1
+        else if Number(a) < Number(b)
+          return -1
+        else return 0
+
+    # Now apply our states in the order presented
+    for s in intermediaryStates
+
+      # Go through and update values
+      for p of @_propBuffer[s]
+
+        _prop = @_propBuffer[s][p]
+
+        if _prop.type == "composite" and _prop.components != undefined
+
+          # Update component-wise
+          for c of _prop.components
+
+            @_properties[p].components[c]._value = _prop.components[c].value
+
+        # No components, update directly
+        else @_properties[p]._value = _prop.value
+
   # Updates our state according to the current cursor position. Goes through
   # our prop buffer, and calculates a new snapshot and property object
   # accordingly.
@@ -397,64 +464,7 @@ class AHBaseActor extends AHandle
       # Move the cursor to the nearest state
       cursor = nearest
 
-    # Apply saved state. Find all stored states between our previous state
-    # and the current one. Then sort, and finally apply in order.
-    #
-    # NOTE: The order of application varies depending on the direction in
-    #       time in which we moved!
-
-    # Figure out state caps
-    start = -1
-    end = -1
-
-    if cursor > @_lastTemporalState
-      start = @_lastTemporalState
-      end = cursor
-    else
-      start = cursor
-      end = @_lastTemporalState
-
-    # Figure out intermediary states
-    intermediaryStates = []
-    for b of @_propBuffer
-      if Number(b) < start and Number(b) > end then intermediaryStates.push b
-
-    # Now sort accordingly
-    intermediaryStates.sort (a, b) ->
-
-      # We moved back in time, lastTemporalState is in front of the cursor
-      if start == cursor
-        if Number(a) > Number(b)
-          return -1
-        else if Number(a) < Number(b)
-          return 1
-        else return 0
-
-      # We moved forwards in time, lastTemporalState is behind our cursor
-      else
-        if Number(a) > Number(b)
-          return 1
-        else if Number(a) < Number(b)
-          return -1
-        else return 0
-
-    # Now apply our states in the order presented
-    for state in intermediaryStates
-
-      # Go through and update values
-      for p of @_propBuffer[state]
-
-        _prop = @_propBuffer[state][p]
-
-        if _prop.type == "composite" and _prop.components != undefined
-
-          # Update component-wise
-          for c of _prop.components
-
-            @_properties[p].components[c]._value = _prop.components[c].value
-
-        # No components, update directly
-        else @_properties[p]._value = _prop.value
+    @_applyKnownState nearest
 
     # Check if we have an offset time. If we do, calculate the required
     # property changes, and apply
