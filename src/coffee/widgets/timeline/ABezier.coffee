@@ -20,7 +20,7 @@ class ABezier
   constructor: (@_start, @_end, @_degree, @_control, @_buffer) ->
     param.required @_start
     param.required @_end
-    param.required @degree, [0, 1, 2]
+    param.required @_degree, [0, 1, 2]
 
     # Set buffering
     @_buffer = param.optional @_buffer, false
@@ -68,8 +68,8 @@ class ABezier
     if @_degree == 0
 
       val =
-        x: @_start.x + ((@_start.x - @_end.x) * t)
-        y: @_start.y + ((@_start.y - @_end.y) * t)
+        x: @_start.x + ((@_end.x - @_start.x) * t)
+        y: @_start.y + ((@_end.y - @_start.y) * t)
 
       # Buffer if requested
       if @_buffer then @_bufferData[String(t)] = val
