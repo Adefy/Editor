@@ -28,7 +28,6 @@ class AWidgetTimeline extends AWidget
     "atimebar-color-4-bg"
   ]
 
-
   # Creates a timeline at the bottom of the screen. Note that it is absolutely
   # positioned, and adds padding to the body accordingly.
   #
@@ -267,8 +266,8 @@ class AWidgetTimeline extends AWidget
   # divide the necessary logic, into @_renderActors() and @_renderSpace(). This
   # function simply calls both.
   render: ->
-    @renderActors()
-    @renderSpace()
+    @_renderActors()
+    @_renderSpace()
 
   # Refresh spacer length and actor color in the actor list
   # @private
@@ -387,7 +386,18 @@ class AWidgetTimeline extends AWidget
 
     # Injectify
     _h += "<div data-index=\"#{index}\" class=\"atts-outer\">"
-    _h +=   "<div #{style} class=\"attso-inner #{_colorClass}\"></div>"
+    _h +=   "<div #{style} class=\"attso-inner #{_colorClass}\">"
+
+    # Render animation handles
+    _animations = a.getAnimations()
+    for anim of _animations
+      console.log "#{anim} #{a.lifetimeStart}"
+      offset = spaceW * ((Number(anim) - a.lifetimeStart) / @_duration)
+      _h += "<div style=\"left: #{offset}px;\" class=\"attso-key\">"
+      _h +=   "<i class=\"icon-bolt\"></i>"
+      _h += "</div>"
+
+    _h +=   "</div>"
     _h += "</div>"
 
     if notouch then return _h

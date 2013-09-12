@@ -678,6 +678,14 @@ class AHBaseActor extends AHandle
             bezzie = new ABezier _start, _end, 0, [], true
             @_animations["#{@_lastTemporalState}"][p] = bezzie
 
+      # Notify timeline to refresh
+      AWidgetTimeline.getMe().render()
+
+  # Return animations array
+  #
+  # @return [Array<Object>] animations
+  getAnimations: -> @_animations
+
   # Find the nearest prop buffer entry to the left/right of the supplied state
   # An optional property can be passed in, adding its existence as a criteria
   # for the returned state. Validation of the property is also performed
