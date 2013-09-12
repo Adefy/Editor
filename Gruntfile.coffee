@@ -95,7 +95,7 @@ module.exports = (grunt) ->
           "#{libDir}/**/*.coffee"
           "#{libDir}/*.coffee"
         ]
-        tasks: ["concat_in_order", "coffeelint", "coffee"]
+        tasks: ["concat_in_order", "coffee", "coffeelint"]
       stylus:
         files: [
           "#{libDir}/stylus/*.styl",
