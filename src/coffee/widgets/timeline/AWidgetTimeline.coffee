@@ -390,7 +390,6 @@ class AWidgetTimeline extends AWidget
     # Render animation handles
     _animations = a.getAnimations()
     for anim of _animations
-      console.log "#{anim} #{a.lifetimeStart}"
       offset = spaceW * ((Number(anim) - a.lifetimeStart) / @_duration)
       _h += "<div style=\"left: #{offset}px;\" class=\"attso-key\">"
       _h +=   "<i class=\"icon-bolt\"></i>"

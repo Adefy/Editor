@@ -308,12 +308,20 @@ class AHBaseActor extends AHandle
   # state
   updateInTime: ->
 
+    cursor = AWidgetTimeline.getMe().getCursorTime()
+
+    # Bail if nothing has changed
+    return if Number(Math.floor cursor) == @_lastTemporalState
+
     @_updatePropBuffer()
     @_updateActorState()
     @_genSnapshot()
 
-    cursor = AWidgetTimeline.getMe().getCursorTime()
+    # Save state
     @_lastTemporalState = Number Math.floor(cursor)
+
+    # Notify timeline to refresh
+    AWidgetTimeline.getMe().render()
 
   # Generates a new snapshot from our current properties
   # @private
@@ -540,6 +548,87 @@ class AHBaseActor extends AHandle
     # TODO: Update individual properties
     $("body").data("default-properties").refresh @
 
+  # Returns an array containing the names of properties that have been
+  # modified since our last snapshot. Used in @_updatePropBuffer
+  #
+  # @return [Array<String>] delta
+  # @private
+  _getPropertiesDelta: ->
+
+    # Check which properties have changed
+    # NOTE: We expect the prop snapshot to be valid, and contain the
+    #       structure required by each property in it!
+    delta = []
+    for p, _Sp of @_propSnapshot
+      modified = false
+
+      _p = @_properties[p]
+
+      # Compare snapshot with live property ()
+      if _p.type == "composite" and _p.components != undefined
+
+        # Iterate over components to detect modification
+        for c of _p.components
+          if _Sp.components[c].value != _p.components[c]._value
+            modified = true
+
+      else if _Sp.value != _p._value
+        modified = true
+
+      # Differs, ship to delta
+      if modified then delta.push p
+
+    delta
+
+  # Split the animation containing 'time', if it operates on prop. Used in
+  # @_updatePropBuffer
+  #
+  # @param [Number] time
+  # @param [String] prop property key
+  # @param [String] left optional pre-calculated left cap
+  # @private
+  _splitAnimation: (time, p, left) ->
+    param.required time
+    param.required p
+    left = param.optional left, null
+
+    if left == null then left = @_findNearestState time, false, p
+
+    # Check if we are in the middle of an animation ourselves. If so,
+    # split it
+    animCheck = @_findNearestState time, true, p
+
+    _startP = @_propBuffer[String(left)][p]
+    _endP = @_propBuffer[String(time)][p]
+
+    if animCheck != -1
+
+      # An animation overlaps us. Perform an integrity check on it, then
+      # split.
+      anim = @_animations[animCheck]
+
+      if anim[p].components != undefined
+        for c of anim[p].components
+          if anim[p].components[c]._start.x != Number left
+            throw new Error "Existing animation invalid!"
+
+          # Rebase animation by calculating new start value
+          _newX = time
+          _newY = _endP.components[c].value
+
+          @_animations[animCheck][p].components[c]._start.x = _newX
+          @_animations[animCheck][p].components[c]._start.y = _newY
+
+      else
+        if anim[p]._start.x != Number left
+          throw new Error "Existing animation invalid!"
+
+        _newX = time
+        _newY = _endP.value
+
+        @_animations[animCheck][p]._start.x = _newX
+        @_animations[animCheck][p]._start.y = _newY
+
   # Calculates new prop buffer state, using current prop snapshot, cursor
   # position and existing properties.
   #
@@ -553,132 +642,76 @@ class AHBaseActor extends AHandle
       # Save current property values
       @_propBuffer[@_lastTemporalState] = @_serializeProperties()
 
-    else
+    delta = @_getPropertiesDelta()
 
-      # Check which properties have changed
-      # NOTE: We expect the prop snapshot to be valid, and contain the
-      #       structure required by each property in it!
-      delta = []
-      for p of @_propSnapshot
-        modified = false
+    # If we have anything to save, ship to our buffer, and create a new
+    # animation entry.
+    #
+    # cursor is our last temporal state, since the current cursor position
+    # is not where the properties were set!
+    if delta.length > 0
 
-        _p = @_properties[p]
-        _Sp = @_propSnapshot[p]
+      _serialized = @_serializeProperties delta
+      @_propBuffer[@_lastTemporalState] = _serialized
 
-        # Compare snapshot with live property ()
-        if _p.type == "composite" and _p.components != undefined
+      # Ensure we are not at birth!
+      if @_lastTemporalState == Math.floor @lifetimeStart then return
 
-          # Iterate over components to detect modification
-          for c of _p.components
-            if _Sp.components[c].value != _p.components[c]._value
-              modified = true
+      # Define our animation
+      # Note that an animation is an object with a bezier function for
+      # every component changed in our end object
+      @_animations["#{@_lastTemporalState}"] = {}
 
-        else if _Sp.value != _p._value
-          modified = true
-
-        # Differs, ship to delta
-        if modified then delta.push p
-
-      # If we have anything to save, ship to our buffer, and create a new
-      # animation entry.
+      # Go through and set up individual variable beziers. Note that for
+      # composites the same bezier is made for each component in an identical
+      # manner! Since we assume linear interpolation, we fill in blank
+      # objects with no control points.
       #
-      # cursor is our last temporal state, since the current cursor position
-      # is not where the properties were set!
-      if delta.length > 0
+      # If we are between two end points in which the property changes, split
+      # the animation appropriately
+      for p in delta
 
-        _serialized = @_serializeProperties delta
-        @_propBuffer[@_lastTemporalState] = _serialized
-
-        # Ensure we are not at birth!
-        if @_lastTemporalState == Math.floor @lifetimeStart then return
-
-        # Define our animation
-        # Note that an animation is an object with a bezier function for
-        # every component changed in our end object
-        @_animations["#{@_lastTemporalState}"] = {}
-
-        # Go through and set up individual variable beziers. Note that for
-        # composites the same bezier is made for each component in an identical
-        # manner! Since we assume linear interpolation, we fill in blank
-        # objects with no control points.
+        # Create a bezier class; this would be the place to do that
+        # per-component
         #
-        # If we are between two end points in which the property changes, split
-        # the animation appropriately
-        for p in delta
+        # We find our start value by going back through our prop buffer and
+        # finding the nearest reference to the property we now modify
+        trueStart = @_findNearestState @_lastTemporalState, false, p
 
-          # Create a bezier class; this would be the place to do that
-          # per-component
-          #
-          # We find our start value by going back through our prop buffer and
-          # finding the nearest reference to the property we now modify
-          trueStart = @_findNearestState @_lastTemporalState, false, p
+        # Split animation if necessary
+        @_splitAnimation @_lastTemporalState, p, trueStart
 
-          # Check if we are in the middle of an animation ourselves. If so,
-          # split it
-          animCheck = @_findNearestState @_lastTemporalState, true, p
+        _startP = @_propBuffer[String(trueStart)][p]
+        _endP = @_propBuffer[String(@_lastTemporalState)][p]
 
-          _startP = @_propBuffer[String(trueStart)][p]
-          _endP = @_propBuffer[@_lastTemporalState][p]
+        # Create multiple beziers if so required
+        if _endP.components != undefined
+          @_animations["#{@_lastTemporalState}"][p] = { components: {} }
+          for c of _endP.components
 
-          if animCheck != -1
-
-            # An animation overlaps us. Perform an integrity check on it, then
-            # split.
-            anim = @_animations[animCheck]
-
-            if anim[p].components != undefined
-              for c of anim[p].components
-                if anim[p].components[c]._start.x != Number(trueStart)
-                  throw new Error "Existing animation invalid!"
-
-                # Rebase animation by calculating new start value
-                _newX = @_lastTemporalState
-                _newY = _endP.components[c].value
-
-                @_animations[animCheck][p].components[c]._start.x = _newX
-                @_animations[animCheck][p].components[c]._start.y = _newY
-
-            else
-              if anim[p]._start.x != trueStart
-                throw new Error "Existing animation invalid!"
-
-              _newX = @_lastTemporalState
-              _newY = _endP.value
-
-              @_animations[animCheck][p]._start.x = _newX
-              @_animations[animCheck][p]._start.y = _newY
-
-          # Create multiple beziers if so required
-          if _endP.components != undefined
-            @_animations["#{@_lastTemporalState}"][p] = { components: {} }
-            for c of _endP.components
-
-              _start =
-                x: Number trueStart
-                y: _startP.components[c].value
-
-              _end =
-                x: Number @_lastTemporalState
-                y: _endP.components[c].value
-
-              # Note that we enable buffering!
-              bezzie = new ABezier _start, _end, 0, [], true
-              @_animations["#{@_lastTemporalState}"][p].components[c] = bezzie
-          else
             _start =
               x: Number trueStart
-              y: _startP.value
+              y: _startP.components[c].value
 
             _end =
               x: Number @_lastTemporalState
-              y: _endP.value
+              y: _endP.components[c].value
 
             # Note that we enable buffering!
             bezzie = new ABezier _start, _end, 0, [], true
-            @_animations["#{@_lastTemporalState}"][p] = bezzie
+            @_animations["#{@_lastTemporalState}"][p].components[c] = bezzie
+        else
+          _start =
+            x: Number trueStart
+            y: _startP.value
 
-      # Notify timeline to refresh
-      AWidgetTimeline.getMe().render()
+          _end =
+            x: Number @_lastTemporalState
+            y: _endP.value
+
+          # Note that we enable buffering!
+          bezzie = new ABezier _start, _end, 0, [], true
+          @_animations["#{@_lastTemporalState}"][p] = bezzie
 
   # Return animations array
   #
@@ -712,6 +745,21 @@ class AHBaseActor extends AHandle
           if _p < start and _p > nearest
             if prop == null then nearest = _p
             else if @_propBuffer[p][prop] != undefined then nearest = _p
+
+    if nearest == -1
+      console.log ""
+      console.log "OH GAWD"
+      console.log "start: #{start}"
+      console.log "right: #{right}"
+      console.log "prop: #{prop}"
+
+      _b = []
+      for b of @_propBuffer
+        _b.push b
+
+      console.log "pBuff: #{_b}"
+
+      console.log ""
 
     if nearest == -1 then return -1 else return String nearest
 
