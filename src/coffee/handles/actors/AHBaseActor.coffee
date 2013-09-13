@@ -352,18 +352,21 @@ class AHBaseActor extends AHandle
     #
     # NOTE: The order of application varies depending on the direction in
     #       time in which we moved!
-    if state > @_lastTemporalState then right = true else right = false
+    if Number(state) > @_lastTemporalState then right = true else right = false
 
     # Figure out intermediary states
-    intermediaryStates = []
+    intermStates = []
     next = @_lastTemporalState
-    while next != state
+    while next != state and next != -1
       next = @_findNearestState next, right
+
       if Number(next) != Math.floor @lifetimeStart
-        intermediaryStates.push next
+        # Ensure next hasn't overshot us
+        if right and Number(next) < Number(state) then intermStates.push next
+        if !right and Number(next) > Number(state) then intermStates.push next
 
     # Now sort accordingly
-    intermediaryStates.sort (a, b) ->
+    intermStates.sort (a, b) ->
 
       # We moved back in time, lastTemporalState is in front of the state
       if right == false
@@ -382,7 +385,7 @@ class AHBaseActor extends AHandle
         else return 0
 
     # Now apply our states in the order presented
-    for s in intermediaryStates
+    for s in intermStates
 
       # Go through and update values
       for p of @_propBuffer[s]
@@ -516,11 +519,8 @@ class AHBaseActor extends AHandle
           if _start <= cursor
             t = (cursor - _start) / (v.end - _start)
 
-            console.log "#{cursor} #{_start} #{v.end} #{t}"
-
             val[c] = (anim[v.name].components[c].eval t).y
             label = "#{_start}-|#{cursor}|-#{v.end}"
-            console.log "#{label} #{v.name}.#{c} #{val[c]}"
 
             # Store new value
             @_properties[v.name].update val
@@ -532,7 +532,6 @@ class AHBaseActor extends AHandle
           t = (cursor - _start) / (v.end - _start)
 
           val = (anim[v.name].eval t).y
-          console.log "Change #{v.name} to #{val} [#{t}]"
 
           # Store new value
           @_properties[v.name].update val
@@ -696,23 +695,23 @@ class AHBaseActor extends AHandle
   # @return [String] nearest key into @_propBuffer, or -1 if not found
   # @private
   _findNearestState: (start, right, prop) ->
-    param.required start
+    start = Number(param.required start)
     right = param.optional right, false
     prop = param.optional prop, null
 
-    start = Number(start)
     nearest = -1
 
     for p of @_propBuffer
       if @_propBuffer[p] != undefined
+        _p = Number(p)
         if right
-          if Number(p) > start and (Number(p) < nearest or nearest == -1)
-            if prop == null then nearest = p
-            else if @_propBuffer[p][prop] != undefined then nearest = p
+          if _p > start and (_p < nearest or nearest == -1)
+            if prop == null then nearest = _p
+            else if @_propBuffer[p][prop] != undefined then nearest = _p
         else
-          if Number(p) < start and Number(p) > nearest
-            if prop == null then nearest = p
-            else if @_propBuffer[p][prop] != undefined then nearest = p
+          if _p < start and _p > nearest
+            if prop == null then nearest = _p
+            else if @_propBuffer[p][prop] != undefined then nearest = _p
 
     if nearest == -1 then return -1 else return String nearest
 

@@ -84,7 +84,6 @@ class AWidgetTimeline extends AWidget
       containment: "parent"
       drag: (e, ui) ->
         me._onCursorDrag e, ui
-      stop: (e, ui) ->
         me._onCursorDragStop e, ui
 
     # Set up event listeners (this is where the magic happens)
