@@ -79,19 +79,19 @@ class AdefyEditor
       helpMenu = menubar.addItem "Help"
 
       # File menu options
-      fileMenu.createChild "New Ad..."
-      fileMenu.createChild "New From Template...", null, true
+      fileMenu.createChild "New Ad...", null, "window.adefy_editor.newAd()"
+      fileMenu.createChild "New From Template...", null, null, true
 
       fileMenu.createChild "Save"
       fileMenu.createChild "Save As..."
-      fileMenu.createChild "Export...", null, true
+      fileMenu.createChild "Export...", null, null, true
 
       fileMenu.createChild "Quit"
 
       # View menu options
       viewMenu.createChild "Toggle Toolbox Sidebar"
       viewMenu.createChild "Toggle Properties Sidebar"
-      viewMenu.createChild "Toggle Controlbar", null, true
+      viewMenu.createChild "Toggle Controlbar", null, null, true
 
       viewMenu.createChild "Fullscreen"
 
@@ -102,7 +102,7 @@ class AdefyEditor
 
       # Help menu options
       helpMenu.createChild "About AdefyEditor"
-      helpMenu.createChild "Changelog", null, true
+      helpMenu.createChild "Changelog", null, null, true
 
       helpMenu.createChild "Take a Guided Tour"
       helpMenu.createChild "Quick Start"
@@ -187,6 +187,12 @@ class AdefyEditor
   onResize: ->
     for w in @widgets
       if w.onResize != undefined then w.onResize()
+
+  # Clears the workspace, creating a new ad
+  newAd: ->
+
+    # Trigger a workspace reset
+    AWidgetWorkspace.getMe().reset()
 
 $(document).ready ->
 

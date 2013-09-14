@@ -89,6 +89,17 @@ class AWidgetWorkspace extends AWidget
   # @return [AWidgetWorkspace] me
   @getMe: -> AWidgetWorkspace.__instance
 
+  # Resets us completely, triggering the timeline death handler of every
+  # actor, and removing them from both us and the timeline
+  reset: ->
+
+    for o in @actorObjects
+      AWidgetTimeline.getMe().removeActor o.getActorId()
+      o.timelineDeath()
+      o.delete()
+
+    @actorObjects = []
+
   # Any objects that need to tell us about their death have to do so by calling
   # this method and passing themselves in.
   #

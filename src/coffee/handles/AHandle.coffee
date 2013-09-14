@@ -34,7 +34,8 @@ class AHandle
   delete: ->
 
     # Also remove ourselves from the body's object list
-    $(document).ready -> $("body").data @_id, undefined
+    me = @
+    $(document).ready -> $("body").removeData me.getId()
 
   # Global handle onClick function, called by handles if they
   # wish to take advantage of its functionality.

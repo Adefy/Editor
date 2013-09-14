@@ -132,4 +132,6 @@ class AWidgetContextMenu extends AWidget
       # Remove ourselves
       $(@getSel()).remove()
 
+      $("body").removeData @getId()
+
       @alive = false

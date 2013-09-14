@@ -47,11 +47,15 @@ class AWidgetMainbarItem
     switch @_role
 
       when "primary"
-        _classes = ""
-        if @_children.length > 0 then _classes = "amb-primary-has-children"
 
-        _html += "<a class=\"#{_classes}\" id=\"#{@_id}\" href=\"#{@href}\">"
-        _html += "<li>#{@label}</li>"
+        if @_children.length <= 0 then _classes = ""
+        else _classes = "class=\"amb-primary-has-children\""
+
+        if @click == null or @click == undefined then _click = ""
+        else _click = "onclick=\"#{@click}\""
+
+        _html += "<a #{_classes} #{_click} id=\"#{@_id}\" href=\"#{@href}\">"
+        _html +=   "<li>#{@label}</li>"
         _html += "</a>"
 
       when "secondary"
@@ -60,7 +64,10 @@ class AWidgetMainbarItem
         # gets a special class, so we can style a nice divider
         _sEnd = if @sectionEnd then "class=\"ambc-section-end\"" else ""
 
-        _html += "<a #{_sEnd} id=\"#{@_id}\" href=\"#{@href}\">"
+        if @click == null or @click == undefined then _click = ""
+        else _click = "onclick=\"#{@click}\""
+
+        _html += "<a #{_sEnd} #{_click} id=\"#{@_id}\" href=\"#{@href}\">"
         _html +=   "<li>#{@label}</li>"
         _html += "</a>"
 
@@ -77,12 +84,14 @@ class AWidgetMainbarItem
   #
   # @param [String] label text to appear as the item
   # @param [String] href url the item points to
+  # @param [Method] click click handler, optional
   # @param [Boolean] sectionEnd if true, child marks the end of a section
   # @return [AWidgetMainbarItem] item null if the item could not be created
-  createChild: (label, href, sectionEnd) ->
+  createChild: (label, href, click, sectionEnd) ->
     sectionEnd = param.optional sectionEnd, false
     label = param.optional label, ""
-    href = param.optional href, "#", [], false
+    click = param.optional click, null
+    href = param.optional href, "javascript:void(0)", [], false
 
     # BAIL BAIL BAIL
     if @_role == "detail" then return null
@@ -95,6 +104,7 @@ class AWidgetMainbarItem
     child.label = label
     child.href = href
     child.sectionEnd = sectionEnd
+    child.click = click
 
     # Register it
     @_children.push child
