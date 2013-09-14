@@ -89,9 +89,11 @@ class AdefyEditor
       fileMenu.createChild "Quit"
 
       # View menu options
-      viewMenu.createChild "Toggle Toolbox Sidebar"
-      viewMenu.createChild "Toggle Properties Sidebar"
-      viewMenu.createChild "Toggle Controlbar", null, null, true
+      viewMenu.createChild "Toggle Toolbox Sidebar", null, \
+        "window.left_sidebar.toggle()"
+
+      viewMenu.createChild "Toggle Properties Sidebar", null, \
+        "window.right_sidebar.toggle()"
 
       viewMenu.createChild "Fullscreen"
 
@@ -168,6 +170,10 @@ class AdefyEditor
       me.widgets.push workspace
       me.widgets.push leftSidebar
       me.widgets.push rightSidebar
+
+      # Save sidebars on the window for easy access
+      window.left_sidebar = leftSidebar
+      window.right_sidebar = rightSidebar
 
       # Register resize handler
       me.onResize()

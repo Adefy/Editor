@@ -55,6 +55,11 @@ class AWidgetMainbar extends AWidget
           _menu.show()
           $(@).addClass "open"
 
+      # Close menu on item click
+      $(document).on "click", ".amainbar-secondary a", ->
+        $(@).parent().hide()
+        $(".amb-primary-has-children").removeClass "open"
+
       # Hover listener, opens menus with children when hovered (if another is
       # already open)
       $(document).on "mouseover", ".amb-primary-has-children", ->
