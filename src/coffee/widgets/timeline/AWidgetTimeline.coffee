@@ -102,8 +102,6 @@ class AWidgetTimeline extends AWidget
     # Update our cursor time
     @_updateCursorTime()
 
-    # Apply time somehow
-
   # Cursor drag stop event, updates all living
   #
   # @param [Event] e
@@ -115,7 +113,15 @@ class AWidgetTimeline extends AWidget
     #       Calculate actor births and deaths seperately (after this)
 
     for a in @_actors
-      a.updateInTime()
+
+      cursor = @getCursorTime()
+
+      # Check if actor needs to die
+      if (cursor < a.lifetimeStart or cursor > a.lifetimeEnd) and a.isAlive()
+        a.timelineDeath()
+
+      if a.isAlive() or (cursor >= a.lifetimeStart and cursor <= a.lifetimeEnd)
+        a.updateInTime()
 
   # Update displayed cursor time
   # @private

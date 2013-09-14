@@ -22,10 +22,13 @@ class AHBaseActor extends AHandle
     #
     # These are ms values, with -1 symbolizing the end of the scene
     @lifetimeStart = param.required lifetimestart
-    @lifetimeEnd = param.optional lifetimeEnd, -1
 
-    # If passed -1 as our death, get the current timeline duration and use it
+    # By default, we die at the end of the ad
     @lifetimeEnd = AWidgetTimeline.getMe().getDuration()
+    @lifetimeEnd = param.optional lifetimeEnd, @lifetimeEnd
+
+    # Tracks if we exist or not. Triggers AJS instantiation and such
+    @_alive = false
 
     # Our timebar color, can be changed freely (timeline requires notification)
     # To see avaliable colors, check AWidgetTimeline for their declarations,
@@ -160,6 +163,7 @@ class AHBaseActor extends AHandle
           max: 255
           float: false
           placeholder: 255
+          _value: 255
           getValue: -> @_value
         g:
           type: "number"
@@ -167,6 +171,7 @@ class AHBaseActor extends AHandle
           max: 255
           float: false
           placeholder: 255
+          _value: 255
           getValue: -> @_value
         b:
           type: "number"
@@ -174,6 +179,7 @@ class AHBaseActor extends AHandle
           max: 255
           float: false
           placeholder: 255
+          _value: 255
           getValue: -> @_value
 
       # We fetch color information from our actor, and set composite
@@ -264,6 +270,24 @@ class AHBaseActor extends AHandle
           if v.enabled
             me._actor.enablePsyx v.mass, v.friction, v.elasticity
 
+  # Called when the cursor leaves our lifetime on the timeline. We delete
+  # our AJS actor if not already dead
+  timelineDeath: ->
+    if not @_alive then return else @_alive = false
+
+    @_actor.destroy()
+    @_actor = null
+
+  # Virtual method that our children need to implement, called when our AJS
+  # actor needs to be instantiated
+  # @private
+  _birth: ->
+
+  # Get our living state
+  #
+  # @return [Boolean] alive
+  isAlive: -> @_alive
+
   # Needs to be called after our awgl actor is instantiated, so we can prepare
   # our property buffer for proper use
   postInit: ->
@@ -273,6 +297,9 @@ class AHBaseActor extends AHandle
 
     # Prevent future calls
     @_initialized = true
+
+    # Birth!
+    @_birth()
 
     # Set up properties by grabbing initial values
     for p of @_properties
@@ -307,6 +334,9 @@ class AHBaseActor extends AHandle
   # epic). Essentially, update our prop buffer, and then the actors' current
   # state
   updateInTime: ->
+
+    # Birth if required
+    if not @_alive then @_birth()
 
     cursor = AWidgetTimeline.getMe().getCursorTime()
 
@@ -747,19 +777,9 @@ class AHBaseActor extends AHandle
             else if @_propBuffer[p][prop] != undefined then nearest = _p
 
     if nearest == -1
-      console.log ""
-      console.log "OH GAWD"
-      console.log "start: #{start}"
-      console.log "right: #{right}"
-      console.log "prop: #{prop}"
-
       _b = []
       for b of @_propBuffer
         _b.push b
-
-      console.log "pBuff: #{_b}"
-
-      console.log ""
 
     if nearest == -1 then return -1 else return String nearest
 

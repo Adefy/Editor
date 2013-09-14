@@ -21,15 +21,8 @@ class AHRectangle extends AHBaseActor
 
     @name = "Rectangle #{@_id.replace("ahandle-", "")}"
 
-    @_actor = new AJSRectangle
-      psyx: false
-      mass: 0
-      friction: 0.3
-      elasticity: 0.4
-      w: w
-      h: h
-      position: new AJSVector2 x, y
-      color: new AJSColor3 255, 255, 255
+    @_properties["position"].components["x"]._value = x
+    @_properties["position"].components["y"]._value = y
 
     me = @
 
@@ -40,6 +33,7 @@ class AHRectangle extends AHBaseActor
       placeholder: 100
       float: true
       live: true
+      _value: w
       getValue: -> @_value = me._actor.getWidth()
 
       # Update width, rebuild
@@ -54,6 +48,7 @@ class AHRectangle extends AHBaseActor
       placeholder: 100
       float: true
       live: true
+      _value: h
       getValue: -> @_value = me._actor.getHeight()
 
       # Update height, rebuild
@@ -64,3 +59,30 @@ class AHRectangle extends AHBaseActor
 
     # Finish our initialization
     @postInit()
+
+  # Instantiate our AJS actor
+  # @private
+  _birth: ->
+    if @_alive then return else @_alive = true
+
+    _psyx = @_properties["psyx"].components["enabled"]._value
+    _mass = @_properties["psyx"].components["mass"]._value
+    _friction = @_properties["psyx"].components["friction"]._value
+    _elasticity = @_properties["psyx"].components["elasticity"]._value
+    _w = @_properties["width"]._value
+    _h = @_properties["height"]._value
+    _x = @_properties["position"].components["x"]._value
+    _y = @_properties["position"].components["y"]._value
+    _r = @_properties["color"].components["r"]._value
+    _g = @_properties["color"].components["g"]._value
+    _b = @_properties["color"].components["b"]._value
+
+    @_actor = new AJSRectangle
+      psyx: _psyx
+      mass: _mass
+      friction: _friction
+      elasticity: _elasticity
+      w: _w
+      h: _h
+      position: new AJSVector2 _x, _y
+      color: new AJSColor3 _r, _g, _b
