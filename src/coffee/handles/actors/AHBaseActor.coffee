@@ -727,8 +727,9 @@ class AHBaseActor extends AHandle
               x: Number @_lastTemporalState
               y: _endP.components[c].value
 
-            # Note that we enable buffering!
-            bezzie = new ABezier _start, _end, 0, [], true
+            # We no longer enable buffering, since saving our state creates an
+            # obnoxiously large buffer!
+            bezzie = new ABezier _start, _end, 0, [], false
             @_animations["#{@_lastTemporalState}"][p].components[c] = bezzie
         else
           _start =
@@ -739,8 +740,9 @@ class AHBaseActor extends AHandle
             x: Number @_lastTemporalState
             y: _endP.value
 
-          # Note that we enable buffering!
-          bezzie = new ABezier _start, _end, 0, [], true
+          # We no longer enable buffering, since saving our state creates an
+          # obnoxiously large buffer!
+          bezzie = new ABezier _start, _end, 0, [], false
           @_animations["#{@_lastTemporalState}"][p] = bezzie
 
   # Return animations array

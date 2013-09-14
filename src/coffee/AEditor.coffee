@@ -82,7 +82,7 @@ class AdefyEditor
       fileMenu.createChild "New Ad...", null, "window.adefy_editor.newAd()"
       fileMenu.createChild "New From Template...", null, null, true
 
-      fileMenu.createChild "Save"
+      fileMenu.createChild "Save", null, "window.adefy_editor.save()"
       fileMenu.createChild "Save As..."
       fileMenu.createChild "Export...", null, null, true
 
@@ -199,6 +199,98 @@ class AdefyEditor
 
     # Trigger a workspace reset
     AWidgetWorkspace.getMe().reset()
+
+  # Serialize all ad data in the workspace to send to the server
+  #
+  # @return [String] data
+  # @private
+  _serialize: ->
+
+    data = {}
+
+    # Cursor position
+    data.cursorPosition = AWidgetTimeline.getMe().getCursorTime()
+
+    # Actors!
+    data.actors = []
+
+    # Add the data we need to fully re-build each actor
+    for a in AWidgetWorkspace.getMe().actorObjects
+      _actor = {}
+
+      # Figure out type
+      if a instanceof AHTriangle
+        _actor.type = "AHTriangle"
+      else if a instanceof AHRectangle
+        _actor.type = "AHRectangle"
+      else if a instanceof AHPolygon
+        _actor.type = "AHPolygon"
+      else
+        AUtilLog.warn "Actor of unknown type, not saving: #{a.name}"
+
+      # Continue saving
+      if _actor.type != undefined
+
+        # Saved elements are self-explanatory
+        _actor.name = a.name
+        _actor.timebarColor = a.timebarColor
+        _actor.lifetimeStart = a.lifetimeStart
+        _actor.lifetimeEnd = a.lifetimeEnd
+        _actor.propBuffer = a._propBuffer
+        _actor.lastTemporalState = a._lastTemporalState
+
+        # Save the information we need to re-create all animations
+        _actor.animations = {}
+
+        for anim, anim_val of a._animations
+          _actor.animations[anim] = {}
+
+          for prop, prop_val of anim_val
+
+            _anim = {}
+
+            # Check for components
+            if prop_val.components != undefined
+              _anim.components = {}
+              for c, c_val of prop_val.components
+                _anim.components[c] = @_serializeAnimation c_val
+            else _anim = @_serializeAnimation prop_val
+
+            _actor.animations[anim][prop] = _anim
+
+        data.actors.push _actor
+
+    JSON.stringify data
+
+  # Serialize an animation (expects an existing bezier func)
+  #
+  # @param [ABezier] anim
+  # @return [Object] serialized
+  # @private
+  _serializeAnimation: (anim) ->
+
+    ret = {}
+    ret.x1 = anim._start.x
+    ret.y1 = anim._start.y
+    ret.x2 = anim._end.x
+    ret.y2 = anim._end.y
+
+    if anim._control[0] != undefined
+      ret.cp1x = anim._control[0].x
+      ret.cp1y = anim._control[0].y
+
+    if anim._control[1] != undefined
+      ret.cp2x = anim._control[1].x
+      ret.cp2y = anim._control[1].y
+
+    ret
+
+  # Saves us to the server
+  save: ->
+
+    data = @_serialize()
+
+    console.log data
 
 $(document).ready ->
 
