@@ -3,6 +3,11 @@
 # @depend AWidgetSidebarItem.coffee
 class AWidgetSidebar extends AWidget
 
+  # Set to true upon the first sidebar instantiation, signals that our
+  # event listeners are bound
+  # @private
+  @__staticInitialized: false
+
   # Creates a new sidebar with a given origin. The element's id is randomized
   # to sbar + Math.floor(Math.random() * 1000)
   #
@@ -28,6 +33,18 @@ class AWidgetSidebar extends AWidget
     @setWidth @_width
     @show null, false     # Set us up as initially visible
     @onResize()           # Calculate X offsets
+
+    # Bind an event listener for sidebar toggles.
+    if not AWidgetSidebar.__staticInitialized
+      AWidgetSidebar.__staticInitialized = true
+
+      $(document).ready ->
+        $(document).on "click", ".as-toggle", ->
+
+          # Find the affected sidebar
+          sidebar = $("body").data "##{$(@).parent().parent().attr("id")}"
+
+          sidebar.toggle()
 
   # Set sidebar name, re-renders it
   #
@@ -83,7 +100,7 @@ class AWidgetSidebar extends AWidget
   # Render! Fill the sidebar with html from the items rendered in order.
   render: ->
 
-    icon = "<i class=\"icon-double-angle"
+    icon = "<i class=\"as-toggle icon-double-angle"
 
     if @_origin == "left"
       icon += "-left\"></i>"
@@ -107,7 +124,7 @@ class AWidgetSidebar extends AWidget
 
     # Re-position
     if @_origin == "right"
-      @_hiddenX = $(window).width()
+      @_hiddenX = $(window).width() - 32
       @_visibleX = $(window).width() - @_width
 
   # Set sidebar width, sets internal offset values
@@ -118,10 +135,10 @@ class AWidgetSidebar extends AWidget
     @_width = width
 
     if @_origin == "left"
-      @_hiddenX = - @_width
+      @_hiddenX = - @_width + 32
       @_visibleX = 0
     else
-      @_hiddenX = $(window).width()
+      @_hiddenX = $(window).width() - 32
       @_visibleX = $(window).width() - @_width
 
     $(@_sel).width @_width
@@ -158,9 +175,11 @@ class AWidgetSidebar extends AWidget
       return
 
     # And
-    if animate then AUtilLog.warn "Animation not yet supported"
-
-    $(@_sel).css { left: @_visibleX }
+    if animate
+      $(@_sel).animate
+        left: @_visibleX
+      , 300
+    else $(@_sel).css { left: @_visibleX }
 
     @_visiblity = true
 
@@ -176,8 +195,10 @@ class AWidgetSidebar extends AWidget
       return
 
     # Ham
-    if animate then AUtilLog.warn "Animation not yet supported"
-
-    $(@_sel).css { left: @_hiddenX }
+    if animate
+      $(@_sel).animate
+        left: @_hiddenX
+      , 300
+    else $(@_sel).css { left: @_hiddenX }
 
     @_visiblity = false

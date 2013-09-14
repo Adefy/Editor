@@ -444,7 +444,7 @@ class AWidgetWorkspace extends AWidget
   onResize: ->
 
     # Our height
-    $(@_sel).height $(document).height() - $(".amainbar").height() - 2 - \
+    $(@_sel).height $(document).height() - $(".amainbar").height() + 2 - \
       $(".atimeline").height()
 
     # Center phone outline
