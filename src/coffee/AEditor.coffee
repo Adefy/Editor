@@ -218,13 +218,19 @@ class AdefyEditor
     for a in AWidgetWorkspace.getMe().actorObjects
       _actor = {}
 
-      # Figure out type
+      # Figure out type, save relevant information
       if a instanceof AHTriangle
         _actor.type = "AHTriangle"
+        _actor.base = a.getBase()
+        _actor.height = a.getHeight()
       else if a instanceof AHRectangle
         _actor.type = "AHRectangle"
+        _actor.width = a.getWidth()
+        _actor.height = a.getHeight()
       else if a instanceof AHPolygon
         _actor.type = "AHPolygon"
+        _actor.radius = a.getRadius()
+        _actor.sides = a.getSides()
       else
         AUtilLog.warn "Actor of unknown type, not saving: #{a.name}"
 
@@ -238,6 +244,9 @@ class AdefyEditor
         _actor.lifetimeEnd = a.lifetimeEnd
         _actor.propBuffer = a._propBuffer
         _actor.lastTemporalState = a._lastTemporalState
+        _actor.x = a.getPosition().x
+        _actor.y = a.getPosition().y
+        _actor.r = a.getRotation()
 
         # Save the information we need to re-create all animations
         _actor.animations = {}
@@ -285,12 +294,113 @@ class AdefyEditor
 
     ret
 
+  # Deserialize an animation that's been serialized by _serializeAnimation.
+  # Returns a built bezier function
+  #
+  # @param [Object] anim
+  # @return [ABezier] bezier
+  # @private
+  _deserializeAnimation: (anim) ->
+
+    _start =
+      x: anim.x1
+      y: anim.y1
+
+    _end =
+      x: anim.x2
+      y: anim.y2
+
+    _degree = 0
+
+    if anim.cp1x != undefined and anim.cp1y != undefined
+      _control = []
+      _control.push
+        x: anim.cp1x
+        y: anim.cp1y
+      _degree = 1
+
+    if anim.cp2x != undefined and anim.cp2y != undefined
+      _control.push
+        x: anim.cp2x
+        y: anim.cp2y
+      _degree = 2
+
+    new ABezier _start, _end, _degree, _control, false
+
+  # Take JSON from the server, de-serialize and apply it.
+  #
+  # @param [String] data
+  # @private
+  _deserialize: (data) ->
+    param.required data
+
+    # Parse and validate structure
+    data = JSON.parse data
+    param.required data.cursorPosition
+    param.required data.actors
+
+    # Note that we clear the current state!
+    AWidgetWorkspace.getMe().reset()
+
+    # Set up actors
+    for a in data.actors
+
+      # Validate
+      valid = a.type != undefined
+      valid = valid && (a.name != undefined)
+      valid = valid && (a.timebarColor != undefined)
+      valid = valid && (a.lifetimeStart != undefined)
+      valid = valid && (a.lifetimeEnd != undefined)
+      valid = valid && (a.propBuffer != undefined)
+      valid = valid && (a.lastTemporalState != undefined)
+      valid = valid && (a.animations != undefined)
+
+      # Apply the cursor position
+      AWidgetTimeline.getMe().setCursorTime data.cursorPosition
+
+      # Throw an error, since this should never happen if the data is from a
+      # valid source. Failing quietly is just saddening.
+      if not valid then throw new Error "Data invalid: #{JSON.stringify a}"
+
+      if a.type == "AHTriangle"
+        handle = new AHTriangle a.lifetimeStart, a.base, a.height, a.x, a.y\
+                                , a.r, a.lifetimeEnd, true
+      else if a.type == "AHRectangle"
+        handle = new AHRectangle a.lifetimeStart, a.width, a.height, a.x, a.y\
+                                 , a.r, a.lifetimeEnd, true
+      else if a.type == "AHPolygon"
+        handle = new AHPolygon  a.lifetimeStart, a.sides, a.radius, a.x, a.y\
+                                , a.r, a.lifetimeEnd, true
+      else throw new Error "Invalid actor type, can't instantiate!"
+
+      handle._propBuffer = a.propBuffer
+
+      # Set up animations
+      for a, anim of a.animations
+        handle._animations[a] = {}
+        for p, prop of anim
+          handle._animations[a][p] = {}
+
+          if prop.components != undefined
+            handle._animations[a][p].components = {}
+
+            for c, comp of prop.components
+              handle._animations[a][p].components[c] = \
+              @_deserializeAnimation comp
+
+          else handle._animations[a][p] = @_deserializeAnimation prop
+
+      # Init, register, and update
+      handle.postInit()
+      AWidgetWorkspace.getMe().registerActor handle
+
+    null
+
   # Saves us to the server
-  save: ->
+  save: -> @_serialize()
 
-    data = @_serialize()
-
-    console.log data
+  # Loads data from our backend, de-serializes it and applies state
+  load: ->
 
 $(document).ready ->
 

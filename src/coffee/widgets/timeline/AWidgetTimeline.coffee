@@ -160,6 +160,22 @@ class AWidgetTimeline extends AWidget
   @getRandomTimebarColor: ->
     Math.floor(Math.random() * AWidgetTimeline._timebarColors.length)
 
+  # Set an arbitrary cursor time
+  #
+  # @param [Number] time cursor time in ms
+  setCursorTime: (time) ->
+    param.required time
+
+    if $("#att-cursor").length == 0
+      throw new Error "Cursor not visible can't return time!"
+
+    # Move cursor
+    $("#att-cursor").css "left", $("#att-space").width() * (time / @_duration)
+
+    # Update
+    @_onCursorDrag()
+    @_onCursorDragStop()
+
   # Return current cursor time in ms (relative to duration)
   #
   # @return [Number] time cursor time in ms

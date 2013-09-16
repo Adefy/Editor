@@ -904,3 +904,8 @@ class AHBaseActor extends AHandle
   #
   # @param [AJSBaseActor] actor
   getActor: -> @_actor
+
+  # Get actor rotation
+  #
+  # @return [Number] angle in degrees
+  getRotation: -> @_properties["rotation"]._value

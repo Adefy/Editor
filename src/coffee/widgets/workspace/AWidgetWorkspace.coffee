@@ -166,6 +166,17 @@ class AWidgetWorkspace extends AWidget
     gl.bindRenderbuffer gl.RENDERBUFFER, null
     gl.bindFramebuffer gl.FRAMEBUFFER, null
 
+  # Manually register an actor
+  #
+  # @param [AHBaseActor] handle
+  registerActor: (handle) ->
+    param.required handle
+
+    if not handle instanceof AHBaseActor
+      throw new Error "You can only register actors that derive from BaseActor"
+
+    @actorObjects.push handle
+    AWidgetTimeline.getMe().registerActor handle
 
   # Called by AWGLEngine as soon as it's up and running, we continue our own
   # init from here.
