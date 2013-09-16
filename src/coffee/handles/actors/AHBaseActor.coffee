@@ -65,6 +65,10 @@ class AHBaseActor extends AHandle
     # If no control points are specified, linear interpolation is assumed
     @_animations = {}
 
+    # Set to true if the cursor is to the right of our last prop buffer, and
+    # _capState() has been called
+    @_capped = false
+
     # Time of the last update, used to save our properties when the cursor is
     # moved. Note that this starts at our birth!
     @_lastTemporalState = Math.floor @lifetimeStart
@@ -398,7 +402,7 @@ class AHBaseActor extends AHandle
     while next != state and next != -1
       next = @_findNearestState next, right
 
-      if Number(next) != Math.floor @lifetimeStart
+      if Number(next) != Math.floor @lifetimeStart and next != -1
         # Ensure next hasn't overshot us
         if right and Number(next) < Number(state) then intermStates.push next
         if !right and Number(next) > Number(state) then intermStates.push next
@@ -424,24 +428,32 @@ class AHBaseActor extends AHandle
 
     # Now apply our states in the order presented
     for s in intermStates
+      @_applyPropBuffer @_propBuffer[s]
 
-      # Go through and update values
-      for p of @_propBuffer[s]
+  # Applies data in prop buffer entry
+  #
+  # @param [Object] buffer
+  # @private
+  _applyPropBuffer: (b) ->
+    param.required b
 
-        _prop = @_propBuffer[s][p]
+    # Go through and update values
+    for p of b
 
-        if _prop.components != undefined
+      _prop = b[p]
 
-          # Update component-wise
-          _update = {}
-          for c of _prop.components
-            _update[c] = _prop.components[c].value
+      if _prop.components != undefined
 
-          @_properties[p].update _update
+        # Update component-wise
+        _update = {}
+        for c of _prop.components
+          _update[c] = _prop.components[c].value
 
-        # No components, update directly
-        else
-          @_properties[p]._value = _prop.value
+        @_properties[p].update _update
+
+      # No components, update directly
+      else
+        @_properties[p].update _prop.value
 
   # Updates our state according to the current cursor position. Goes through
   # our prop buffer, and calculates a new snapshot and property object
@@ -484,6 +496,9 @@ class AHBaseActor extends AHandle
     # If we haven't moved, drop out early
     if cursor == @_lastTemporalState then return
 
+    # Ensure cursor is within our lifetime
+    if cursor < @lifetimeStart or cursor > @lifetimeEnd then return
+
     # If we don't have a saved state at the current cursor position, find the
     # nearest and calculate our time offset. Worst case, the closest state
     # is our birth
@@ -500,7 +515,11 @@ class AHBaseActor extends AHandle
     ##
     ## Next, bail if there are no states to the right of ourselves
     ##
-    if @_findNearestState(cursor, true) == -1 then return
+    if @_findNearestState(cursor, true) == -1
+      @_capState()
+      return
+
+    @_capped = false
 
     # Reset the cursor value
     cursor = Math.floor AWidgetTimeline.getMe().getCursorTime()
@@ -558,7 +577,6 @@ class AHBaseActor extends AHandle
             t = (cursor - _start) / (v.end - _start)
 
             val[c] = (anim[v.name].components[c].eval t).y
-            label = "#{_start}-|#{cursor}|-#{v.end}"
 
             # Store new value
             @_properties[v.name].update val
@@ -577,6 +595,25 @@ class AHBaseActor extends AHandle
     # Update property bar, wooooo
     # TODO: Update individual properties
     $("body").data("default-properties").refresh @
+
+  # This gets called if the cursor is to the right of us, and it has not yet
+  # been called since the cursor has been in that state. It applies all buffer
+  # states in order
+  #
+  # @private
+  _capState: ->
+    if @_capped then return else @_capped = true
+
+    # Sort prop buffer entries
+    _buff = []
+    for b of @_propBuffer
+      _buff.push Number(b)
+
+    _buff.sort (a, b) -> a - b
+
+    # Apply buffers in order
+    for b in _buff
+      @_applyPropBuffer @_propBuffer[String(b)]
 
   # Returns an array containing the names of properties that have been
   # modified since our last snapshot. Used in @_updatePropBuffer
@@ -690,7 +727,8 @@ class AHBaseActor extends AHandle
       # Define our animation
       # Note that an animation is an object with a bezier function for
       # every component changed in our end object
-      @_animations["#{@_lastTemporalState}"] = {}
+      if @_animations["#{@_lastTemporalState}"] == undefined
+        @_animations["#{@_lastTemporalState}"] = {}
 
       # Go through and set up individual variable beziers. Note that for
       # composites the same bezier is made for each component in an identical
