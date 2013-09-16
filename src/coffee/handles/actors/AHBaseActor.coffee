@@ -402,7 +402,8 @@ class AHBaseActor extends AHandle
     while next != state and next != -1
       next = @_findNearestState next, right
 
-      if Number(next) != Math.floor @lifetimeStart and next != -1
+      if Number(next) != Math.floor(@lifetimeStart) and next != -1
+
         # Ensure next hasn't overshot us
         if right and Number(next) < Number(state) then intermStates.push next
         if !right and Number(next) > Number(state) then intermStates.push next
