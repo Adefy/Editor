@@ -29,7 +29,9 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
     # Object that we are displaying properties for
     @_curObject = null
+    @_regListeners()
 
+  _regListeners: ->
     if AWidgetSidebarProperties.__exists == false
       AWidgetSidebarProperties.__exists = true
       me = @
