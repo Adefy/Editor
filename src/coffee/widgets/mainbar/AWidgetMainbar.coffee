@@ -24,6 +24,9 @@ class AWidgetMainbar extends AWidget
     param.required parent
     super prefId("amainbar"), parent, [ "amainbar" ]
 
+    @_regListeners()
+
+  _regListeners: ->
     # Register listeners
     $(document).ready ->
 
