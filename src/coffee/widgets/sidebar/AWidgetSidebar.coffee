@@ -33,8 +33,9 @@ class AWidgetSidebar extends AWidget
     @setWidth @_width
     @show null, false     # Set us up as initially visible
     @onResize()           # Calculate X offsets
+    @_bindToggle()        # Bind an event listener for sidebar toggles.
 
-    # Bind an event listener for sidebar toggles.
+  _bindToggle: ->
     if not AWidgetSidebar.__staticInitialized
       AWidgetSidebar.__staticInitialized = true
 
