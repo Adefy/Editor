@@ -78,6 +78,10 @@ class AWidgetTimeline extends AWidget
 
     me = @
 
+    @_enableDrag()
+    @_regListeners()
+
+  _enableDrag: ->
     # Enable cursor dragging
     $("#att-cursor").draggable
       axis: "x"
@@ -86,10 +90,11 @@ class AWidgetTimeline extends AWidget
         me._onCursorDrag e, ui
         me._onCursorDragStop e, ui
 
+  _regListeners: ->
     # Set up event listeners (this is where the magic happens)
     $(document).ready ->
 
-      # Outer timebar click
+      # Outer timebar cgruinlick
       $(document).on "click", ".atts-outer", (e) -> me._outerClicked e, @
 
   # Cursor drag event
