@@ -187,6 +187,11 @@ class AdefyEditor
 
       log.info "Adefy editor created on #{me.sel}"
 
+      # Check if we need to load an ad
+      if window.ad != undefined and window.ad.length == 24
+        log.info "Loading #{window.ad}"
+        me.load window.ad
+
   # This function gets called immediately upon creation, and whenever
   # our parent element is resized. Other elements register listeners are to be
   # called within it
@@ -334,6 +339,9 @@ class AdefyEditor
   _deserialize: (data) ->
     param.required data
 
+    # Ad data is empty if it has just been created
+    if data.length == 0 then return
+
     # Parse and validate structure
     data = JSON.parse data
     param.required data.cursorPosition
@@ -397,10 +405,24 @@ class AdefyEditor
     null
 
   # Saves us to the server
-  save: -> @_serialize()
+  save: ->
+    data = @_serialize()
+
+    $.post "/logic/editor/save?id=#{window.ad}&data=#{data}", (result) =>
+      if result.error != undefined then alert result.error
+      # TODO: Implement a notification
 
   # Loads data from our backend, de-serializes it and applies state
-  load: ->
+  #
+  # @param [String] id Server-recognizable ad id
+  load: (id) ->
+    param.required id
+
+    $.post "/logic/editor/load?id=#{id}", (result) =>
+      if result.error != undefined then alert result.error
+      # TODO: Implement a notification
+
+      @_deserialize result.ad
 
 $(document).ready ->
 

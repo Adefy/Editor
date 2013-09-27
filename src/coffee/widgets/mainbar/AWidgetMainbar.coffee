@@ -48,7 +48,7 @@ class AWidgetMainbar extends AWidget
             deta_open.removeClass "open"
 
       # Click listener to open/close menu items
-      $(document).on "click", ".amb-primary-has-children", ->
+      $(document).on "click", ".amb-primary-has-children", (e) ->
         _menu = $(".amainbar-secondary[data-owner=\"#{$(@).attr("id")}\"]")
 
         if $(@).hasClass "open"
@@ -58,10 +58,16 @@ class AWidgetMainbar extends AWidget
           _menu.show()
           $(@).addClass "open"
 
+        e.preventDefault()
+        false
+
       # Close menu on item click
-      $(document).on "click", ".amainbar-secondary a", ->
+      $(document).on "click", ".amainbar-secondary a", (e) ->
         $(@).parent().hide()
         $(".amb-primary-has-children").removeClass "open"
+
+        e.preventDefault()
+        false
 
       # Hover listener, opens menus with children when hovered (if another is
       # already open)
