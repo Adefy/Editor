@@ -2,6 +2,7 @@ module.exports = (grunt) ->
 
   # Output
   libName = "aeditor.js"
+  productionName = "aeditor-prod.min.js"
 
   # Directories
   buildDir = "build"
@@ -11,6 +12,22 @@ module.exports = (grunt) ->
   docDir = "doc"
   awglDir = "../AdefyWebGL"
   adefyjsDir = "../AdefyJS"
+  production = "#{buildDir}/#{productionName}"
+
+  productionConcat = [
+    "#{devDir}/js/jquery.js"
+    "#{devDir}/js/jquery-ui.js"
+    "#{devDir}/js/underscore.min.js"
+    "#{devDir}/js/sylvester.js"
+    "#{devDir}/js/glUtils.js"
+    "#{devDir}/js/mjax.min.js"
+    "#{devDir}/js/gl-matrix-min.js"
+    "#{devDir}/js/cp.min.js"
+
+    "#{devDir}/js/awgl.js"
+    "#{devDir}/js/adefy.js"
+    "#{devDir}/aeditor.js"
+  ]
 
   # Intermediate vars
   __awglOut = {}
@@ -39,6 +56,9 @@ module.exports = (grunt) ->
   stylusSrc = {}
   stylusSrc["#{buildDir}/css/aeditor.css"] = "#{libDir}/stylus/style.styl"
   stylusSrc["#{devDir}/css/aeditor.css"] = "#{libDir}/stylus/style.styl"
+
+  _uglify = {}
+  _uglify[production] = production
 
   grunt.initConfig
     pkg: grunt.file.readJSON "package.json"
@@ -204,6 +224,20 @@ module.exports = (grunt) ->
       docDir
     ]
 
+    # Production concat
+    concat:
+      options:
+        stripBanners: true
+      dist:
+        src: productionConcat
+        dest: production
+
+    uglify:
+      options:
+        preserveComments: false
+      production:
+        files: _uglify
+
   grunt.loadNpmTasks "grunt-coffeelint"
   grunt.loadNpmTasks "grunt-contrib-coffee"
   grunt.loadNpmTasks "grunt-contrib-watch"
@@ -212,6 +246,8 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks "grunt-concat-in-order"
   grunt.loadNpmTasks "grunt-contrib-copy"
   grunt.loadNpmTasks "grunt-contrib-stylus"
+  grunt.loadNpmTasks "grunt-contrib-concat"
+  grunt.loadNpmTasks "grunt-contrib-uglify"
   grunt.loadNpmTasks "grunt-mocha"
 
   grunt.registerTask "codo", "build html documentation", ->
@@ -247,3 +283,5 @@ module.exports = (grunt) ->
     "copy:adefyjs"
     "watch"
   ]
+
+  grunt.registerTask "deploy", [ "concat", "uglify" ]

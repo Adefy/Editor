@@ -16,7 +16,9 @@
     "grunt-contrib-copy": "~0.4.1",
     "grunt-coffeelint": "0.0.7",
     "stylus": "~0.37.0",
-    "grunt-contrib-stylus": "~0.8.0"
+    "grunt-contrib-stylus": "~0.8.0",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-uglify": "~0.2.4"
   },
   "private": true,
   "engine": "node >= 0.10.12"
