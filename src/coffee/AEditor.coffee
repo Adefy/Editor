@@ -17,6 +17,7 @@
 # Widgets!
 # @depend widgets/AWidget.coffee
 # @depend widgets/AWidgetContextMenu.coffee
+# @depend widgets/AWidgetNotification.coffee
 
 # @depend widgets/timeline/AWidgetTimeline.coffee
 #
@@ -186,6 +187,8 @@ class AdefyEditor
       , 10
 
       log.info "Adefy editor created on #{me.sel}"
+
+      new AWidgetNotification "Initialized", "blue", 1000
 
       # Check if we need to load an ad
       if window.ad != undefined and window.ad.length == 24
@@ -409,8 +412,10 @@ class AdefyEditor
     data = @_serialize()
 
     $.post "/logic/editor/save?id=#{window.ad}&data=#{data}", (result) =>
-      if result.error != undefined then alert result.error
-      # TODO: Implement a notification
+      if result.error != undefined
+        new AWidgetNotification "Error saving: #{result.error}", "red"
+      else
+        new AWidgetNotification "Saved", "green", 1000
 
   # Loads data from our backend, de-serializes it and applies state
   #
@@ -419,8 +424,9 @@ class AdefyEditor
     param.required id
 
     $.post "/logic/editor/load?id=#{id}", (result) =>
-      if result.error != undefined then alert result.error
-      # TODO: Implement a notification
+      if result.error != undefined
+        new AWidgetNotification "Error loading: #{result.error}", "red"
+        return
 
       @_deserialize result.ad
 
