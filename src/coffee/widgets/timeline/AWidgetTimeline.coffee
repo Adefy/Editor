@@ -82,6 +82,8 @@ class AWidgetTimeline extends AWidget
     @_regListeners()
 
   _enableDrag: ->
+    me = @
+
     # Enable cursor dragging
     $("#att-cursor").draggable
       axis: "x"
