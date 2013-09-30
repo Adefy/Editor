@@ -545,20 +545,12 @@ class AdefyEditor
         new AWidgetNotification "Error exporting: #{result.error}"
         return
 
-      # Build a link to show the ad in a new window
-      linkId = prefId "exportLink"
-
-      html =  "<a"
-      html +=   "id=\"#{linkId}\" "
-      html +=   "style=\"display: none;\" "
-      html +=   "href=\"#{result.link}\" "
-      html +=   "target=\"_blank\" "
-      html += ">export</a>"
-
-      $("body").append html
-
-      window.open $("##{linkId}").attr("href")
-      $("##{linkId}").remove()
+      # Show a modal dialog offering to view, or download the export
+      _html =  ""
+      _html += "<a href=\"#{result.link}\" target=\"_blank\">View</a>"
+      _html += " or "
+      _html += "<a href=\"#{result.link}?download=yes\">Download</a>"
+      new AWidgetModal "Exported", _html
 
 $(document).ready ->
 
