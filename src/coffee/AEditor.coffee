@@ -79,13 +79,15 @@ class AdefyEditor
       toolsMenu = menubar.addItem "Tools"
       helpMenu = menubar.addItem "Help"
 
+      ed = "window.adefy_editor"
+
       # File menu options
-      fileMenu.createChild "New Ad...", null, "window.adefy_editor.newAd()"
+      fileMenu.createChild "New Ad...", null, "#{ed}.newAd()"
       fileMenu.createChild "New From Template...", null, null, true
 
-      fileMenu.createChild "Save", null, "window.adefy_editor.save()"
+      fileMenu.createChild "Save", null, "#{ed}.save()"
       fileMenu.createChild "Save As..."
-      fileMenu.createChild "Export...", null, null, true
+      fileMenu.createChild "Export...", null, "#{ed}.export()", true
 
       fileMenu.createChild "Quit"
 
