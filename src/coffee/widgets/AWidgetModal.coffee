@@ -15,6 +15,11 @@ class AWidgetModal extends AWidget
     param.required @content
     modal = param.optional modal, false
 
+    # Only one modal can be active at any one time
+    if $("body").data("activeModal") != undefined
+      $("body").data("activeModal").close()
+      $("body").removeData "activeModal"
+
     # Protection against premature resurrection
     @dead = true
 
@@ -29,13 +34,14 @@ class AWidgetModal extends AWidget
       $(document).ready ->
 
         # Closing non-modal on clicking
-        $(document).mousedown (e) ->
+        $(document).mouseup (e) ->
 
-          us = $(me._sel)
+          if $("body").data("activeModal") == undefined then return
+          else us = $($("body").data("activeModal")._sel)
 
           # Clicked outside of us, hide if we aren't modal
           if !us.is(e.target) && us.has(e.target).length == 0
-            if not modal then $("body").data(@_sel).close()
+            if not modal then $("body").data("activeModal").close()
 
         # Close modal on dismiss click
         $(document).on "click", ".amodal .amf-dismiss", ->
@@ -59,7 +65,7 @@ class AWidgetModal extends AWidget
     $(@_sel).html _html
 
     # Register us for later
-    $("body").data @_sel, @
+    $("body").data "activeModal", @
 
     $(@_sel).animate { opacity: 1 }, 400
 
@@ -73,5 +79,5 @@ class AWidgetModal extends AWidget
   # Private kill method, called once we are no longer visible
   # @private
   _kill: ->
-    $("body").removeData @_sel
+    $("body").removeData "activeModal"
     $(@_sel).remove()
