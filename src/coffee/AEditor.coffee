@@ -18,6 +18,7 @@
 # @depend widgets/AWidget.coffee
 # @depend widgets/AWidgetContextMenu.coffee
 # @depend widgets/AWidgetNotification.coffee
+# @depend widgets/AWidgetModal.coffee
 
 # @depend widgets/timeline/AWidgetTimeline.coffee
 #
