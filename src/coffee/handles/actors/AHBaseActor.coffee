@@ -920,7 +920,7 @@ class AHBaseActor extends AHandle
 
   # Return actor position as (x,y) relative to the GL world
   #
-  # @return [Object]
+  # @return [Object] position
   getPosition: ->
 
     if @_actor != null
@@ -928,6 +928,17 @@ class AHBaseActor extends AHandle
       return { x: _pos.x, y: _pos.y }
 
     AUtilLog.warn "No actor, can't get position!"
+
+  # Return actor color as (r,g,b)
+  #
+  # @param [Boolean] float defaults to false, returns components as 0.0-1.0
+  # @return [Object] color
+  getColor: (float) ->
+    float = param.optional float, false
+
+    if @_actor != null
+      _col = @_actor.getColor()
+      return { r: _col.getR(float), g: _col.getG(float), b: _col.getB(float) }
 
   # Set actor position, relative to the GL world!
   #

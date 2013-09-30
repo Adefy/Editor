@@ -430,6 +430,133 @@ class AdefyEditor
 
       @_deserialize result.ad
 
+  # I really thought this would be sexier, expecting that we could simply
+  # build a function that when executed recreates our ad, and stringify it.
+  # Turns out we can't. Sadness. We can, we just can't easily set arguments.
+  #
+  # Sooooo, we literally build the resultant ad line-by-line. Not as bad as it
+  # sounds.
+  #
+  # @return [String] export
+  export: ->
+
+    # Program text
+    final = ""
+
+    # Unique variable names
+    __vname = "a"
+    V = ->
+      code = __vname.charCodeAt(__vname.length - 1)
+
+      if code < 65 then code = 65
+      else if code > 89 and code < 97 then code = 97
+      else if code > 121 then code = 65
+      else if code >= 97 or code >= 65 then code++
+
+      if code == 65 then __vname += String.fromCharCode code
+      else
+        __vname = __vname.split ""
+        __vname[__vname.length - 1] = "" + String.fromCharCode code
+        __vname = __vname.join ""
+
+      __vname
+
+    ## Helpers
+    # Assigns a value to a variable
+    assign = (name, value) -> "var #{name} = #{value};"
+
+    # Builds a function call, optional semicolon ending
+    call = (name, args, _new, end) ->
+      if _new == undefined then _new = false
+      if args == undefined then args = []
+      if end == undefined then end = false
+
+      ret = ""
+      if _new then ret += "new "
+      ret += "#{name}("
+
+      for a in args
+        if typeof a == "string" then a = "\"#{a}\""
+        else if typeof a == "object" then a = JSON.stringify a
+        ret += "#{a}, "
+
+      ret = ret.slice 0, -2
+      if end then ret += ");" else ret += ")"
+
+      ret
+
+    ##
+    ## Actors
+    ##
+    for a in AWidgetWorkspace.getMe().actorObjects
+
+      ex =  ""
+      type = ""
+      actor = V()
+
+      birthOpts = {}
+
+      pos = a.getPosition()
+      col = a.getColor()
+
+      if a instanceof AHTriangle
+        type = "AJSTriangle"
+        birthOpts.base = a.getBase()
+        birthOpts.height = a.getHeight()
+        birthOpts.rotation = a.getRotation()
+        birthOpts.position = { x: pos.x, y: pos.y }
+        birthOpts.color = { r: col.r, g: col.g, b: col.b }
+
+      else if a instanceof AHPolygon
+        type = "AJSPolygon"
+        birthOpts.radius = a.getRadius()
+        birthOpts.segments = a.getSides()
+        birthOpts.position = { x: pos.x, y: pos.y }
+        birthOpts.color = { r: col.r, g: col.g, b: col.b }
+        birthOpts.rotation = a.getRotation()
+
+      else if a instanceof AHRectangle
+        type = "AJSRectangle"
+        birthOpts.w = a.getWidth()
+        birthOpts.h = a.getHeight()
+        birthOpts.position = { x: pos.x, y: pos.y }
+        birthOpts.color = { r: col.r, g: col.g, b: col.b }
+        birthOpts.rotation = a.getRotation()
+
+      # This shouldn't happen, but just in case, log, notify and skip
+      if type.length == 0
+        error = "Unrecognized actor, can't export: #{a._id}"
+        AUtilLog.warn error
+        new AWidgetNotification error, "red"
+      else
+
+        # Build actor definition
+        ex += assign actor, call(type, [birthOpts], true, false)
+
+        # Now build animations
+        # TODO...
+
+    # Send result to backend and receive a link
+    $.post "/logic/editor/export?id=#{window.ad}&data=#{ex}", (result) ->
+      if result.error != undefined
+        new AWidgetNotification "Error exporting: #{result.error}"
+        return
+
+      # Build a link to show the ad in a new window
+      linkId = prefId "exportLink"
+
+      html =  "<a"
+      html +=   "id=\"#{linkId}\" "
+      html +=   "style=\"display: none;\" "
+      html +=   "href=\"#{result.link}\" "
+      html +=   "target=\"_blank\" "
+      html += ">export</a>"
+
+      $("body").append html
+
+      window.open $("##{linkId}").attr("href")
+      $("##{linkId}").remove()
+
 $(document).ready ->
 
   # Instantiate
