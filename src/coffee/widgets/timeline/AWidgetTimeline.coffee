@@ -155,9 +155,7 @@ class AWidgetTimeline extends AWidget
       AUtilLog.warn "Clicked timebar has an invalid index, bailing [#{index}]"
       return
 
-    actor = @_actors[index]
-
-    alert "#{actor.name} clicked"
+    @_actors[index].onClick()
 
   # Return our instance (assuming we exist)
   #
