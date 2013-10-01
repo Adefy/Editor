@@ -104,24 +104,45 @@ module.exports = (grunt) ->
           onlyConcatRequiredFiles: true
 
     watch:
-      awgl:
-        files: ["#{awglDir}/build/awgl.js"]
-        tasks: ["copy:awgl"]
-      adefyjs:
-        files: ["#{adefyjsDir}/build/adefy.js"]
-        tasks: ["copy:adefyjs"]
-      coffeescript:
-        files: [
-          "#{libDir}/**/*.coffee"
-          "#{libDir}/*.coffee"
-        ]
-        tasks: ["concat_in_order", "coffee", "coffeelint"]
-      stylus:
-        files: [
-          "#{libDir}/stylus/*.styl",
-          "#{libDir}/stylus/**/*.styl"
-        ]
-        tasks: ["stylus"]
+      dev:
+        awgl:
+          files: ["#{awglDir}/build/awgl.js"]
+          tasks: ["copy:awgl"]
+        adefyjs:
+          files: ["#{adefyjsDir}/build/adefy.js"]
+          tasks: ["copy:adefyjs"]
+        coffeescript:
+          files: [
+            "#{libDir}/**/*.coffee"
+            "#{libDir}/*.coffee"
+          ]
+          tasks: ["concat_in_order", "coffee", "coffeelint"]
+        stylus:
+          files: [
+            "#{libDir}/stylus/*.styl",
+            "#{libDir}/stylus/**/*.styl"
+          ]
+          tasks: ["stylus"]
+
+      cdn:
+        awgl:
+          files: ["#{awglDir}/build/awgl.js"]
+          tasks: ["copy:awgl"]
+        adefyjs:
+          files: ["#{adefyjsDir}/build/adefy.js"]
+          tasks: ["copy:adefyjs"]
+        coffeescript:
+          files: [
+            "#{libDir}/**/*.coffee"
+            "#{libDir}/*.coffee"
+          ]
+          tasks: ["concat_in_order", "coffee", "coffeelint", "concat", "uglify"]
+        stylus:
+          files: [
+            "#{libDir}/stylus/*.styl",
+            "#{libDir}/stylus/**/*.styl"
+          ]
+          tasks: ["stylus"]
 
     connect:
       server:
@@ -281,7 +302,8 @@ module.exports = (grunt) ->
     "copy:static"
     "copy:awgl"
     "copy:adefyjs"
-    "watch"
+    "watch:dev"
   ]
 
   grunt.registerTask "deploy", [ "concat", "uglify" ]
+  grunt.registerTask "cdn", [ "full", "watch:cdn" ]
