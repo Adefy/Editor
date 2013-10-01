@@ -81,6 +81,7 @@ class AdefyEditor
       fileMenu = menubar.addItem "File"
       viewMenu = menubar.addItem "View"
       timelineMenu = menubar.addItem "Timeline"
+      canvasMenu = menubar.addItem "Canvas"
       toolsMenu = menubar.addItem "Tools"
       helpMenu = menubar.addItem "Help"
 
@@ -105,10 +106,19 @@ class AdefyEditor
 
       viewMenu.createChild "Fullscreen"
 
+      # Timeline menu options
+      timelineMenu.createChild "Set preview framerate...", null, \
+        "window.timeline.showSetPreviewRate()"
+
+      # Canvas menu options
+      canvasMenu.createChild "Set screen properties..."
+      canvasMenu.createChild "Set background color..."
+
       # Tools menu options
       toolsMenu.createChild "Preview..."
       toolsMenu.createChild "Calculate device support..."
       toolsMenu.createChild "Change canvas size..."
+      toolsMenu.createChild "Set export framerate..."
 
       # Help menu options
       helpMenu.createChild "About AdefyEditor"
@@ -179,9 +189,10 @@ class AdefyEditor
       me.widgets.push leftSidebar
       me.widgets.push rightSidebar
 
-      # Save sidebars on the window for easy access
+      # Save widgets on the window for easy access
       window.left_sidebar = leftSidebar
       window.right_sidebar = rightSidebar
+      window.timeline = timeline
 
       # Register resize handler
       me.onResize()
