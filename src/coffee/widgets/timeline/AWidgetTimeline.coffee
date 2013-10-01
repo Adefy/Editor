@@ -85,6 +85,8 @@ class AWidgetTimeline extends AWidget
     @_enableDrag()
     @_regListeners()
 
+  # Enables cursor dragging
+  # @private
   _enableDrag: ->
     me = @
 
@@ -93,15 +95,68 @@ class AWidgetTimeline extends AWidget
       axis: "x"
       containment: "parent"
       drag: (e, ui) ->
+
+        # Cancel the drag if we are currently in the middle of playback
+        if me._playbackID != undefined and me._playbackID != null
+          return false
+
         me._onCursorDrag e, ui
         me._onCursorDragStop e, ui
 
+  # Registers event listeners
+  # @private
   _regListeners: ->
+    me = @
+
     # Set up event listeners (this is where the magic happens)
     $(document).ready ->
 
       # Outer timebar cgruinlick
       $(document).on "click", ".atts-outer", (e) -> me._outerClicked e, @
+
+      # Timeline playback controls
+      $(document).on "click", "#atttc-toggle", (e) -> me._toggleClicked()
+      $(document).on "click", "#atttc-forward", (e) -> me._forwClicked()
+      $(document).on "click", "#atttc-backward", (e) -> me._prevClicked()
+
+  # Playback toggle button clicked (play/pause)
+  # @private
+  _toggleClicked: ->
+
+    _endPlayback = =>
+      clearInterval @_playbackID
+      @setCursorTime @_playbackStart
+      @_playbackID = null
+
+    # If currently playing, remove the interval
+    if @_playbackID != undefined and @_playbackID != null
+      _endPlayback()
+      return
+
+    frameRate = 1.0 / 30.0
+
+    # Play the ad at 30 frames per second
+    me = @
+    @_playbackStart = @getCursorTime()
+
+    @_playbackID = setInterval ->
+
+      nextTime = me.getCursorTime() + (frameRate * 1000)
+      if nextTime > me._duration then nextTime = me._duration
+
+      me.setCursorTime nextTime
+
+      if nextTime >= me._duration then _endPlayback()
+
+    , frameRate
+
+  # Forward playback button clicked (next keyframe)
+  # @private
+  _forwClicked: ->
+
+  # Backward playback button clicked (prev keyframe)
+  # @private
+  _prevClicked: ->
 
   # Cursor drag event
   #
@@ -268,17 +323,23 @@ class AWidgetTimeline extends AWidget
     # Our toolbar, serving both as an edge to resize ourselves with, and a
     # container for generic timeline functions. Also displays current cursor
     # position (time)
-    _html +=   "<div id=\"att-toolbar\">"
-    _html +=     "<div class=\"attt-third\">"
-    _html +=       "<span id=\"attt-cursor-time\"></span>"
-    _html +=     "</div>"
-    _html +=     "<div class=\"attt-third\">"
-    _html +=       "<span id=\"attt-name\">Timeline</span>"
-    _html +=     "</div>"
-    _html +=     "<div class=\"attt-third\">"
-    _html +=       "<i class=\"icon-cog\"></i>"
-    _html +=     "</div>"
-    _html +=   "</div>"
+    _html += """
+      <div id=\"att-toolbar\">
+        <div class=\"attt-third\">
+          <span id=\"attt-cursor-time\"></span>
+        </div>
+        <div class=\"attt-third\">
+          <div id=\"attt-controls\">
+            <i id=\"atttc-backward\" class=\"icon-step-backward\"></i>
+            <i id=\"atttc-toggle\" class=\"icon-play\"></i>
+            <i id=\"atttc-forward\" class=\"icon-step-forward\"></i>
+          </div>
+        </div>
+        <div class=\"attt-third\">
+          <i class=\"icon-cog\"></i>
+        </div>
+      </div>
+      """
 
     # Timeline cursor, designates current time, draggable, sexy
     _html +=   "<div id=\"att-cursor\"><div></div></div>"
