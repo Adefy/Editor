@@ -16,11 +16,13 @@ class AWidgetModal extends AWidget
   # @param [Boolean] modal direct action required, defaults to false
   # @param [Method] cb callback, takes an object with input values (key - name)
   # @param [Method] validation optional, called to validate with cb data
-  constructor: (@title, @content, modal, @cb, @validation) ->
+  # @param [Method] change optional, called on input change with delta and data
+  constructor: (@title, @content, modal, @cb, @validation, @change) ->
     param.required @title
     param.required @content
     modal = param.optional modal, false
     @cb = param.optional @cb, null
+    @change = param.optional @change, null
     @validation = param.optional @validation, null
 
     # Only one modal can be active at any one time
@@ -61,6 +63,11 @@ class AWidgetModal extends AWidget
           id = $(@).closest(".amodal").attr "id"
           $("body").data("##{id}").close true
 
+        # Input change
+        $(document).on "change", ".amodal input", (e) ->
+          id = $(@).closest(".amodal").attr "id"
+          $("body").data("##{id}").changed e.target
+
   # Returns input values as an object with keys the same as input names. The
   # result of this is passed to both the callback and validation methods!
   #
@@ -69,6 +76,23 @@ class AWidgetModal extends AWidget
     data = {}
     data[$(i).attr("name")] = $(i).val() for i in $("#{@_sel} input")
     data
+
+  # Called when an input is changed, validates and in turn calls @change() if
+  # provided. Passes name of altered input, new value, and a full data scrape.
+  #
+  # @change is expected to return altered values, if an update is desired
+  #
+  # @param [Object] i input that has changed
+  changed: (i) ->
+    param.required i
+
+    if @change == null then return
+    data = @scrapeData()
+
+    if @validation != null then if @validation(data) != true then return
+    delta = @change $(i).attr("name"), $(i).val(), data
+
+    $("#{@_sel} input[name=\"#{d}\"]").val v for d, v of delta
 
   # Injects and shows us. Doesn't work if we aren't dead
   show: ->
