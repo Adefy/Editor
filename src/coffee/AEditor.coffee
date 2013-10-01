@@ -111,8 +111,11 @@ class AdefyEditor
         "window.timeline.showSetPreviewRate()"
 
       # Canvas menu options
-      canvasMenu.createChild "Set screen properties..."
-      canvasMenu.createChild "Set background color..."
+      canvasMenu.createChild "Set screen properties...", null, \
+        "window.workspace.showSetScreenProperties()"
+
+      canvasMenu.createChild "Set background color...", null, \
+        "window.workspace.showSetBackgroundColor()"
 
       # Tools menu options
       toolsMenu.createChild "Preview..."
@@ -193,6 +196,7 @@ class AdefyEditor
       window.left_sidebar = leftSidebar
       window.right_sidebar = rightSidebar
       window.timeline = timeline
+      window.workspace = workspace
 
       # Register resize handler
       me.onResize()

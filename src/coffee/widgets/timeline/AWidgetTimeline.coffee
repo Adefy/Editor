@@ -172,10 +172,9 @@ class AWidgetTimeline extends AWidget
     <input type="text" value="#{@_previewRate}" placeholder="30" name="#{n}" />
     """
 
-    new AWidgetModal "Set Preview Framerate", _html, true, (data) =>
+    new AWidgetModal "Set Preview Framerate", _html, false, (data) =>
       @_previewRate = data[n]
     , (data) ->
-      if data[n].length == 0 then return "Input required"
       if isNaN(data[n]) then return "Framerate must be a number"
       if Number(data[n]) <= 0 then return "Framerate must be > 0"
       true

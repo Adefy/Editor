@@ -65,6 +65,109 @@ class AWidgetWorkspace extends AWidget
       @_applyCanvasSizeUpdate()
     , "aw-canvas-container", @_cWidth, @_cHeight
 
+  # Shows a modal allowing the user to set the background color
+  showSetBackgroundColor: ->
+
+    col = @_awgl.getClearColor()
+
+    _colR = col.getR()
+    _colG = col.getG()
+    _colB = col.getB()
+
+    valHex = _colB | (_colG << 8) | (_colR << 16)
+    valHex = (0x1000000 | valHex).toString(16).substring 1
+
+    preview = prefId "_wbgPreview"
+    hex = prefId "_wbgHex"
+    r = prefId "_wbgR"
+    g = prefId "_wbgG"
+    b = prefId "_wbgB"
+
+    pInitial = "background-color: rgb(#{_colR}, #{_colG}, #{_colB});"
+
+    _html = """
+      <div class="input_group">
+        <label for=\"#{hex}\">Hex: </label>
+        <input name=\"#{hex}\" type="text" value="##{valHex}"></input>
+      <div>
+
+      <br />
+      <p class="tcenter">Or...</p>
+      <br />
+
+      <div class="input_group">
+        <label for=\"#{r}\">R: </label>
+        <input name=\"#{r}\" type="text" value="#{_colR}"></input>
+      <div>
+
+      <div class="input_group">
+        <label for=\"#{g}\">G: </label>
+        <input name=\"#{g}\" type="text" value="#{_colG}"></input>
+      <div>
+
+      <div class="input_group">
+        <label for=\"#{b}\">B: </label>
+        <input name=\"#{b}\" type="text" value="#{_colB}"></input>
+      <div>
+
+      <div id="#{preview}" class="_wbgPreview" style="#{pInitial}"></div>
+    """
+
+    new AWidgetModal "Set Background Color", _html, false, (data) =>
+
+      # Submission
+      @_awgl.setClearColor data[r], data[g], data[b]
+
+    , (data) =>
+
+      # Validation
+      vR = data[r]
+      vG = data[g]
+      vB = data[b]
+
+      if isNaN(vR) or isNaN(vG) or isNaN(vB)
+        return "Components must be numbers"
+      else if vR < 0 or vG < 0 or vB < 0 or vR > 255 or vG > 255 or vB > 255
+        return "Components must be between 0 and 255"
+
+      true
+    , (deltaName, deltaVal, data) =>
+
+      cH = data[hex]
+      cR = data[r]
+      cG = data[g]
+      cB = data[b]
+
+      delta = {}
+
+      # On change
+      if deltaName == hex
+
+        # Recover rgb from hex
+        cH = cH.substring 1
+        _r = cH.substring 0, 2
+        _g = cH.substring 2, 4
+        _b = cH.substring 4, 6
+
+        delta[r] = parseInt _r, 16
+        delta[g] = parseInt _g, 16
+        delta[b] = parseInt _b, 16
+
+      else
+
+        # Build hex from rgba
+        newHex = cB | (cG << 8) | (cR << 16)
+        newHex = (0x1000000 | newHex).toString(16).substring 1
+
+        delta[hex] = "##{newHex}"
+
+      # Apply bg color to preview
+      rgbCol = "rgb(#{data[r]}, #{data[g]}, #{data[b]})"
+      $("##{preview}").css "background-color", rgbCol
+
+      # Return updates
+      delta
+
   # Retrieve canvas width
   #
   # @return [Number] width canvas width
