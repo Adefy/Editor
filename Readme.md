@@ -1,3 +1,5 @@
+    Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+
 Adefy Editor
 ============
 
