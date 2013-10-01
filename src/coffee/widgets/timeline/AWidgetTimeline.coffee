@@ -46,6 +46,9 @@ class AWidgetTimeline extends AWidget
     AWidgetTimeline.__exists = true
     AWidgetTimeline.__instance = @
 
+    # Default preview playback speed (fps)
+    @_previewRate = 30
+
     param.required parent
     @_duration = Number param.required(duration)
 
@@ -133,7 +136,7 @@ class AWidgetTimeline extends AWidget
       _endPlayback()
       return
 
-    frameRate = 1.0 / 30.0
+    frameRate = 1.0 / @_previewRate
 
     # Play the ad at 30 frames per second
     me = @
@@ -157,6 +160,25 @@ class AWidgetTimeline extends AWidget
   # Backward playback button clicked (prev keyframe)
   # @private
   _prevClicked: ->
+
+  # Show dialog box for setting the preview framerate
+  showSetPreviewRate: ->
+
+    # Randomized input name
+    n = prefId "_tPreviewRate"
+
+    _html = """
+    <label for="_tPreviewRate">Framerate: </label>
+    <input type="text" value="#{@_previewRate}" placeholder="30" name="#{n}" />
+    """
+
+    new AWidgetModal "Set Preview Framerate", _html, true, (data) =>
+      @_previewRate = data[n]
+    , (data) ->
+      if data[n].length == 0 then return "Input required"
+      if isNaN(data[n]) then return "Framerate must be a number"
+      if Number(data[n]) <= 0 then return "Framerate must be > 0"
+      true
 
   # Cursor drag event
   #
