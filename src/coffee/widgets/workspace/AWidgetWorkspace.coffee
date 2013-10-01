@@ -65,6 +65,14 @@ class AWidgetWorkspace extends AWidget
       @_applyCanvasSizeUpdate()
     , "aw-canvas-container", @_cWidth, @_cHeight
 
+  # Shows a modal allowing the user to set screen properties. Sizes are picked
+  # from device templates, rotation and scale are also available
+  showSetScreenProperties: ->
+
+    # TODO ...
+
+    new AWidgetModal "Set Screen Properties", "", false
+
   # Shows a modal allowing the user to set the background color
   showSetBackgroundColor: ->
 

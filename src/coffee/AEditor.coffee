@@ -120,7 +120,6 @@ class AdefyEditor
       # Tools menu options
       toolsMenu.createChild "Preview..."
       toolsMenu.createChild "Calculate device support..."
-      toolsMenu.createChild "Change canvas size..."
       toolsMenu.createChild "Set export framerate..."
 
       # Help menu options
