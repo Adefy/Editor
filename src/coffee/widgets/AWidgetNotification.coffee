@@ -35,7 +35,8 @@ class AWidgetNotification extends AWidget
 
       $(document).ready ->
         $(document).on "click", ".anotification .icon-remove", ->
-          $("body").data("##{$(@).parent().attr("id")}").killMe()
+          target = $("body").data("##{$(@).parent().attr("id")}")
+          if target != undefined then target.killMe()
 
       AWidgetNotification._listenersRegistered = true
 
