@@ -14,10 +14,12 @@ class AWidgetModal extends AWidget
   # @param [String] title displayed at the top
   # @param [String] content html content
   # @param [Boolean] modal direct action required, defaults to false
-  constructor: (@title, @content, modal) ->
+  # @param [Method] cb callback, takes an object with input values (key - name)
+  constructor: (@title, @content, modal, @cb) ->
     param.required @title
     param.required @content
     modal = param.optional modal, false
+    @cb = param.optional @cb, null
 
     # Only one modal can be active at any one time
     if $("body").data("activeModal") != undefined
@@ -50,8 +52,12 @@ class AWidgetModal extends AWidget
         # Close modal on dismiss click
         $(document).on "click", ".amodal .amf-dismiss", ->
           id = $(@).closest(".amodal").attr "id"
-
           $("body").data("##{id}").close()
+
+        # Close dialog on submit
+        $(document).on "click", ".amodal .amf-submit", ->
+          id = $(@).closest(".amodal").attr "id"
+          $("body").data("##{id}").close true
 
   # Injects and shows us. Doesn't work if we aren't dead
   show: ->
@@ -63,6 +69,10 @@ class AWidgetModal extends AWidget
     _html +=   "<div class=\"ambody\">#{@content}</span>"
     _html +=   "<div class=\"amfooter\">"
     _html +=     "<button class=\"amf-dismiss\">Close</button>"
+
+    if @cb != null
+      _html += "<button class=\"amf-submit\">Submit</button>"
+
     _html +=   "</div>"
     _html += "</div>"
 
@@ -74,8 +84,20 @@ class AWidgetModal extends AWidget
     $(@_sel).animate { opacity: 1 }, 400
 
   # Closes and kills us
-  close: ->
+  #
+  # @param [Boolean] submit optional, signifies we need to call the cb
+  close: (submit) ->
+    submit = param.optional submit, false
+
     if @dead then return else @dead = true
+
+    # If a callback was supplied, parse inputs and send
+    if @cb != null
+      data = {}
+
+      data[$(i).attr("name")] = $(i).val() for i in $("#{@_sel} input")
+
+      @cb data
 
     if not $(@_sel).is ":visible" then @_kill()
     else $(@_sel).animate { opacity: 0 }, 400, => @_kill()
