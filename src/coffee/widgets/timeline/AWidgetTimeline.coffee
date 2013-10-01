@@ -168,8 +168,10 @@ class AWidgetTimeline extends AWidget
     n = prefId "_tPreviewRate"
 
     _html = """
+    <div class="input_group">
     <label for="_tPreviewRate">Framerate: </label>
     <input type="text" value="#{@_previewRate}" placeholder="30" name="#{n}" />
+    </div>
     """
 
     new AWidgetModal "Set Preview Framerate", _html, false, (data) =>
