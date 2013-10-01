@@ -15,11 +15,13 @@ class AWidgetModal extends AWidget
   # @param [String] content html content
   # @param [Boolean] modal direct action required, defaults to false
   # @param [Method] cb callback, takes an object with input values (key - name)
-  constructor: (@title, @content, modal, @cb) ->
+  # @param [Method] validation optional, called to validate with cb data
+  constructor: (@title, @content, modal, @cb, @validation) ->
     param.required @title
     param.required @content
     modal = param.optional modal, false
     @cb = param.optional @cb, null
+    @validation = param.optional @validation, null
 
     # Only one modal can be active at any one time
     if $("body").data("activeModal") != undefined
@@ -59,6 +61,15 @@ class AWidgetModal extends AWidget
           id = $(@).closest(".amodal").attr "id"
           $("body").data("##{id}").close true
 
+  # Returns input values as an object with keys the same as input names. The
+  # result of this is passed to both the callback and validation methods!
+  #
+  # @return [Object] data scraped input data [inputName] = inputValue
+  scrapeData: ->
+    data = {}
+    data[$(i).attr("name")] = $(i).val() for i in $("#{@_sel} input")
+    data
+
   # Injects and shows us. Doesn't work if we aren't dead
   show: ->
     if not @dead then return else @dead = false
@@ -68,6 +79,7 @@ class AWidgetModal extends AWidget
     _html +=   "<span class=\"amtitle\">#{@title}</span>"
     _html +=   "<div class=\"ambody\">#{@content}</span>"
     _html +=   "<div class=\"amfooter\">"
+    _html +=     "<span class=\"amerror\"></span>"
     _html +=     "<button class=\"amf-dismiss\">Close</button>"
 
     if @cb != null
@@ -89,18 +101,34 @@ class AWidgetModal extends AWidget
   close: (submit) ->
     submit = param.optional submit, false
 
-    if @dead then return else @dead = true
-
     # If a callback was supplied, parse inputs and send
     if @cb != null
-      data = {}
 
-      data[$(i).attr("name")] = $(i).val() for i in $("#{@_sel} input")
+      data = @scrapeData()
+
+      # If a validation method was also supplied, bail with an error if
+      # validation fails
+      if @validation != null
+        valid = @validation data
+
+        if valid != true
+          @setError valid
+          return
 
       @cb data
 
+    if @dead then return else @dead = true
+
     if not $(@_sel).is ":visible" then @_kill()
     else $(@_sel).animate { opacity: 0 }, 400, => @_kill()
+
+  # Sets an error string to display
+  #
+  # @param [String] error
+  setError: (error) ->
+    param.required error
+
+    $("#{@_sel} .amerror").text error
 
   # Private kill method, called once we are no longer visible
   # @private
