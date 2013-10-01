@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # This handles the exporting of our workspace, and generates AJS source
 # accordingly. It creates a package.json, and packages all assets
 #

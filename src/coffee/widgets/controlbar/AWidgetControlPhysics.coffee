@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # Allows us to control the physics engine. (start, pause, stop)
 class AWidgetControlPhysics extends AWidgetControlBarControl
 

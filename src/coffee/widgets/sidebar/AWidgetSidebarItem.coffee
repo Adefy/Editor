@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # Generic sidebar item meant to be extended
 class AWidgetSidebarItem extends AWidget
 

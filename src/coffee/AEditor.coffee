@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # The main class, AdefyEditor instantiates everything else and gets things
 # rolling.
 #

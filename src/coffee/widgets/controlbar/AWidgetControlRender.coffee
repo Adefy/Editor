@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # Allows us to control the state of the renderer (start, pause, stop) the loop
 class AWidgetControlRender extends AWidgetControlBarControl
 

@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # Sidebar object, meant to be contained inside of a SidebarObjectGroup
 #
 # @depend AWidgetSidebarItem.coffee

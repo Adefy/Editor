@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # Timeline widget, serving as the main control center for objects.
 #
 # OH GAWD this is going to be complex.

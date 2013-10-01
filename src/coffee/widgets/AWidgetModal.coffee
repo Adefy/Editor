@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # Bootstrap-like modal (except not!)
 class AWidgetModal extends AWidget
 

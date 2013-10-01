@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # This class implements some helper methods for function param enforcement
 # It simply serves to standardize error messages for missing/incomplete
 # parameters, and set them to default values if such values are provided.

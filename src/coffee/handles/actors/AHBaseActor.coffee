@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # Base manipulateable class for actors
 class AHBaseActor extends AHandle
 

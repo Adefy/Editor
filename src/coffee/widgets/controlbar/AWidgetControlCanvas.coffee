@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # Exposes controls to modify the canvas size
 class AWidgetControlCanvas extends AWidgetControlBarControl
 

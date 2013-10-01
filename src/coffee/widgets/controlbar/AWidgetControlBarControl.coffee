@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # Control to appear on the controlbar, with inputs and a status
 class AWidgetControlBarControl
 

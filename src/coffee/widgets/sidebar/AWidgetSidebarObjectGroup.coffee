@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # Contains a group of sidebar objects, which can be dragged
 # onto the workspace
 #

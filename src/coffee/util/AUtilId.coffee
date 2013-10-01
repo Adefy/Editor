@@ -1,3 +1,7 @@
+##
+## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # Tiny utility to provide unique ids from anywhere
 window.__nextID = 0
 
