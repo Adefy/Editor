@@ -12,6 +12,7 @@ module.exports = (grunt) ->
   docDir = "doc"
   awglDir = "../AdefyWebGL"
   adefyjsDir = "../AdefyJS"
+  cdnDir = "../www/aeditor"
   production = "#{buildDir}/#{productionName}"
 
   productionConcat = [
@@ -214,6 +215,19 @@ module.exports = (grunt) ->
           src: "#{adefyjsDir}/build/ajs-concat.coffee"
           dest: "#{devDir}/js/ajs-concat.coffee"
         ]
+      cdn:
+        files: [
+          expand: true
+          cwd: docDir
+          src: [ "**" ]
+          dest: "#{cdnDir}/doc"
+        ,
+          src: "#{buildDir}/css/aeditor.css"
+          dest: "#{cdnDir}/aeditor.css"
+        ,
+          src: "#{buildDir}/aeditor-prod.min.js"
+          dest: "#{cdnDir}/aeditor.js"
+        ]
 
     stylus:
       compile:
@@ -285,3 +299,4 @@ module.exports = (grunt) ->
   ]
 
   grunt.registerTask "deploy", [ "concat", "uglify" ]
+  grunt.registerTask "cdn", [ "full", "deploy", "copy:cdn" ]
