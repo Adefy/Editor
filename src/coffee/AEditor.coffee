@@ -581,7 +581,27 @@ class AdefyEditor
         ex += assign actor, call(type, [birthOpts], true, false)
 
         # Now build animations
-        # TODO...
+        anims = []
+        props = []
+
+        # Go through and build the args for our compile method
+        for anim, anim_val of a._animations
+          for prop, prop_val of anim_val
+            if prop_val.components != undefined
+              for c, c_val of prop_val.components
+
+                # Ensure actual value change
+                if c_val._end.y != c_val._start.y
+                  anims.push c_val
+                  props.push [prop, c]
+
+            else
+              # Ensure actual value change
+              if prop_val._end.y != prop_val._start.y
+                anims.push prop_val
+                props.push prop
+
+        ex += @_compileAnimationExport actor, anims, props
 
     # Finish init with width, and height
     ex += "}, #{pWidth}, #{pHeight});"
@@ -598,6 +618,66 @@ class AdefyEditor
       _html += " or "
       _html += "<a href=\"#{result.link}?download=yes\">Download</a>"
       new AWidgetModal "Exported", _html
+
+  # Note that we don't take start values into account. The initial state
+  # is the only actual start value. After that, all animations start from
+  # the current value.
+  #
+  # @param [Object] actor actor instance name
+  # @param [String] animations array of animation objects, one for each prop
+  # @param [String] properties array of properties, single or composite
+  #
+  # @return [String] export AJS.animate() statement
+  _compileAnimationExport: (actor, animations, properties) ->
+
+    options = []
+
+    pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth()) / 2
+    pOffY = (workspace.getCanvasHeight() - workspace.getPhoneHeight()) / 2
+
+    # Build options
+    for p, i in properties
+      opts = {}
+      anim = animations[i]
+
+      # Extract property name
+      if p instanceof Array then _pName = p[0] else _pName = p
+
+      # Use the AWGL animation iface map to figure out options
+      if AWGLAnimationInterface._animationMap[_pName] == AWGLBezAnimation
+
+        opts.endVal = anim._end.y
+        opts.controlPoints = anim._control
+        opts.duration = anim._end.x - anim._start.x
+        opts.property = p
+        opts.start = anim._start.x
+
+        # If we are position, we need to offset ourselves to render from
+        # the proper origin on phone screens
+        if _pName == "position"
+          if p[1] == "x" then opts.endVal -= pOffX
+          else if p[1] == "y" then opts.endVal -= pOffY
+
+        if opts.start == 0 then opts.start = -1
+
+        # TODO: Take framerate into account
+        # opts.fps = ...
+
+      else if AWGLAnimationInterface._animationMap[_pName] == AWGLPsyxAnimation
+        AUtilLog.warn "Psyx animation export not yet implemented"
+
+      else if AWGLAnimationInterface._animationMap[_pName] == AWGLVertAnimation
+        AUtilLog.warn "Vert animation export not yet implemented"
+
+      options.push opts
+
+    if options.length == 1 then options = options[0]
+    if properties.length == 1 then properties = properties[0]
+
+    properties = JSON.stringify properties
+    options = JSON.stringify options
+
+    "AJS.animate(#{actor}, #{properties}, #{options});"
 
 $(document).ready ->
 

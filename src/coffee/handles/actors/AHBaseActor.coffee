@@ -847,8 +847,7 @@ class AHBaseActor extends AHandle
 
       # Check if we are meant to serialize this property
       needsSerialization = false
-      if delta.length == 0
-        needsSerialization = true
+      if delta.length == 0 then needsSerialization = true
       else
         for d in delta
           if p == d
