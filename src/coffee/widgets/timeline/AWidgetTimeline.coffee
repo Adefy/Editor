@@ -136,7 +136,7 @@ class AWidgetTimeline extends AWidget
       _endPlayback()
       return
 
-    frameRate = 1.0 / @_previewRate
+    frameRate = 1000 / @_previewRate
 
     # Play the ad at 30 frames per second
     me = @
@@ -144,7 +144,7 @@ class AWidgetTimeline extends AWidget
 
     @_playbackID = setInterval ->
 
-      nextTime = me.getCursorTime() + (frameRate * 1000)
+      nextTime = me.getCursorTime() + frameRate
       if nextTime > me._duration then nextTime = me._duration
 
       me.setCursorTime nextTime

@@ -544,32 +544,31 @@ class AdefyEditor
 
       birthOpts = {}
 
-      pos = a.getPosition()
-      col = a.getColor()
+      # We need to grab properties from birth, so grab the appropriate prop
+      # buffer entry
+      buff = a.getBufferEntry a.lifetimeStart
+
+      pos = buff.position.components
+      col = buff.color.components
+
+      birthOpts.rotation = buff.rotation.value
+      birthOpts.position = { x: pos.x.value - pOffX, y: pos.y.value - pOffY }
+      birthOpts.color = { r: col.r.value, g: col.g.value, b: col.b.value }
 
       if a instanceof AHTriangle
         type = "AJSTriangle"
-        birthOpts.base = a.getBase()
-        birthOpts.height = a.getHeight()
-        birthOpts.rotation = a.getRotation()
-        birthOpts.position = { x: pos.x - pOffX, y: pos.y - pOffY }
-        birthOpts.color = { r: col.r, g: col.g, b: col.b }
+        birthOpts.base = buff.base.value
+        birthOpts.height = buff.height.value
 
       else if a instanceof AHPolygon
         type = "AJSPolygon"
-        birthOpts.radius = a.getRadius()
-        birthOpts.segments = a.getSides()
-        birthOpts.position = { x: pos.x - pOffX, y: pos.y - pOffY }
-        birthOpts.color = { r: col.r, g: col.g, b: col.b }
-        birthOpts.rotation = a.getRotation()
+        birthOpts.radius = buff.radius.value
+        birthOpts.segments = buff.sides.value
 
       else if a instanceof AHRectangle
         type = "AJSRectangle"
-        birthOpts.w = a.getWidth()
-        birthOpts.h = a.getHeight()
-        birthOpts.position = { x: pos.x - pOffX, y: pos.y - pOffY }
-        birthOpts.color = { r: col.r, g: col.g, b: col.b }
-        birthOpts.rotation = a.getRotation()
+        birthOpts.w = buff.width.value
+        birthOpts.h = buff.height.value
 
       # This shouldn't happen, but just in case, log, notify and skip
       if type.length == 0

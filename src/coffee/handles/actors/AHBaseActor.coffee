@@ -975,3 +975,9 @@ class AHBaseActor extends AHandle
   #
   # @return [Number] angle in degrees
   getRotation: -> @_properties["rotation"]._value
+
+  # Get buffer entry
+  #
+  # @param [Number] time
+  # @return [Object] entry prop buffer entry, may be undefined
+  getBufferEntry: (time) -> @_propBuffer["#{Math.floor time}"]
