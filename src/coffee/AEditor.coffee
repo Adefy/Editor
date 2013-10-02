@@ -411,7 +411,7 @@ class AdefyEditor
       else throw new Error "Invalid actor type, can't instantiate!"
 
       handle._propBuffer = a.propBuffer
-      handle.setColor a.color
+      handle.setColor a.color.r, a.color.g, a.color.b
 
       # Set up animations
       for a, anim of a.animations
