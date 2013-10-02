@@ -461,6 +461,8 @@ class AdefyEditor
   # @return [String] export
   export: ->
 
+    workspace = AWidgetWorkspace.getMe()
+
     # Program text
     final = ""
 
@@ -506,12 +508,31 @@ class AdefyEditor
 
       ret
 
+    # Start export with AWGL init
+    ex =  "AJS.init(function() {"
+
+    # Set clear color
+    # TODO: Enable clearColor animation
+    clearC = workspace.getAWGL().getClearColor()
+
+    _r = clearC.getR()
+    _g = clearC.getG()
+    _b = clearC.getB()
+
+    ex += "AJS.setClearColor(#{_r}, #{_g}, #{_b});"
+
+    # Grab phone dimensions to offset actors
+    pWidth = workspace.getPhoneWidth()
+    pHeight = workspace.getPhoneHeight()
+
+    pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth()) / 2
+    pOffY = (workspace.getCanvasHeight() - workspace.getPhoneHeight()) / 2
+
     ##
     ## Actors
     ##
-    for a in AWidgetWorkspace.getMe().actorObjects
+    for a in workspace.actorObjects
 
-      ex =  ""
       type = ""
       actor = V()
 
@@ -525,14 +546,14 @@ class AdefyEditor
         birthOpts.base = a.getBase()
         birthOpts.height = a.getHeight()
         birthOpts.rotation = a.getRotation()
-        birthOpts.position = { x: pos.x, y: pos.y }
+        birthOpts.position = { x: pos.x - pOffX, y: pos.y - pOffY }
         birthOpts.color = { r: col.r, g: col.g, b: col.b }
 
       else if a instanceof AHPolygon
         type = "AJSPolygon"
         birthOpts.radius = a.getRadius()
         birthOpts.segments = a.getSides()
-        birthOpts.position = { x: pos.x, y: pos.y }
+        birthOpts.position = { x: pos.x - pOffX, y: pos.y - pOffY }
         birthOpts.color = { r: col.r, g: col.g, b: col.b }
         birthOpts.rotation = a.getRotation()
 
@@ -540,7 +561,7 @@ class AdefyEditor
         type = "AJSRectangle"
         birthOpts.w = a.getWidth()
         birthOpts.h = a.getHeight()
-        birthOpts.position = { x: pos.x, y: pos.y }
+        birthOpts.position = { x: pos.x - pOffX, y: pos.y - pOffY }
         birthOpts.color = { r: col.r, g: col.g, b: col.b }
         birthOpts.rotation = a.getRotation()
 
@@ -556,6 +577,9 @@ class AdefyEditor
 
         # Now build animations
         # TODO...
+
+    # Finish init with width, and height
+    ex += "}, #{pWidth}, #{pHeight});"
 
     # Send result to backend and receive a link
     $.post "/logic/editor/export?id=#{window.ad}&data=#{ex}", (result) ->

@@ -65,6 +65,21 @@ class AWidgetWorkspace extends AWidget
       @_applyCanvasSizeUpdate()
     , "aw-canvas-container", @_cWidth, @_cHeight
 
+  # Get AWGL instance
+  #
+  # @return [AWGLEngine] awgl
+  getAWGL: -> @_awgl
+
+  # Get phone width
+  #
+  # @return [Number] width
+  getPhoneWidth: -> @_pWidth
+
+  # Get phone height
+  #
+  # @return [Number] height
+  getPhoneHeight: -> @_pHeight
+
   # Shows a modal allowing the user to set screen properties. Sizes are picked
   # from device templates, rotation and scale are also available
   showSetScreenProperties: ->
