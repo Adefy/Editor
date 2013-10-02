@@ -276,6 +276,7 @@ class AdefyEditor
         _actor.x = a.getPosition().x
         _actor.y = a.getPosition().y
         _actor.r = a.getRotation()
+        _actor.color = a.getColor()
 
         # Save the information we need to re-create all animations
         _actor.animations = {}
@@ -386,6 +387,10 @@ class AdefyEditor
       valid = valid && (a.propBuffer != undefined)
       valid = valid && (a.lastTemporalState != undefined)
       valid = valid && (a.animations != undefined)
+      valid = valid && (a.x != undefined)
+      valid = valid && (a.y != undefined)
+      valid = valid && (a.r != undefined)
+      valid = valid && (a.color != undefined)
 
       # Apply the cursor position
       AWidgetTimeline.getMe().setCursorTime data.cursorPosition
@@ -406,6 +411,7 @@ class AdefyEditor
       else throw new Error "Invalid actor type, can't instantiate!"
 
       handle._propBuffer = a.propBuffer
+      handle.setColor a.color
 
       # Set up animations
       for a, anim of a.animations

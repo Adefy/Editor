@@ -944,6 +944,18 @@ class AHBaseActor extends AHandle
       _col = @_actor.getColor()
       return { r: _col.getR(float), g: _col.getG(float), b: _col.getB(float) }
 
+  # Set actor color with composite values, 0-255
+  #
+  # @param [Number] r
+  # @param [Number] g
+  # @param [Number] b
+  setColor: (r, g, b) ->
+    param.required r
+    param.required g
+    param.required b
+
+    @_properties["color"].update { r: r, g: g, b: b}
+
   # Set actor position, relative to the GL world!
   #
   # @param [Number] x x coordinate
