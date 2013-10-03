@@ -95,9 +95,17 @@ class AHBaseActor extends AHandle
     # named 'components', full of other basic types. Composite nesting has
     # not been tested as of 9/5/2013, but in theory should be possible.
     #
-    # Each type needs to have a getValue() method, and an update() method.
-    # Components of composites shouldn't provide an update() method, as the
-    # parent composite takes care of updating all components.
+    # Each type needs to have a getValue() method, an optional genAnimationOpts
+    # method, and an update() method. Components of composites shouldn't
+    # provide an update() method, as the parent composite takes care of
+    # updating all components.
+    #
+    # The genAnimationOpts method needs to return an animations object suitable
+    # for export, that can be passed to AJS.animate when animating the property
+    # using the provided animation object.
+    #
+    # The genAnimationOpts method is only required if the property is not
+    # natively supported by the engine.
     #
     # All top-level properties should fetch up-to-date information in their
     # getValue() methods, and save it locally as _value. Composites doing this
@@ -277,6 +285,32 @@ class AHBaseActor extends AHandle
 
           if v.enabled
             me._actor.enablePsyx v.mass, v.friction, v.elasticity
+
+  # Used when exporting, executes the corresponding property genAnimationOpts
+  # method if one exists. Returns null if the property does not exist, or if
+  # the property does not have a genAnimationOpts method.
+  #
+  # @param [String] property property name
+  # @param [Object] animation animation object
+  # @param [Object] options input options
+  # @param [String] component optional component name
+  # @return [Object] options output options
+  genAnimationOpts: (property, anim, opts, component) ->
+    param.required property
+    param.required anim
+    param.required opts
+    component = param.optional component, ""
+
+    if @_properties[property] == undefined then return null
+    else prop = @_properties[property]
+
+    if prop.components != undefined
+      if prop.components[component].genAnimationOpts == undefined
+        return null
+      else return prop.components[component].genAnimationOpts anim, opts
+    else
+      if prop.genAnimationOpts == undefined then return null
+      else return prop.genAnimationOpts anim, opts
 
   # Called when the cursor leaves our lifetime on the timeline. We delete
   # our AJS actor if not already dead

@@ -52,6 +52,10 @@ class AHRectangle extends AHBaseActor
 
         if me._actor != null then me._actor.setWidth Number(v)
 
+      genAnimationOpts: (anim, opts) ->
+        opts.startVal = anim._start.y
+        opts
+
     @_properties["height"] =
       type: "number"
       min: 0
@@ -66,6 +70,10 @@ class AHRectangle extends AHBaseActor
         @_value = param.required v
 
         if me._actor != null then me._actor.setHeight Number(v)
+
+      genAnimationOpts: (anim, opts) ->
+        opts.startVal = anim._start.y
+        opts
 
     # Finish our initialization
     if not manualInit then @postInit()
