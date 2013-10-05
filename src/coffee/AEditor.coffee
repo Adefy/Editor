@@ -684,9 +684,6 @@ class AdefyEditor
 
       options.push opts
 
-    if options.length == 1 then options = options[0]
-    if properties.length == 1 then properties = properties[0]
-
     properties = JSON.stringify properties
     options = JSON.stringify options
 
