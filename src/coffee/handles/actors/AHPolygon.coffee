@@ -57,6 +57,10 @@ class AHPolygon extends AHBaseActor
 
         if me._actor != null then me._actor.setSegments Number(v)
 
+      genAnimationOpts: (anim, opts) ->
+        opts.startVal = anim._start.y
+        opts
+
     @_properties["radius"] =
       type: "number"
       min: 0
@@ -71,6 +75,10 @@ class AHPolygon extends AHBaseActor
         @_value = param.required v
 
         if me._actor != null then me._actor.setRadius Number(v)
+
+      genAnimationOpts: (anim, opts) ->
+        opts.startVal = anim._start.y
+        opts
 
     # Finish our initialization
     if not manualInit then @postInit()

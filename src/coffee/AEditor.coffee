@@ -601,7 +601,7 @@ class AdefyEditor
                 anims.push prop_val
                 props.push prop
 
-        ex += @_compileAnimationExport actor, anims, props
+        ex += @_compileAnimationExport actor, a, anims, props
 
     # Finish init with width, and height
     ex += "}, #{pWidth}, #{pHeight});"
@@ -623,12 +623,13 @@ class AdefyEditor
   # is the only actual start value. After that, all animations start from
   # the current value.
   #
-  # @param [Object] actor actor instance name
+  # @param [String] actorName actor instance name
+  # @param [Object] actorObj actor handle
   # @param [String] animations array of animation objects, one for each prop
   # @param [String] properties array of properties, single or composite
   #
   # @return [String] export AJS.animate() statement
-  _compileAnimationExport: (actor, animations, properties) ->
+  _compileAnimationExport: (actorName, actorObj, animations, properties) ->
 
     options = []
 
@@ -644,13 +645,15 @@ class AdefyEditor
       if p instanceof Array then _pName = p[0] else _pName = p
 
       # Use the AWGL animation iface map to figure out options
-      if AWGLAnimationInterface._animationMap[_pName] == AWGLBezAnimation
+      animName = window.AdefyGLI.Animations().getAnimationName _pName
 
-        opts.endVal = anim._end.y
-        opts.controlPoints = anim._control
-        opts.duration = anim._end.x - anim._start.x
-        opts.property = p
-        opts.start = anim._start.x
+      opts.endVal = anim._end.y
+      opts.controlPoints = anim._control
+      opts.duration = anim._end.x - anim._start.x
+      opts.property = p
+      opts.start = anim._start.x
+
+      if animName == "bezier"
 
         # If we are position, we need to offset ourselves to render from
         # the proper origin on phone screens
@@ -663,21 +666,28 @@ class AdefyEditor
         # TODO: Take framerate into account
         # opts.fps = ...
 
-      else if AWGLAnimationInterface._animationMap[_pName] == AWGLPsyxAnimation
+      else if animName == "psyx"
         AUtilLog.warn "Psyx animation export not yet implemented"
 
-      else if AWGLAnimationInterface._animationMap[_pName] == AWGLVertAnimation
+      else if animName == "vert"
         AUtilLog.warn "Vert animation export not yet implemented"
 
-      options.push opts
+      # Animation needs to be converted
+      else if animName == false
 
-    if options.length == 1 then options = options[0]
-    if properties.length == 1 then properties = properties[0]
+        if p not instanceof Array then _p = [p] else _p = p
+        opts = actorObj.genAnimationOpts _p[0], anim, opts, _p[1]
+
+        if opts == null
+          throw new Error "Property needs a genAnimationOpts method!"
+          return
+
+      options.push opts
 
     properties = JSON.stringify properties
     options = JSON.stringify options
 
-    "AJS.animate(#{actor}, #{properties}, #{options});"
+    "AJS.animate(#{actorName}, #{properties}, #{options});"
 
 $(document).ready ->
 
