@@ -128,12 +128,16 @@ class AWidgetTimeline extends AWidget
 
     _endPlayback = =>
       clearInterval @_playbackID
-      @setCursorTime @_playbackStart
+      @setCursorTime 0
+      @_playbackID = null
+
+    _pausePlayback = =>
+      clearInterval @_playbackID
       @_playbackID = null
 
     # If currently playing, remove the interval
     if @_playbackID != undefined and @_playbackID != null
-      _endPlayback()
+      _pausePlayback()
       return
 
     frameRate = 1000 / @_previewRate
