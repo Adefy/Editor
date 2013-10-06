@@ -23,7 +23,6 @@ class AHandle
 
     # Give ourselves a unique id so we can be discovered on the body
     @_id = prefId "ahandle"
-    @_handle = @_id
 
     # Attach ourselves to the body
     me = @
@@ -121,5 +120,3 @@ class AHandle
   # cliecked on. Again, just like the properties, global properties may be
   # applied by ancestors
   getContextFunctions: -> @_ctx
-
-  @getHandle: -> @_handle
