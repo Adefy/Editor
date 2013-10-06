@@ -114,7 +114,7 @@ class AWidgetTimeline extends AWidget
     # Set up event listeners (this is where the magic happens)
     $(document).ready ->
 
-      # Outer timebar cgruinlick
+      # Outer timebar
       $(document).on "click", ".atts-outer", (e) -> me._outerClicked e, @
 
       # Timeline playback controls
@@ -156,10 +156,51 @@ class AWidgetTimeline extends AWidget
   # Forward playback button clicked (next keyframe)
   # @private
   _forwClicked: ->
+    _currentPosition = @getCursorTime()
+    _newPosition = null
+    _min = 99999
+    index = AWidgetWorkspace.getSelectedActor()
+
+    # only enter checks if an actor is actually selected
+    if index != null and index != undefined
+      for actor, i in @_actors
+        if actor.getId() == index then index = i
+
+      _animations = @_actors[index].getAnimations()
+      for anim of _animations
+        if anim > _currentPosition
+          if anim - _currentPosition < _min and anim - _currentPosition > 1
+            _newPosition = anim
+            _min = Math.round(anim - _currentPosition)
+
+      # if no animations after current position, go to the end of the timeline
+      if _newPosition != null then @setCursorTime _newPosition
+      else @setCursorTime @_duration - 5
 
   # Backward playback button clicked (prev keyframe)
   # @private
   _prevClicked: ->
+    _currentPosition = @getCursorTime()
+    _newPosition = null
+    _min = 99999
+    index = AWidgetWorkspace.getSelectedActor()
+
+    # only enter checks if an actor is actually selected
+    if index != null and index != undefined
+      for actor, i in @_actors
+        if actor.getId() == index then index = i
+
+      _animations = @_actors[index].getAnimations()
+      for anim of _animations
+        if anim < _currentPosition
+          if _currentPosition - anim < _min and _currentPosition - anim > 1
+            _newPosition = anim
+            _min = Math.round(_currentPosition - anim)
+
+      # if no animtaions before this one we go to the beginning of the timeline
+      if _newPosition != null then @setCursorTime _newPosition
+      else @setCursorTime 0
+
 
   # Show dialog box for setting the preview framerate
   showSetPreviewRate: ->

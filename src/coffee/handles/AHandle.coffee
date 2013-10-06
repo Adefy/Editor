@@ -5,6 +5,7 @@
 # Base class for all elements that can be manipulated by the editor
 class AHandle
 
+  @_handle: null
   # Instantiates us, should never be called directly. We serve mearly
   # as a base class. Properties are setup here, so set up the property object
   # on extending classes after calling super(). Note that you can un-set
@@ -22,6 +23,7 @@ class AHandle
 
     # Give ourselves a unique id so we can be discovered on the body
     @_id = prefId "ahandle"
+    @_handle = @_id
 
     # Attach ourselves to the body
     me = @
@@ -119,3 +121,5 @@ class AHandle
   # cliecked on. Again, just like the properties, global properties may be
   # applied by ancestors
   getContextFunctions: -> @_ctx
+
+  @getHandle: -> @_handle

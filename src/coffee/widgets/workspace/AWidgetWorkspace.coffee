@@ -12,6 +12,8 @@ class AWidgetWorkspace extends AWidget
   # us of their demise (muahahahahaha)
   @__instance: null
 
+  @_selectedActor: null
+
   # Creates a new workspace if one does not already exist
   #
   # @param [String] parent parent element selector
@@ -389,7 +391,8 @@ class AWidgetWorkspace extends AWidget
         me._performPick _truePos.x, _truePos.y, (r, g, b) ->
 
           # Not over an object, just return
-          if b != 248 then return
+          if b != 248
+            return
 
           # Id is stored as a sector and an offset. Recover proper object id
           _id = r + (g * 255)
@@ -494,6 +497,9 @@ class AWidgetWorkspace extends AWidget
           # Find the actor in question
           for o in me.actorObjects
             if o.getActorId() == _id
+
+              # Update selected actor for use in AWidgetTimeline
+              AWidgetWorkspace._selectedActor = o.getId()
 
               # Fill in property list!
               o.onClick()
@@ -601,3 +607,5 @@ class AWidgetWorkspace extends AWidget
 
     # Center phone outline
     @updateOutline()
+
+  @getSelectedActor: -> AWidgetWorkspace._selectedActor
