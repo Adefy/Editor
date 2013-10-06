@@ -261,7 +261,7 @@ class AWidgetTimeline extends AWidget
   # @private
   _updateCursorTime: ->
     time = (@getCursorTime() / 1000.0).toFixed 3
-    $("#attt-cursor-time").text "Cursor: #{time}s"
+    $("#attt-cursor-time").text "Cursor: #{time}s @ #{@_previewRate} FPS"
 
   # Timebar click handler, magic and whatnot
   #
