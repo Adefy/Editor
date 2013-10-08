@@ -106,6 +106,13 @@ class AWidgetTimeline extends AWidget
         me._onCursorDrag e, ui
         me._onCursorDragStop e, ui
 
+  # Animation keys lightbolts saving
+  # @private
+  _saveKey: ->
+    for a in @_actors
+      if a.isAlive()
+        a.updateInTime()
+
   # Registers event listeners
   # @private
   _regListeners: ->
@@ -121,6 +128,9 @@ class AWidgetTimeline extends AWidget
       $(document).on "click", "#atttc-toggle", (e) -> me._toggleClicked()
       $(document).on "click", "#atttc-forward", (e) -> me._forwClicked()
       $(document).on "click", "#atttc-backward", (e) -> me._prevClicked()
+
+      # Sidebar save button
+      $(document).on "click", ".asp-save", (e) -> me._saveKey()
 
   # @private
   _endPlayback: ->
