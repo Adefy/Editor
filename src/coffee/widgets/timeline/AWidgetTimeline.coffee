@@ -122,22 +122,24 @@ class AWidgetTimeline extends AWidget
       $(document).on "click", "#atttc-forward", (e) -> me._forwClicked()
       $(document).on "click", "#atttc-backward", (e) -> me._prevClicked()
 
+  # @private
+  _endPlayback: ->
+    clearInterval @_playbackID
+    @setCursorTime 0
+    @_playbackID = null
+
+  # @private
+  _pausePlayback: ->
+    clearInterval @_playbackID
+    @_playbackID = null
+
   # Playback toggle button clicked (play/pause)
   # @private
   _toggleClicked: ->
 
-    _endPlayback = =>
-      clearInterval @_playbackID
-      @setCursorTime 0
-      @_playbackID = null
-
-    _pausePlayback = =>
-      clearInterval @_playbackID
-      @_playbackID = null
-
     # If currently playing, remove the interval
     if @_playbackID != undefined and @_playbackID != null
-      _pausePlayback()
+      @_pausePlayback()
       return
 
     frameRate = 1000 / @_previewRate
@@ -153,7 +155,7 @@ class AWidgetTimeline extends AWidget
 
       me.setCursorTime nextTime
 
-      if nextTime >= me._duration then _endPlayback()
+      if nextTime >= me._duration then me._endPlayback()
 
     , frameRate
 
@@ -178,8 +180,13 @@ class AWidgetTimeline extends AWidget
             _min = Math.round(anim - _currentPosition)
 
       # if no animations after current position, go to the end of the timeline
-      if _newPosition != null then @setCursorTime _newPosition
-      else @setCursorTime @_duration - 5
+      if _newPosition != null
+        if @_playbackID != null and @_playbackID != undefined
+          @_pausePlayback()
+        @setCursorTime _newPosition
+      else
+        @setCursorTime @_duration - 5
+        @_pausePlayback()
 
   # Backward playback button clicked (prev keyframe)
   # @private
@@ -202,8 +209,13 @@ class AWidgetTimeline extends AWidget
             _min = Math.round(_currentPosition - anim)
 
       # if no animtaions before this one we go to the beginning of the timeline
-      if _newPosition != null then @setCursorTime _newPosition
-      else @setCursorTime 0
+      if _newPosition != null
+        if @_playbackID != null and @_playbackID != undefined
+          @_pausePlayback()
+        @setCursorTime _newPosition
+      else
+        @setCursorTime 0
+        @_endPlayback()
 
 
   # Show dialog box for setting the preview framerate
