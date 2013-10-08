@@ -185,7 +185,10 @@ class AWidgetTimeline extends AWidget
           @_pausePlayback()
         @setCursorTime _newPosition
       else
-        @setCursorTime @_duration - 5
+        # If we move cursor to duration, it is not on the screen anymore
+        # maybe an issue with the width, maybe just because of how my
+        # screens are set up. Something to keep an eye on.
+        @setCursorTime @_duration
         @_pausePlayback()
 
   # Backward playback button clicked (prev keyframe)
