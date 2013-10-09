@@ -64,7 +64,7 @@ class AWidgetModal extends AWidget
           $("body").data("##{id}").close true
 
         # Input change
-        $(document).on "change", ".amodal input", (e) ->
+        $(document).on "change", ".amodal input, .amodal select", (e) ->
           id = $(@).closest(".amodal").attr "id"
           $("body").data("##{id}").changed e.target
 
@@ -74,7 +74,14 @@ class AWidgetModal extends AWidget
   # @return [Object] data scraped input data [inputName] = inputValue
   scrapeData: ->
     data = {}
-    data[$(i).attr("name")] = $(i).val() for i in $("#{@_sel} input")
+
+    for i in $("#{@_sel} input")
+      if $(i).attr("type") != "radio" then data[$(i).attr("name")] = $(i).val()
+      else if $(i).is ":checked" then data[$(i).attr("name")] = $(i).val()
+
+    for i in $("#{@_sel} textarea")
+      data[$(i).attr("name")] = $(i).val()
+
     data
 
   # Called when an input is changed, validates and in turn calls @change() if
@@ -92,7 +99,7 @@ class AWidgetModal extends AWidget
     if @validation != null then if @validation(data) != true then return
     delta = @change $(i).attr("name"), $(i).val(), data
 
-    $("#{@_sel} input[name=\"#{d}\"]").val v for d, v of delta
+    $("#{@_sel} *[name=\"#{d}\"]").val v for d, v of delta
 
   # Injects and shows us. Doesn't work if we aren't dead
   show: ->

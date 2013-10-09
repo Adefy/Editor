@@ -39,11 +39,34 @@
           text-align right
           margin-right 8px
           padding 4px 0
-        input
-          width 50%
+
+        input, select
           padding 2px 4px
           border 0
           margin 0
+
+        input
+          width 50%
+
+        input.wsmall
+          width 50px
+
+        input[disabled="disabled"]
+          background-color transparent
+          color $white
+          padding 4px 0
+
+        input[type="radio"]
+          width auto
+          margin-top 2px
+          margin-left 16px
+
+        input[type="radio"]:first-child
+          margin-left 0
+
+        .radio
+          padding 4px 0
+          display inline-block
 
     .amtitle
       font-size 24px

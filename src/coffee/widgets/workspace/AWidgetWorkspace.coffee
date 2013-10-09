@@ -43,6 +43,8 @@ class AWidgetWorkspace extends AWidget
     # Starting phone size is 800x480
     @_pWidth = 800
     @_pHeight = 480
+    @_pScale = 1
+    @_pOrientation = "land"
 
     # Picking resources
     @_pickBuffer = null
@@ -80,13 +82,133 @@ class AWidgetWorkspace extends AWidget
   # @return [Number] height
   getPhoneHeight: -> @_pHeight
 
+  # Get phone scale
+  #
+  # @return [Number] scale
+  getPhoneScale: -> @_pScale
+
   # Shows a modal allowing the user to set screen properties. Sizes are picked
   # from device templates, rotation and scale are also available
   showSetScreenProperties: ->
 
-    # TODO ...
+    curScale = prefId "_wspscale"
+    cSize = prefId "_wspcsize"
+    pSize = prefId "_wsppsize"
+    pOrie = prefId "_wsporientation"
 
-    new AWidgetModal "Set Screen Properties", "", false
+    curSize = "#{@_pWidth}x#{@_pHeight}"
+    chL = ""
+    chP = ""
+
+    if @_pOrientation == "land" then chL = "checked=\"checked\""
+    else chP = "checked=\"checked\""
+
+    _html = """
+
+      <div class="input_group">
+        <label>Current size: </label>
+        <input type="text" value="#{curSize}" disabled="disabled" />
+      </div>
+      <br />
+      <div class="input_group">
+        <label for="#{cSize}">Custom Size: </label>
+        <input name="#{cSize}" type="text" value="#{curSize}"
+          placeholder="WidthxHeight" />
+      </div>
+
+      <div class="input_group">
+        <label for="#{pSize}">Preset Size: </label>
+        <select name="#{pSize}">
+          <optgroup label="Android 120 ldpi">
+            <option value="240_320">240x320</option>
+            <option value="240_400">240x400</option>
+            <option value="240_432">240x432</option>
+            <option value="480_800">480x800</option>
+            <option value="480_854">480x854</option>
+            <option value="1024_600">1024x600</option>
+          </optgroup>
+
+          <optgroup label="Android 160 mdpi">
+            <option value="320_480">320x480</option>
+            <option value="480_800">480x800</option>
+            <option value="480_854">480x854</option>
+            <option value="600_1024">600x1024</option>
+            <option value="1280_800">1280x800</option>
+            <option value="1024_768">1024x768</option>
+            <option value="1280_768">1280x768</option>
+          </optgroup>
+
+          <optgroup label="Android 240 hdpi">
+            <option value="480_640">480x640</option>
+            <option value="480_800">480x800</option>
+            <option value="480_854">480x854</option>
+            <option value="600_1024">600x1024</option>
+            <option value="1536_1152">1536x1152</option>
+            <option value="1920_1152">1920x1152</option>
+            <option value="1920_1200">1920x1200</option>
+          </optgroup>
+
+          <optgroup label="Android 320 xhdpi">
+            <option value="640_960">640x960</option>
+            <option value="2048_1536">2048x1536</option>
+            <option value="2560_1536">2560x1536</option>
+            <option value="2560_1600">2560x1600</option>
+          </optgroup>
+
+          <optgroup label="iOS iPad & iPad Mini">
+            <option value="1024_768">1024x768</option>
+            <option value="2048_1536">2048x1536</option>
+          </optgroup>
+
+          <optgroup label="iPhone 5, 5s, 4, 4s">
+            <option value="1136_640">1136x640</option>
+            <option value="960_640">960x640</option>
+            <option value="480_320">480x320</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="input_group">
+        <label for="#{pOrie}">Orientation: </label>
+        <div class="radio">
+          <input type="radio" name="#{pOrie}" value="land" #{chL} /> Landscape
+          <input type="radio" name="#{pOrie}" value="port" #{chP} /> Portrait
+        </div>
+      </div>
+
+      <div class="input_group">
+        <label for="#{curScale}">Scale: </label>
+        <input class="wsmall" type="number" name="#{curScale}"
+          value="#{@_pScale}" />
+      </div>
+    """
+
+    new AWidgetModal "Set Screen Properties", _html, false, (data) =>
+
+      # Submission
+      size = data[cSize].split "x"
+
+      @_pHeight = Number size[1]
+      @_pWidth = Number size[0]
+      @_pScale = Number data[curScale]
+      @_pOrientation = data[pOrie]
+      @updateOutline()
+
+    , (data) =>
+
+      # Validation
+      size = data[cSize].split "x"
+
+      if size.length != 2 then return "Size is of the format WidthxHeight"
+      else if isNaN(size[0]) or isNaN(size[1])
+        return "Dimensions must be numbers"
+      else if isNaN(data[curScale]) then return "Scale must be a number"
+
+      true
+    , (deltaName, deltaVal, data) =>
+
+      if deltaName == pSize
+        $("input[name=\"#{cSize}\"]").val deltaVal.split("_").join "x"
 
   # Shows a modal allowing the user to set the background color
   showSetBackgroundColor: ->
@@ -110,8 +232,8 @@ class AWidgetWorkspace extends AWidget
 
     _html = """
       <div class="input_group">
-        <label for=\"#{hex}\">Hex: </label>
-        <input name=\"#{hex}\" type="text" value="##{valHex}"></input>
+        <label for="#{hex}">Hex: </label>
+        <input name="#{hex}" type="text" value="##{valHex}"></input>
       <div>
 
       <br />
@@ -119,18 +241,18 @@ class AWidgetWorkspace extends AWidget
       <br />
 
       <div class="input_group">
-        <label for=\"#{r}\">R: </label>
-        <input name=\"#{r}\" type="text" value="#{_colR}"></input>
+        <label for="#{r}">R: </label>
+        <input name="#{r}" type="text" value="#{_colR}"></input>
       <div>
 
       <div class="input_group">
-        <label for=\"#{g}\">G: </label>
-        <input name=\"#{g}\" type="text" value="#{_colG}"></input>
+        <label for="#{g}">G: </label>
+        <input name="#{g}" type="text" value="#{_colG}"></input>
       <div>
 
       <div class="input_group">
-        <label for=\"#{b}\">B: </label>
-        <input name=\"#{b}\" type="text" value="#{_colB}"></input>
+        <label for="#{b}">B: </label>
+        <input name="#{b}" type="text" value="#{_colB}"></input>
       <div>
 
       <div id="#{preview}" class="_wbgPreview" style="#{pInitial}"></div>
@@ -313,6 +435,9 @@ class AWidgetWorkspace extends AWidget
   _engineInit: ->
 
     AUtilLog.info "AWGL instance up, initializing workspace"
+
+    # Start with an off-white clear color
+    @_awgl.setClearColor 240, 240, 240
 
     # Bind manipulatable handlers
     me = @
@@ -572,22 +697,29 @@ class AWidgetWorkspace extends AWidget
   # Resizes the display outline
   updateOutline: ->
 
+    if @_pOrientation == "port"
+      height = @_pWidth
+      width = @_pHeight
+    else
+      height = @_pHeight
+      width = @_pWidth
+
     # Center
-    _t = (($(@_sel).height() / 2) - 2) - ($("#awcc-outline").height() / 2)
-    _l = (($(@_sel).width() / 2) - 2) - ($("#awcc-outline").width() / 2)
+    _t = (($(@_sel).height() / 2) - 2) - (height / 2)
+    _l = (($(@_sel).width() / 2) - 2) - (width / 2)
 
     $("#awcc-outline").css
       top: _t
       left: _l
-      width: @_pWidth
-      height: @_pHeight
+      width: width
+      height: height
 
     # Update text
     $("#awcc-outline-text").css
       top: _t - 16
       left: _l
 
-    $("#awcc-outline-text").text "#{@_pWidth}x#{@_pHeight}"
+    $("#awcc-outline-text").text "#{width}x#{height}"
 
   # Takes other widgets into account, and sets the height accordingly. Also
   # centers the phone outline
