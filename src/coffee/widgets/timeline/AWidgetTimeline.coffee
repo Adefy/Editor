@@ -109,9 +109,14 @@ class AWidgetTimeline extends AWidget
   # Animation keys lightbolts saving
   # @private
   _saveKey: ->
-    for a in @_actors
-      if a.isAlive()
-        a.updateInTime()
+    index = AWidgetWorkspace.getSelectedActor()
+    # only enter checks if an actor is actually selected
+    if index != null and index != undefined
+      for actor, i in @_actors
+        if actor.getId() == index then index = i
+    if @_actors[index].isAlive()
+      AWGLLog.info "SAVED"
+      @_actors[index].updateInTime()
 
   # Registers event listeners
   # @private

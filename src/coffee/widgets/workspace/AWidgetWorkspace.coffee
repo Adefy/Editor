@@ -391,8 +391,7 @@ class AWidgetWorkspace extends AWidget
         me._performPick _truePos.x, _truePos.y, (r, g, b) ->
 
           # Not over an object, just return
-          if b != 248
-            return
+          if b != 248 then return
 
           # Id is stored as a sector and an offset. Recover proper object id
           _id = r + (g * 255)
@@ -438,10 +437,9 @@ class AWidgetWorkspace extends AWidget
         __drag_update_props = false
         __drag_psyx = false
 
-        # Calculate workspace coordinates
+         # Calculate workspace coordinates
         _truePos = me.domToGL e.pageX, e.pageY
 
-        # Find the actor in question
         me._performPick _truePos.x, _truePos.y, (r, g, b) ->
 
           # Objects have a blue component of 248. If this is not an object,
