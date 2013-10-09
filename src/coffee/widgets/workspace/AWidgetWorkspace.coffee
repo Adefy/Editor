@@ -438,6 +438,31 @@ class AWidgetWorkspace extends AWidget
         __drag_update_props = false
         __drag_psyx = false
 
+        # Calculate workspace coordinates
+        _truePos = me.domToGL e.pageX, e.pageY
+
+        # Find the actor in question
+        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+
+          # Objects have a blue component of 248. If this is not an object,
+          # perform the necessary clearing and continue
+          if b != 248
+            $("body").data("default-properties").clear()
+            return
+
+          # Id is stored as a sector and an offset. Recover proper object id
+          _id = r + (g * 255)
+
+          # Find the actor in question
+          for o in me.actorObjects
+            if o.getActorId() == _id
+
+              # Update selected actor for use in AWidgetTimeline
+              AWidgetWorkspace._selectedActor = o.getId()
+
+              # Fill in property list!
+              o.onClick()
+
         setTimeout ->
           __dragging = false
         , 1
