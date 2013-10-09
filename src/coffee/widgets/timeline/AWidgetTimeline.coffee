@@ -106,6 +106,18 @@ class AWidgetTimeline extends AWidget
         me._onCursorDrag e, ui
         me._onCursorDragStop e, ui
 
+  # Animation keys lightbolts saving
+  # @private
+  _saveKey: ->
+    index = AWidgetWorkspace.getSelectedActor()
+    # only enter checks if an actor is actually selected
+    if index != null and index != undefined
+      for actor, i in @_actors
+        if actor.getId() == index then index = i
+    if @_actors[index].isAlive()
+      AWGLLog.info "SAVED"
+      @_actors[index].updateInTime()
+
   # Registers event listeners
   # @private
   _regListeners: ->
@@ -114,7 +126,7 @@ class AWidgetTimeline extends AWidget
     # Set up event listeners (this is where the magic happens)
     $(document).ready ->
 
-      # Outer timebar cgruinlick
+      # Outer timebar
       $(document).on "click", ".atts-outer", (e) -> me._outerClicked e, @
 
       # Timeline playback controls
@@ -122,18 +134,27 @@ class AWidgetTimeline extends AWidget
       $(document).on "click", "#atttc-forward", (e) -> me._forwClicked()
       $(document).on "click", "#atttc-backward", (e) -> me._prevClicked()
 
+      # Sidebar save button
+      $(document).on "click", ".asp-save", (e) -> me._saveKey()
+
+  # @private
+  _endPlayback: ->
+    clearInterval @_playbackID
+    @setCursorTime 0
+    @_playbackID = null
+
+  # @private
+  _pausePlayback: ->
+    clearInterval @_playbackID
+    @_playbackID = null
+
   # Playback toggle button clicked (play/pause)
   # @private
   _toggleClicked: ->
 
-    _endPlayback = =>
-      clearInterval @_playbackID
-      @setCursorTime @_playbackStart
-      @_playbackID = null
-
     # If currently playing, remove the interval
     if @_playbackID != undefined and @_playbackID != null
-      _endPlayback()
+      @_pausePlayback()
       return
 
     frameRate = 1000 / @_previewRate
@@ -149,17 +170,71 @@ class AWidgetTimeline extends AWidget
 
       me.setCursorTime nextTime
 
-      if nextTime >= me._duration then _endPlayback()
+      if nextTime >= me._duration then me._endPlayback()
 
     , frameRate
 
   # Forward playback button clicked (next keyframe)
   # @private
   _forwClicked: ->
+    _currentPosition = @getCursorTime()
+    _newPosition = null
+    _min = 99999
+    index = AWidgetWorkspace.getSelectedActor()
+
+    # only enter checks if an actor is actually selected
+    if index != null and index != undefined
+      for actor, i in @_actors
+        if actor.getId() == index then index = i
+
+      _animations = @_actors[index].getAnimations()
+      for anim of _animations
+        if anim > _currentPosition
+          if anim - _currentPosition < _min and anim - _currentPosition > 1
+            _newPosition = anim
+            _min = Math.round(anim - _currentPosition)
+
+      # if no animations after current position, go to the end of the timeline
+      if _newPosition != null
+        if @_playbackID != null and @_playbackID != undefined
+          @_pausePlayback()
+        @setCursorTime _newPosition
+      else
+        # If we move cursor to duration, it is not on the screen anymore
+        # maybe an issue with the width, maybe just because of how my
+        # screens are set up. Something to keep an eye on.
+        @setCursorTime @_duration
+        @_pausePlayback()
 
   # Backward playback button clicked (prev keyframe)
   # @private
   _prevClicked: ->
+    _currentPosition = @getCursorTime()
+    _newPosition = null
+    _min = 99999
+    index = AWidgetWorkspace.getSelectedActor()
+
+    # only enter checks if an actor is actually selected
+    if index != null and index != undefined
+      for actor, i in @_actors
+        if actor.getId() == index then index = i
+
+      _animations = @_actors[index].getAnimations()
+      for anim of _animations
+        if anim < _currentPosition
+          if _currentPosition - anim < _min and _currentPosition - anim > 1
+            _newPosition = anim
+            _min = Math.round(_currentPosition - anim)
+
+      # if no animtaions before this one we go to the beginning of the timeline
+      if _newPosition != null
+        if @_playbackID != null and @_playbackID != undefined
+          @_pausePlayback()
+        @setCursorTime _newPosition
+      else
+        @setCursorTime 0
+        @_endPlayback()
+
 
   # Show dialog box for setting the preview framerate
   showSetPreviewRate: ->
@@ -216,7 +291,7 @@ class AWidgetTimeline extends AWidget
   # @private
   _updateCursorTime: ->
     time = (@getCursorTime() / 1000.0).toFixed 3
-    $("#attt-cursor-time").text "Cursor: #{time}s"
+    $("#attt-cursor-time").text "Cursor: #{time}s @ #{@_previewRate} FPS"
 
   # Timebar click handler, magic and whatnot
   #

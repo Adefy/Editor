@@ -161,7 +161,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
       AUtilLog.warn "Save requested with no associated object!"
       return
 
-    # Note that we have an undocumented parameter! When _recurse is et to true,
+    # Note that we have an undocumented parameter! When _recurse is set to true
     # that signifies that we have been called by ourselves. Knowing this, we
     # will return our results instead of shipping them to the object.
     _recurse = param.optional _recurse, false

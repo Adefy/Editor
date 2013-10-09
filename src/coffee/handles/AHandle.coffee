@@ -5,6 +5,7 @@
 # Base class for all elements that can be manipulated by the editor
 class AHandle
 
+  @_handle: null
   # Instantiates us, should never be called directly. We serve mearly
   # as a base class. Properties are setup here, so set up the property object
   # on extending classes after calling super(). Note that you can un-set
