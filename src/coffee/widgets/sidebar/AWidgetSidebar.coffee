@@ -121,9 +121,12 @@ class AWidgetSidebar extends AWidget
   # Take the navbar into account, and always position ourselves below it
   onResize: ->
 
+    timelineBottom = Number($(".atimeline").css("bottom").split("px")[0]) - 16
+    timelineHeight = ($(".atimeline").height() + timelineBottom)
+
     # Re-size
     $(@_sel).height $(window).height() - $(".amainbar").height() - \
-      $(".atimeline").height() - 2
+      timelineHeight - 2
 
     $(@_sel).css { top: $(".amainbar").height() + 2 }
 

@@ -49,6 +49,9 @@ class AWidgetTimeline extends AWidget
     # Default preview playback speed (fps)
     @_previewRate = 30
 
+    # Visibility toggle animation status
+    @__animating = false
+
     param.required parent
     @_duration = Number param.required(duration)
 
@@ -129,13 +132,16 @@ class AWidgetTimeline extends AWidget
       # Outer timebar
       $(document).on "click", ".atts-outer", (e) -> me._outerClicked e, @
 
+      # Timeline visibility toggle
+      $(document).on "click", "#attt-toggle", (e) -> me._visToggleClicked e
+
       # Timeline playback controls
-      $(document).on "click", "#atttc-toggle", (e) -> me._toggleClicked()
-      $(document).on "click", "#atttc-forward", (e) -> me._forwClicked()
-      $(document).on "click", "#atttc-backward", (e) -> me._prevClicked()
+      $(document).on "click", "#atttc-toggle", (e) -> me._toggleClicked e
+      $(document).on "click", "#atttc-forward", (e) -> me._forwClicked e
+      $(document).on "click", "#atttc-backward", (e) -> me._prevClicked e
 
       # Sidebar save button
-      $(document).on "click", ".asp-save", (e) -> me._saveKey()
+      $(document).on "click", ".asp-save", (e) -> me._saveKey e
 
   # @private
   _endPlayback: ->
@@ -173,6 +179,38 @@ class AWidgetTimeline extends AWidget
       if nextTime >= me._duration then me._endPlayback()
 
     , frameRate
+
+  # Visibilty toggle request
+  # @private
+  _visToggleClicked: ->
+
+    if $(@_sel).css("bottom") == "0px" and not @__animating
+      @__animating = true
+
+      $(@_sel).animate
+        bottom: "-#{$(@_sel).height() - 24}px"
+      ,
+        duration: 500
+        easing: "swing"
+        step: =>
+          window.left_sidebar.onResize()
+          window.right_sidebar.onResize()
+          window.workspace.onResize()
+        done: => @__animating = false
+
+    else if not @__animating
+      @__animating = true
+
+      $(@_sel).animate
+        bottom: "0px"
+      ,
+        duration: 500
+        easing: "swing"
+        step: =>
+          window.left_sidebar.onResize()
+          window.right_sidebar.onResize()
+          window.workspace.onResize()
+        done: => @__animating = false
 
   # Forward playback button clicked (next keyframe)
   # @private
@@ -434,7 +472,7 @@ class AWidgetTimeline extends AWidget
           </div>
         </div>
         <div class=\"attt-third\">
-          <i class=\"icon-cog\"></i>
+          <i id=\"attt-toggle\" class=\"icon-caret-down\"></i>
         </div>
       </div>
       """

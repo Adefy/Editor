@@ -37,10 +37,12 @@ class AWidgetWorkspace extends AWidget
     me = @
     if window.ajax == undefined then window.ajax = microAjax
 
-    # The canvas is the same size as ourselves
+    timelineBottom = Number($(".atimeline").css("bottom").split("px")[0]) - 16
+    timelineHeight = ($(".atimeline").height() + timelineBottom)
+
+    # The canvas is fullscreen, minus the mainbar
     @_cWidth = $(@_sel).width()
-    @_cHeight = $(window).height() - $(".amainbar").height() - \
-      $(".atimeline").height() - 2
+    @_cHeight = $(window).height() - $(".amainbar").height() - 2
 
     # Starting phone size is 800x480
     @_pWidth = 800
@@ -734,8 +736,8 @@ class AWidgetWorkspace extends AWidget
       width = @_pWidth
 
     # Center
-    _t = (($(@_sel).height() / 2) - 2) - (height / 2)
-    _l = (($(@_sel).width() / 2) - 2) - (width / 2)
+    _t = (($(document).height() / 2) - 2) - (height / 2)
+    _l = (($(document).width() / 2) - 2) - (width / 2)
 
     $("#awcc-outline").css
       top: _t
@@ -756,9 +758,12 @@ class AWidgetWorkspace extends AWidget
   # Note that this does NOT resize the canvas
   onResize: ->
 
+    timelineBottom = Number($(".atimeline").css("bottom").split("px")[0]) - 16
+    timelineHeight = ($(".atimeline").height() + timelineBottom)
+
     # Our height
     $(@_sel).height $(document).height() - $(".amainbar").height() + 2 - \
-      $(".atimeline").height()
+      timelineHeight
 
     # Center phone outline
     @updateOutline()

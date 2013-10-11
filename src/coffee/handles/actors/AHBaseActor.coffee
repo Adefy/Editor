@@ -179,7 +179,7 @@ class AHBaseActor extends AHandle
           max: 255
           float: false
           placeholder: 255
-          _value: 255
+          _value: 0
           getValue: -> @_value
         g:
           type: "number"
@@ -187,7 +187,7 @@ class AHBaseActor extends AHandle
           max: 255
           float: false
           placeholder: 255
-          _value: 255
+          _value: 0
           getValue: -> @_value
         b:
           type: "number"
@@ -195,7 +195,7 @@ class AHBaseActor extends AHandle
           max: 255
           float: false
           placeholder: 255
-          _value: 255
+          _value: 0
           getValue: -> @_value
 
       # We fetch color information from our actor, and set composite
