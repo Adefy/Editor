@@ -532,7 +532,7 @@ class AdefyEditor
     pHeight = workspace.getPhoneHeight()
 
     pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth()) / 2
-    pOffY = (workspace.getCanvasHeight() - workspace.getPhoneHeight()) / 6
+    pOffY = (workspace.getCanvasHeight() - workspace.getPhoneHeight()) / 2
 
     ##
     ## Actors
