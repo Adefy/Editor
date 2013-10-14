@@ -610,7 +610,7 @@ class AWidgetWorkspace extends AWidget
           if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
           or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
 
-            # Calc new coords (orig + offset)
+            # Calc new coords (orig + offset)f
             _newX = Number(__drag_orig_x + (e.pageX - __drag_start_x))
 
             # Note we need to invert the vertical offset
@@ -736,7 +736,7 @@ class AWidgetWorkspace extends AWidget
       width = @_pWidth
 
     # Center
-    _t = (($(document).height() / 2) - 2) - (height / 2)
+    _t = (($(document).height() / 6) - 2) - (height / 6)
     _l = (($(document).width() / 2) - 2) - (width / 2)
 
     $("#awcc-outline").css
