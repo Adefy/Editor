@@ -532,7 +532,7 @@ class AdefyEditor
     pHeight = workspace.getPhoneHeight()
 
     pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth()) / 2
-    pOffY = (workspace.getCanvasHeight() / 6 - workspace.getPhoneHeight()) / 2
+    pOffY = workspace.getCanvasHeight() - workspace.getPhoneHeight()
 
     ##
     ## Actors
@@ -634,7 +634,7 @@ class AdefyEditor
     options = []
 
     pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth()) / 2
-    pOffY = (workspace.getCanvasHeight() / 6 - workspace.getPhoneHeight()) / 2
+    pOffY = workspace.getCanvasHeight() - workspace.getPhoneHeight()
 
     # Build options
     for p, i in properties
