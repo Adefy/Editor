@@ -532,7 +532,7 @@ class AdefyEditor
     pHeight = workspace.getPhoneHeight()
 
     pOffX = workspace.getCanvasWidth() / 2 - workspace.getPhoneWidth()
-    pOffY = workspace.getCanvasHeight() / 6 + workspace.getPhoneHeight()
+    pOffY = workspace.getCanvasHeight() / 6 - workspace.getPhoneHeight()
 
     ##
     ## Actors
@@ -552,7 +552,7 @@ class AdefyEditor
       col = buff.color.components
 
       birthOpts.rotation = buff.rotation.value
-      birthOpts.position = { x: pos.x.value - pOffX, y: pos.y.value - pOffY }
+      birthOpts.position = { x: pos.x.value + pOffX, y: pos.y.value + pOffY }
       birthOpts.color = { r: col.r.value, g: col.g.value, b: col.b.value }
 
       if a instanceof AHTriangle
@@ -634,7 +634,7 @@ class AdefyEditor
     options = []
 
     pOffX = workspace.getCanvasWidth() / 2 - workspace.getPhoneWidth()
-    pOffY = workspace.getCanvasHeight() / 6 + workspace.getPhoneHeight()
+    pOffY = workspace.getCanvasHeight() / 6 - workspace.getPhoneHeight()
 
     # Build options
     for p, i in properties
@@ -658,8 +658,8 @@ class AdefyEditor
         # If we are position, we need to offset ourselves to render from
         # the proper origin on phone screens
         if _pName == "position"
-          if p[1] == "x" then opts.endVal -= pOffX
-          else if p[1] == "y" then opts.endVal -= pOffY
+          if p[1] == "x" then opts.endVal += pOffX
+          else if p[1] == "y" then opts.endVal += pOffY
 
         if opts.start == 0 then opts.start = -1
 
