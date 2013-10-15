@@ -531,7 +531,7 @@ class AdefyEditor
     pWidth = workspace.getPhoneWidth()
     pHeight = workspace.getPhoneHeight()
 
-    pOffX = workspace.getCanvasWidth() - workspace.getPhoneWidth()
+    pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth()) / 2
     pOffY = (workspace.getCanvasHeight() / 6 - workspace.getPhoneHeight()) / 2
 
     ##
@@ -552,7 +552,7 @@ class AdefyEditor
       col = buff.color.components
 
       birthOpts.rotation = buff.rotation.value
-      birthOpts.position = { x: pos.x.value - pOffX, y: pos.y.value + pOffY }
+      birthOpts.position = { x: pos.x.value - pOffX, y: pos.y.value - pOffY }
       birthOpts.color = { r: col.r.value, g: col.g.value, b: col.b.value }
 
       if a instanceof AHTriangle
@@ -633,7 +633,7 @@ class AdefyEditor
 
     options = []
 
-    pOffX = workspace.getCanvasWidth() - workspace.getPhoneWidth()
+    pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth()) / 2
     pOffY = (workspace.getCanvasHeight() / 6 - workspace.getPhoneHeight()) / 2
 
     # Build options
