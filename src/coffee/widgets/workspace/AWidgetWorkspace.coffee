@@ -736,7 +736,7 @@ class AWidgetWorkspace extends AWidget
       width = @_pWidth
 
     # Center
-    _t = (($(document).height() / 6) - 2) - (height / 6)
+    _t = 35
     _l = (($(document).width() / 2) - 2) - (width / 2)
 
     $("#awcc-outline").css
