@@ -331,6 +331,10 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
         if value.default == undefined then value.default = 0
         if value.float == undefined then value.float = true
 
+        if name == "x" or name == "y"
+          _pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth())/2
+          _pOffY = workspace.getCanvasHeight() - workspace.getPhoneHeight()-35
+
         _html += "<input "
         _html +=   "name=\"#{_inputName}\" "
         _html +=   "type=\"text\" "
@@ -339,7 +343,12 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
         _html +=   "data-control=\"number\" "
         _html +=   "data-float=\"#{value.float}\" "
         _html +=   "placeholder=\"#{value.default}\" "
-        _html +=   "value=\"#{value.getValue()}\" "
+        if name == "x"
+          _html += "value=\"#{value.getValue() - _pOffX}\" "
+        else
+          if name == "y"
+            _html += "value=\"#{value.getValue()-_pOffY}\" "
+          else  _html += "value=\"#{value.getValue()}\" "
         _html += " />"
 
       else if value.type == "bool"
