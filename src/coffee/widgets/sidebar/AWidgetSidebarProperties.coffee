@@ -207,7 +207,14 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
       # Verify integrity, then ship
       if _valCheck value
         if type == "number"
-          _retValues[label] = Number($(value[0]).val())
+          _pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth())/2
+          _pOffY = workspace.getCanvasHeight() - workspace.getPhoneHeight()-35
+          if label == "x"
+            _retValues[label] = Number($(value[0]).val()) + _pOffX
+          else
+            if label == "y"
+              _retValues[label] = Number($(value[0]).val()) + _pOffY
+            else _retValues[label] = Number($(value[0]).val())
         else
           _retValues[label] = $(value[0]).val()
 
@@ -398,10 +405,12 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
     # this is a tad fugly on purpose; Haveing multiple methods purely to
     # serve the workspace seems wrong, as does documenting them.
     if action == "update_position"
+      _pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth())/2
+      _pOffY = workspace.getCanvasHeight() - workspace.getPhoneHeight()-35
 
       # Note mapping
-      x = param.required val1
-      y = param.required val2
+      x = param.required val1 - _pOffX
+      y = param.required val2 - _pOffY
 
       # We don't assume we actually have a position control, the update simply
       # doesn't occur if jquery can't find it
