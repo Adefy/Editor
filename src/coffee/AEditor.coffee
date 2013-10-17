@@ -142,10 +142,15 @@ class AdefyEditor
       #controlBar = new AWidgetControlBar workspace
 
       # Add some items to the left sidebar
-      testGroup = new AWidgetSidebarObjectGroup "Primitives", leftSidebar
-      rectPrimitive = testGroup.createItem "Rectangle"
-      ngonPrimitive = testGroup.createItem "Polgyon"
-      triPrimitive = testGroup.createItem "Triangle"
+      primGroup = new AWidgetSidebarObjectGroup "Primitives", leftSidebar
+      rectPrimitive = primGroup.createItem "Rectangle"
+      ngonPrimitive = primGroup.createItem "Polgyon"
+      triPrimitive = primGroup.createItem "Triangle"
+
+      textGroup = new AWidgetSidebarObjectGroup "Textures", leftSidebar
+      grassTexture = textGroup.createItem "Grass Texture"
+      metalTexture = textGroup.createItem "Metal Texture"
+      woodTexture = textGroup.createItem "Wood Texture"
 
       rectPrimitive.icon = "img/icon_rectangle.png"
       ngonPrimitive.icon = "img/icon_hexagon.png"
