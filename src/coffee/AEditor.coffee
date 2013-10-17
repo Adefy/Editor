@@ -121,6 +121,8 @@ class AdefyEditor
       toolsMenu.createChild "Preview..."
       toolsMenu.createChild "Calculate device support..."
       toolsMenu.createChild "Set export framerate..."
+      toolsMenu.createChild "Add textures...", null, \
+        "window.workspace.showAddTextures()"
 
       # Help menu options
       helpMenu.createChild "About AdefyEditor"
