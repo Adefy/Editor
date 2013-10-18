@@ -318,7 +318,7 @@ class AWidgetWorkspace extends AWidget
       delta
 
   showAddTextures: ->
-    textName = ""
+    textName = "New Texture"
     textPath = ""
     textname = prefId "_wtexture"
     textpath = prefId "_wtextpath"
@@ -329,27 +329,14 @@ class AWidgetWorkspace extends AWidget
       <div>
       <div class="input_group">
         <label for="#{textpath}">Select Texture: </label>
-        <input name="#{textpath}" type="file" value="#{textPath}"></input>
+        <input name="#{textpath}" type="file" value="#{textPath}" multiple>
+        </input>
       <div>
     """
     new AWidgetModal "Add textures...", _html, false, (data) =>
 
       #Submission
-      AWGLLog.info data[textname]
-    , (data) =>
-
-      #Validation
-      textName = data[textname]
-
-      if textName == "" or textName == undefined or textName == null
-        return "Texture must have a name"
-
-      true
-
-      #Change
-    , (data) =>
-      return true
-
+      AWGLLog.info data[textpath]
 
   # Retrieve canvas width
   #

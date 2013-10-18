@@ -149,11 +149,6 @@ class AdefyEditor
       ngonPrimitive = primGroup.createItem "Polgyon"
       triPrimitive = primGroup.createItem "Triangle"
 
-      textGroup = new AWidgetSidebarObjectGroup "Textures", leftSidebar
-      grassTexture = textGroup.createItem "Grass Texture"
-      metalTexture = textGroup.createItem "Metal Texture"
-      woodTexture = textGroup.createItem "Wood Texture"
-
       rectPrimitive.icon = "img/icon_rectangle.png"
       ngonPrimitive.icon = "img/icon_hexagon.png"
       triPrimitive.icon = "img/icon_triangle.png"

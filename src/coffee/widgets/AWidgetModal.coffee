@@ -132,26 +132,30 @@ class AWidgetModal extends AWidget
   close: (submit) ->
     submit = param.optional submit, false
 
-    # If a callback was supplied, parse inputs and send
-    if @cb != null
+    if submit
+      # If a callback was supplied, parse inputs and send
+      if @cb != null
 
-      data = @scrapeData()
+        data = @scrapeData()
 
-      # If a validation method was also supplied, bail with an error if
-      # validation fails
-      if @validation != null
-        valid = @validation data
+        # If a validation method was also supplied, bail with an error if
+        # validation fails
+        if @validation != null
+          valid = @validation data
 
-        if valid != true
-          @setError valid
-          return
+          if valid != true
+            @setError valid
+            return
 
-      @cb data
+        @cb data
 
-    if @dead then return else @dead = true
+      if @dead then return else @dead = true
 
-    if not $(@_sel).is ":visible" then @_kill()
-    else $(@_sel).animate { opacity: 0 }, 400, => @_kill()
+      if not $(@_sel).is ":visible" then @_kill()
+      else $(@_sel).animate { opacity: 0 }, 400, => @_kill()
+    else
+      if not $(@_sel).is ":visible" then @_kill()
+      else $(@_sel).animate { opacity: 0 }, 400, => @_kill()
 
   # Sets an error string to display
   #
