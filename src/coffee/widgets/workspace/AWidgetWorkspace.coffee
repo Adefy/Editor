@@ -318,7 +318,7 @@ class AWidgetWorkspace extends AWidget
       delta
 
   showAddTextures: ->
-    textName = "New Texture"
+    textName = ""
     textPath = ""
     textname = prefId "_wtexture"
     textpath = prefId "_wtextpath"
@@ -337,6 +337,14 @@ class AWidgetWorkspace extends AWidget
 
       #Submission
       AWGLLog.info data[textpath]
+
+    , (data) =>
+      if data[textname] == ""
+        return "Texture must have a name"
+      if data[textpath] == null or data[textpath] == ""
+        return "You must select a texture"
+
+      true
 
   # Retrieve canvas width
   #
