@@ -353,6 +353,31 @@ class AWidgetWorkspace extends AWidget
 
     AWGLLog.info "Upload textures request"
     AWGLLog.info name + "@" + path
+    me = @
+
+    gl = AWGLRenderer._gl
+
+    _texture = gl.createTexture()
+    _image = new Image
+    _image.src = "pw_pattern.png"
+    _image.onload = () ->
+      gl.bindTexture gl.TEXTURE_2D, _texture
+      gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, \
+      gl.UNSIGNED_BYTE, _image
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR
+      gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, \
+      gl.LINEAR_MIPMAP_NEAREST
+      gl.generateMipmap gl.TEXTURE_2D
+      gl.bindTexture gl.TEXTURE_2D, null
+
+
+      _index = AWidgetWorkspace._selectedActor
+      if _index != null and _index != undefined
+        for actor, i in me.actorObjects
+          if _index == actor.getId()
+            AWGLLog.info "Texture will be applied to " + \
+            me.actorObjects[i].getActor()
+
 
   # Retrieve canvas width
   #
