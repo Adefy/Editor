@@ -318,6 +318,7 @@ class AWidgetWorkspace extends AWidget
       delta
 
   showAddTextures: ->
+
     textName = ""
     textPath = ""
     textname = prefId "_wtexture"
@@ -336,7 +337,7 @@ class AWidgetWorkspace extends AWidget
     new AWidgetModal "Add textures...", _html, false, (data) =>
 
       #Submission
-      AWGLLog.info data[textpath]
+      @_uploadTextures data[textname], data[textpath]
 
     , (data) =>
       if data[textname] == ""
@@ -345,6 +346,13 @@ class AWidgetWorkspace extends AWidget
         return "You must select a texture"
 
       true
+
+  # Upload the textures to the cloud for processing and usage
+  # @private
+  _uploadTextures: (name, path) ->
+
+    AWGLLog.info "Upload textures request"
+    AWGLLog.info name + "@" + path
 
   # Retrieve canvas width
   #
