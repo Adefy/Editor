@@ -1014,3 +1014,5 @@ class AHBaseActor extends AHandle
   # @param [Number] time
   # @return [Object] entry prop buffer entry, may be undefined
   getBufferEntry: (time) -> @_propBuffer["#{Math.floor time}"]
+
+  setTexture: (texture) -> @_actor.setTexture(texture)

@@ -43,6 +43,8 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
       # Event listeners!
       $(document).ready ->
 
+        $(document).on "click", ".asp-texture", -> AWGLLog.info "Texture"
+
         # Save
         $(document).on "click", ".asp-save", -> me.save @
 
@@ -261,6 +263,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
       _controlHTML = @_generateControl p, properties[p]
       @_builtHMTL += "<li class=\"asp-control-group\">#{_controlHTML}</li><hr>"
 
+    @_builtHMTL += "<button class=\"asp-texture\">Choose Texture</button><hr>"
     @_builtHMTL += "<button class=\"asp-save\">Save</button><hr>"
     @_builtHMTL += "</ul>"
 
