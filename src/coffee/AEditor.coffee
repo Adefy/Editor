@@ -621,6 +621,7 @@ class AdefyEditor
       _html += "<a href=\"#{result.link}?download=yes\">Download</a>"
       new AWidgetModal "Exported", _html
 
+  # @private
   # Note that we don't take start values into account. The initial state
   # is the only actual start value. After that, all animations start from
   # the current value.

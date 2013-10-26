@@ -364,6 +364,7 @@ class AWidgetWorkspace extends AWidget
   # @return [Number] height canvas height
   getCanvasHeight: -> @_cHeight
 
+  # @private
   # Update the canvas status, and alter the width of the canvas container
   # This should be called either after instantiation, or after a canvas
   # resize
@@ -410,6 +411,7 @@ class AWidgetWorkspace extends AWidget
 
           return
 
+  # @private
   # Builds the framebuffer and texture needed to preform picking, deleting
   # them if they already exist. This needs to be called whenever AWGLs' canvas
   # is resized
@@ -471,6 +473,7 @@ class AWidgetWorkspace extends AWidget
     @actorObjects.push handle
     AWidgetTimeline.getMe().registerActor handle
 
+  # @private
   # Called by AWGLEngine as soon as it's up and running, we continue our own
   # init from here.
   _engineInit: ->
@@ -723,6 +726,7 @@ class AWidgetWorkspace extends AWidget
     # Start rendering
     @_awgl.startRendering()
 
+  # @private
   # Helper function to perform a pick at the specified canvas coordinates
   #
   # @param [Number] x x coordinate

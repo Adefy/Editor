@@ -35,6 +35,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
     @_curObject = null
     @_regListeners()
 
+  # @private
   _regListeners: ->
     if AWidgetSidebarProperties.__exists == false
       AWidgetSidebarProperties.__exists = true
@@ -113,6 +114,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
         $(document).on "input", ".asp-control > input", ->
           me._executeLive $(@).parent().find("> input")[0]
 
+  # @private
   # Updates an input on change, called either as a result of a drag, or
   # manual manipulation. Only works if the input has a checked live box!
   #
@@ -170,6 +172,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
 
     type = $(control).attr "data-type"
 
+    # @private
     # Saves space below, expects a single result, throws an error otherwise
     #
     # @param [Object] result jquery element search result
@@ -281,6 +284,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
   # @return [String] html
   render: -> @_builtHMTL
 
+  # @private
   # Generates a mini HTML control widget for the property in question
   #
   # @param [String] name

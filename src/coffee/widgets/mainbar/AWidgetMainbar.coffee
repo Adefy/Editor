@@ -30,6 +30,7 @@ class AWidgetMainbar extends AWidget
 
     @_regListeners()
 
+  # @private
   _regListeners: ->
     # Register listeners
     $(document).ready ->

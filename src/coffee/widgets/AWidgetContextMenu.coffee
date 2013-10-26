@@ -56,6 +56,7 @@ class AWidgetContextMenu extends AWidget
     else
       $(@getSel()).show()
 
+  # @private
   # Builds the html for the rendered menu, called in the constructor. Useful
   # to break it out here for testing and whatnot.
   #
@@ -111,11 +112,13 @@ class AWidgetContextMenu extends AWidget
     # Ship it
     _html += "</ul>"
 
+  # @private
   # Shorthand, used in @_buildHTML and @remove
   #
   # @param [String] ident
   _unbindListener: (ident) -> $(document).off "click", "[data-id=\"#{ident}\"]"
 
+  # @private
   # Useful internal function, turns "Test 3" into test_3
   #
   # @param [String] name name to convert

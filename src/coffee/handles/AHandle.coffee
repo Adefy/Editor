@@ -101,6 +101,7 @@ class AHandle
     # Prevent creation of new properties
     if @_properties[key] != undefined then @_properties[key] = val
 
+  # @private
   # Useful function for internal use, to render CSS properties from an object
   #
   # @param [Object] css properties to be rendered
