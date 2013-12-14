@@ -10,23 +10,15 @@ module.exports = (grunt) ->
   testDir = "test"
   devDir = "dev"
   docDir = "doc"
-  awglDir = "../AdefyWebGL"
-  adefyjsDir = "../AdefyJS"
   cdnDir = "../www/aeditor"
   production = "#{buildDir}/#{productionName}"
 
   productionConcat = [
     "#{devDir}/js/jquery.js"
     "#{devDir}/js/jquery-ui.js"
-    "#{devDir}/js/underscore.min.js"
-    "#{devDir}/js/sylvester.js"
-    "#{devDir}/js/glUtils.js"
-    "#{devDir}/js/mjax.min.js"
-    "#{devDir}/js/gl-matrix-min.js"
-    "#{devDir}/js/cp.min.js"
 
-    "#{devDir}/js/awgl.js"
-    "#{devDir}/js/adefy.js"
+    "http://cdn.adefy.com/awgl/awgl-full.js"
+    "http://cdn.adefy.com/ajs/ajs.js"
     "#{devDir}/aeditor.js"
   ]
 
@@ -105,12 +97,6 @@ module.exports = (grunt) ->
           onlyConcatRequiredFiles: true
 
     watch:
-      awgl:
-        files: ["#{awglDir}/build/awgl.js"]
-        tasks: ["copy:awgl"]
-      adefyjs:
-        files: ["#{adefyjsDir}/build/adefy.js"]
-        tasks: ["copy:adefyjs"]
       coffeescript:
         files: [
           "#{libDir}/**/*.coffee"
@@ -162,58 +148,6 @@ module.exports = (grunt) ->
             "**"
           ]
           dest: "#{devDir}"
-        ]
-      awgl:
-        files: [
-          expand: false
-          src: "#{awglDir}/build/awgl.js"
-          dest: "#{buildDir}/static/js/awgl.js"
-        ,
-          expand: false
-          src: "#{awglDir}/build/awgl.js"
-          dest: "#{devDir}/js/awgl.js"
-        ,
-          expand: false
-          src: "#{awglDir}/build/awgl-concat.coffee"
-          dest: "#{buildDir}/static/js/awgl-concat.coffee"
-        ,
-          expand: false
-          src: "#{awglDir}/build/awgl.js.map"
-          dest: "#{buildDir}/static/js/awgl.js.map"
-        ,
-          expand: false
-          src: "#{awglDir}/build/awgl.js.map"
-          dest: "#{devDir}/js/awgl.js.map"
-        ,
-          expand: false
-          src: "#{awglDir}/build/awgl-concat.coffee"
-          dest: "#{devDir}/js/awgl-concat.coffee"
-        ]
-      adefyjs:
-        files: [
-          expand: false
-          src: "#{adefyjsDir}/build/adefy.js.map"
-          dest: "#{buildDir}/static/js/adefy.js.map"
-        ,
-          expand: false
-          src: "#{adefyjsDir}/build/adefy.js"
-          dest: "#{buildDir}/static/js/adefy.js"
-        ,
-          expand: false
-          src: "#{adefyjsDir}/build/ajs-concat.coffee"
-          dest: "#{buildDir}/static/js/ajs-concat.coffee"
-        ,
-          expand: false
-          src: "#{adefyjsDir}/build/adefy.js.map"
-          dest: "#{devDir}/js/adefy.js.map"
-        ,
-          expand: false
-          src: "#{adefyjsDir}/build/adefy.js"
-          dest: "#{devDir}/js/adefy.js"
-        ,
-          expand: false
-          src: "#{adefyjsDir}/build/ajs-concat.coffee"
-          dest: "#{devDir}/js/ajs-concat.coffee"
         ]
       cdn:
         files: [
@@ -283,8 +217,6 @@ module.exports = (grunt) ->
     "codo"
     "copy:test_page"
     "copy:static"
-    "copy:awgl"
-    "copy:adefyjs"
     "concat_in_order"
     "coffee"
     "stylus"
@@ -294,8 +226,6 @@ module.exports = (grunt) ->
     "connect"
     "copy:test_page"
     "copy:static"
-    "copy:awgl"
-    "copy:adefyjs"
     "watch"
   ]
 
