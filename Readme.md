@@ -10,11 +10,6 @@ moment are JQuery and JQuery UI.
 
 Building
 --------
-AdefyWebGL and AdefyJS are external dependencies, and are expected to be present
-one folder up. It is recommended to host all Adefy-related repos in a single
-folder to fulfill this requirement. You can change their expected folder names
-by editing Gruntfile.coffee
-
 Grunt! Targets are straighforward, use `grunt full` to perform a full rebuild,
 and `grunt dev` to spawn a server and watch operation. Then navigate to
 `http://localhost:8080/dev/test.html` to test things out.
