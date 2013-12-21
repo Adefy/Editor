@@ -69,6 +69,7 @@ class AWidgetWorkspace extends AWidget
     new AWGLEngine null, 4, (@_awgl) =>
       @_engineInit()
       @_applyCanvasSizeUpdate()
+      @_initGrid()
     , "aw-canvas-container", @_cWidth, @_cHeight
 
   # Get AWGL instance
@@ -808,5 +809,13 @@ class AWidgetWorkspace extends AWidget
 
     # Center phone outline
     @updateOutline()
+
+  _initGrid: ->
+    @_grid = new AWorkspaceGrid(@)
+      
+
+  # Toggle canvas grid 
+  toggleGrid: ->
+    @_grid.toggleVisibility()
 
   @getSelectedActor: -> AWidgetWorkspace._selectedActor

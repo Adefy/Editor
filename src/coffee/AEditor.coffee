@@ -26,6 +26,7 @@
 
 # @depend widgets/timeline/AWidgetTimeline.coffee
 #
+# @depend widgets/workspace/AWorkspaceGrid.coffee
 # @depend widgets/workspace/AWidgetWorkspace.coffee
 #
 # @depend widgets/controlbar/AWidgetControlBar.coffee
@@ -116,6 +117,9 @@ class AdefyEditor
 
       canvasMenu.createChild "Set background color...", null, \
         "window.workspace.showSetBackgroundColor()"
+
+      canvasMenu.createChild "Toggle grid"  , null,\
+        "window.workspace.toggleGrid()"
 
       # Tools menu options
       toolsMenu.createChild "Preview..."
