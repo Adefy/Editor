@@ -120,6 +120,8 @@ class AdefyEditor
 
       canvasMenu.createChild "Toggle grid"  , null,\
         "window.workspace.toggleGrid()"
+      canvasMenu.createChild "Grid settings", null,\
+        "AWorkspaceGrid.showSetGridSettings()"  
 
       # Tools menu options
       toolsMenu.createChild "Preview..."

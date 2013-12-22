@@ -188,6 +188,8 @@ class AWidgetSidebar extends AWidget
       $(@_sel).animate
         left: @_visibleX
       , 300
+      , 'swing'
+      , () -> AWorkspaceGrid.redrawInstance() 
     else $(@_sel).css { left: @_visibleX }
 
     @_visiblity = true
@@ -208,6 +210,8 @@ class AWidgetSidebar extends AWidget
       $(@_sel).animate
         left: @_hiddenX
       , 300
+      , 'swing'
+      , () -> AWorkspaceGrid.redrawInstance()
     else $(@_sel).css { left: @_hiddenX }
 
     @_visiblity = false

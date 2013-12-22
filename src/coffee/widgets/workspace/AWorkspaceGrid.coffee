@@ -5,6 +5,11 @@ class AWorkspaceGrid
 	constructor: (@workspace)->
 		@_state = 'hidden'
 		@_gridLines = []
+		AWorkspaceGrid._currentInstance = @
+
+	@_getInstance: -> @._currentInstance
+
+	gridStep: -> AWorkspaceGrid._gridStep || GRID_STEP	
 
 	toggleVisibility: ->
 		if @_isVisible() 
@@ -22,10 +27,10 @@ class AWorkspaceGrid
 	_showGrid: ->
 		@_clearWorkspace()
 		gridColor = new AJSColor3(0, 0, 0)		
-		startHorizontalPosition = $('#awcc-outline').offset().left + GRID_STEP
+		startHorizontalPosition = $('#awcc-outline').offset().left + @gridStep()
 		console.log @workspace._cHeight
 		console.log @workspace._cWidth
-		rightHorizontalEnd = startHorizontalPosition + 800 - GRID_STEP 
+		rightHorizontalEnd = startHorizontalPosition + 800 - @gridStep() 
 		leftVerticalStart = $('#awcc-outline').offset().top + $('#awcc-outline').height() / 2
 		height =  $('#awcc-outline').height()
 		while startHorizontalPosition <= rightHorizontalEnd
@@ -43,7 +48,7 @@ class AWorkspaceGrid
 				psyx: false
 			)
 			@_gridLines.push newGridLine
-			startHorizontalPosition += GRID_STEP
+			startHorizontalPosition += @gridStep()
 
 		startVerticalPosition = $('#awcc-outline').offset().top
 		leftSide = $('#awcc-outline').offset().left + $('#awcc-outline').width() / 2 
@@ -65,7 +70,7 @@ class AWorkspaceGrid
 				psyx: false
 			)
 			@_gridLines.push newGridLine
-			startVerticalPosition += GRID_STEP
+			startVerticalPosition += @gridStep()
 		@_restoreWorkspace()	
 
 	_isVisible: ->
@@ -86,3 +91,57 @@ class AWorkspaceGrid
 
 	_restoreWorkspace: ->		
 		window.adefy_editor._deserialize(@_savedState)
+
+	@showSetGridSettings: ->
+		_html = """
+		      	<div class="input_group">
+			        <label for="gridStep">Step: </label>
+			        <select name="gridStep">
+			            <option value="10" #{@_isSelected(10)}>10</option>
+			            <option value="25" #{@_isSelected(25)}>25</option>
+			            <option value="50" #{@_isSelected(50)}>50</option>
+			            <option value="75" #{@_isSelected(75)}>75</option>
+			            <option value="100" #{@_isSelected(100)}>100</option>
+			            <option value="150" #{@_isSelected(150)}>150</option>
+			            <option value="200" #{@_isSelected(200)}>200</option>
+			        </select>
+		        </div>  
+		        <div class='input_group'>
+		        	<label for="gridZoom">Zoom:</label>
+		        	<select name="gridZoom">
+		        		<option value="0.25">0.25</option>
+		        		<option value="0.5">0.5</option>
+		        		<option value="1">1</option>
+		        		<option value="1.25">1.25</option>
+		        		<option value="1.5">1.5</option>
+		        		<option value="2">2</option>	
+		        	</select>
+		        </div>
+				"""
+		new AWidgetModal "Set Grid Settings", _html, false, 
+			null
+			, null
+			, (deltaName, deltaValue, data)=>
+				console.log deltaName
+				@["_#{deltaName}Change"](deltaValue)
+				
+	@_isSelected: (step)->
+		currentStep = @._gridStep || GRID_STEP
+		if step == currentStep 
+			'selected'
+		else
+			''	
+	@_gridZoomChange: (newValue)->
+		newValue
+
+	@_gridStepChange: (newValue)->		
+		@_gridStep = parseInt(newValue)
+		@redrawInstance()
+
+	@redrawInstance: ->
+		_instance = @_getInstance()
+		if _instance && _instance._isVisible()
+			_instance._hideGrid()
+			_instance._showGrid()	
+	
+			

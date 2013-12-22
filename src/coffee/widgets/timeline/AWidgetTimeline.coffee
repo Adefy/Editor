@@ -194,7 +194,9 @@ class AWidgetTimeline extends AWidget
           window.left_sidebar.onResize()
           window.right_sidebar.onResize()
           window.workspace.onResize()
-        done: => @__animating = false
+        done: => 
+          @__animating = false
+          AWorkspaceGrid.redrawInstance()
 
     else if not @__animating
       @__animating = true
@@ -208,7 +210,9 @@ class AWidgetTimeline extends AWidget
           window.left_sidebar.onResize()
           window.right_sidebar.onResize()
           window.workspace.onResize()
-        done: => @__animating = false
+        done: => 
+          @__animating = false
+          AWorkspaceGrid.redrawInstance()
 
   # Forward playback button clicked (next keyframe)
   # @private
