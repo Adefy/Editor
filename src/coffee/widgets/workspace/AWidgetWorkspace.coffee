@@ -474,6 +474,7 @@ class AWidgetWorkspace extends AWidget
     @actorObjects.push handle
     AWidgetTimeline.getMe().registerActor handle
 
+
   # @private
   # Called by AWGLEngine as soon as it's up and running, we continue our own
   # init from here.
@@ -521,6 +522,9 @@ class AWidgetWorkspace extends AWidget
 
             # Register actor with the timeline
             AWidgetTimeline.getMe().registerActor handle
+            # Redraw grid if he is above all
+            if AWorkspaceGrid.gridAboveAll()
+              AWorkspaceGrid.redrawInstance()
 
       # Actor dragging, whoop
       __drag_start_x = 0      # Keeps track of the initial drag point, so

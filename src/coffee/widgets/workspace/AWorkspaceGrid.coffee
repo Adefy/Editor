@@ -1,5 +1,8 @@
 class AWorkspaceGrid
 	GRID_STEP = 50	
+	ZOOM_RATE = 1
+	# available positions - 'above', 'below'
+	GRID_POSITION = 'above' 
 
 
 	constructor: (@workspace)->
@@ -10,6 +13,9 @@ class AWorkspaceGrid
 	@_getInstance: -> @._currentInstance
 
 	gridStep: -> AWorkspaceGrid._gridStep || GRID_STEP	
+	zoomRate: -> ZOOM_RATE
+	gridPosition: -> AWorkspaceGrid._gridPosition || GRID_POSITION
+
 
 	toggleVisibility: ->
 		if @_isVisible() 
@@ -25,11 +31,10 @@ class AWorkspaceGrid
 		@_gridLines = []
 
 	_showGrid: ->
-		@_clearWorkspace()
+		if @_gridBelowAll()
+			@_clearWorkspace()
 		gridColor = new AJSColor3(0, 0, 0)		
 		startHorizontalPosition = $('#awcc-outline').offset().left + @gridStep()
-		console.log @workspace._cHeight
-		console.log @workspace._cWidth
 		rightHorizontalEnd = startHorizontalPosition + 800 - @gridStep() 
 		leftVerticalStart = $('#awcc-outline').offset().top + $('#awcc-outline').height() / 2
 		height =  $('#awcc-outline').height()
@@ -71,7 +76,14 @@ class AWorkspaceGrid
 			)
 			@_gridLines.push newGridLine
 			startVerticalPosition += @gridStep()
-		@_restoreWorkspace()	
+		if @_gridBelowAll()
+			@_restoreWorkspace()	
+
+	_gridBelowAll: -> 
+		@gridPosition() == 'below'		
+
+	_gridAboveAll: -> 
+		@gridPosition() == 'above'		
 
 	_isVisible: ->
 		@_state == 'visible'
@@ -94,36 +106,35 @@ class AWorkspaceGrid
 
 	@showSetGridSettings: ->
 		_html = """
-		      	<div class="input_group">
-			        <label for="gridStep">Step: </label>
-			        <select name="gridStep">
-			            <option value="10" #{@_isSelected(10)}>10</option>
-			            <option value="25" #{@_isSelected(25)}>25</option>
-			            <option value="50" #{@_isSelected(50)}>50</option>
-			            <option value="75" #{@_isSelected(75)}>75</option>
-			            <option value="100" #{@_isSelected(100)}>100</option>
-			            <option value="150" #{@_isSelected(150)}>150</option>
-			            <option value="200" #{@_isSelected(200)}>200</option>
-			        </select>
-		        </div>  
+		      	  
 		        <div class='input_group'>
-		        	<label for="gridZoom">Zoom:</label>
-		        	<select name="gridZoom">
-		        		<option value="0.25">0.25</option>
-		        		<option value="0.5">0.5</option>
-		        		<option value="1">1</option>
-		        		<option value="1.25">1.25</option>
-		        		<option value="1.5">1.5</option>
-		        		<option value="2">2</option>	
+		        	<label for="gridPosition">Position:</label>
+		        	<select name="gridPosition">
+		        		<option value="above" #{@_isSelectedPosition('above')}>Above all elements</option>
+		        		<option value="below" #{@_isSelectedPosition('below')}>Below all elements</option>
 		        	</select>
 		        </div>
+
+				 <div class="input_group">
+		 	        <label for="gridStep">Step: </label>
+		 	        <select name="gridStep">
+		 	            <option value="10" #{@_isSelected(10)}>10</option>
+		 	            <option value="25" #{@_isSelected(25)}>25</option>
+		 	            <option value="50" #{@_isSelected(50)}>50</option>
+		 	            <option value="75" #{@_isSelected(75)}>75</option>
+		 	            <option value="100" #{@_isSelected(100)}>100</option>
+		 	            <option value="150" #{@_isSelected(150)}>150</option>
+		 	            <option value="200" #{@_isSelected(200)}>200</option>
+		 	        </select>
+		         </div>
 				"""
 		new AWidgetModal "Set Grid Settings", _html, false, 
 			null
 			, null
 			, (deltaName, deltaValue, data)=>
-				console.log deltaName
 				@["_#{deltaName}Change"](deltaValue)
+		$('.amtitle').css({'padding-bottom': '5px'})
+		$('.aminner').css({'padding-top': '5px'})		
 				
 	@_isSelected: (step)->
 		currentStep = @._gridStep || GRID_STEP
@@ -131,8 +142,17 @@ class AWorkspaceGrid
 			'selected'
 		else
 			''	
-	@_gridZoomChange: (newValue)->
-		newValue
+
+	@_isSelectedPosition: (position)->
+		currentPosition = @._gridPosition || GRID_POSITION
+		if position == currentPosition 
+			'selected'
+		else
+			''			
+
+	@_gridPositionChange: (newValue)->
+		@_gridPosition = newValue
+		@redrawInstance()
 
 	@_gridStepChange: (newValue)->		
 		@_gridStep = parseInt(newValue)
@@ -143,5 +163,16 @@ class AWorkspaceGrid
 		if _instance && _instance._isVisible()
 			_instance._hideGrid()
 			_instance._showGrid()	
+
+	@gridAboveAll: -> @_gridPosition == 'above'		
 	
 			
+# <label for="gridZoom">Zoom:</label>
+# 		        	<select name="gridZoom">
+# 		        		<option value="0.25">0.25</option>
+# 		        		<option value="0.5">0.5</option>
+# 		        		<option value="1">1</option>
+# 		        		<option value="1.25">1.25</option>
+# 		        		<option value="1.5">1.5</option>
+# 		        		<option value="2">2</option>	
+# 		        	</select>
