@@ -26,6 +26,7 @@
 
 # @depend widgets/timeline/AWidgetTimeline.coffee
 #
+# @depend widgets/workspace/AMouseTracker.coffee
 # @depend widgets/workspace/AWorkspaceGrid.coffee
 # @depend widgets/workspace/AWidgetWorkspace.coffee
 #

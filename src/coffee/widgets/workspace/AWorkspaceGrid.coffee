@@ -1,8 +1,8 @@
 class AWorkspaceGrid
-	GRID_STEP = 50	
-	ZOOM_RATE = 1
+	GRID_STEP: 50	
+	ZOOM_RATE: 1
 	# available positions - 'above', 'below'
-	GRID_POSITION = 'above' 
+	GRID_POSITION: 'above' 
 
 
 	constructor: (@workspace)->
@@ -12,17 +12,19 @@ class AWorkspaceGrid
 
 	@_getInstance: -> @._currentInstance
 
-	gridStep: -> AWorkspaceGrid._gridStep || GRID_STEP	
-	zoomRate: -> ZOOM_RATE
-	gridPosition: -> AWorkspaceGrid._gridPosition || GRID_POSITION
+	gridStep: -> AWorkspaceGrid._gridStep || @.GRID_STEP	
+	zoomRate: -> @.ZOOM_RATE
+	gridPosition: -> AWorkspaceGrid._gridPosition || @.GRID_POSITION
 
 
 	toggleVisibility: ->
 		if @_isVisible() 
 			@_hideGrid()
+			@_stopSpecialMousePointer()
 			newState = 'hidden'
 		else
 			@_showGrid()
+			@_startSpecialMousePointer()
 			newState = 'visible'
 		@_changeState newState			
 
@@ -44,9 +46,9 @@ class AWorkspaceGrid
 			newGridLine = new AJSRectangle(
 				w: 1, 
 				h: height, 
-				mass: false, 
+				mass: 1.0, 
 				friction: 0, 
-				elasticity: false, 
+				elasticity: 1.0, 
 				color: gridColor, 
 				position: currentPosition, 
 				rotation: 0, 
@@ -66,9 +68,9 @@ class AWorkspaceGrid
 			newGridLine = new AJSRectangle(
 				w: width, 
 				h: 1, 
-				mass: false, 
+				mass: 1.0, 
 				friction: 0, 
-				elasticity: false, 
+				elasticity: 1.0, 
 				color: gridColor, 
 				position: currentPosition, 
 				rotation: 0, 
@@ -137,14 +139,14 @@ class AWorkspaceGrid
 		$('.aminner').css({'padding-top': '5px'})		
 				
 	@_isSelected: (step)->
-		currentStep = @._gridStep || GRID_STEP
+		currentStep = @._gridStep || @.GRID_STEP
 		if step == currentStep 
 			'selected'
 		else
 			''	
 
 	@_isSelectedPosition: (position)->
-		currentPosition = @._gridPosition || GRID_POSITION
+		currentPosition = @._gridPosition || @.GRID_POSITION
 		if position == currentPosition 
 			'selected'
 		else
@@ -166,6 +168,11 @@ class AWorkspaceGrid
 
 	@gridAboveAll: -> @_gridPosition == 'above'		
 	
+	_startSpecialMousePointer: -> 
+		AMouseTracker.startTracking(@workspace)
+		
+	_stopSpecialMousePointer: -> 
+		AMouseTracker.stopTracking()	
 			
 # <label for="gridZoom">Zoom:</label>
 # 		        	<select name="gridZoom">

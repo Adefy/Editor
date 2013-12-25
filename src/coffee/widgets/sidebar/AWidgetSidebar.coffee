@@ -185,11 +185,12 @@ class AWidgetSidebar extends AWidget
 
     # And
     if animate
-      $(@_sel).animate
-        left: @_visibleX
-      , 300
-      , 'swing'
-      , () -> AWorkspaceGrid.redrawInstance() 
+      $(@_sel).animate {left: @_visibleX }
+      , duration: 300
+      , easing : 'swing'
+      , complete: () -> 
+          AWorkspaceGrid.redrawInstance()
+          AMouseTracker.resetCachedBounds() 
     else $(@_sel).css { left: @_visibleX }
 
     @_visiblity = true
@@ -207,11 +208,12 @@ class AWidgetSidebar extends AWidget
 
     # Ham
     if animate
-      $(@_sel).animate
-        left: @_hiddenX
-      , 300
-      , 'swing'
-      , () -> AWorkspaceGrid.redrawInstance()
+      $(@_sel).animate { left: @_hiddenX }
+      , duration: 300
+      , easing: 'swing'
+      , complete: () -> 
+          AWorkspaceGrid.redrawInstance()
+          AMouseTracker.resetCachedBounds()
     else $(@_sel).css { left: @_hiddenX }
 
     @_visiblity = false

@@ -197,6 +197,7 @@ class AWidgetTimeline extends AWidget
         done: => 
           @__animating = false
           AWorkspaceGrid.redrawInstance()
+          AMouseTracker.resetCachedBounds()
 
     else if not @__animating
       @__animating = true
@@ -213,6 +214,7 @@ class AWidgetTimeline extends AWidget
         done: => 
           @__animating = false
           AWorkspaceGrid.redrawInstance()
+          AMouseTracker.resetCachedBounds()
 
   # Forward playback button clicked (next keyframe)
   # @private
