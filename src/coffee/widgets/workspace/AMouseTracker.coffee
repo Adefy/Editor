@@ -4,9 +4,24 @@ class AMouseTracker
 		@_workspaceWidth = @_getWorkspace().width()
 		@_workspaceHeight = @_getWorkspace().height()
 		@_jCanvas().on('mousemove.pointer', (event)=>
+			if @_prevX && @_prevY
+				if ((Math.abs(@_prevX - event.pageX) <=3) && (Math.abs(@_prevY - event.pageY) <=3)) 
+					@_prevX = event.pageX
+					@_prevY = event.pageY
+					return true
+				else
+					@_prevX = event.pageX
+					@_prevY = event.pageY
+			else
+				@_prevX = event.pageX
+				@_prevY = event.pageY
 			if @_pointerInWorkspace(event)
 				@_drawAxis(event, workspace)
+				if !@_jCanvas().hasClass('without-cursor')
+					@_jCanvas().addClass('without-cursor')
+				
 			else
+				@_jCanvas().removeClass('without-cursor')
 				@_destroyAxis()
 			return true
 		)
@@ -18,6 +33,7 @@ class AMouseTracker
 
 	@stopTracking: ->
 		@_jCanvas.off('mousemove.pointer')
+		@_jCanvas().removeClass('without-cursor')
 		@_destroyAxis()
 
 	@_destroyAxis: ->	

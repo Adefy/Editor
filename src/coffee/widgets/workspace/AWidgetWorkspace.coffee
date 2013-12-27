@@ -522,7 +522,7 @@ class AWidgetWorkspace extends AWidget
 
             # Register actor with the timeline
             AWidgetTimeline.getMe().registerActor handle
-            # Redraw grid if he is above all
+            # Redraw grid if it is above all
             if AWorkspaceGrid.gridAboveAll()
               AWorkspaceGrid.redrawInstance()
 
@@ -639,7 +639,6 @@ class AWidgetWorkspace extends AWidget
 
       # Core of the dragging logic
       $(".aworkspace canvas").mousemove (e) ->
-
         # Means we also have a valid object id
         if __drag_sys_active
 
@@ -659,11 +658,16 @@ class AWidgetWorkspace extends AWidget
             _newX = Number(__drag_orig_x + (e.pageX - __drag_start_x))
 
             # Note we need to invert the vertical offset
+
             _newY = Number(__drag_orig_y + ((e.pageY - __drag_start_y) * -1))
 
+            if AWorkspaceGrid.snapOn()
+              _newX = AWorkspaceGrid.snapX(_newX, me.actorObjects[__drag_obj_index].getWidth())
+              _newY = AWorkspaceGrid.snapY(_newY, me.actorObjects[__drag_obj_index].getHeight())
+           
             # Update!
             me.actorObjects[__drag_obj_index].setPosition _newX, _newY
-
+            
             # Update properties as well, if needed
             if __drag_update_props
               __drag_props.privvyIface "update_position", _newX, _newY

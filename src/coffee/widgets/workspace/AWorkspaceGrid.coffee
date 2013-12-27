@@ -3,6 +3,7 @@ class AWorkspaceGrid
 	ZOOM_RATE: 1
 	# available positions - 'above', 'below'
 	GRID_POSITION: 'above' 
+	SNAP: false
 
 
 	constructor: (@workspace)->
@@ -129,6 +130,11 @@ class AWorkspaceGrid
 		 	            <option value="200" #{@_isSelected(200)}>200</option>
 		 	        </select>
 		         </div>
+		         <div class='input_group'>
+		         	<label for='gridSnap'>Snap:</label>
+		         	<input name='gridSnap' type='checkbox' value='1' #{@_snapOnSelected()} />
+		         </div>
+
 				"""
 		new AWidgetModal "Set Grid Settings", _html, false, 
 			null
@@ -139,14 +145,14 @@ class AWorkspaceGrid
 		$('.aminner').css({'padding-top': '5px'})		
 				
 	@_isSelected: (step)->
-		currentStep = @._gridStep || @.GRID_STEP
+		currentStep = @._gridStep || @._getInstance().GRID_STEP
 		if step == currentStep 
 			'selected'
 		else
 			''	
 
 	@_isSelectedPosition: (position)->
-		currentPosition = @._gridPosition || @.GRID_POSITION
+		currentPosition = @._gridPosition || @._getInstance().GRID_POSITION
 		if position == currentPosition 
 			'selected'
 		else
@@ -159,6 +165,16 @@ class AWorkspaceGrid
 	@_gridStepChange: (newValue)->		
 		@_gridStep = parseInt(newValue)
 		@redrawInstance()
+
+	@_gridSnapChange: (newValue)->
+		@_getInstance().SNAP = !@_getInstance.SNAP
+
+	@snapOn: ->
+		@_getInstance().SNAP	
+
+	@_snapOnSelected: ->
+		if @snapOn
+			'selected'	
 
 	@redrawInstance: ->
 		_instance = @_getInstance()
@@ -173,6 +189,47 @@ class AWorkspaceGrid
 		
 	_stopSpecialMousePointer: -> 
 		AMouseTracker.stopTracking()	
+
+	@_workspaceOffset: ->
+		@_cachedWorkspaceOffset ?= $('#awcc-outline').offset()		
+
+	@snapX: (currentX, objectWidth)->
+		gridStep = @._getInstance().gridStep()
+		leftSide = currentX - objectWidth/2
+		leftAxisX = Math.floor((leftSide - @_workspaceOffset().left)/gridStep)*gridStep + @_workspaceOffset().left
+		rightAxisX = Math.ceil((leftSide - @_workspaceOffset().left)/gridStep)*gridStep + @_workspaceOffset().left
+		console.log(leftAxisX)
+		console.log(rightAxisX)
+		console.log(leftSide)
+		if  (leftSide - leftAxisX) <= 10
+            return leftAxisX + objectWidth/2
+        else 
+        	if (rightAxisX - leftSide) <= 10
+        		return rightAxisX + objectWidth/2
+        	else	
+        		return currentX        	    
+	@snapY: (currentY, objectHeight)->
+		gridStep = @._getInstance().gridStep()
+		workspaceTop = AWidgetWorkspace.__instance.domToGL(0, @_workspaceOffset().top).y
+		topSide = currentY + objectHeight/2
+		rest = (workspaceTop - topSide) % gridStep
+		# bottomAxisY = Math.floor((workspaceTop - topSide)/gridStep)*gridStep + @_workspaceOffset().top
+		# topAxisY = Math.ceil((workspaceTop - topSide)/gridStep)*gridStep + @_workspaceOffset().top 
+		# console.log(workspaceTop - topSide)
+		if  rest <= 10
+            return currentY + rest
+        else
+        	if (gridStep - rest) <= 10
+        		return currentY - gridStep + rest
+        	else	
+        		return currentY   
+		    
+            # else  
+              # console.log(rightAxisX - _newX)
+              # if (rightAxisX - _newX)<=5
+                # _newX = rightAxisX
+
+	
 			
 # <label for="gridZoom">Zoom:</label>
 # 		        	<select name="gridZoom">
