@@ -440,7 +440,7 @@ class AdefyEditor
   save: ->
     data = @_serialize()
 
-    $.post "/logic/editor/save?id=#{window.ad}&data=#{data}", (result) =>
+    $.post "/api/v1/editor/save?id=#{window.ad}&data=#{data}", (result) =>
       if result.error != undefined
         new AWidgetNotification "Error saving: #{result.error}", "red"
       else
@@ -452,7 +452,7 @@ class AdefyEditor
   load: (id) ->
     param.required id
 
-    $.post "/logic/editor/load?id=#{id}", (result) =>
+    $.post "/api/v1/editor/load?id=#{id}", (result) =>
       if result.error != undefined
         new AWidgetNotification "Error loading: #{result.error}", "red"
         return
@@ -609,7 +609,7 @@ class AdefyEditor
     ex += "}, #{pWidth}, #{pHeight});"
 
     # Send result to backend and receive a link
-    $.post "/logic/editor/export?id=#{window.ad}&data=#{ex}", (result) ->
+    $.post "/api/v1/editor/export?id=#{window.ad}&data=#{ex}", (result) ->
       if result.error != undefined
         new AWidgetNotification "Error exporting: #{result.error}"
         return
