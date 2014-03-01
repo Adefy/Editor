@@ -66,10 +66,10 @@ class AWidgetWorkspace extends AWidget
     $(@_sel).html _html
 
     AUtilLog.info "Starting AWGL instance..."
-    new AWGLEngine null, 4, (@_awgl) =>
+    new AREEngine @_cWidth, @_cHeight, (@_awgl) =>
       @_engineInit()
       @_applyCanvasSizeUpdate()
-    , "aw-canvas-container", @_cWidth, @_cHeight
+    , 4, "aw-canvas-container"
 
   # Get AWGL instance
   #
