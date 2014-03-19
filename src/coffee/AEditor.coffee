@@ -72,14 +72,15 @@ class AdefyEditor
       $("body").prepend "<div id=\"#{@sel.replace('#', '')}\"></div>"
 
     me = @
+
     $(document).ready ->
 
-      menubar = @createMenuBar(me)
+      menubar = me.createMenuBar(me)
       # Create workspace, sidebars, controlbar, and timeline
       #
       # For testing, the timeline is for a 5s ad
-      timeline = @createTimeline(me)
-      o = @createSidebar(me)
+      timeline = me.createTimeline(me)
+      o = me.createSidebar(me)
       leftSidebar = o.left
       rightSidebar = o.right
 
@@ -232,9 +233,11 @@ class AdefyEditor
     rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
     #controlBar = new AWidgetControlBar workspace
 
-    return
+    obj =
       left: leftSidebar
       right: rightSidebar
+
+    return obj
 
   # This function gets called immediately upon creation, and whenever
   # our parent element is resized. Other elements register listeners are to be
