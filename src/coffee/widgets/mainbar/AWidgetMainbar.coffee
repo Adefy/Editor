@@ -121,24 +121,28 @@ class AWidgetMainbar extends AWidget
 
     false
 
+  ###
+  #
   # Renders the menu
+  #
+  ###
   render: ->
 
     _secondary = [] # Keeps track of which items have children
     _detail = [] # Like above, except this time one level lower
 
     # Render primary children first
-    _html = "<div id=\"ambdecorater\"></div>"     # That nice green line
-    _html += "<ul class=\"amainbar-primary\">"    # Our actual primary list
+    _html = @genElement type: "div", attrs: { id: "ambdecorater" }
+    _html += @genElement type: "ul", attrs: { class: "amainbar-primary" }, ->
+      __html = ""
+      for i in @_items
+        if i._role != "primary"
+          throw new Error "Invalid child at this level! #{i._role} (primary)"
 
-    for i in @_items
-      if i._role != "primary"
-        throw new Error "Invalid child at this level! #{i._role} (primary)"
+        __html += i.render()
+        _secondary.push i if i._children.length > 0
+      __html
 
-      _html += i.render()
-      if i._children.length > 0 then _secondary.push i
-
-    _html += "</ul>"
     $(@_sel).html _html
 
     # Now render secondary items, and append them to our selector
@@ -146,21 +150,22 @@ class AWidgetMainbar extends AWidget
     for i in _secondary
       _menuId = nextId()
 
-      _owner = "data-owner=\"#{i.getId()}\""
-      _id = "id=\"#{_menuId}\""
-      _classes = "class=\"amainbar-secondary\""
+      _attrs = {}
+      _attrs["id"] = _menuId
+      _attrs["data-owner"] = i.getId()
+      _attrs["class"] = "amainbar-secondary"
 
-      _html = "<ul #{_owner} #{_id} #{_classes}>"
+      _html = @genElement type: "ul", attrs: _attrs, ->
+        __html = ""
+        for c in i._children
+          if c._role != "secondary"
+            throw new Error "Invalid child at this level! #{c._role} (secondary)"
 
-      for c in i._children
-        if c._role != "secondary"
-          throw new Error "Invalid child at this level! #{c._role} (secondary)"
-
-        _html += c.render()
-        if c._children.length > 0 then _detail.push c
+          __html += c.render()
+          _detail.push c if c._children.length > 0
+        __html
 
       # Append
-      _html += "</ul>"
       $(@_sel).append _html
 
       # Note that chrome requires 4px of extra padding, so we need to calc the
@@ -173,17 +178,16 @@ class AWidgetMainbar extends AWidget
 
     # Finally, render detail items
     for i in _detail
-      _html = "<ul class=\"amainbar-detail\">"
+      _html = @genElement type: "ul", attrs: { class: "amainbar-detail" }, ->
+        __html = ""
+        for c in i._children
+          if c._role != "detail"
+            throw new Error "Invalid child at this level! #{c._role} (detail)"
 
-      for c in i._children
-        if c._role != "detail"
-          throw new Error "Invalid child at this level! #{c._role} (detail)"
-
-        _html += c.render()
-        if c._children.length > 0
-          throw new Error "Detail item has children! Damn."
-
-      _html += "</ul>"
+          __html += c.render()
+          if c._children.length > 0
+            throw new Error "Detail item has children! Damn."
+        __html
 
       # Append
       $(@_sel).append _html

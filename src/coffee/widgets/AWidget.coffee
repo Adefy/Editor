@@ -5,6 +5,7 @@
 # Widgets are the building blocks of the editor's interface
 class AWidget
 
+  ###
   # Optionally appends a new div to the body to be used as the container for
   # the widget. The parent is either a string selector, or an object offering
   # a getSel() method.
@@ -13,6 +14,7 @@ class AWidget
   # @param [Object] parent container parent, defaults to "body"
   # @param [Array<String>] classes an array containing classes to be applied
   # @param [Boolean] prepend if true, we are prepended to the parent
+  ###
   constructor: (@_id, parent, classes, prepend) ->
     @_parent = param.optional parent, "body"
     prepend = param.optional prepend, false
@@ -46,16 +48,21 @@ class AWidget
     me = @
     $(document).ready -> $("body").data me._sel, me
 
+  ###
   # Retrieve widget selector (typically the id)
   #
   # @return [String] sel
+  ###
   getSel: -> @_sel
 
+  ###
   # Return widget id as a string
   #
   # @return [String] id
+  ###
   getId: -> "#{@_id}"
 
+  ###
   # Called when the item is dropped on a receiving droppable. Most often,
   # this is the "workspace"
   #
@@ -63,4 +70,27 @@ class AWidget
   # @param [Number] x x coordinate of drop point
   # @param [Number] y y coordinate of drop point
   # @param [AHandle] handle created handle
+  ###
   dropped: (target, x, y) -> null
+
+  ###
+  # @param [Object] opts
+  #   @option [String] type
+  #   @option [Object] attrs Attributes to add to this element
+  # @return [String] html
+  ###
+  genElement: (opts, cb) ->
+    _html = ""
+    type = opts.type
+    attrs = []
+    if opts.attrs != undefined
+      for k, v of opts.attrs
+        attrs.push "#{k}=\"#{v}\""
+
+    attr_str = ""
+    attr_str += " " + attrs.join(" ") if attrs.length > 0
+
+    _html = "<#{type}#{attr_str}>"
+    _html += cb() if cb
+    _html += "</div>"
+    _html
