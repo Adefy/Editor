@@ -133,7 +133,7 @@ class AWidgetMainbar extends AWidget
 
     # Render primary children first
     _html = @genElement type: "div", attrs: { id: "ambdecorater" }
-    _html += @genElement type: "ul", attrs: { class: "amainbar-primary" }, ->
+    _html += @genElement type: "ul", attrs: { class: "amainbar-primary" }, =>
       __html = ""
       for i in @_items
         if i._role != "primary"
@@ -155,7 +155,7 @@ class AWidgetMainbar extends AWidget
       _attrs["data-owner"] = i.getId()
       _attrs["class"] = "amainbar-secondary"
 
-      _html = @genElement type: "ul", attrs: _attrs, ->
+      _html = @genElement type: "ul", attrs: _attrs, =>
         __html = ""
         for c in i._children
           if c._role != "secondary"
@@ -178,7 +178,7 @@ class AWidgetMainbar extends AWidget
 
     # Finally, render detail items
     for i in _detail
-      _html = @genElement type: "ul", attrs: { class: "amainbar-detail" }, ->
+      _html = @genElement type: "ul", attrs: { class: "amainbar-detail" }, =>
         __html = ""
         for c in i._children
           if c._role != "detail"

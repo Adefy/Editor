@@ -3,77 +3,91 @@
 //
 
 // Top navigation bar, holds the logo and menu items
-.amainbar
-  border-top 1px solid rgba(255,255,255,.1)
-  border-bottom 1px solid rgba(0,0,0,.1)
-  background linear-gradient(top, $col_sidebar_bg2, $col_sidebar_bg)
-  box-shadow inset 0 -1px rgba(0,0,0,.25)
-
-  color $col_mainbar_color
-
-  width 100%
-  font-size 12px
-  line-height 14px
-
-  position relative
-  z-index $Z_amainbar
-  padding-bottom 2px
-
-  *
-    display inline-block
-    vertical-align top
-
-  // Decorater, used to be a border on the mainbar, but moved into a seperate
-  // element to not mess with the height of it. It turned out to mess with the
-  // height anyways, but at this point, not going to move it again
-  #ambdecorater
-    height 2px
-    width 100%
-    position absolute
-    top 0
-    background-color $col_mainbar_decorator_bg
-
-  .amainbar-primary
-    padding 5px
-    z-index $Z_amainbar_primary
+#aeditor
+  .amainbar
+    z-index $Z_amainbar
     position relative
+
+    width 100%
+
+    padding-top 2px
+    padding-bottom 2px
+
+    color $col_mainbar_color
+    text-shadow 0 1px 2px rgba(0,0,0,.2), 0 1px rgba(0,0,0,.2)
+
+    border-top 1px solid rgba(255,255,255,.1)
     border-bottom 1px solid $col_divider_bot
-    top 2px
+    box-shadow 0 1px rgba(255,255,255,.1)
+    background linear-gradient(top, $col_sidebar_bg2, $col_sidebar_bg)
 
     a
+      transition color 0.25s, background-color 0.25s
+
+    *
       display inline-block
-      padding 4px 11px
+      vertical-align top
 
-    a:first-child
-      margin-left 4px
+    // Decorater, used to be a border on the mainbar, but moved into a seperate
+    // element to not mess with the height of it. It turned out to mess with the
+    // height anyways, but at this point, not going to move it again
+    #ambdecorater
+      height 2px
+      width 100%
+      position absolute
+      top 0
+      background-color $col_mainbar_decorator_bg
+      border-bottom 1px solid $col_divider_bot
 
-    a:hover:not(.open)
-      background $col_mainbar_link_hover_bg
+    .amainbar-primary
+      z-index $Z_amainbar_primary
+      position relative
 
-    a.open
-      background-color $col_mainbar_primary_open_bg
-
-  .amainbar-secondary
-    position absolute
-    top 24px
-    display none
-    z-index $Z_amainbar_secondary
-
-    .ambc-section-end
-      border-bottom 1px solid $col_mainbar_secondary_section_border
-
-    a
-      width 140px
-      padding 3px 24px
-      background-color $col_mainbar_primary_open_bg
-      display block
-      font-size 11px
+      font-size 14px
+      line-height 1
 
       li
-        color white
+        display: inline-block
 
-    a:last-child
-      padding-bottom 8px
+      a
+        display inline-block
+        padding: 5px 10px
 
-    a:hover
-      background-color $col_mainbar_secondary_hover_bg
+        &:first-child
+          margin-left 4px
+
+      //a:hover:not(.open)
+      //  background $col_mainbar_link_hover_bg
+
+      //a.open
+      //  background-color $col_mainbar_primary_open_bg
+
+    // aka menu
+    .amainbar-secondary
+      z-index $Z_amainbar_secondary
+      position absolute
+
+      background-color rgba(35, 35, 35, .9)
+      min-width 96px
+      border 1px solid rgba(0,0,0,.15)
+      box-shadow 0 2px 3px rgba(0,0,0,.25), inset 0 0 1px rgba(255,255,255,.15)
+      display none
+
+      a
+        display block
+        padding 5px 10px
+        color #AAA
+
+        &:hover
+          color #DDD
+          background-color $col_mainbar_secondary_hover_bg
+
+        //&:last-child
+        //  margin-bottom 8px
+
+      hr
+        border none
+        height 0
+        margin 0
+        border-top 1px solid rgba(0,0,0,.15)
+        border-bottom 1px solid rgba(255,255,255,.05)
