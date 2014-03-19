@@ -75,8 +75,8 @@ module.exports = (grunt) ->
           bare: true
         files: __testFiles
 
-    coffeelint:
-      app: __coffeeFiles
+    #coffeelint:
+    #  app: __coffeeFiles
 
     concat_in_order:
       lib:
@@ -102,7 +102,7 @@ module.exports = (grunt) ->
           "#{libDir}/**/*.coffee"
           "#{libDir}/*.coffee"
         ]
-        tasks: ["concat_in_order", "coffee", "coffeelint"]
+        tasks: ["concat_in_order", "coffee"]#, "coffeelint"]
       stylus:
         files: [
           "#{libDir}/stylus/*.styl",
@@ -187,7 +187,7 @@ module.exports = (grunt) ->
       production:
         files: _uglify
 
-  grunt.loadNpmTasks "grunt-coffeelint"
+  #grunt.loadNpmTasks "grunt-coffeelint"
   grunt.loadNpmTasks "grunt-contrib-coffee"
   grunt.loadNpmTasks "grunt-contrib-watch"
   grunt.loadNpmTasks "grunt-contrib-connect"
