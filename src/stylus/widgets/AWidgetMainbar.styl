@@ -9,20 +9,18 @@
     position relative
 
     width 100%
-
     padding-top 2px
-    padding-bottom 2px
 
     color $col_mainbar_color
+    font-size 14px
     text-shadow 0 1px 2px rgba(0,0,0,.2), 0 1px rgba(0,0,0,.2)
 
-    border-top 1px solid rgba(255,255,255,.1)
-    border-bottom 1px solid $col_divider_bot
-    box-shadow 0 1px rgba(255,255,255,.1)
-    background linear-gradient(top, $col_sidebar_bg2, $col_sidebar_bg)
+    background-color: #2c2c2c
+    border-bottom: 1px solid rgba(0,0,0,.15)
+    box-shadow: 0 1px rgba(255,255,255,.1)
 
     a
-      transition color 0.25s, background-color 0.25s
+      transition color 0.15s, background-color 0.15s
 
     *
       display inline-block
@@ -42,8 +40,9 @@
     .amainbar-primary
       z-index $Z_amainbar_primary
       position relative
+      margin 0
+      padding 0
 
-      font-size 14px
       line-height 1
 
       li
@@ -52,6 +51,13 @@
       a
         display inline-block
         padding: 5px 10px
+        border-left 1px solid rgba(0,0,0,.0)
+        border-right 1px solid rgba(0,0,0,.0)
+
+        &:hover
+          background-color #222
+          border-left 1px solid rgba(0,0,0,.20)
+          border-right 1px solid rgba(0,0,0,.20)
 
         &:first-child
           margin-left 4px
@@ -67,7 +73,7 @@
       z-index $Z_amainbar_secondary
       position absolute
 
-      background-color rgba(35, 35, 35, .9)
+      background-color rgba(35, 35, 35, .8)
       min-width 96px
       border 1px solid rgba(0,0,0,.15)
       box-shadow 0 2px 3px rgba(0,0,0,.25), inset 0 0 1px rgba(255,255,255,.15)
