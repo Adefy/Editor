@@ -1,6 +1,6 @@
 --name    "AdefyEditor"
 --readme  Readme.md
---title   "Adefy Ad Edtiro Documentation"
+--title   "Adefy Ad Editor Documentation"
 --private
 --quiet
 --output-dir ./doc
