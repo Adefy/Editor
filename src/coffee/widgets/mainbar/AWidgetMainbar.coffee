@@ -155,7 +155,8 @@ class AWidgetMainbar extends AWidget
       _attrs["data-owner"] = i.getId()
       _attrs["class"] = "amainbar-secondary"
 
-      _html = @genElement type: "ul", attrs: _attrs, =>
+      # Append
+      $(@_sel).append @genElement type: "ul", attrs: _attrs, =>
         __html = ""
         for c in i._children
           if c._role != "secondary"
@@ -164,9 +165,6 @@ class AWidgetMainbar extends AWidget
           __html += c.render()
           _detail.push c if c._children.length > 0
         __html
-
-      # Append
-      $(@_sel).append _html
 
       # Note that chrome requires 4px of extra padding, so we need to calc the
       # real offset depending on the browser

@@ -62,55 +62,56 @@ class AWidgetContextMenu extends AWidget
   #
   # @return [String] html ready for injection
   _buildHTML: ->
-    _html = "<ul>"
+    @genElement type: "ul", =>
 
-    me = @
-    __bindListener = (f) ->
+      __bindListener = (f) =>
+        # Insane in da membrane
+        if typeof me.functions[f] != "function"
+          AUtilLog.error "Only methods can be bound to context menu items"
+          return
 
-      # Insane in da membrane
-      if typeof me.functions[f] != "function"
-        AUtilLog.error "Only methods can be bound to context menu items"
-        return
+        $(document).on "click", "[data-id=\"#{me.functions[f]._ident}\"]", =>
+          @remove()
+          @functions[f]()
 
-      $(document).on "click", "[data-id=\"#{me.functions[f]._ident}\"]", ->
-        me.remove()
-        me.functions[f]()
+      __html = ""
+      for f of @functions
 
-    for f of @functions
+        # If f already has an identifier set, unbind any existing listeners
+        if @functions[f]._ident != undefined
+          @_unbindListener @functions[f]._ident
 
-      # If f already has an identifier set, unbind any existing listeners
-      if @functions[f]._ident != undefined
-        @_unbindListener @functions[f]._ident
+        # We set a unique identifier for the element to use, and bind listeners
+        @functions[f]._ident = @_convertToIdent(f) + nextId()
 
-      # We set a unique identifier for the element to use, and bind listeners
-      @functions[f]._ident = @_convertToIdent(f) + nextId()
+        _attrs = {}
+        _attrs["data-id"] = @functions[f]._ident
 
-      _html += "<li data-id=\"#{@functions[f]._ident}\">#{f}</li>"
+        __html += @genElement type: "li", attrs: _attrs, => f
 
-      # Bind listener
-      __bindListener f
+        # Bind listener
+        __bindListener f
 
-    if !AWidgetContextMenu._registeredMouseup
+      if !AWidgetContextMenu._registeredMouseup
 
-      # Mouseup listener to close menu when clicked outside
-      $(document).mouseup (e) ->
+        # Mouseup listener to close menu when clicked outside
+        $(document).mouseup (e) ->
 
-        # Grab both the menu object, and our own instance from the body
-        menu = $(".actxmenu")
-        ins = $("body").data $(menu).attr "id"
+          # Grab both the menu object, and our own instance from the body
+          menu = $(".actxmenu")
+          ins = $("body").data $(menu).attr "id"
 
-        if menu != undefined and ins != undefined
-          if !menu.is(e.target) && menu.has(e.target).length == 0
-            if AWidgetContextMenu.animate
-              $(ins._sel).slideUp AWidgetContextMenu.animateSpeed, ->
+          if menu != undefined and ins != undefined
+            if !menu.is(e.target) && menu.has(e.target).length == 0
+              if AWidgetContextMenu.animate
+                $(ins._sel).slideUp AWidgetContextMenu.animateSpeed, ->
+                  ins.remove()
+              else
                 ins.remove()
-            else
-              ins.remove()
 
-      AWidgetContextMenu._registeredMouseup = true
+        AWidgetContextMenu._registeredMouseup = true
 
-    # Ship it
-    _html += "</ul>"
+      __html
 
   # @private
   # Shorthand, used in @_buildHTML and @remove

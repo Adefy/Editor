@@ -34,10 +34,11 @@ class AWidget
       else
         throw new Error "Invalid parent specified!"
 
+      elm = @genElement type: "div", attrs: { id: @_id }
       if prepend
-        $(_parent_sel).prepend "<div id=\"#{@_id}\"></div>"
+        $(_parent_sel).prepend elm
       else
-        $(_parent_sel).append "<div id=\"#{@_id}\"></div>"
+        $(_parent_sel).append elm
 
       # Ship classes
       if classes instanceof Array
@@ -81,16 +82,26 @@ class AWidget
   ###
   genElement: (opts, cb) ->
     _html = ""
-    type = opts.type
-    attrs = []
+    _type = opts.type
+    _attrs = []
     if opts.attrs != undefined
       for k, v of opts.attrs
-        attrs.push "#{k}=\"#{v}\""
+        _attrs.push "#{k}=\"#{v}\""
 
-    attr_str = ""
-    attr_str += " " + attrs.join(" ") if attrs.length > 0
+    _attr_str = ""
+    _attr_str += " " + _attrs.join(" ") if _attrs.length > 0
 
-    _html = "<#{type}#{attr_str}>"
+    _html = "<#{_type}#{_attr_str}>"
     _html += cb() if cb
-    _html += "</div>"
-    _html
+    _html + "</#{_type}>"
+
+  ###
+  # Convinienve method for creating buttons with icons in them
+  # @param [String] iconName
+  # @return [String] html
+  ###
+  genButtonIcon: (iconName, opts) ->
+    attrs = {}
+    attrs = opts.attrs if opts && opts.attrs
+    @genElement type: "button", attrs: attrs, =>
+      @genElement type: "i", attrs: { class: "fa fa-#{iconName}" }
