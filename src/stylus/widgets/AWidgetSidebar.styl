@@ -1,162 +1,162 @@
 //
 // Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
 //
+#aeditor
+  .asidebar
+    background-color $col_sidebar_bg
+    position absolute
+    color $col_sidebar_color
+    border-top 1px solid $col_divider_top
 
-.asidebar
-  background-color $col_sidebar_bg
-  position absolute
-  color $col_sidebar_color
-  border-top 1px solid $col_divider_top
+    z-index $Z_asidebar
 
-  z-index $Z_asidebar
+    > *
+      padding 4px 8px
 
-  > *
-    padding 4px 8px
-
-  // Sidebar name
-  .as-name
-    display block
-    font-size 16px
-    text-align center
-
-    .icon-double-angle-left
-      float right
-      margin-right 8px
-
-    .icon-double-angle-right
-      float left
-      margin-left 8px
-
-    .icon-double-angle-right:hover, .icon-double-angle-left:hover
-      cursor hand
-      cursor pointer
-
-  // Group of objects in the sidebar
-  .as-objgroup
-    padding 4px 0
-
-    // Category name
-    .asog-catname
-      font-size 14px
+    // Sidebar name
+    .as-name
       display block
-      margin-bottom 4px
-      color $col_sidebar_obj_catname_color
-      font-weight 700
-      padding-left 16px
+      font-size 16px
+      text-align center
 
-    // Object name
-    .aso-name
-      font-size 14px
-      padding 4px 0 4px 40px
-      margin 4px 0
-
-      .icon-caret-down
+      .icon-double-angle-left
         float right
-        padding-right 8px
-        color $col_sidebar_bg
-
-      .awso-i
-        vertical-align top
         margin-right 8px
 
-    .aso-name:hover
-      background-color $col_sidebar_obj_name_hover_bg
-      cursor hand
-      cursor pointer
+      .icon-double-angle-right
+        float left
+        margin-left 8px
 
-      .icon-caret-down
-        color $col_divider_top
+      .icon-double-angle-right:hover, .icon-double-angle-left:hover
+        cursor hand
+        cursor pointer
 
-  .ui-draggable-dragging
-    background-color $col_sidebar_obj_name_hover_bg
-    color $col_sidebar_obj_name_hover_color
-    min-width 200px
-
-  // Manipulatable properties widget
-  .as-properties
-    padding 0
-
-    // Property save button
-    .asp-save
-      margin 0
+    // Group of objects in the sidebar
+    .as-objgroup
       padding 4px 0
-      width 100%
-      background-color $col_sidebar_property_save_bg
-      color $col_sidebar_property_save_col
-      border 0
-      font-size 15px
-      display block
 
-    .asp-save:hover
-      cursor pointer
-      cursor hand
+      // Category name
+      .asog-catname
+        font-size 14px
+        display block
+        margin-bottom 4px
+        color $col_sidebar_obj_catname_color
+        font-weight 700
+        padding-left 16px
 
-    // Texture button
-    .asp-texture
-      margin 0
-      padding 4px 0
-      width 100%
-      background-color $col_sidebar_property_save_bg
-      color $col_sidebar_property_save_col
-      border 0
-      font-size 15px
-      display block
+      // Object name
+      .aso-name
+        font-size 14px
+        padding 4px 0 4px 40px
+        margin 4px 0
 
-    .asp-texture:hover
-      cursor pointer
-      cursor hand
+        .icon-caret-down
+          float right
+          padding-right 8px
+          color $col_sidebar_bg
 
-    // A group of controls for a single object property (can be composite)
-    .asp-control-group
-      padding 8px 0
-
-      // Single control, with a label and input field
-      .asp-control
-        margin-bottom 8px
-
-        // Signals a property that can be modified by click-dragging
-        .drag_mod
-          .icon-resize-horizontal
-            margin-right 4px
-            font-weight 300
-
-        .drag_mod:hover
-          cursor hand
-          cursor pointer
-          cursor e-resize
-
-        label, input
-          display inline-block
+        .awso-i
           vertical-align top
+          margin-right 8px
 
-        label
-          width 100px
-          text-align right
-          color $col_sidebar_property_label
-          font-size 14px
+      .aso-name:hover
+        background-color $col_sidebar_obj_name_hover_bg
+        cursor hand
+        cursor pointer
 
-        label:not(.aspc-composite-name)
-          font-weight 500
+        .icon-caret-down
+          color $col_divider_top
 
-        input
-          width 160px
-          padding 0
-          margin 0 8px
-          border none
-          outline 0
-          background-color transparent
-          color $col_sidebar_property_input
+    .ui-draggable-dragging
+      background-color $col_sidebar_obj_name_hover_bg
+      color $col_sidebar_obj_name_hover_color
+      min-width 200px
 
-        input:after, input:focus
-          border 1px $col_sidebar_property_input_focus_border
-          background-color $col_sidebar_property_input_focus_bg
+    // Manipulatable properties widget
+    .as-properties
+      padding 0
 
-        input[type="checkbox"]
-          width auto
+      // Property save button
+      .asp-save
+        margin 0
+        padding 4px 0
+        width 100%
+        background-color $col_sidebar_property_save_bg
+        color $col_sidebar_property_save_col
+        border 0
+        font-size 15px
+        display block
 
-        .aspc-composite-name
+      .asp-save:hover
+        cursor pointer
+        cursor hand
+
+      // Texture button
+      .asp-texture
+        margin 0
+        padding 4px 0
+        width 100%
+        background-color $col_sidebar_property_save_bg
+        color $col_sidebar_property_save_col
+        border 0
+        font-size 15px
+        display block
+
+      .asp-texture:hover
+        cursor pointer
+        cursor hand
+
+      // A group of controls for a single object property (can be composite)
+      .asp-control-group
+        padding 8px 0
+
+        // Single control, with a label and input field
+        .asp-control
           margin-bottom 8px
 
-        .aspc-live
-          margin-top 8px
-          font-size 12px
+          // Signals a property that can be modified by click-dragging
+          .drag_mod
+            .icon-resize-horizontal
+              margin-right 4px
+              font-weight 300
+
+          .drag_mod:hover
+            cursor hand
+            cursor pointer
+            cursor e-resize
+
+          label, input
+            display inline-block
+            vertical-align top
+
+          label
+            width 100px
+            text-align right
+            color $col_sidebar_property_label
+            font-size 14px
+
+          label:not(.aspc-composite-name)
+            font-weight 500
+
+          input
+            width 160px
+            padding 0
+            margin 0 8px
+            border none
+            outline 0
+            background-color transparent
+            color $col_sidebar_property_input
+
+          input:after, input:focus
+            border 1px $col_sidebar_property_input_focus_border
+            background-color $col_sidebar_property_input_focus_bg
+
+          input[type="checkbox"]
+            width auto
+
+          .aspc-composite-name
+            margin-bottom 8px
+
+          .aspc-live
+            margin-top 8px
+            font-size 12px

@@ -3,52 +3,53 @@
 //
 
 // Control bar bound to the top of the workspace
-.awcontrolbar
-  background-color $col_awcb_bg
-  width 100%
-  color white
-  font-size 14px
+#aeditor
+  .awcontrolbar
+    background-color $col_awcb_bg
+    width 100%
+    color white
+    font-size 14px
 
-  // Main wrapper
-  .awcb-inner
-    padding 0 32px
-    margin 0 auto
+    // Main wrapper
+    .awcb-inner
+      padding 0 32px
+      margin 0 auto
 
-  // Section of controls
-  .awcb-section
-    display inline-block
-    background-color $col_awcb_section_bg
-    margin-right 64px
-
-    // Section title
-    .awcb-section-title
+    // Section of controls
+    .awcb-section
       display inline-block
-      height 21px
-      background-color $col_awcb_section_title_bg
-      padding 5px 16px 0 32px
+      background-color $col_awcb_section_bg
+      margin-right 64px
 
-    // Individual control
-    .awcb-control
-      display inline-block
-      height 21px
-      padding 5px 8px 0 8px
+      // Section title
+      .awcb-section-title
+        display inline-block
+        height 21px
+        background-color $col_awcb_section_title_bg
+        padding 5px 16px 0 32px
 
-      i
-        margin-left 8px
+      // Individual control
+      .awcb-control
+        display inline-block
+        height 21px
+        padding 5px 8px 0 8px
 
-    .awcb-control.on:hover
-      cursor hand
-      cursor pointer
-      background-color $col_awcb_control_on_hover
+        i
+          margin-left 8px
 
-    .awcb-control-status
-      display inline-block
-      height 21px
-      padding 5px 8px 0 8px
-      background-color $col_awcb_status_bg
+      .awcb-control.on:hover
+        cursor hand
+        cursor pointer
+        background-color $col_awcb_control_on_hover
 
-    .off
-      background-color $col_awcb_off_bg
+      .awcb-control-status
+        display inline-block
+        height 21px
+        padding 5px 8px 0 8px
+        background-color $col_awcb_status_bg
 
-  .awcb-section:last-child
-    border-right 0
+      .off
+        background-color $col_awcb_off_bg
+
+    .awcb-section:last-child
+      border-right 0
