@@ -17,15 +17,15 @@ module.exports = (grunt) ->
     "#{devDir}/js/jquery.js"
     "#{devDir}/js/jquery-ui.js"
 
-    "http://cdn.adefy.com/awgl/awgl-full.js"
+    "http://cdn.adefy.com/are/are-full.js"
     "http://cdn.adefy.com/ajs/ajs.js"
     "#{devDir}/aeditor.js"
   ]
 
   # Intermediate vars
-  __awglOut = {}
-  __awglOut["#{buildDir}/build-concat.coffee"] = [ "#{libDir}/coffee/AEditor.coffee" ]
-  __awglOut["#{devDir}/build-concat.coffee"] = [ "#{libDir}/coffee/AEditor.coffee" ]
+  __areOut = {}
+  __areOut["#{buildDir}/build-concat.coffee"] = [ "#{libDir}/coffee/AEditor.coffee" ]
+  __areOut["#{devDir}/build-concat.coffee"] = [ "#{libDir}/coffee/AEditor.coffee" ]
 
   __coffeeConcatFiles = {}
 
@@ -80,7 +80,7 @@ module.exports = (grunt) ->
 
     concat_in_order:
       lib:
-        files: __awglOut
+        files: __areOut
         options:
           extractRequired: (path, content) ->
 
