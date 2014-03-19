@@ -74,74 +74,14 @@ class AdefyEditor
     me = @
     $(document).ready ->
 
-      # Create mainbar first
-      menubar = new AWidgetMainbar me.sel
-
-      # Set up the menubar
-      fileMenu = menubar.addItem "File"
-      viewMenu = menubar.addItem "View"
-      timelineMenu = menubar.addItem "Timeline"
-      canvasMenu = menubar.addItem "Canvas"
-      toolsMenu = menubar.addItem "Tools"
-      helpMenu = menubar.addItem "Help"
-
-      ed = "window.adefy_editor"
-
-      # File menu options
-      fileMenu.createChild "New Ad...", null, "#{ed}.newAd()"
-      fileMenu.createChild "New From Template...", null, null, true
-
-      fileMenu.createChild "Save", null, "#{ed}.save()"
-      fileMenu.createChild "Save As..."
-      fileMenu.createChild "Export...", null, "#{ed}.export()", true
-
-      fileMenu.createChild "Quit"
-
-      # View menu options
-      viewMenu.createChild "Toggle Toolbox Sidebar", null, \
-        "window.left_sidebar.toggle()"
-
-      viewMenu.createChild "Toggle Properties Sidebar", null, \
-        "window.right_sidebar.toggle()"
-
-      viewMenu.createChild "Fullscreen"
-
-      # Timeline menu options
-      timelineMenu.createChild "Set preview framerate...", null, \
-        "window.timeline.showSetPreviewRate()"
-
-      # Canvas menu options
-      canvasMenu.createChild "Set screen properties...", null, \
-        "window.workspace.showSetScreenProperties()"
-
-      canvasMenu.createChild "Set background color...", null, \
-        "window.workspace.showSetBackgroundColor()"
-
-      # Tools menu options
-      toolsMenu.createChild "Preview..."
-      toolsMenu.createChild "Calculate device support..."
-      toolsMenu.createChild "Set export framerate..."
-      toolsMenu.createChild "Upload textures...", null, \
-        "window.workspace.showAddTextures()"
-
-      # Help menu options
-      helpMenu.createChild "About AdefyEditor"
-      helpMenu.createChild "Changelog", null, null, true
-
-      helpMenu.createChild "Take a Guided Tour"
-      helpMenu.createChild "Quick Start"
-      helpMenu.createChild "Tutorials"
-      helpMenu.createChild "Documentation"
-
-      menubar.render()
-
+      menubar = @createMenuBar(me)
       # Create workspace, sidebars, controlbar, and timeline
       #
       # For testing, the timeline is for a 5s ad
-      timeline = new AWidgetTimeline me.sel, 5000
-      leftSidebar = new AWidgetSidebar me.sel, "Toolbox", "left", 256
-      rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
-      #controlBar = new AWidgetControlBar workspace
+      timeline = @createTimeline(me)
+      o = @createSidebar(me)
+      leftSidebar = o.left
+      rightSidebar = o.right
 
       # Add some items to the left sidebar
       primGroup = new AWidgetSidebarObjectGroup "Primitives", leftSidebar
@@ -217,6 +157,84 @@ class AdefyEditor
       if window.ad != undefined and window.ad.length == 24
         log.info "Loading #{window.ad}"
         me.load window.ad
+
+  createMenuBar: (me) ->
+    # Create mainbar first
+    menubar = new AWidgetMainbar me.sel
+
+    # Set up the menubar
+    fileMenu = menubar.addItem "File"
+    viewMenu = menubar.addItem "View"
+    timelineMenu = menubar.addItem "Timeline"
+    canvasMenu = menubar.addItem "Canvas"
+    toolsMenu = menubar.addItem "Tools"
+    helpMenu = menubar.addItem "Help"
+
+    ed = "window.adefy_editor"
+
+    # File menu options
+    fileMenu.createChild "New Ad...", null, "#{ed}.newAd()"
+    fileMenu.createChild "New From Template...", null, null, true
+
+    fileMenu.createChild "Save", null, "#{ed}.save()"
+    fileMenu.createChild "Save As..."
+    fileMenu.createChild "Export...", null, "#{ed}.export()", true
+
+    fileMenu.createChild "Quit"
+
+    # View menu options
+    viewMenu.createChild "Toggle Toolbox Sidebar", null, \
+      "window.left_sidebar.toggle()"
+
+    viewMenu.createChild "Toggle Properties Sidebar", null, \
+      "window.right_sidebar.toggle()"
+
+    viewMenu.createChild "Fullscreen"
+
+    # Timeline menu options
+    timelineMenu.createChild "Set preview framerate...", null, \
+      "window.timeline.showSetPreviewRate()"
+
+    # Canvas menu options
+    canvasMenu.createChild "Set screen properties...", null, \
+      "window.workspace.showSetScreenProperties()"
+
+    canvasMenu.createChild "Set background color...", null, \
+      "window.workspace.showSetBackgroundColor()"
+
+    # Tools menu options
+    toolsMenu.createChild "Preview..."
+    toolsMenu.createChild "Calculate device support..."
+    toolsMenu.createChild "Set export framerate..."
+    toolsMenu.createChild "Upload textures...", null, \
+      "window.workspace.showAddTextures()"
+
+    # Help menu options
+    helpMenu.createChild "About AdefyEditor"
+    helpMenu.createChild "Changelog", null, null, true
+
+    helpMenu.createChild "Take a Guided Tour"
+    helpMenu.createChild "Quick Start"
+    helpMenu.createChild "Tutorials"
+    helpMenu.createChild "Documentation"
+
+    menubar.render()
+
+    menubar
+
+  createTimeline: (me) ->
+    timeline = new AWidgetTimeline me.sel, 5000
+
+    timeline
+
+  createSidebar: (me) ->
+    leftSidebar = new AWidgetSidebar me.sel, "Toolbox", "left", 256
+    rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
+    #controlBar = new AWidgetControlBar workspace
+
+    return
+      left: leftSidebar
+      right: rightSidebar
 
   # This function gets called immediately upon creation, and whenever
   # our parent element is resized. Other elements register listeners are to be
