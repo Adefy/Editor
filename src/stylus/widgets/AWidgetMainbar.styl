@@ -4,7 +4,11 @@
 
 // Top navigation bar, holds the logo and menu items
 .amainbar
-  background $col_mainbar_bg
+  border-top 1px solid rgba(255,255,255,.1)
+  border-bottom 1px solid rgba(0,0,0,.1)
+  background linear-gradient(top, $col_sidebar_bg2, $col_sidebar_bg)
+  box-shadow inset 0 -1px rgba(0,0,0,.25)
+
   color $col_mainbar_color
 
   width 100%
@@ -30,6 +34,7 @@
     background-color $col_mainbar_decorator_bg
 
   .amainbar-primary
+    padding 5px
     z-index $Z_amainbar_primary
     position relative
     border-bottom 1px solid $col_divider_bot

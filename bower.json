@@ -1,0 +1,22 @@
+{
+  "name": "AdefyEditor",
+  "version": "0.1.0",
+  "authors": [
+    "Cris Mihalache <cris.mihalache@spectrumit.eu>",
+    "Blaž Hrastnik <blaz.hrast@gmail.com>",
+    "Corey Powell <mistdragon100@gmail.com>"
+  ],
+  "license": "Closed",
+  "homepage": "https://app.adefy.com",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-latest": "=1.2.13"
+  }
+}
