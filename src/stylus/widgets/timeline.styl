@@ -1,146 +1,165 @@
-//
-// Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
-//
 #aeditor
   .timeline
-    position fixed
-    bottom 0
-    left 0
-    width 100%
-    z-index $Z_atimeline
+    font-size: 14px
+    position: relative
+    width: 100%
+    //height: 360px
+    background: #1e1e1e
 
-    // Shared properties
-    #at-actors, #at-timeline, #at-animations
-      display inline-block
-      vertical-align top
-      height 100%
+    //position: absolute
+    left: 0
+    right: 0
+    bottom: 0
 
-    // Actor list
-    #at-actors
-      width 20%
-      background-color $col_timeline_actors_bg
-      color $col_timeline_actors_col
-      border-right 1px solid $col_divider_bot
-      margin-left -1px
+    .content // needed for perfectScrollbar
+      overflow: hidden
+      position: relative
+      height: calc(100% - 60px)
 
-      #ata-title
-        padding 3px 0
-        text-align center
+    .cursor
+      position: absolute
+      height: 100%
+      width: 1px
+      z-index: 3
+      background-color: white
+      cursor: ew-resize
 
-      #ata-body
+    .header
+      font-size: 16px
+      color: #666
+      height: 28px
+      line-height: 28px
+      padding: 0 12px
 
-        li
-          padding 1px 8px 1px 16px
-          font-size 14px
+      font-weight: 600
+      text-shadow: 0 1px 1px rgba(0,0,0,.58)
 
-        .atab-spacer, .atab-name
-          display inline-block
-          vertical-align top
+      border-top: 1px solid rgba(255,255,255,.1)
+      background: -webkit-linear-gradient(top, #343434, #272727)
+      box-shadow: inset 0 -1px rgba(0,0,0,.35)
 
-        .atab-spacer
-          margin 8px 8px 0 0
-          height 1px
-          float right
+      padding-left: calc(12px + 310px)
+      > *
+        display: inline-block
+      .current_time
+        margin-right: 15px
+      a
+        color: inherit
+        padding: 0 3px
+        font-size: 14px
 
-    // Timeline itself
-    #at-timeline
-      width 80%
-      background-color $col_timeline_bg
-      border-top 1px solid $col_divider_top
-      border-left 1px solid $col_divider_top
-      margin-right -2px
-      position relative
+        &:hover
+          color: #aaa
 
-      // Toolbar
-      #att-toolbar
-        padding 5px 0 4px 0
-        color $col_timeline_toolbar_col
-        width 100%
-        background-color $col_timeline_bg
-        border-bottom 1px solid $col_timeline_divider_bot
-        font-size 14px
-        position relative
-        z-index $Z_atimeline_toolbar
+    .list
+      float: left
+      width: 310px
+      //padding: 15px
+      border-right: 1px solid rgba(0,0,0,.35)
+      box-shadow: inset -1px 0 rgba(255,255,255,.05)
+      background-color: #232323
+    .time
+      margin-left: 310px
 
-        #attt-cursor-time
-          float left
-          margin-left 8px
+    .row
+      height: 24px
+      line-height: 24px
+      position: relative
+      &.selected
+        background-color: #1a1a1a
+        box-shadow: 0 1px rgba(0,0,0,.1)
+        text-shadow: 0 1px 2px rgba(0,0,0,.35)
+        background: -webkit-linear-gradient(top, #313131, #272727)
+        .title
+          color: hsl(196, 47%, 55%) !important
+    .actor
+      height: 24px
+      overflow: hidden
+      &.expanded
+        height: auto
 
-        #attt-toggle
-          float right
-          margin-right 8px
+    .property
+      background-color: rgba(255,255,255,.02)
 
-        #attt-toggle:hover
-          cursor hand
-          cursor pointer
+    .list .actor
+      color: #999
+      cursor: pointer
+      .visibility
+        display: inline-block
+        width: 16px
+        height: 16px
+        font-size: 10px
+        vertical-align: middle
+        margin-right: 4px
+        line-height: 1
+        padding: 2px 0
+        background: -webkit-linear-gradient(top, rgba(0,0,0,.05), rgba(0,0,0,.1))
+        border: 1px solid rgba(20,20,20,.25)
+        border-top-color: rgba(0,0,0,.15)
+        border-bottom-color: rgba(255,255,255,.05)
+        text-align: center
+      .expand
+        display: inline-block
+        vertical-align: middle
+        margin-right: 5px
+      .row
+        padding: 0 15px
+      .title
+        display: inline-block
+        vertical-align: middle
+        color: #ccc
+      .property
+        white-space: nowrap
+        display: table-row
+        color: #666
+        font-size: 14px
+        .live, .graph, .title, .value
+          display: inline-block
+          display: table-cell
+          vertical-align: middle
+        .live, .graph
+          width: 1%
+          font-size: 10px
+          line-height: 1
+          text-align: center
+          .button
+            display: inline-block
+            padding: 2px 1px
+        .live .button
+          margin-left: 35px
+        .graph .button
+          margin-left: 3px
+          margin-right: 5px
 
-        #attt-controls
-          margin 0 auto
-          text-align center
-          display block
+        .title
+          color: #999
+          width: 1%
+        .value
+          padding-left: 15px
+          color: hsl(196, 47%, 55%)
+          cursor: ew-resize
 
-          i
-            margin 0 4px
+    .time
+      position: relative
 
-          i:hover
-            cursor pointer
-            cursor hand
-            color $lblue
+    .time .actor
+      .row
+        border-bottom: 1px solid rgba(255,255,255,.05)
 
-        .attt-third
-          width 33%
-          display inline-block
-          vertical-align top
+      .bar
+        width: 500px
+        height: 100%
+        background: #0099cc // rgba(194, 83, 83, 1)
+        box-shadow: inset 0 1px rgba(255,255,255,.35), inset 0 -1px rgba(0,0,0,.35), inset 1px 0 rgba(255,255,255,.25), inset -1px 0 rgba(255,255,255,.25)
 
-      // #att-toolbar:hover
-      //   cursor hand
-      //   cursor pointer
-      //   cursor s-resize
-
-      // Cursor
-      #att-cursor
-        position absolute
-        top 0
-        left 0
-        width 2px
-        height 100%
-        background-color transparent
-        z-index $Z_atimline_cursor
-        padding 0 3px
-        margin-left -3px
-
-        > *
-          background-color #09c
-          width 100%
-          height 100%
-
-      #att-cursor:hover
-        cursor hand
-        cursor pointer
-        cursor e-resize
-
-      // Actual timeline space
-      #att-space
-        border-top 1px solid $col_divider_top
-
-        // Actor row
-        .atts-outer
-          width 100%
-          height 16px
-          position relative
-
-          // Actor lifetime
-          .attso-inner
-            position absolute
-            top 0
-            height 100%
-
-            .attso-key
-              position absolute
-              color white
-
-        // Clicking on a row selects the actor in the workspace
-        .atts-outer:hover
-          background-color #303030
-          cursor hand
-          cursor pointer
+      .keyframe
+        position: absolute
+        display: inline-block
+        top: 50%
+        margin-top: -4px
+        width: 8px
+        height: 8px
+        background: #666
+        box-shadow: inset 0 0 1px rgba(255,255,255,.35)
+        background: -webkit-linear-gradient(-45deg, #aaa, #666)
+        -webkit-transform: rotate(45deg)
