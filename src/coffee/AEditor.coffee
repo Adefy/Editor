@@ -80,65 +80,31 @@ class AdefyEditor
       #
       # For testing, the timeline is for a 5s ad
       timeline = me.createTimeline(me)
-      o = me.createSidebar(me)
-      leftSidebar = o.left
-      rightSidebar = o.right
+      #o = me.createSidebar(me)
+      #leftSidebar = o.left
+      #rightSidebar = o.right
 
-      # Add some items to the left sidebar
-      primGroup = new AWidgetSidebarObjectGroup "Primitives", leftSidebar
-      rectPrimitive = primGroup.createItem "Rectangle"
-      ngonPrimitive = primGroup.createItem "Polgyon"
-      triPrimitive = primGroup.createItem "Triangle"
+      #me.createToolbox(leftSidebar)
 
-      rectPrimitive.icon = "img/icon_rectangle.png"
-      ngonPrimitive.icon = "img/icon_hexagon.png"
-      triPrimitive.icon = "img/icon_triangle.png"
-
-      leftSidebar.render()
-
-      rectPrimitive.dropped = (target, x, y) ->
-        param.required target
-        param.required x
-        param.required y
-
-        if target != "workspace" then return null
-
-        new AHRectangle AWidgetTimeline.getMe().getCursorTime(), 100, 100, x, y
-
-      ngonPrimitive.dropped = (target, x, y) ->
-        param.required target
-        param.required x
-        param.required y
-
-        if target != "workspace" then return null
-
-        new AHPolygon AWidgetTimeline.getMe().getCursorTime(), 5, 100, x, y
-
-      triPrimitive.dropped = (target, x, y) ->
-        param.required target
-        param.required x
-        param.required y
-
-        if target != "workspace" then return null
-
-        new AHTriangle AWidgetTimeline.getMe().getCursorTime(), 20, 30, x, y
-
+      #leftSidebar.render()
       # Create a property widget on the right sidebar
-      new AWidgetSidebarProperties rightSidebar
+      #new AWidgetSidebarProperties rightSidebar
 
-      workspace = new AWidgetWorkspace me.sel
+      #workspace = new AWidgetWorkspace me.sel
+      #controlBar = new AWidgetControlBar workspace
 
       # Push widgets
       me.widgets.push menubar
-      me.widgets.push workspace
-      me.widgets.push leftSidebar
-      me.widgets.push rightSidebar
+      #me.widgets.push workspace
+      #me.widgets.push controlBar
+      #me.widgets.push leftSidebar
+      #me.widgets.push rightSidebar
 
       # Save widgets on the window for easy access
-      window.left_sidebar = leftSidebar
-      window.right_sidebar = rightSidebar
+      #window.left_sidebar = leftSidebar
+      #window.right_sidebar = rightSidebar
       window.timeline = timeline
-      window.workspace = workspace
+      #window.workspace = workspace
 
       # Register resize handler
       me.onResize()
@@ -152,7 +118,7 @@ class AdefyEditor
 
       log.info "Adefy editor created on #{me.sel}"
 
-      new AWidgetNotification "Initialized", "blue", 1000
+      #new AWidgetNotification "Initialized", "blue", 1000
 
       # Check if we need to load an ad
       if window.ad != undefined and window.ad.length == 24
@@ -231,13 +197,52 @@ class AdefyEditor
   createSidebar: (me) ->
     leftSidebar = new AWidgetSidebar me.sel, "Toolbox", "left", 256
     rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
-    #controlBar = new AWidgetControlBar workspace
 
     obj =
       left: leftSidebar
       right: rightSidebar
 
     return obj
+
+  createToolbox: (sidebar) ->
+    # Add some items to the left sidebar
+    primGroup = new AWidgetSidebarObjectGroup "Primitives", sidebar
+    rectPrimitive = primGroup.createItem "Rectangle"
+    ngonPrimitive = primGroup.createItem "Polgyon"
+    triPrimitive = primGroup.createItem "Triangle"
+
+    rectPrimitive.icon = "img/icon_rectangle.png"
+    ngonPrimitive.icon = "img/icon_hexagon.png"
+    triPrimitive.icon = "img/icon_triangle.png"
+
+    rectPrimitive.dropped = (target, x, y) ->
+      param.required target
+      param.required x
+      param.required y
+
+      if target != "workspace" then return null
+
+      new AHRectangle AWidgetTimeline.getMe().getCursorTime(), 100, 100, x, y
+
+    ngonPrimitive.dropped = (target, x, y) ->
+      param.required target
+      param.required x
+      param.required y
+
+      if target != "workspace" then return null
+
+      new AHPolygon AWidgetTimeline.getMe().getCursorTime(), 5, 100, x, y
+
+    triPrimitive.dropped = (target, x, y) ->
+      param.required target
+      param.required x
+      param.required y
+
+      if target != "workspace" then return null
+
+      new AHTriangle AWidgetTimeline.getMe().getCursorTime(), 20, 30, x, y
+
+    primGroup
 
   # This function gets called immediately upon creation, and whenever
   # our parent element is resized. Other elements register listeners are to be

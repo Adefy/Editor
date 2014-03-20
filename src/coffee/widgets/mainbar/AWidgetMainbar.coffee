@@ -132,8 +132,8 @@ class AWidgetMainbar extends AWidget
     _detail = [] # Like above, except this time one level lower
 
     # Render primary children first
-    _html = @genElement type: "div", attrs: { id: "ambdecorater" }
-    _html += @genElement type: "ul", attrs: { class: "amainbar-primary" }, =>
+    _html = @genElement "div", id: "ambdecorater"
+    _html += @genElement "ul", class: "amainbar-primary", =>
       __html = ""
       for i in @_items
         if i._role != "primary"
@@ -156,7 +156,7 @@ class AWidgetMainbar extends AWidget
       _attrs["class"] = "amainbar-secondary"
 
       # Append
-      $(@_sel).append @genElement type: "ul", attrs: _attrs, =>
+      $(@_sel).append @genElement "ul", _attrs, =>
         __html = ""
         for c in i._children
           if c._role != "secondary"
@@ -176,7 +176,7 @@ class AWidgetMainbar extends AWidget
 
     # Finally, render detail items
     for i in _detail
-      _html = @genElement type: "ul", attrs: { class: "amainbar-detail" }, =>
+      $(@_sel).append @genElement "ul", class: "amainbar-detail", =>
         __html = ""
         for c in i._children
           if c._role != "detail"
@@ -186,8 +186,5 @@ class AWidgetMainbar extends AWidget
           if c._children.length > 0
             throw new Error "Detail item has children! Damn."
         __html
-
-      # Append
-      $(@_sel).append _html
 
     # At this point, we've rendered three sets of items, completely seperately.

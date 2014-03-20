@@ -62,7 +62,7 @@ class AWidgetContextMenu extends AWidget
   #
   # @return [String] html ready for injection
   _buildHTML: ->
-    @genElement type: "ul", =>
+    @genElement "ul", =>
 
       __bindListener = (f) =>
         # Insane in da membrane
@@ -87,7 +87,7 @@ class AWidgetContextMenu extends AWidget
         _attrs = {}
         _attrs["data-id"] = @functions[f]._ident
 
-        __html += @genElement type: "li", attrs: _attrs, => f
+        __html += @genElement "li", _attrs, => f
 
         # Bind listener
         __bindListener f

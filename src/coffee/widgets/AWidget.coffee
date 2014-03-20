@@ -2,8 +2,10 @@
 ## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
 ##
 
+# @depend ../AHTMLRenderable.coffee
+
 # Widgets are the building blocks of the editor's interface
-class AWidget
+class AWidget extends AHTMLRenderable
 
   ###
   # Optionally appends a new div to the body to be used as the container for
@@ -34,7 +36,7 @@ class AWidget
       else
         throw new Error "Invalid parent specified!"
 
-      elm = @genElement type: "div", attrs: { id: @_id }
+      elm = @genElement "div", id: @_id
       if prepend
         $(_parent_sel).prepend elm
       else
@@ -73,35 +75,3 @@ class AWidget
   # @param [AHandle] handle created handle
   ###
   dropped: (target, x, y) -> null
-
-  ###
-  # @param [Object] opts
-  #   @option [String] type
-  #   @option [Object] attrs Attributes to add to this element
-  # @return [String] html
-  ###
-  genElement: (opts, cb) ->
-    _html = ""
-    _type = opts.type
-    _attrs = []
-    if opts.attrs != undefined
-      for k, v of opts.attrs
-        _attrs.push "#{k}=\"#{v}\""
-
-    _attr_str = ""
-    _attr_str += " " + _attrs.join(" ") if _attrs.length > 0
-
-    _html = "<#{_type}#{_attr_str}>"
-    _html += cb() if cb
-    _html + "</#{_type}>"
-
-  ###
-  # Convinienve method for creating buttons with icons in them
-  # @param [String] iconName
-  # @return [String] html
-  ###
-  genButtonIcon: (iconName, opts) ->
-    attrs = {}
-    attrs = opts.attrs if opts && opts.attrs
-    @genElement type: "button", attrs: attrs, =>
-      @genElement type: "i", attrs: { class: "fa fa-#{iconName}" }

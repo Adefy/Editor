@@ -106,17 +106,17 @@ class AWidgetModal extends AWidget
     if not @dead then return else @dead = false
 
     # Build!
-    $(@_sel).html @genElement type: "div", attrs: { class: "aminner" }, =>
-      _html = @genElement type: "div", attrs: { class: "amheader" }, =>
-        @genElement(type: "div", attrs: { class: "title" }, => @title) +
-        @genElement type: "div", attrs: { class: "close" }, =>
-          @genButtonIcon "times", attrs: { class: "amf-dismiss" }
-      _html + @genElement(type: "div", attrs: { class: "ambody" }, => @content) +
-      @genElement type: "div", attrs: { class: "amfooter" }, =>
-        @genElement(type: "span", attrs: { class: "amerror" }) +
-        @genElement(type: "button", attrs: { class: "amf-dismiss" }, => "Close") +
+    $(@_sel).html @genElement "div", class: "aminner", =>
+      _html = @genElement "div", class: "amheader", =>
+        @genElement("div", class: "title", => @title) +
+        @genElement "div", class: "close", =>
+          @genButtonIcon "times", class: "amf-dismiss"
+      _html + @genElement("div", class: "ambody", => @content) +
+      @genElement "div", class: "amfooter" , =>
+        @genElement("span", class: "amerror") +
+        @genElement("button", class: "amf-dismiss", => "Close") +
         if @cb
-          @genElement(type: "button", attrs: { class: "amf-submit" }, => "Submit")
+          @genElement("button", class: "amf-submit", => "Submit")
         else
           ""
     # Register us for later

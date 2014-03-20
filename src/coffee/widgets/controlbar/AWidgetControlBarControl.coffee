@@ -3,7 +3,7 @@
 ##
 
 # Control to appear on the controlbar, with inputs and a status
-class AWidgetControlBarControl
+class AWidgetControlBarControl extends AHTMLRenderable
 
   # Essential classes broken out for styling (or just to be awesome)
   @classSection: "awcb-section"
@@ -52,10 +52,6 @@ class AWidgetControlBarControl
       @initialize()
       @_initialized = true
 
-    _h = ""
-    _h += "<div class=\"#{c_section}\">"
-    _h +=   "<div class=\"#{c_title}\">#{@title}</div>"
-
     # Awesome function that lets us bind a click listener, while giving it
     # access to the control's index, along with ourselves. With some simple
     # cBar.controls[i] magic, the cb can modify its own control
@@ -66,28 +62,27 @@ class AWidgetControlBarControl
       $(document).on "click", "##{@controls[myIndex].id}", ->
         cBar.controls[myIndex].cb myIndex
 
-    for c, i in @controls
+    _h = @genElement "div", class: c_section, =>
+      __h = @genElement "div", class: c_title, => @title
 
-      # Ensure the control is valid
-      param.required c.name
-      param.required c.icon
-      param.required c.state
-      param.optional c.cb
+      for c, i in @controls
+        # Ensure the control is valid
+        param.required c.name
+        param.required c.icon
+        param.required c.state
+        param.optional c.cb
 
-      # Give out ids to controls that don't already have them, and register
-      # listeners
-      if c.id == undefined or c.id == null
+        # Give out ids to controls that don't already have them, and register
+        # listeners
+        if c.id == undefined or c.id == null
 
-        c.id = prefId "awcbcontrol"
-        _registerClickHandler i
+          c.id = prefId "awcbcontrol"
+          _registerClickHandler i
 
-      _h += "<div id=\"#{c.id}\" class=\"#{c_control} #{c.state}\">"
-      _h +=   c.name
-      _h +=  "<i class=\"#{c.icon}\"></i>"
-      _h += "</div>"
+        __h += @genElement "div", class: "#{c_control} #{c.state}", =>
+          c.name + @genElement "i", class: "#{c.icon}"
 
-    _h +=   "<div class=\"#{c_status} #{@statusState}\">#{@status}</div>"
-    _h += "</div>"
+      __h += @genElement "div", class: "#{c_status} #{@statusState}", => @status
 
     _h
 

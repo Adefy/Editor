@@ -55,22 +55,16 @@ class AWidgetControlBar extends AWidget
 
   # Our miniscule render function
   render: ->
-
-    _h = ""
-    _h += "<div class=\"awcb-inner\">"
-
-    # Get the current canvas size. Note that this render function should really
-    # only ever be called once; after it is, we will update our displayed
-    # canvas size manually. Only initially do we need to read it in.
-    _cW = @_parent.getCanvasWidth()
-    _cH = @_parent.getCanvasHeight()
-
-    for o in @_controls
-      _h += o.render()
-
-    _h += "</div>"
-
-    $(@_sel).html _h
+    $(@_sel).html @genElement "div", class: "awcb-inner", =>
+      # Get the current canvas size. Note that this render function should really
+      # only ever be called once; after it is, we will update our displayed
+      # canvas size manually. Only initially do we need to read it in.
+      _cW = @_parent.getCanvasWidth()
+      _cH = @_parent.getCanvasHeight()
+      _h = ""
+      for o in @_controls
+        _h += o.render()
+      _h
 
   # Static method to fetch our internal instance
   #
