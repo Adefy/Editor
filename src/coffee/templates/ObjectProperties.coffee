@@ -1,5 +1,4 @@
 # @depend templates.coffee
-
 ATemplate.objectProperties = Handlebars.compile """
 <h1><i class="fa fa-fw fa-cog"></i>Basic</h1>
 <dl><dt>Width</dt><dd>{{ basic.width }}</dd></dl>
