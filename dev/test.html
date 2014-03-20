@@ -15,6 +15,8 @@
   <!-- Vendor libs -->
   <script type="text/javascript" src="js/jquery.js"></script>
   <script type="text/javascript" src="js/jquery-ui.js"></script>
+  <script type="text/javascript" src="js/jquery.mousewheel.js"></script>
+  <script type="text/javascript" src="js/perfect-scrollbar.js"></script>
 
   <!-- Adefy libraries -->
   <script type="text/javascript" src="//cdn.adefy.com/are/are-full.js"></script>
@@ -22,9 +24,23 @@
 
   <!-- Sexy us -->
   <script type="text/javascript" src="aeditor.js"></script>
+
+  <!-- Type Kit -->
   <script src="//use.typekit.net/udl8vci.js"></script>
   <script>
     try{Typekit.load();}catch(e){}
+  </script>
+  <!-- Perfect Scrollbar -->
+  <script>
+    $('.main').height( $(window).height() - ($('.timeline').height() + $('header').height()) );
+    $('.as-panel .content').perfectScrollbar({suppressScrollX: true});
+    //$('.timeline .content').perfectScrollbar();
+
+    $( window ).resize(function() {
+      $('.main').height( $(window).height() - ($('.timeline').height() + $('header').height()) );
+      $('.as-panel .content').perfectScrollbar('update');
+      //$('.timeline .content').perfectScrollbar('update');
+    });
   </script>
 </body>
 </html>
