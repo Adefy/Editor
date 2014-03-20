@@ -7,3 +7,4 @@ class AWidgetTabProperties extends AWidgetTab
     #
 
   render: ->
+    ""

@@ -234,7 +234,7 @@ class AdefyEditor
     sidebar = new AWidgetSidebar me.sel, "Sidebar", "left", 256
 
     panel = new AWidgetSidebarPanel sidebar
-    panel.newTab "Assets"
+    panel.newTab "Assets", =>
       new AWidgetTabAssets
 
     panel.newTab "Tab2"
