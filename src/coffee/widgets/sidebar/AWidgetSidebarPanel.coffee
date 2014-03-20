@@ -4,7 +4,7 @@ class AWidgetSidebarPanel extends AWidgetSidebarItem
   constructor: (parent, opts) ->
     @_tabs = []
 
-    super parent, [ "apanel" ]
+    super parent, [ "as-panel" ]
 
     @_parent.addItem @
 
@@ -19,30 +19,48 @@ class AWidgetSidebarPanel extends AWidgetSidebarItem
     tab = {}
     tab.name = name
     tab.isSelected = false
-    tab.content = cb() if cb
+    tab.content = cb(tab) if cb
     @addTab(tab)
     tab
 
+  scrollbarSelector: ->
+    "#{@_sel} .as-panel .content"
+
+  onResize: ->
+    $(@scrollbarSelector()).perfectScrollbar "update"
+
   render: ->
-    @genElement "div", class: "as-panel", =>
-      _html = @genElement "div", class: "tabs", =>
-        __html = ""
+    _id = @_sel.substring(1, @_sel.length)
+    @genElement "div", id: _id, =>
+      @genElement "div", class: "as-panel", =>
+        _html = @genElement "div", class: "tabs", =>
+          __html = ""
 
+          for tab in @_tabs
+            selected = ""
+            selected = "selected" if tab.isSelected
+            __html += @genElement("div", class: "tab #{selected}", => tab.name)
+
+          __html
+
+        _stab = null
         for tab in @_tabs
-          selected = tab.isSelected ? "selected" : ""
-          __html += @genElement("div", class: "tab #{selected}", => tab.name)
+          if tab.content && tab.isSelected
+            _stab = tab
+            break
 
-        __html
+        klass = "content"
+        if _stab && _stab.addedParentClass
+          klass += " #{_stab.addedParentClass}"
 
-      _html + @genElement "div", class: "content ps-container", =>
-        __html = ""
+        _html + @genElement "div", class: klass, =>
+          if _stab
+            if _stab.content instanceof String
+              _stab.content
+            else
+              _stab.content.render()
 
-        for tab in @_tabs
-          if tab.content
-            if tab.content instanceof String
-              __html += tab.content
-            else if tab.content.render
-              __html += tab.content.render()
-
-        __html
-
+  postRender: ->
+    console.log @scrollbarSelector()
+    console.log $(@scrollbarSelector())
+    $(@scrollbarSelector()).perfectScrollbar suppressScrollX: true

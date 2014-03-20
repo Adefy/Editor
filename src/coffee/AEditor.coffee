@@ -126,6 +126,8 @@ class AdefyEditor
       window.statusbar = statusbar
       #window.workspace = workspace
 
+      sidebar.postRender()
+
       # Register resize handler
       me.onResize()
       $(window).resize -> me.onResize()
@@ -231,17 +233,19 @@ class AdefyEditor
     #  left: leftSidebar
     #  right: rightSidebar
     #return obj
-    sidebar = new AWidgetSidebar me.sel, "Sidebar", "left", 256
+    sidebar = new AWidgetSidebar me.sel, "Sidebar", "left", 310
 
     panel = new AWidgetSidebarPanel sidebar
-    panel.newTab "Assets", =>
+    panel.newTab "Assets", (tab) =>
+      tab.isSelected = true
       new AWidgetTabAssets
 
     panel.newTab "Tab2"
     panel.newTab "Tab3"
 
     panel2 = new AWidgetSidebarPanel sidebar
-    panel2.newTab "Properties", =>
+    panel2.newTab "Properties", (tab) =>
+      tab.isSelected = true
       new AWidgetTabProperties
 
     panel2.newTab "Tab2"

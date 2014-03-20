@@ -5,6 +5,7 @@
   <title>Adefy Editor Test</title>
 
   <link rel="stylesheet" type="text/css" href="css/aeditor.css" />
+  <link rel="stylesheet" type="text/css" href="css/vendor/perfect-scrollbar.css" />
   <!-- <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Oleo+Script|Source+Sans+Pro:200,300,400,600,700,900' /> -->
   <link href='//fonts.googleapis.com/css?family=Roboto:400,300,700,500' rel='stylesheet' type='text/css' />
   <link rel='stylesheet' href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" />
@@ -31,16 +32,5 @@
     try{Typekit.load();}catch(e){}
   </script>
   <!-- Perfect Scrollbar -->
-  <script>
-    $('.main').height( $(window).height() - ($('.timeline').height() + $('header').height()) );
-    $('.as-panel .content').perfectScrollbar({suppressScrollX: true});
-    //$('.timeline .content').perfectScrollbar();
-
-    $( window ).resize(function() {
-      $('.main').height( $(window).height() - ($('.timeline').height() + $('header').height()) );
-      $('.as-panel .content').perfectScrollbar('update');
-      //$('.timeline .content').perfectScrollbar('update');
-    });
-  </script>
 </body>
 </html>

@@ -115,6 +115,10 @@ class AWidgetSidebar extends AWidget
 
     $(@_sel).html _html
 
+  postRender: ->
+    for i in @_items
+      i.postRender() if i.postRender != undefined
+
   # Take the navbar into account, and always position ourselves below it
   onResize: ->
 
@@ -135,6 +139,9 @@ class AWidgetSidebar extends AWidget
     if @_origin == "right"
       @_hiddenX = $(window).width() - 32
       @_visibleX = $(window).width() - @_width
+
+    for i in @_items
+      i.onResize()
 
   # Set sidebar width, sets internal offset values
   #
