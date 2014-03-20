@@ -51,6 +51,7 @@
 # @depend widgets/statusbar/Statusbar.coffee
 #
 # @depend templates/Templates.coffee
+# @depend templates/AEditor.coffee
 # @depend templates/Asset.coffee
 # @depend templates/Modal.coffee
 # @depend templates/ObjectProperties.coffee
@@ -88,7 +89,7 @@ class AdefyEditor
 
     if $(@sel).length == 0
       log.warn "#{@sel} not found, creating it and continuing"
-      $("body").prepend "<div id=\"#{@sel.replace('#', '')}\"></div>"
+      $("body").prepend ATemplate.aEditorBase id: @sel.replace('#', '')
 
     me = @
 
@@ -96,14 +97,18 @@ class AdefyEditor
       # Create workspace, sidebars, controlbar, and timeline
       #
       # Create and Push widgets
-      me.widgets.push window.menubar = me.createMenubar(me)
-      me.widgets.push window.toolbar = me.createToolbar(me)
-      me.widgets.push window.statusbar = me.createStatusbar(me)
-      me.widgets.push window.sidebar = me.createSidebar(me)
-      #me.widgets.push window.timeline = me.createTimeline(me)
-      me.widgets.push window.workspace = me.createWorkspace(me)
+      selector = me.sel
+      headSelector = "#{selector} header"
+      bodySelector = "#{selector} .main"
+      footSelector = "#{selector} footer"
+      me.widgets.push window.menubar = me.createMenubar(headSelector)
+      me.widgets.push window.toolbar = me.createToolbar(headSelector)
+      me.widgets.push window.timeline = me.createTimeline(footSelector)
+      me.widgets.push window.statusbar = me.createStatusbar(footSelector)
+      me.widgets.push window.sidebar = me.createSidebar(bodySelector)
+      me.widgets.push window.workspace = me.createWorkspace(bodySelector)
 
-      #window.sidebar.postRender()
+      window.sidebar.postRender()
 
       # Register resize handler
       me.onResize()
@@ -124,9 +129,9 @@ class AdefyEditor
         log.info "Loading #{window.ad}"
         me.load window.ad
 
-  createMenubar: (me) ->
+  createMenubar: (selector) ->
     # Create menubar first
-    menubar = new AWidgetMenubar me.sel
+    menubar = new AWidgetMenubar selector
 
     # Set up the menubar
     fileMenu = menubar.addItem "File"
@@ -188,35 +193,34 @@ class AdefyEditor
 
     menubar
 
-  createToolbar: (me) ->
-    toolbar = new AWidgetToolbar me.sel
+  createToolbar: (selector) ->
+    toolbar = new AWidgetToolbar selector
     toolbar.render()
     toolbar
 
-  createWorkspace: (me) ->
-    workspace = new AWidgetWorkspace me.sel
-    controlBar = new AWidgetControlBar workspace
+  createWorkspace: (selector) ->
+    workspace = new AWidgetWorkspace selector
 
     workspace
 
-  createTimeline: (me) ->
-    timeline = new AWidgetTimeline me.sel, 5000
+  createTimeline: (selector) ->
+    timeline = new AWidgetTimeline selector, 5000
 
     timeline
 
-  createStatusbar: (me) ->
-    statusbar = new AWidgetStatusbar me.sel
+  createStatusbar: (selector) ->
+    statusbar = new AWidgetStatusbar selector
     statusbar.render()
     statusbar
 
-  createSidebar: (me) ->
+  createSidebar: (selector) ->
     #leftSidebar = new AWidgetSidebar me.sel, "Toolbox", "left", 256
     #rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
     #obj =
     #  left: leftSidebar
     #  right: rightSidebar
     #return obj
-    sidebar = new AWidgetSidebar me.sel, "Sidebar", "left", 310
+    sidebar = new AWidgetSidebar selector, "Sidebar", "left", 310
 
     panel = new AWidgetSidebarPanel sidebar
     panel.newTab "Assets", (tab) =>
@@ -327,6 +331,11 @@ class AdefyEditor
   # our parent element is resized. Other elements register listeners are to be
   # called within it
   onResize: ->
+    doc = $(window)
+    header = $("#{@sel} header")
+    footer = $("#{@sel} footer")
+    $("#{@sel} .main").height doc.height() - header.height() - footer.height()
+
     for w in @widgets
       if w.onResize != undefined then w.onResize()
 
@@ -621,12 +630,12 @@ class AdefyEditor
 
       ret
 
-    # Start export with AWGL init
+    # Start export with ARE init
     ex =  "AJS.init(function() {"
 
     # Set clear color
     # TODO: Enable clearColor animation
-    clearC = workspace.getAWGL().getClearColor()
+    clearC = workspace.getARE().getClearColor()
 
     _r = clearC.getR()
     _g = clearC.getG()
@@ -752,7 +761,7 @@ class AdefyEditor
       # Extract property name
       if p instanceof Array then _pName = p[0] else _pName = p
 
-      # Use the AWGL animation iface map to figure out options
+      # Use the ARE animation iface map to figure out options
       animName = window.AdefyGLI.Animations().getAnimationName _pName
 
       opts.endVal = anim._end.y

@@ -2,7 +2,7 @@
 ## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
 ##
 
-# AWGL control bar
+# ARE control bar
 class AWidgetControlBar extends AWidget
 
   # Set to true upon instantiation, prevents more than one instance

@@ -31,7 +31,7 @@ class AWidgetSidebarPanel extends AWidgetSidebarItem
     tab
 
   scrollbarSelector: ->
-    "#{@_sel} .panel .content"
+    "#{@_sel}.panel .content"
 
   onResize: ->
     $(@scrollbarSelector()).perfectScrollbar "update"

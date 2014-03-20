@@ -106,10 +106,6 @@ class AWidgetSidebar extends AWidget
   # Render! Fill the sidebar with html from the items rendered in order.
   render: ->
     _html = ""
-    #_html = @genElement "div", class: "as-name", =>
-    #  @_name +
-    #  @genElement "i", class: "as-toggle fa-angle-double-#{@_origin}"
-    #_html += "<hr>"
     for i in @_items
       _html += i.render()
 
@@ -122,23 +118,27 @@ class AWidgetSidebar extends AWidget
   # Take the navbar into account, and always position ourselves below it
   onResize: ->
 
-    timeline = $(".atimeline")
+    menubar = $(".menubar")
+    toolbar = $(".toolbar")
+    timeline = $(".timeline")
+    statusbar = $(".statusbar")
+
     timelineBottom = 0
     timelineHeight = 0
+
     if timeline && timeline.length > 0
-      timelineBottom = Number(timeline.css("bottom").split("px")[0]) - 16
-      timelineHeight = (timeline.height() + timelineBottom)
+      timelineHeight = timeline.height()
+      timelineBottom = timeline.position().top + timelineHeight
 
     # Re-size
-    #$(@_sel).height $(window).height() - $(".amainbar").height() - \
-    #  timelineHeight - 2
-
-    $(@_sel).css { top: $(".amainbar").height() + 2 }
+    #$(@_sel).height $(document).height() -
+    #toolbar.height() - menubar.height() - statusbar.height() - timelineHeight
+    #$(@_sel).offset top: toolbar.position().top + toolbar.height(), left: 0
 
     # Re-position
-    if @_origin == "right"
-      @_hiddenX = $(window).width() - 32
-      @_visibleX = $(window).width() - @_width
+    #if @_origin == "right"
+    #  @_hiddenX = $(document).width() - 32
+    #  @_visibleX = $(document).width() - @_width
 
     for i in @_items
       i.onResize()
@@ -150,12 +150,12 @@ class AWidgetSidebar extends AWidget
     param.required width
     @_width = width
 
-    if @_origin == "left"
-      @_hiddenX = - @_width + 32
-      @_visibleX = 0
-    else
-      @_hiddenX = $(window).width() - 32
-      @_visibleX = $(window).width() - @_width
+    #if @_origin == "left"
+    #  @_hiddenX = - @_width + 32
+    #  @_visibleX = 0
+    #else
+    #  @_hiddenX = $(document).width() - 32
+    #  @_visibleX = $(document).width() - @_width
 
     $(@_sel).width @_width
 
@@ -164,6 +164,7 @@ class AWidgetSidebar extends AWidget
   # @param [Method] cb callback
   # @param [Boolean] animate defaults to true
   toggle: (cb, animate) ->
+    return
     animate = param.optional animate, true
 
     # Keep in mind this can cause issues with code that depends on the
@@ -184,6 +185,7 @@ class AWidgetSidebar extends AWidget
   # @param [Method] cb callback
   # @param [Boolean] animate defaults to true
   show: (cb, animate) ->
+    return
     animate = param.optional animate, true
 
     if @_visiblity == true
@@ -204,6 +206,7 @@ class AWidgetSidebar extends AWidget
   # @param [Method] cb callback
   # @param [Boolean] animate defaults to true
   hide: (cb, animate) ->
+    return
     animate = param.optional animate, true
 
     if @_visiblity == false

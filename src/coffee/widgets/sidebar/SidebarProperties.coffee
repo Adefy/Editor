@@ -44,7 +44,7 @@ class AWidgetSidebarProperties extends AWidgetSidebarItem
       # Event listeners!
       $(document).ready ->
 
-        $(document).on "click", ".asp-texture", -> AWGLLog.info "Texture"
+        $(document).on "click", ".asp-texture", -> ARELog.info "Texture"
 
         # Save
         $(document).on "click", ".asp-save", -> me.save @

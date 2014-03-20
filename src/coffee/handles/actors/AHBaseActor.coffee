@@ -330,7 +330,7 @@ class AHBaseActor extends AHandle
   # @return [Boolean] alive
   isAlive: -> @_alive
 
-  # Needs to be called after our awgl actor is instantiated, so we can prepare
+  # Needs to be called after our are actor is instantiated, so we can prepare
   # our property buffer for proper use
   postInit: ->
     if @_initialized

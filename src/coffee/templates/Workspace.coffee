@@ -6,7 +6,7 @@ ATemplate.canvasContainer = Handlebars.compile """
 </div>
 """
 
-ATemplate.workspaceScreenSize = """
+ATemplate.workspaceScreenSize = Handlebars.compile """
 <div class="input_group">
   <label>Current size: </label>
   <input type="text" value="{{currentSize}}" disabled="disabled" />

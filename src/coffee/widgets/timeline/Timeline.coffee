@@ -118,7 +118,7 @@ class AWidgetTimeline extends AWidget
       for actor, i in @_actors
         if actor.getId() == index then index = i
     if @_actors[index].isAlive()
-      AWGLLog.info "SAVED"
+      ARELog.info "SAVED"
       @_actors[index].updateInTime()
 
   # Registers event listeners

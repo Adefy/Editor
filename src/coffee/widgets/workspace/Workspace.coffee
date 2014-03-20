@@ -42,7 +42,7 @@ class AWidgetWorkspace extends AWidget
 
     # The canvas is fullscreen, minus the mainbar
     @_cWidth = $(@_sel).width()
-    @_cHeight = $(window).height() - $(".menubar").height() - 2
+    @_cHeight = $(window).height() - $(".menubar").height()
 
     # Starting phone size is 800x480
     @_pWidth = 800
@@ -524,7 +524,8 @@ class AWidgetWorkspace extends AWidget
           # Objects have a blue component of 248. If this is not an object,
           # perform the necessary clearing and continue
           if b != 248
-            $("body").data("default-properties").clear()
+            data = $("body").data("default-properties")
+            data.clear() if data
             return
 
           # Id is stored as a sector and an offset. Recover proper object id
@@ -590,7 +591,8 @@ class AWidgetWorkspace extends AWidget
           # Objects have a blue component of 248. If this is not an object,
           # perform the necessary clearing and continue
           if b != 248
-            $("body").data("default-properties").clear()
+            data = $("body").data("default-properties")
+            data.clear() if data
             return
 
           # Id is stored as a sector and an offset. Recover proper object id
@@ -711,16 +713,19 @@ class AWidgetWorkspace extends AWidget
   # Note that this does NOT resize the canvas
   onResize: ->
 
-    toolb = $(".toolbar")
-    statb = $(".statusbar")
-    sideb = $(".sidebar")
+    header = $("#aeditor header")
+    main = $("#aeditor .main")
+    sidebar = $("#aeditor .main .sidebar")
+    footer = $("#aeditor footer")
     elm = $(@_sel)
 
-    elm.offset
-      top: toolb.position().top + toolb.height()
-      left: sideb.position().left + sideb.width()
-    elm.width $(document).width() - (sideb.position().left + sideb.width())
-    elm.height statb.position().top - (toolb.position().top + toolb.height())
+    elm.width main.width() - sidebar.width()
+    elm.height main.height()
+
+    #elm.offset
+    #  top: toolb.position().top + toolb.height()
+    #  left: sideb.position().left + sideb.width()
+
     #timelineBottom = Number($(".timeline").css("bottom").split("px")[0]) - 16
     #timelineHeight = ($(".timeline").height() + timelineBottom)
     ## Our height
