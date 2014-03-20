@@ -4,7 +4,7 @@
 
 # Sidebar object, meant to be contained inside of a SidebarObjectGroup
 #
-# @depend AWidgetSidebarItem.coffee
+# @depend SidebarItem.coffee
 class AWidgetSidebarObject extends AWidgetSidebarItem
 
   # The object consists of a name, but will be expanded to include an icon

@@ -1,11 +1,11 @@
-
-# @depend AWidgetTab.coffee
-
+# @depend Tab.coffee
 class AWidgetTabAssets extends AWidgetTab
 
   constructor: (parent) ->
     super parent
-    @addedParentClass = "files"
+
+  cssKlass: ->
+    "files"
 
   render: ->
     # horrible horrible place holder, someone shoot me pls

@@ -1,6 +1,4 @@
-
-# @depend AWidgetTab.coffee
-
+# @depend Tab.coffee
 class AWidgetTabProperties extends AWidgetTab
 
   constructor: (parent) ->
@@ -46,5 +44,4 @@ class AWidgetTabProperties extends AWidgetTab
       properties.physics.elasticity = "#{@_actor.elasticity}"
       properties.physics.friction = "#{@_actor.friction}"
 
-    properties
-    "object_properties.html"
+    ATemplate.objectProperties(properties)

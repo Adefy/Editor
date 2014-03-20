@@ -20,39 +20,40 @@
 #
 # Widgets!
 # @depend widgets/AWidget.coffee
-# @depend widgets/AWidgetContextMenu.coffee
-# @depend widgets/AWidgetNotification.coffee
-# @depend widgets/AWidgetModal.coffee
+# @depend widgets/ContextMenu.coffee
+# @depend widgets/Notification.coffee
+# @depend widgets/Modal.coffee
 
-# @depend widgets/timeline/AWidgetTimeline.coffee
+# @depend widgets/timeline/Timeline.coffee
 #
-# @depend widgets/workspace/AWidgetWorkspace.coffee
+# @depend widgets/workspace/Workspace.coffee
 #
-# @depend widgets/controlbar/AWidgetControlBar.coffee
-# @depend widgets/controlbar/AWidgetControlBarControl.coffee
-# @depend widgets/controlbar/AWidgetControlCanvas.coffee
-# @depend widgets/controlbar/AWidgetControlPhysics.coffee
-# @depend widgets/controlbar/AWidgetControlRender.coffee
+# @depend widgets/controlbar/ControlBar.coffee
+# @depend widgets/controlbar/ControlBarControl.coffee
+# @depend widgets/controlbar/ControlCanvas.coffee
+# @depend widgets/controlbar/ControlPhysics.coffee
+# @depend widgets/controlbar/ControlRender.coffee
 #
-# @depend widgets/tabs/AWidgetTab.coffee
-# @depend widgets/tabs/AWidgetTabAssets.coffee
-# @depend widgets/tabs/AWidgetTabProperties.coffee
+# @depend widgets/tabs/Tab.coffee
+# @depend widgets/tabs/TabAssets.coffee
+# @depend widgets/tabs/TabProperties.coffee
 #
-# @depend widgets/sidebar/AWidgetSidebar.coffee
-# @depend widgets/sidebar/AWidgetSidebarObject.coffee
-# @depend widgets/sidebar/AWidgetSidebarObjectGroup.coffee
-# @depend widgets/sidebar/AWidgetSidebarPanel.coffee
-# @depend widgets/sidebar/AWidgetSidebarProperties.coffee
+# @depend widgets/sidebar/Sidebar.coffee
+# @depend widgets/sidebar/SidebarObject.coffee
+# @depend widgets/sidebar/SidebarObjectGroup.coffee
+# @depend widgets/sidebar/SidebarPanel.coffee
+# @depend widgets/sidebar/SidebarProperties.coffee
 #
-# @depend widgets/mainbar/AWidgetMainbar.coffee
+# @depend widgets/mainbar/Mainbar.coffee
 #
-# @depend widgets/toolbar/AWidgetToolbar.coffee
+# @depend widgets/toolbar/Toolbar.coffee
 #
-# @depend widgets/statusbar/AWidgetStatusbar.coffee
+# @depend widgets/statusbar/Statusbar.coffee
 #
 # @depend templates/Modal.coffee
 # @depend templates/ObjectProperties.coffee
 # @depend templates/Statusbar.coffee
+# @depend templates/SidebarPanel.coffee
 class AdefyEditor
 
   @version: "0.0.1"
@@ -241,7 +242,6 @@ class AdefyEditor
 
     panel = new AWidgetSidebarPanel sidebar
     panel.newTab "Assets", (tab) =>
-      tab.isSelected = true
       new AWidgetTabAssets
 
     panel.newTab "Tab2"
@@ -249,10 +249,12 @@ class AdefyEditor
 
     panel2 = new AWidgetSidebarPanel sidebar
     panel2.newTab "Properties", (tab) =>
-      tab.isSelected = true
       new AWidgetTabProperties
 
     panel2.newTab "Tab2"
+
+    panel.selectTab 0
+    panel2.selectTab 0
 
     sidebar.render()
 

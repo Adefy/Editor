@@ -4,7 +4,7 @@
 
 # Properties widget, dynamically refreshable
 #
-# @depend AWidgetSidebarItem.coffee
+# @depend SidebarItem.coffee
 class AWidgetSidebarProperties extends AWidgetSidebarItem
 
   # Prevents us from binding event listeners twice

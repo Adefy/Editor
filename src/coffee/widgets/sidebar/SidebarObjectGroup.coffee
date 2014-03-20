@@ -5,7 +5,7 @@
 # Contains a group of sidebar objects, which can be dragged
 # onto the workspace
 #
-# @depend AWidgetSidebarItem.coffee
+# @depend SidebarItem.coffee
 class AWidgetSidebarObjectGroup extends AWidgetSidebarItem
 
   # Sets things up, NOTE we add ourselves to the parent's item collection, do

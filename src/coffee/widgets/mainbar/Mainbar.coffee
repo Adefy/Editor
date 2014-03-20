@@ -4,7 +4,7 @@
 
 # Main navigation bar widget
 #
-# @depend AWidgetMainbarItem.coffee
+# @depend MainbarItem.coffee
 class AWidgetMainbar extends AWidget
 
   # Set to true upon instantiation, prevents more than one instance

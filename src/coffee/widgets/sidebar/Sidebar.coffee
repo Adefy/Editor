@@ -4,7 +4,7 @@
 
 # Generic sidebar, needs to be specialized to be useful
 #
-# @depend AWidgetSidebarItem.coffee
+# @depend SidebarItem.coffee
 class AWidgetSidebar extends AWidget
 
   # Set to true upon the first sidebar instantiation, signals that our

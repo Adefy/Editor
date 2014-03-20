@@ -8,4 +8,4 @@ class AWidgetStatusbar extends AWidget
     super prefId("astatusbar"), parent, [ "astatusbar" ]
 
   render: ->
-    ATemplate.statusbar(version: AdefyEditor.version)
+    ATemplate.statusbar version: AdefyEditor.version
