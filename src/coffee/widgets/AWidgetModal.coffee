@@ -106,19 +106,8 @@ class AWidgetModal extends AWidget
     if not @dead then return else @dead = false
 
     # Build!
-    $(@_sel).html @genElement "div", class: "aminner", =>
-      _html = @genElement "div", class: "amheader", =>
-        @genElement("div", class: "title", => @title) +
-        @genElement "div", class: "close", =>
-          @genButtonIcon "times", buttonAttrs: { class: "amf-dismiss" }
-      _html + @genElement("div", class: "ambody", => @content) +
-      @genElement "div", class: "amfooter" , =>
-        @genElement("span", class: "amerror") +
-        @genElement("button", class: "amf-dismiss", => "Close") +
-        if @cb
-          @genElement("button", class: "amf-submit", => "Submit")
-        else
-          ""
+    ## modal.html
+    $(@_sel).html
     # Register us for later
     $("body").data "activeModal", @
 

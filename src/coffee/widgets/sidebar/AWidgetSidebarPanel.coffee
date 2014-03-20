@@ -30,8 +30,7 @@ class AWidgetSidebarPanel extends AWidgetSidebarItem
     $(@scrollbarSelector()).perfectScrollbar "update"
 
   render: ->
-    _id = @_sel.substring(1, @_sel.length)
-    @genElement "div", id: _id, =>
+    @genElement "div", id: @_id, =>
       @genElement "div", class: "as-panel", =>
         _html = @genElement "div", class: "tabs", =>
           __html = ""

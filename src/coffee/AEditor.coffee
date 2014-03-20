@@ -49,6 +49,10 @@
 # @depend widgets/toolbar/AWidgetToolbar.coffee
 #
 # @depend widgets/statusbar/AWidgetStatusbar.coffee
+#
+# @depend templates/Modal.coffee
+# @depend templates/ObjectProperties.coffee
+# @depend templates/Statusbar.coffee
 class AdefyEditor
 
   @version: "0.0.1"

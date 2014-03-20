@@ -1,6 +1,7 @@
 class AHTMLRenderable
 
   ###
+  # For cases where templates don't really make sense
   # @param [String] type
   # @param [Object] opts
   #   @option [Object] attrs Attributes to add to this element
