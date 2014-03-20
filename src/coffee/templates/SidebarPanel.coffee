@@ -7,8 +7,8 @@ ATemplate.sidebarPanel = Handlebars.compile """
       <div class="tab {{selected}}">{{ name }}</div>
       {{/each}}
     </div>
-    <div class="contents {{contentsKlass}}">
-      {{{ contents }}}
+    <div class="content {{contentKlass}}">
+      {{{ content }}}
     </div>
   </div>
 </div>

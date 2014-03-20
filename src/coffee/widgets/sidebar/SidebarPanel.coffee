@@ -37,21 +37,19 @@ class AWidgetSidebarPanel extends AWidgetSidebarItem
     $(@scrollbarSelector()).perfectScrollbar "update"
 
   render: ->
-    contents = ""
-    contentsKlass = ""
+    content = ""
+    contentKlass = ""
     for tab in @_tabs
       if tab.selected == "selected"
         if tab.content instanceof String
-          contents =  tab.content
+          content =  tab.content
         else # probably is a Object
-          contents = tab.content.render()
-          contentsKlass = tab.content.cssKlass()
+          content = tab.content.render()
+          contentKlass = tab.content.cssKlass()
 
         break
 
-    ATemplate.sidebarPanel(id: @_id, tabs: @_tabs, contents: contents, contentsKlass: contentsKlass)
+    ATemplate.sidebarPanel id: @_id, tabs: @_tabs, content: content, contentKlass: contentKlass
 
   postRender: ->
-    console.log @scrollbarSelector()
-    console.log $(@scrollbarSelector())
     $(@scrollbarSelector()).perfectScrollbar suppressScrollX: true
