@@ -110,7 +110,7 @@ class AWidgetModal extends AWidget
       _html = @genElement "div", class: "amheader", =>
         @genElement("div", class: "title", => @title) +
         @genElement "div", class: "close", =>
-          @genButtonIcon "times", class: "amf-dismiss"
+          @genButtonIcon "times", buttonAttrs: { class: "amf-dismiss" }
       _html + @genElement("div", class: "ambody", => @content) +
       @genElement "div", class: "amfooter" , =>
         @genElement("span", class: "amerror") +

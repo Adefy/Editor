@@ -8,7 +8,7 @@
 #  - Primary    [On the mainbar itself]
 #  - Secondary  [Item in a mainbar dropdown]
 #  - Detail     [Item in a sub-menu to the dropdown]
-class AWidgetMainbarItem
+class AWidgetMainbarItem extends AHTMLRenderable
 
   # Creates item, does not render it!
   #
@@ -45,43 +45,28 @@ class AWidgetMainbarItem
   #
   # @return [String] html rendered item
   render: ->
-
-    _html = ""
+    opts = {}
+    opts["id"] = @_id
+    opts["href"] = @href
+    if @click
+      opts["onclick"] = @click
 
     switch @_role
-
       when "primary"
-
-        if @_children.length <= 0 then _classes = ""
-        else _classes = "class=\"amb-primary-has-children\""
-
-        if @click == null or @click == undefined then _click = ""
-        else _click = "onclick=\"#{@click}\""
-
-        _html += "<a #{_classes} #{_click} id=\"#{@_id}\" href=\"#{@href}\">"
-        _html +=   "<li>#{@label}</li>"
-        _html += "</a>"
-
+        if @_children.length > 0
+          opts["class"] = "amb-primary-has-children"
       when "secondary"
-
         # Nice way of setting this up. The last item in a section
         # gets a special class, so we can style a nice divider
-        _sEnd = if @sectionEnd then "class=\"ambc-section-end\"" else ""
-
-        if @click == null or @click == undefined then _click = ""
-        else _click = "onclick=\"#{@click}\""
-
-        _html += "<a #{_sEnd} #{_click} id=\"#{@_id}\" href=\"#{@href}\">"
-        _html +=   "<li>#{@label}</li>"
-        _html += "</a>"
-
+        if @sectionEnd
+          opts["class"] = "ambc-section-end"
       when "detail"
-        _html += ""
-
+        return ""
       else
         throw new Error "Tried to render invalid menubar item [#{@_role}]"
 
-    _html
+    @genElement "a", opts, =>
+      @genElement "li", {}, => @label
 
   # Create a child item if possible. A unique id and correct tree-level is
   # ensured

@@ -105,15 +105,11 @@ class AWidgetSidebar extends AWidget
 
   # Render! Fill the sidebar with html from the items rendered in order.
   render: ->
-
-    icon = "<i class=\"as-toggle icon-double-angle"
-
-    if @_origin == "left"
-      icon += "-left\"></i>"
-    else
-      icon += "-right\"></i>"
-
-    _html = "<div class=\"as-name\">#{@_name}#{icon}</div><hr>"
+    _html = ""
+    #_html = @genElement "div", class: "as-name", =>
+    #  @_name +
+    #  @genElement "i", class: "as-toggle fa-angle-double-#{@_origin}"
+    #_html += "<hr>"
     for i in @_items
       _html += i.render()
 
@@ -122,8 +118,12 @@ class AWidgetSidebar extends AWidget
   # Take the navbar into account, and always position ourselves below it
   onResize: ->
 
-    timelineBottom = Number($(".atimeline").css("bottom").split("px")[0]) - 16
-    timelineHeight = ($(".atimeline").height() + timelineBottom)
+    timeline = $(".atimeline")
+    timelineBottom = 0
+    timelineHeight = 0
+    if timeline && timeline.length > 0
+      timelineBottom = Number(timeline.css("bottom").split("px")[0]) - 16
+      timelineHeight = (timeline.height() + timelineBottom)
 
     # Re-size
     $(@_sel).height $(window).height() - $(".amainbar").height() - \

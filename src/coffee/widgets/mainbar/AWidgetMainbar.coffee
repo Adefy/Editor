@@ -14,6 +14,7 @@ class AWidgetMainbar extends AWidget
   #
   # @param [String] parent parent element selector
   constructor: (parent) ->
+    param.required parent
 
     # Items on the menu, accessors are used to manipulate the array
     # After updating, call @render() to re-draw the menu
@@ -25,7 +26,6 @@ class AWidgetMainbar extends AWidget
 
     AWidgetMainbar.__exists = true
 
-    param.required parent
     super prefId("amainbar"), parent, [ "amainbar" ]
 
     @_regListeners()
