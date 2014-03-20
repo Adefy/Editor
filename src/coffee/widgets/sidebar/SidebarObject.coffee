@@ -19,7 +19,7 @@ class AWidgetSidebarObject extends AWidgetSidebarItem
     @_parent = param.required parent
     @icon = param.optional icon, ""
 
-    super @_parent.getParent(), [ "as-obj" ]
+    super @_parent.getParent(), [ "sidebar-obj" ]
 
     @_parent.render()
 

@@ -2,7 +2,15 @@
 // Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
 //
 #aeditor
-  .amodal
+  // Shown in a modal when changing the bg color
+  .bg-color-preview
+    width 75%
+    height 48px
+    display block
+    margin 8px auto
+    border 1px solid rgba(0, 0, 0, 0.1)
+
+  .modal
     position absolute
     z-index $Z_amodal
     top 50px
@@ -25,12 +33,12 @@
 
     color #ddd
 
-    .aminner
+    .modal-inner
       width 100%
       margin 0 auto
       display block
 
-      .amheader
+      .modal-header
         height 36px
         line-height 36px
         padding 0 12px
@@ -50,7 +58,7 @@
         .close
           float right
 
-      .ambody
+      .modal-body
         color #666
         padding: 0 12px 6px
 
@@ -71,7 +79,7 @@
             padding 4px 0
             display inline-block
 
-      .amfooter
+      .modal-footer
         display block
         margin 4px
         margin-top 8px
@@ -80,13 +88,13 @@
 
         border-top 1px solid rgba(255,255,255,.05)
 
-        .amerror
+        .modal-error
           color $lred
           width 240px
           float left
 
-        .amf-dismiss
+        .modal-dismiss
           float right
 
-        .amf-submit
+        .modal-submit
           float right

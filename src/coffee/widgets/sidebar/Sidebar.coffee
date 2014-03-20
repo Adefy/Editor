@@ -29,7 +29,7 @@ class AWidgetSidebar extends AWidget
     @_width = param.optional width, 300
 
     param.required parent
-    super prefId("asidebar"), parent, [ "asidebar" ]
+    super prefId("sidebar"), parent, [ "sidebar" ]
 
     @_hiddenX = 0
     @_visibleX = 0
@@ -130,8 +130,8 @@ class AWidgetSidebar extends AWidget
       timelineHeight = (timeline.height() + timelineBottom)
 
     # Re-size
-    $(@_sel).height $(window).height() - $(".amainbar").height() - \
-      timelineHeight - 2
+    #$(@_sel).height $(window).height() - $(".amainbar").height() - \
+    #  timelineHeight - 2
 
     $(@_sel).css { top: $(".amainbar").height() + 2 }
 

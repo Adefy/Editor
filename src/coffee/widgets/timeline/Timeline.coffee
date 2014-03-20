@@ -67,7 +67,7 @@ class AWidgetTimeline extends AWidget
       throw new Error "Ad must be longer than 250ms!"
       # Although I have no idea who would want an ad 251ms long
 
-    super prefId("atimeline"), parent, [ "atimeline" ]
+    super prefId("timeline"), parent, [ "timeline" ]
 
     # Actor array, access through registerActor/removeActor
     @_actors = []

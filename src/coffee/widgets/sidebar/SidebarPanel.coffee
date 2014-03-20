@@ -4,7 +4,7 @@ class AWidgetSidebarPanel extends AWidgetSidebarItem
   constructor: (parent, opts) ->
     @_tabs = []
 
-    super parent, [ "as-panel" ]
+    super parent, [ "panel" ]
 
     @_parent.addItem @
 
@@ -31,7 +31,7 @@ class AWidgetSidebarPanel extends AWidgetSidebarItem
     tab
 
   scrollbarSelector: ->
-    "#{@_sel} .as-panel .content"
+    "#{@_sel} .panel .content"
 
   onResize: ->
     $(@scrollbarSelector()).perfectScrollbar "update"

@@ -4,7 +4,7 @@
 
 // Top navigation bar, holds the logo and menu items
 #aeditor
-  .amainbar
+  .menubar
     z-index $Z_amainbar
     position relative
 
@@ -31,7 +31,7 @@
     // Decorater, used to be a border on the mainbar, but moved into a seperate
     // element to not mess with the height of it. It turned out to mess with the
     // height anyways, but at this point, not going to move it again
-    #ambdecorater
+    #menubar-decorater
       height 2px
       width 100%
       position absolute
@@ -39,12 +39,12 @@
       background-color $col_mainbar_decorator_bg
       border-bottom 1px solid $col_divider_bot
 
-    .ambc-section-end
+    .mb-section-end
       border none
       border-bottom: 1px solid rgba(0,0,0,.15)
       box-shadow: 0 1px rgba(255,255,255,.1)
 
-    .amainbar-primary
+    .bar
       z-index $Z_amainbar_primary
       position relative
       margin 0
@@ -74,7 +74,7 @@
       //  background-color $col_mainbar_primary_open_bg
 
     // aka menu
-    .amainbar-secondary
+    .menu
       z-index $Z_amainbar_secondary
       position absolute
 

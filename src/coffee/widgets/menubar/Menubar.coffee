@@ -4,8 +4,8 @@
 
 # Main navigation bar widget
 #
-# @depend MainbarItem.coffee
-class AWidgetMainbar extends AWidget
+# @depend MenubarItem.coffee
+class AWidgetMenubar extends AWidget
 
   # Set to true upon instantiation, prevents more than one instance
   @__exists: false
@@ -20,13 +20,13 @@ class AWidgetMainbar extends AWidget
     # After updating, call @render() to re-draw the menu
     @_items = []
 
-    if AWidgetMainbar.__exists == true
-      AUtilLog.warn "A mainbar already exists, refusing to continue!"
+    if AWidgetMenubar.__exists == true
+      AUtilLog.warn "A menubar already exists, refusing to continue!"
       return
 
-    AWidgetMainbar.__exists = true
+    AWidgetMenubar.__exists = true
 
-    super prefId("amainbar"), parent, [ "amainbar" ]
+    super prefId("menubar"), parent, [ "menubar" ]
 
     @_regListeners()
 
@@ -38,23 +38,23 @@ class AWidgetMainbar extends AWidget
       # Mouseup listener to close menu when clicked outside
       $(document).mouseup (e) ->
 
-        seco = $(".amainbar-secondary")
-        deta = $(".amainbar-detail")
+        seco = $(".menu")
+        deta = $(".menubar-detail")
 
         if seco
-          seco_open = $(".amainbar-primary .open")
+          seco_open = $(".bar .open")
           if !seco.is(e.target) && seco.has(e.target).length == 0
             seco.hide()
             seco_open.removeClass "open"
         if deta
-          deta_open = $(".amainbar-secondary .open")
+          deta_open = $(".menu .open")
           if !deta.is(e.target) && deta.has(e.target).length == 0
             deta.hide()
             deta_open.removeClass "open"
 
       # Click listener to open/close menu items
-      $(document).on "click", ".amb-primary-has-children", (e) ->
-        _menu = $(".amainbar-secondary[data-owner=\"#{$(@).attr("id")}\"]")
+      $(document).on "click", ".mb-primary-has-children", (e) ->
+        _menu = $(".menu[data-owner=\"#{$(@).attr("id")}\"]")
 
         if $(@).hasClass "open"
           _menu.hide()
@@ -67,26 +67,26 @@ class AWidgetMainbar extends AWidget
         false
 
       # Close menu on item click
-      $(document).on "click", ".amainbar-secondary a", (e) ->
+      $(document).on "click", ".menu a", (e) ->
         $(@).parent().hide()
-        $(".amb-primary-has-children").removeClass "open"
+        $(".mb-primary-has-children").removeClass "open"
 
         e.preventDefault()
         false
 
       # Hover listener, opens menus with children when hovered (if another is
       # already open)
-      $(document).on "mouseover", ".amb-primary-has-children", ->
+      $(document).on "mouseover", ".mb-primary-has-children", ->
 
         # Check if any primaries are open
-        if $(".amb-primary-has-children.open").length > 0
+        if $(".mb-primary-has-children.open").length > 0
 
           # Hide existing menus, remove class
-          $(".amainbar-secondary").hide()
-          $(".amb-primary-has-children.open").removeClass "open"
+          $(".menu").hide()
+          $(".mb-primary-has-children.open").removeClass "open"
 
           # Show our submenu, attach clas
-          $(".amainbar-secondary[data-owner=\"#{$(@).attr("id")}\"]").show()
+          $(".menu[data-owner=\"#{$(@).attr("id")}\"]").show()
           $(@).addClass "open"
 
     # Note that we don't render initially. This gives the engine the freedom
@@ -96,14 +96,14 @@ class AWidgetMainbar extends AWidget
   #
   # @param [String] label text that appears as the item
   # @param [String] link href content, defaults to #
-  # @return [AWidgetMainbarItem] item created item
+  # @return [AWidgetMenubarItem] item created item
   addItem: (label, link) ->
 
     param.required label
     link = param.optional link, "#"
 
-    _id = prefId "amb-item"
-    child = new AWidgetMainbarItem _id, "#", @, "primary", label, link
+    _id = prefId "menubar-item"
+    child = new AWidgetMenubarItem _id, "#", @, "primary", label, link
     @_items.push child
 
     child
@@ -132,8 +132,8 @@ class AWidgetMainbar extends AWidget
     _detail = [] # Like above, except this time one level lower
 
     # Render primary children first
-    _html = @genElement "div", id: "ambdecorater"
-    _html += @genElement "ul", class: "amainbar-primary", =>
+    _html = @genElement "div", id: "menubar-decorater"
+    _html += @genElement "ul", class: "bar", =>
       __html = ""
       for i in @_items
         if i._role != "primary"
@@ -153,7 +153,7 @@ class AWidgetMainbar extends AWidget
       _attrs = {}
       _attrs["id"] = _menuId
       _attrs["data-owner"] = i.getId()
-      _attrs["class"] = "amainbar-secondary"
+      _attrs["class"] = "menu"
 
       # Append
       $(@_sel).append @genElement "ul", _attrs, =>
@@ -176,7 +176,7 @@ class AWidgetMainbar extends AWidget
 
     # Finally, render detail items
     for i in _detail
-      $(@_sel).append @genElement "ul", class: "amainbar-detail", =>
+      $(@_sel).append @genElement "ul", class: "menubar-detail", =>
         __html = ""
         for c in i._children
           if c._role != "detail"

@@ -16,7 +16,7 @@ class AWidgetSidebarObjectGroup extends AWidgetSidebarItem
   constructor: (name, parent) ->
 
     # AWidgetSidebarItem ensures the parent is valid, so rely on super to check
-    super parent, [ "as-objgroup" ]
+    super parent, [ "sidebar-objgroup" ]
 
     # The items we contain, all of type AWidgetSidebarObject
     @_items = []

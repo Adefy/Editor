@@ -44,16 +44,19 @@
 # @depend widgets/sidebar/SidebarPanel.coffee
 # @depend widgets/sidebar/SidebarProperties.coffee
 #
-# @depend widgets/mainbar/Mainbar.coffee
+# @depend widgets/menubar/Menubar.coffee
 #
 # @depend widgets/toolbar/Toolbar.coffee
 #
 # @depend widgets/statusbar/Statusbar.coffee
 #
+# @depend templates/Templates.coffee
+# @depend templates/Asset.coffee
 # @depend templates/Modal.coffee
 # @depend templates/ObjectProperties.coffee
 # @depend templates/Statusbar.coffee
 # @depend templates/SidebarPanel.coffee
+# @depend templates/Workspace.coffee
 class AdefyEditor
 
   @version: "0.0.1"
@@ -92,46 +95,15 @@ class AdefyEditor
     $(document).ready ->
       # Create workspace, sidebars, controlbar, and timeline
       #
-      # For testing, the timeline is for a 5s ad
-      menubar = me.createMenubar(me)
-      toolbar = me.createToolbar(me)
-      sidebar = me.createSidebar(me)
-      #timeline = me.createTimeline(me)
-      #sidebars = me.createSidebar(me)
-      #me.createToolbox(leftSidebar)
-      statusbar = me.createStatusbar(me)
-      #leftSidebar = sidebars.left
-      #rightSidebar = sidebars.right
+      # Create and Push widgets
+      me.widgets.push window.menubar = me.createMenubar(me)
+      me.widgets.push window.toolbar = me.createToolbar(me)
+      me.widgets.push window.statusbar = me.createStatusbar(me)
+      me.widgets.push window.sidebar = me.createSidebar(me)
+      #me.widgets.push window.timeline = me.createTimeline(me)
+      me.widgets.push window.workspace = me.createWorkspace(me)
 
-      #leftSidebar.render()
-      # Create a property widget on the right sidebar
-      #new AWidgetSidebarProperties rightSidebar
-
-      #workspace = new AWidgetWorkspace me.sel
-      #controlBar = new AWidgetControlBar workspace
-
-      # Push widgets
-      me.widgets.push menubar
-      me.widgets.push toolbar
-      me.widgets.push sidebar
-      #me.widgets.push workspace
-      #me.widgets.push controlBar
-      #me.widgets.push leftSidebar
-      #me.widgets.push rightSidebar
-      #me.widgets.push timeline
-      me.widgets.push statusbar
-
-      # Save widgets on the window for easy access
-      window.menubar = menubar
-      window.toolbar = toolbar
-      window.sidebar = sidebar
-      #window.left_sidebar = leftSidebar
-      #window.right_sidebar = rightSidebar
-      #window.timeline = timeline
-      window.statusbar = statusbar
-      #window.workspace = workspace
-
-      sidebar.postRender()
+      #window.sidebar.postRender()
 
       # Register resize handler
       me.onResize()
@@ -153,8 +125,8 @@ class AdefyEditor
         me.load window.ad
 
   createMenubar: (me) ->
-    # Create mainbar first
-    menubar = new AWidgetMainbar me.sel
+    # Create menubar first
+    menubar = new AWidgetMenubar me.sel
 
     # Set up the menubar
     fileMenu = menubar.addItem "File"
@@ -221,6 +193,12 @@ class AdefyEditor
     toolbar.render()
     toolbar
 
+  createWorkspace: (me) ->
+    workspace = new AWidgetWorkspace me.sel
+    controlBar = new AWidgetControlBar workspace
+
+    workspace
+
   createTimeline: (me) ->
     timeline = new AWidgetTimeline me.sel, 5000
 
@@ -242,7 +220,52 @@ class AdefyEditor
 
     panel = new AWidgetSidebarPanel sidebar
     panel.newTab "Assets", (tab) =>
-      new AWidgetTabAssets
+      tabAssets = new AWidgetTabAssets
+      file1 =
+        file:
+          name: "Ad.jpg"
+
+      file2 =
+        file:
+          name: "Some.txt"
+
+      diEmpty =
+        directory:
+          name: "TestDirectory"
+          assets: []
+          unfolded: false
+
+      diFil =
+        directory:
+          name: "TestDirectory"
+          assets: [diEmpty, diEmpty, file1]
+          unfolded: false
+
+      tabAssets._assets.push
+        directory:
+          name: "Directory1"
+          assets: []
+          unfolded: false
+
+      tabAssets._assets.push
+        directory:
+          name: "Directory2"
+          assets: [file2]
+          unfolded: true
+
+      tabAssets._assets.push
+        directory:
+          name: "Directory3"
+          assets: [diEmpty, diFil, diFil, diEmpty, file2]
+          unfolded: true
+
+      tabAssets._assets.push
+        directory:
+          name: "Directory4"
+          assets: [diFil, diFil, file2]
+          unfolded: false
+
+      tabAssets
 
     panel.newTab "Tab2"
     panel.newTab "Tab3"

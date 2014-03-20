@@ -5,7 +5,7 @@ class AWidgetToolbar extends AWidget
 
     @_items = []
 
-    super prefId("atoolbar"), parent, [ "atoolbar" ]
+    super prefId("toolbar"), parent, [ "toolbar" ]
 
   render: ->
     $(@_sel).append @genElement "a", class: "button active", =>

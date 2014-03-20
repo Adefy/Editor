@@ -28,21 +28,21 @@ class AWidgetWorkspace extends AWidget
     AWidgetWorkspace.__exists = true
     AWidgetWorkspace.__instance = @
 
-    super prefId("aworkspace"), parent, [ "aworkspace" ]
+    super prefId("workspace"), parent, [ "workspace" ]
 
     # Keep track of spawned handle actor objects
     @actorObjects = []
 
-    # Create an AWGL instance on ourselves
+    # Create an ARE instance on ourselves
     me = @
     if window.ajax == undefined then window.ajax = microAjax
 
-    timelineBottom = Number($(".atimeline").css("bottom").split("px")[0]) - 16
-    timelineHeight = ($(".atimeline").height() + timelineBottom)
+    #timelineBottom = Number($(".timeline").css("bottom").split("px")[0]) - 16
+    #timelineHeight = ($(".timeline").height() + timelineBottom)
 
     # The canvas is fullscreen, minus the mainbar
     @_cWidth = $(@_sel).width()
-    @_cHeight = $(window).height() - $(".amainbar").height() - 2
+    @_cHeight = $(window).height() - $(".menubar").height() - 2
 
     # Starting phone size is 800x480
     @_pWidth = 800
@@ -57,24 +57,18 @@ class AWidgetWorkspace extends AWidget
     # Inject our canvas container, along with its status bar
     # Although we currently don't add anything else to the container besides
     # the canvas itself, it might prove useful in the future.
-    _html = ""
-    _html += "<div id=\"aw-canvas-container\">"
-    _html +=   "<div id=\"awcc-outline-text\"></div>"
-    _html +=   "<div id=\"awcc-outline\"></div>"
-    _html += "</div"
+    $(@_sel).html ATemplate.canvasContainer()
 
-    $(@_sel).html _html
-
-    AUtilLog.info "Starting AWGL instance..."
-    new AREEngine @_cWidth, @_cHeight, (@_awgl) =>
+    AUtilLog.info "Starting ARE instance..."
+    new AREEngine @_cWidth, @_cHeight, (@_are) =>
       @_engineInit()
       @_applyCanvasSizeUpdate()
     , 4, "aw-canvas-container"
 
-  # Get AWGL instance
+  # Get ARE instance
   #
-  # @return [AWGLEngine] awgl
-  getAWGL: -> @_awgl
+  # @return [AREEngine] are
+  getARE: -> @_are
 
   # Get phone width
   #
@@ -107,85 +101,15 @@ class AWidgetWorkspace extends AWidget
     if @_pOrientation == "land" then chL = "checked=\"checked\""
     else chP = "checked=\"checked\""
 
-    _html = """
-
-      <div class="input_group">
-        <label>Current size: </label>
-        <input type="text" value="#{curSize}" disabled="disabled" />
-      </div>
-      <br />
-      <div class="input_group">
-        <label for="#{cSize}">Custom Size: </label>
-        <input name="#{cSize}" type="text" value="#{curSize}"
-          placeholder="WidthxHeight" />
-      </div>
-
-      <div class="input_group">
-        <label for="#{pSize}">Preset Size: </label>
-        <select name="#{pSize}">
-          <optgroup label="Android 120 ldpi">
-            <option value="240_320">240x320</option>
-            <option value="240_400">240x400</option>
-            <option value="240_432">240x432</option>
-            <option value="480_800">480x800</option>
-            <option value="480_854">480x854</option>
-            <option value="1024_600">1024x600</option>
-          </optgroup>
-
-          <optgroup label="Android 160 mdpi">
-            <option value="320_480">320x480</option>
-            <option value="480_800">480x800</option>
-            <option value="480_854">480x854</option>
-            <option value="600_1024">600x1024</option>
-            <option value="1280_800">1280x800</option>
-            <option value="1024_768">1024x768</option>
-            <option value="1280_768">1280x768</option>
-          </optgroup>
-
-          <optgroup label="Android 240 hdpi">
-            <option value="480_640">480x640</option>
-            <option value="480_800">480x800</option>
-            <option value="480_854">480x854</option>
-            <option value="600_1024">600x1024</option>
-            <option value="1536_1152">1536x1152</option>
-            <option value="1920_1152">1920x1152</option>
-            <option value="1920_1200">1920x1200</option>
-          </optgroup>
-
-          <optgroup label="Android 320 xhdpi">
-            <option value="640_960">640x960</option>
-            <option value="2048_1536">2048x1536</option>
-            <option value="2560_1536">2560x1536</option>
-            <option value="2560_1600">2560x1600</option>
-          </optgroup>
-
-          <optgroup label="iOS iPad & iPad Mini">
-            <option value="1024_768">1024x768</option>
-            <option value="2048_1536">2048x1536</option>
-          </optgroup>
-
-          <optgroup label="iPhone 5, 5s, 4, 4s">
-            <option value="1136_640">1136x640</option>
-            <option value="960_640">960x640</option>
-            <option value="480_320">480x320</option>
-          </optgroup>
-        </select>
-      </div>
-
-      <div class="input_group">
-        <label for="#{pOrie}">Orientation: </label>
-        <div class="radio">
-          <input type="radio" name="#{pOrie}" value="land" #{chL} /> Landscape
-          <input type="radio" name="#{pOrie}" value="port" #{chP} /> Portrait
-        </div>
-      </div>
-
-      <div class="input_group">
-        <label for="#{curScale}">Scale: </label>
-        <input class="wsmall" type="number" name="#{curScale}"
-          value="#{@_pScale}" />
-      </div>
-    """
+    _html = ATemplate.workspaceScreenSize
+      cSize: cSize
+      pSize: pSize
+      pOrie: pOrie
+      chL: chL
+      chP: chP
+      curScale: curScale
+      pScale: @_pScale
+      currentSize: curSize
 
     new AWidgetModal "Set Screen Properties", _html, false, (data) =>
 
@@ -217,7 +141,7 @@ class AWidgetWorkspace extends AWidget
   # Shows a modal allowing the user to set the background color
   showSetBackgroundColor: ->
 
-    col = @_awgl.getClearColor()
+    col = @_are.getClearColor()
 
     _colR = col.getR()
     _colG = col.getG()
@@ -234,38 +158,22 @@ class AWidgetWorkspace extends AWidget
 
     pInitial = "background-color: rgb(#{_colR}, #{_colG}, #{_colB});"
 
-    _html = """
-      <div class="input_group">
-        <label for="#{hex}">Hex: </label>
-        <input name="#{hex}" type="text" value="##{valHex}"></input>
-      <div>
-
-      <br />
-      <p class="tcenter">Or...</p>
-      <br />
-
-      <div class="input_group">
-        <label for="#{r}">R: </label>
-        <input name="#{r}" type="text" value="#{_colR}"></input>
-      <div>
-
-      <div class="input_group">
-        <label for="#{g}">G: </label>
-        <input name="#{g}" type="text" value="#{_colG}"></input>
-      <div>
-
-      <div class="input_group">
-        <label for="#{b}">B: </label>
-        <input name="#{b}" type="text" value="#{_colB}"></input>
-      <div>
-
-      <div id="#{preview}" class="_wbgPreview" style="#{pInitial}"></div>
-    """
+    _html = ATemplate.workspaceBackgroundColor
+      hex: hex
+      hexstr: valHex
+      r: r
+      g: g
+      b: b
+      colorRed: _colR
+      colorGreen: _colG
+      colorBlue: _colB
+      preview: preview
+      pInitial: pInitial
 
     new AWidgetModal "Set Background Color", _html, false, (data) =>
 
       # Submission
-      @_awgl.setClearColor data[r], data[g], data[b]
+      @_are.setClearColor data[r], data[g], data[b]
 
     , (data) =>
 
@@ -298,6 +206,7 @@ class AWidgetWorkspace extends AWidget
         _g = cH.substring 2, 4
         _b = cH.substring 4, 6
 
+        delta[hex] = cH
         delta[r] = parseInt _r, 16
         delta[g] = parseInt _g, 16
         delta[b] = parseInt _b, 16
@@ -309,9 +218,12 @@ class AWidgetWorkspace extends AWidget
         newHex = (0x1000000 | newHex).toString(16).substring 1
 
         delta[hex] = "##{newHex}"
+        delta[r] = data[r]
+        delta[g] = data[g]
+        delta[b] = data[b]
 
       # Apply bg color to preview
-      rgbCol = "rgb(#{data[r]}, #{data[g]}, #{data[b]})"
+      rgbCol = "rgb(#{delta[r]}, #{delta[g]}, #{delta[b]})"
       $("##{preview}").css "background-color", rgbCol
 
       # Return updates
@@ -351,8 +263,8 @@ class AWidgetWorkspace extends AWidget
   # @private
   _uploadTextures: (name, path) ->
 
-    AWGLLog.info "Upload textures request"
-    AWGLLog.info name + "@" + path
+    ARELog.info "Upload textures request"
+    ARELog.info name + "@" + path
 
   # Retrieve canvas width
   #
@@ -413,13 +325,13 @@ class AWidgetWorkspace extends AWidget
 
   # @private
   # Builds the framebuffer and texture needed to preform picking, deleting
-  # them if they already exist. This needs to be called whenever AWGLs' canvas
+  # them if they already exist. This needs to be called whenever AREs' canvas
   # is resized
   #
   # http://learningwebgl.com/blog/?p=1786
   _buildPickBuffer: ->
 
-    gl = @_awgl.getGL()
+    gl = @_are.getGL()
 
     # Delete them if they already exist
     if @_pickTexture != null then gl.deleteTexture @_pickTexture
@@ -429,8 +341,8 @@ class AWidgetWorkspace extends AWidget
     @_pickBuffer = gl.createFramebuffer()
     @_pickTexture = gl.createTexture()
 
-    _w = @_awgl.getWidth()
-    _h = @_awgl.getHeight()
+    _w = @_are.getWidth()
+    _h = @_are.getHeight()
 
     gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
     gl.bindTexture gl.TEXTURE_2D, @_pickTexture
@@ -474,29 +386,29 @@ class AWidgetWorkspace extends AWidget
     AWidgetTimeline.getMe().registerActor handle
 
   # @private
-  # Called by AWGLEngine as soon as it's up and running, we continue our own
+  # Called by AREEngine as soon as it's up and running, we continue our own
   # init from here.
   _engineInit: ->
 
-    AUtilLog.info "AWGL instance up, initializing workspace"
+    AUtilLog.info "ARE instance up, initializing workspace"
 
     # Start with an off-white clear color
-    @_awgl.setClearColor 240, 240, 240
+    @_are.setClearColor 240, 240, 240
 
     # Bind manipulatable handlers
     me = @
     $(document).ready ->
 
       # Set up draggable objects
-      $(".aworkspace-drag").draggable
+      $(".workspace-drag").draggable
         addClasses: false
         helper: "clone"
         revert: "invalid"
         cursor: "pointer"
 
       # Set up our own capture of draggable objects
-      $(".aworkspace canvas").droppable
-        accept: ".aworkspace-drag"
+      $(".workspace canvas").droppable
+        accept: ".workspace-drag"
         drop: (event, ui) =>
           # $.ui.ddmanager.current.cancelHelperRemoval = true
 
@@ -544,7 +456,7 @@ class AWidgetWorkspace extends AWidget
 
       # On mousedown, we need to setup pre-dragging state, perform a pick,
       # and wait for movement
-      $(".aworkspace canvas").mousedown (e) ->
+      $(".workspace canvas").mousedown (e) ->
 
         # Calculate workspace coordinates
         _truePos = me.domToGL e.pageX, e.pageY
@@ -593,7 +505,7 @@ class AWidgetWorkspace extends AWidget
 
       # Reset state after, dragging after 1ms, leaving time to prevent the
       # click handler from taking effect
-      $(".aworkspace canvas").mouseup (e) ->
+      $(".workspace canvas").mouseup (e) ->
 
         if __drag_psyx
           me.actorObjects[__drag_obj_index].getActor().enablePsyx()
@@ -633,7 +545,7 @@ class AWidgetWorkspace extends AWidget
         , 1
 
       # Core of the dragging logic
-      $(".aworkspace canvas").mousemove (e) ->
+      $(".workspace canvas").mousemove (e) ->
 
         # Means we also have a valid object id
         if __drag_sys_active
@@ -665,7 +577,7 @@ class AWidgetWorkspace extends AWidget
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
-      $(".aworkspace canvas").click (e) ->
+      $(".workspace canvas").click (e) ->
 
         # If we are dragging, gtfo
         if __dragging then return
@@ -695,7 +607,7 @@ class AWidgetWorkspace extends AWidget
               o.onClick()
 
       # Bind a contextmenu listener
-      $(document).on "contextmenu", ".aworkspace canvas", (e) ->
+      $(document).on "contextmenu", ".workspace canvas", (e) ->
         e.preventDefault()
 
         # We right clicked on the canvas, pick the object at our click position
@@ -724,7 +636,7 @@ class AWidgetWorkspace extends AWidget
         false
 
     # Start rendering
-    @_awgl.startRendering()
+    @_are.startRendering()
 
   # @private
   # Helper function to perform a pick at the specified canvas coordinates
@@ -733,19 +645,19 @@ class AWidgetWorkspace extends AWidget
   # @param [Number] y y coordinate
   # @param [Method] cb callback to call afterwards, passing r/g/b
   _performPick: (x, y, cb) ->
-    # Request a pick render from AWGL, continue once we get it
-    @_awgl.requestPickingRender @_pickBuffer, =>
+    # Request a pick render from ARE, continue once we get it
+    @_are.requestPickingRender @_pickBuffer, =>
 
       pick = new Uint8Array 4
 
-      gl = @_awgl.getGL()
+      gl = @_are.getGL()
       gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
       gl.readPixels x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pick
       gl.bindFramebuffer gl.FRAMEBUFFER, null
 
       cb pick[0], pick[1], pick[2]
 
-  # Converts document-relative coordinates to AWGL coordinates
+  # Converts document-relative coordinates to ARE coordinates
   # NOTE: This does not currently take into account any camera transformation!
   #
   # @param [Number] x x coordinate
@@ -753,8 +665,8 @@ class AWidgetWorkspace extends AWidget
   domToGL: (x, y) ->
 
     # Bail
-    if @_awgl == undefined
-      AUtilLog.warn "Can't convert coords, awgl not up!"
+    if @_are == undefined
+      AUtilLog.warn "Can't convert coords, are not up!"
       return null
 
     canvasTop = $("#{@getSel()} canvas").offset().top
@@ -764,7 +676,7 @@ class AWidgetWorkspace extends AWidget
 
     ret =
       x: x - canvasLeft
-      y: @_awgl.getHeight() - (y - canvasTop)
+      y: @_are.getHeight() - (y - canvasTop)
 
   # Resizes the display outline
   updateOutline: ->
@@ -799,12 +711,21 @@ class AWidgetWorkspace extends AWidget
   # Note that this does NOT resize the canvas
   onResize: ->
 
-    timelineBottom = Number($(".atimeline").css("bottom").split("px")[0]) - 16
-    timelineHeight = ($(".atimeline").height() + timelineBottom)
+    toolb = $(".toolbar")
+    statb = $(".statusbar")
+    sideb = $(".sidebar")
+    elm = $(@_sel)
 
-    # Our height
-    $(@_sel).height $(document).height() - $(".amainbar").height() + 2 - \
-      timelineHeight
+    elm.offset
+      top: toolb.position().top + toolb.height()
+      left: sideb.position().left + sideb.width()
+    elm.width $(document).width() - (sideb.position().left + sideb.width())
+    elm.height statb.position().top - (toolb.position().top + toolb.height())
+    #timelineBottom = Number($(".timeline").css("bottom").split("px")[0]) - 16
+    #timelineHeight = ($(".timeline").height() + timelineBottom)
+    ## Our height
+    #$(@_sel).height $(document).height() - $(".menubar").height() + 2 - \
+    #  timelineHeight
 
     # Center phone outline
     @updateOutline()

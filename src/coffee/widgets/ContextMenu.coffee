@@ -30,7 +30,7 @@ class AWidgetContextMenu extends AWidget
 
     # Sanity check
     if handle.getContextFunctions == undefined
-      AUtilLog.warn "Object has no getContextFunctions, can't create ctx menu"
+      AUtilLog.warn "Object has no getContextFunctions, can't create context-menu"
       return
 
     @functions = handle.getContextFunctions() # Grab functions
@@ -40,7 +40,7 @@ class AWidgetContextMenu extends AWidget
     if $.isEmptyObject(@functions) then return
 
     # Create object
-    super prefId("actxmenu"), "#aeditor", [ "actxmenu" ]
+    super prefId("context-menu"), "#aeditor", [ "context-menu" ]
 
     # Add a handle to our instance on the body
     $("body").data @getId(), @
@@ -98,7 +98,7 @@ class AWidgetContextMenu extends AWidget
         $(document).mouseup (e) ->
 
           # Grab both the menu object, and our own instance from the body
-          menu = $(".actxmenu")
+          menu = $(".context-menu")
           ins = $("body").data $(menu).attr "id"
 
           if menu != undefined and ins != undefined

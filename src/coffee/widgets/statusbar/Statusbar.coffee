@@ -5,7 +5,7 @@ class AWidgetStatusbar extends AWidget
 
     @_items = []
 
-    super prefId("astatusbar"), parent, [ "astatusbar" ]
+    super prefId("statusbar"), parent, [ "statusbar" ]
 
   render: ->
     $(@_sel).html ATemplate.statusbar version: AdefyEditor.version

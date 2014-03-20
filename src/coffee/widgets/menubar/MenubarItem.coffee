@@ -2,19 +2,19 @@
 ## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
 ##
 
-# Mainbar item class
+# Menubar item class
 #
 # The item can be in one of three states
 #  - Primary    [On the mainbar itself]
 #  - Secondary  [Item in a mainbar dropdown]
 #  - Detail     [Item in a sub-menu to the dropdown]
-class AWidgetMainbarItem extends AHTMLRenderable
+class AWidgetMenubarItem extends AHTMLRenderable
 
   # Creates item, does not render it!
   #
   # @param [String,Number] id unique id
-  # @param [AWidgetMainbarItem] parent parent, null if the item is primary
-  # @param [AWidgetMainbar] menubar menubar object
+  # @param [AWidgetMenubarItem] parent parent, null if the item is primary
+  # @param [AWidgetMenubar] menubar menubar object
   # @param [String] role role is either 'primary', 'secondary', or 'detail'
   # @param [String] label text to appear as the item
   # @param [String] href url the item points to
@@ -30,7 +30,7 @@ class AWidgetMainbarItem extends AHTMLRenderable
     param.required @_role, [ "primary", "secondary", "detail" ]
 
     # Not sure how to add instanceof checks to the param utility
-    if @_menubar !instanceof AWidgetMainbar
+    if @_menubar !instanceof AWidgetMenubar
       throw new Error "You need to use an existing menubar to create an item!"
 
     @label = param.optional label, ""
@@ -54,12 +54,12 @@ class AWidgetMainbarItem extends AHTMLRenderable
     switch @_role
       when "primary"
         if @_children.length > 0
-          opts["class"] = "amb-primary-has-children"
+          opts["class"] = "mb-primary-has-children"
       when "secondary"
         # Nice way of setting this up. The last item in a section
         # gets a special class, so we can style a nice divider
         if @sectionEnd
-          opts["class"] = "ambc-section-end"
+          opts["class"] = "mb-section-end"
       when "detail"
         return ""
       else
@@ -75,7 +75,7 @@ class AWidgetMainbarItem extends AHTMLRenderable
   # @param [String] href url the item points to
   # @param [Method] click click handler, optional
   # @param [Boolean] sectionEnd if true, child marks the end of a section
-  # @return [AWidgetMainbarItem] item null if the item could not be created
+  # @return [AWidgetMenubarItem] item null if the item could not be created
   createChild: (label, href, click, sectionEnd) ->
     sectionEnd = param.optional sectionEnd, false
     label = param.optional label, ""
@@ -89,7 +89,7 @@ class AWidgetMainbarItem extends AHTMLRenderable
     role = "secondary"
     if @_role == "secondary" then role = "detail"
 
-    child = new AWidgetMainbarItem prefId("amb-item"), @, @_menubar, role
+    child = new AWidgetMenubarItem prefId("menubar-item"), @, @_menubar, role
     child.label = label
     child.href = href
     child.sectionEnd = sectionEnd

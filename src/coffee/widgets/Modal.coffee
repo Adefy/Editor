@@ -33,7 +33,7 @@ class AWidgetModal extends AWidget
     # Protection against premature resurrection
     @dead = true
 
-    super prefId("amodal"), "#aeditor", [ "amodal" ]
+    super prefId("modal"), "#aeditor", [ "modal" ]
 
     @show()
 
@@ -54,24 +54,26 @@ class AWidgetModal extends AWidget
             if not modal then $("body").data("activeModal").close()
 
         # Close modal on dismiss click
-        $(document).on "click", ".amodal .amf-dismiss", ->
-          id = $(@).closest(".amodal").attr "id"
+        $(document).on "click", ".modal .modal-dismiss", ->
+          id = $(@).closest(".modal").attr "id"
           $("body").data("##{id}").close()
 
         # Close dialog on submit
-        $(document).on "click", ".amodal .amf-submit", ->
-          id = $(@).closest(".amodal").attr "id"
+        $(document).on "click", ".modal .modal-submit", ->
+          id = $(@).closest(".modal").attr "id"
           $("body").data("##{id}").close true
 
         # Input change
-        $(document).on "change", ".amodal input, .amodal select", (e) ->
-          id = $(@).closest(".amodal").attr "id"
+        $(document).on "change", ".modal input, .modal select", (e) ->
+          id = $(@).closest(".modal").attr "id"
           $("body").data("##{id}").changed e.target
 
+  ###
   # Returns input values as an object with keys the same as input names. The
   # result of this is passed to both the callback and validation methods!
   #
   # @return [Object] data scraped input data [inputName] = inputValue
+  ###
   scrapeData: ->
     data = {}
 
@@ -84,12 +86,14 @@ class AWidgetModal extends AWidget
 
     data
 
+  ###
   # Called when an input is changed, validates and in turn calls @change() if
   # provided. Passes name of altered input, new value, and a full data scrape.
   #
   # @change is expected to return altered values, if an update is desired
   #
   # @param [Object] i input that has changed
+  ###
   changed: (i) ->
     param.required i
 
@@ -101,27 +105,31 @@ class AWidgetModal extends AWidget
 
     $("#{@_sel} *[name=\"#{d}\"]").val v for d, v of delta
 
+  ###
   # Injects and shows us. Doesn't work if we aren't dead
+  ###
   show: ->
     if not @dead then return else @dead = false
 
     # Build!
-    ## modal.html
-    $(@_sel).html
+    $(@_sel).html ATemplate.modal title: @title, content: @content, cb: !!@cb
+
     # Register us for later
     $("body").data "activeModal", @
 
     $(@_sel).animate { opacity: 1 }, 400
 
+  ###
   # Closes and kills us
   #
   # @param [Boolean] submit optional, signifies we need to call the cb
+  ###
   close: (submit) ->
     submit = param.optional submit, false
 
     if submit
       # If a callback was supplied, parse inputs and send
-      if @cb != null
+      if @cb
 
         data = @scrapeData()
 
@@ -144,16 +152,20 @@ class AWidgetModal extends AWidget
       if not $(@_sel).is ":visible" then @_kill()
       else $(@_sel).animate { opacity: 0 }, 400, => @_kill()
 
+  ###
   # Sets an error string to display
   #
   # @param [String] error
+  ###
   setError: (error) ->
     param.required error
 
-    $("#{@_sel} .amerror").text error
+    $("#{@_sel} .modal-error").text error
 
+  ###
   # Private kill method, called once we are no longer visible
   # @private
+  ###
   _kill: ->
     $("body").removeData "activeModal"
     $(@_sel).remove()

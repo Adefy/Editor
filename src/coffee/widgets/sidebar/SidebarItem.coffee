@@ -16,4 +16,4 @@ class AWidgetSidebarItem extends AWidget
       throw new Error "Sidebar items need a AWidgetSidebar as a parent!"
 
     # Build the containing div
-    super prefId("asitem"), parent, classes
+    super prefId("sidebar-item"), parent, classes
