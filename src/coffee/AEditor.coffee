@@ -34,6 +34,10 @@
 # @depend widgets/controlbar/AWidgetControlPhysics.coffee
 # @depend widgets/controlbar/AWidgetControlRender.coffee
 #
+# @depend widgets/tabs/AWidgetTab.coffee
+# @depend widgets/tabs/AWidgetTabAssets.coffee
+# @depend widgets/tabs/AWidgetTabProperties.coffee
+#
 # @depend widgets/sidebar/AWidgetSidebar.coffee
 # @depend widgets/sidebar/AWidgetSidebarObject.coffee
 # @depend widgets/sidebar/AWidgetSidebarObjectGroup.coffee
@@ -228,9 +232,22 @@ class AdefyEditor
     #  right: rightSidebar
     #return obj
     sidebar = new AWidgetSidebar me.sel, "Sidebar", "left", 256
-    panel = new AWidgetSidebarPanel sidebar, tabs: ["Assets", "Tab2", "Tab3"]
-    panel2 = new AWidgetSidebarPanel sidebar, tabs: ["Properties", "Tab2"]
+
+    panel = new AWidgetSidebarPanel sidebar
+    panel.newTab "Assets"
+      new AWidgetTabAssets
+
+    panel.newTab "Tab2"
+    panel.newTab "Tab3"
+
+    panel2 = new AWidgetSidebarPanel sidebar
+    panel2.newTab "Properties", =>
+      new AWidgetTabProperties
+
+    panel2.newTab "Tab2"
+
     sidebar.render()
+
     sidebar
 
   createToolbox: (sidebar) ->
