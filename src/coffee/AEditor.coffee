@@ -37,10 +37,17 @@
 # @depend widgets/sidebar/AWidgetSidebar.coffee
 # @depend widgets/sidebar/AWidgetSidebarObject.coffee
 # @depend widgets/sidebar/AWidgetSidebarObjectGroup.coffee
+# @depend widgets/sidebar/AWidgetSidebarPanel.coffee
 # @depend widgets/sidebar/AWidgetSidebarProperties.coffee
 #
 # @depend widgets/mainbar/AWidgetMainbar.coffee
+#
+# @depend widgets/toolbar/AWidgetToolbar.coffee
+#
+# @depend widgets/statusbar/AWidgetStatusbar.coffee
 class AdefyEditor
+
+  @version: "0.0.1"
 
   # Editor execution starts here. We spawn all other objects ourselves. If a
   # selector is not supplied, we go with #aeditor
@@ -74,17 +81,18 @@ class AdefyEditor
     me = @
 
     $(document).ready ->
-
-      menubar = me.createMenuBar(me)
       # Create workspace, sidebars, controlbar, and timeline
       #
       # For testing, the timeline is for a 5s ad
-      timeline = me.createTimeline(me)
-      #o = me.createSidebar(me)
-      #leftSidebar = o.left
-      #rightSidebar = o.right
-
+      menubar = me.createMenubar(me)
+      toolbar = me.createToolbar(me)
+      sidebar = me.createSidebar(me)
+      #timeline = me.createTimeline(me)
+      #sidebars = me.createSidebar(me)
       #me.createToolbox(leftSidebar)
+      statusbar = me.createStatusbar(me)
+      #leftSidebar = sidebars.left
+      #rightSidebar = sidebars.right
 
       #leftSidebar.render()
       # Create a property widget on the right sidebar
@@ -95,15 +103,23 @@ class AdefyEditor
 
       # Push widgets
       me.widgets.push menubar
+      me.widgets.push toolbar
+      me.widgets.push sidebar
       #me.widgets.push workspace
       #me.widgets.push controlBar
       #me.widgets.push leftSidebar
       #me.widgets.push rightSidebar
+      #me.widgets.push timeline
+      me.widgets.push statusbar
 
       # Save widgets on the window for easy access
+      window.menubar = menubar
+      window.toolbar = toolbar
+      window.sidebar = sidebar
       #window.left_sidebar = leftSidebar
       #window.right_sidebar = rightSidebar
-      window.timeline = timeline
+      #window.timeline = timeline
+      window.statusbar = statusbar
       #window.workspace = workspace
 
       # Register resize handler
@@ -125,7 +141,7 @@ class AdefyEditor
         log.info "Loading #{window.ad}"
         me.load window.ad
 
-  createMenuBar: (me) ->
+  createMenubar: (me) ->
     # Create mainbar first
     menubar = new AWidgetMainbar me.sel
 
@@ -189,20 +205,33 @@ class AdefyEditor
 
     menubar
 
+  createToolbar: (me) ->
+    toolbar = new AWidgetToolbar me.sel
+    toolbar.render()
+    toolbar
+
   createTimeline: (me) ->
     timeline = new AWidgetTimeline me.sel, 5000
 
     timeline
 
+  createStatusbar: (me) ->
+    statusbar = new AWidgetStatusbar me.sel
+    statusbar.render()
+    statusbar
+
   createSidebar: (me) ->
-    leftSidebar = new AWidgetSidebar me.sel, "Toolbox", "left", 256
-    rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
-
-    obj =
-      left: leftSidebar
-      right: rightSidebar
-
-    return obj
+    #leftSidebar = new AWidgetSidebar me.sel, "Toolbox", "left", 256
+    #rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
+    #obj =
+    #  left: leftSidebar
+    #  right: rightSidebar
+    #return obj
+    sidebar = new AWidgetSidebar me.sel, "Sidebar", "left", 256
+    panel = new AWidgetSidebarPanel sidebar, tabs: ["Assets", "Tab2", "Tab3"]
+    panel2 = new AWidgetSidebarPanel sidebar, tabs: ["Properties", "Tab2"]
+    sidebar.render()
+    sidebar
 
   createToolbox: (sidebar) ->
     # Add some items to the left sidebar

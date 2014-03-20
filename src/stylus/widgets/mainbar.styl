@@ -19,6 +19,8 @@
     border-bottom: 1px solid rgba(0,0,0,.15)
     box-shadow: 0 1px rgba(255,255,255,.1)
 
+    line-height normal
+
     //a
     //  transition color 0.15s, background-color 0.15s
 
@@ -37,13 +39,16 @@
       background-color $col_mainbar_decorator_bg
       border-bottom 1px solid $col_divider_bot
 
+    .ambc-section-end
+      border none
+      border-bottom: 1px solid rgba(0,0,0,.15)
+      box-shadow: 0 1px rgba(255,255,255,.1)
+
     .amainbar-primary
       z-index $Z_amainbar_primary
       position relative
       margin 0
       padding 0
-
-      line-height 1
 
       li
         display: inline-block
@@ -73,11 +78,14 @@
       z-index $Z_amainbar_secondary
       position absolute
 
-      background-color rgba(35, 35, 35, .8)
       min-width 96px
+      display none
+
+      line-height 1.5
+
+      background-color rgba(35, 35, 35, .8)
       border 1px solid rgba(0,0,0,.15)
       box-shadow 0 2px 3px rgba(0,0,0,.25), inset 0 0 1px rgba(255,255,255,.15)
-      display none
 
       a
         display block
