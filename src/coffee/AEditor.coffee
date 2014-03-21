@@ -57,6 +57,7 @@
 # @depend templates/ObjectProperties.coffee
 # @depend templates/Statusbar.coffee
 # @depend templates/SidebarPanel.coffee
+# @depend templates/Timeline.coffee
 # @depend templates/Workspace.coffee
 class AdefyEditor
 

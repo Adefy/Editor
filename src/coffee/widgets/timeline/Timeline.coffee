@@ -379,6 +379,8 @@ class AWidgetTimeline extends AWidget
   # @return [Number] time cursor time in ms
   getCursorTime: ->
 
+    return # skip the cursor check for now
+
     # I thought about making this a warning and just returning '0', but that
     # would mess up thing elsewhere (whoever uses our return value would be
     # screwed). This makes the most sense
@@ -436,6 +438,8 @@ class AWidgetTimeline extends AWidget
   # Note that calling this clears the timeline visually, and does not render
   # objects! Objects are not destroyed, call @render to update them.
   renderStructure: ->
+
+    return $(@_sel).html ATemplate.timelineBase()
 
     _html = ""
 
