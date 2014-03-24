@@ -61,12 +61,16 @@
 # @depend templates/Workspace.coffee
 class AdefyEditor
 
+  ##
+  # Editor version number
   @version: "0.0.1"
 
+  ###
   # Editor execution starts here. We spawn all other objects ourselves. If a
   # selector is not supplied, we go with #aeditor
   #
   # @param [String] sel container selector, created if non-existent
+  ###
   constructor: (sel) ->
 
     # We can't run properly in Opera, as it does not let us override the
@@ -130,6 +134,10 @@ class AdefyEditor
         log.info "Loading #{window.ad}"
         me.load window.ad
 
+  ###
+  # Creates the editor main menubar
+  # @param [CSSSelector] selector
+  ###
   createMenubar: (selector) ->
     # Create menubar first
     menubar = new AWidgetMenubar selector
@@ -194,33 +202,55 @@ class AdefyEditor
 
     menubar
 
+  ###
+  # Creates the editor toolbar
+  # Though its only their for aesthetics (unless...)
+  # @param [CSSSelector] selector
+  # @return [AWidgetToolbar]
+  ###
   createToolbar: (selector) ->
     toolbar = new AWidgetToolbar selector
     toolbar.render()
     toolbar
 
+  ###
+  # Creates the editor workspace
+  # Though its only their for aesthetics (unless...)
+  # @param [CSSSelector] selector
+  # @return [AWidgetWorkspace]
+  ###
   createWorkspace: (selector) ->
     workspace = new AWidgetWorkspace selector
 
     workspace
 
+  ###
+  # Creates the editor timeline
+  # @param [CSSSelector] selector
+  # @return [AWidgetTimeline]
+  ###
   createTimeline: (selector) ->
     timeline = new AWidgetTimeline selector, 5000
 
     timeline
 
+  ###
+  # Creates the editor statusbar
+  # @param [CSSSelector] selector
+  # @return [AWidgetStatusbar]
+  ###
   createStatusbar: (selector) ->
     statusbar = new AWidgetStatusbar selector
     statusbar.render()
     statusbar
 
+  ###
+  # Creates the editor sidebar
+  # Originally we used 2 sidebars, but now we only use one
+  # @param [CSSSelector] selector
+  # @return [AWidgetSidebar]
+  ###
   createSidebar: (selector) ->
-    #leftSidebar = new AWidgetSidebar me.sel, "Toolbox", "left", 256
-    #rightSidebar = new AWidgetSidebar me.sel, "Properties", "right", 300
-    #obj =
-    #  left: leftSidebar
-    #  right: rightSidebar
-    #return obj
     sidebar = new AWidgetSidebar selector, "Sidebar", "left", 310
 
     panel = new AWidgetSidebarPanel sidebar
@@ -288,6 +318,12 @@ class AdefyEditor
 
     sidebar
 
+  ###
+  # Creates the editor toolbox
+  # I don't believe this is used anymore/yet
+  # @param [CSSSelector] selector
+  # @return [AWidgetSidebar]
+  ###
   createToolbox: (sidebar) ->
     # Add some items to the left sidebar
     primGroup = new AWidgetSidebarObjectGroup "Primitives", sidebar
@@ -328,9 +364,11 @@ class AdefyEditor
 
     primGroup
 
+  ###
   # This function gets called immediately upon creation, and whenever
   # our parent element is resized. Other elements register listeners are to be
   # called within it
+  ###
   onResize: ->
     doc = $(window)
     header = $("#{@sel} header")
@@ -340,16 +378,20 @@ class AdefyEditor
     for w in @widgets
       if w.onResize != undefined then w.onResize()
 
+  ###
   # Clears the workspace, creating a new ad
+  ###
   newAd: ->
 
     # Trigger a workspace reset
     AWidgetWorkspace.getMe().reset()
 
+  ###
   # Serialize all ad data in the workspace to send to the server
   #
   # @return [String] data
   # @private
+  ###
   _serialize: ->
 
     data = {}
@@ -418,11 +460,13 @@ class AdefyEditor
 
     JSON.stringify data
 
+  ###
   # Serialize an animation (expects an existing bezier func)
   #
   # @param [ABezier] anim
   # @return [Object] serialized
   # @private
+  ###
   _serializeAnimation: (anim) ->
 
     ret = {}

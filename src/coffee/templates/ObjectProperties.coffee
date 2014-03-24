@@ -1,4 +1,22 @@
 # @depend Templates.coffee
+###
+# @property [Object] basic
+#   @property [Number] width
+#   @property [Number] height
+#   @property [Number] opacity
+#   @property [Number] rotation
+# @property [Object] position
+#   @property [Number] x
+#   @property [Number] y
+# @property [Object] color
+#   @property [Number] r
+#   @property [Number] g
+#   @property [Number] b
+# @property [Object] physics
+#   @property [Number] mass
+#   @property [Number] elasticity
+#   @property [Number] friction
+###
 ATemplate.objectProperties = Handlebars.compile """
 <h1><i class="fa fa-fw fa-cog"></i>Basic</h1>
 <dl><dt>Width</dt><dd>{{ basic.width }}</dd></dl>

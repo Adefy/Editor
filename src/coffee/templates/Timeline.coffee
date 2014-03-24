@@ -1,9 +1,12 @@
 # @depend Templates.coffee
+###
+# @property [String] id
+# @property [HTML] contents
+# @property [Time] currentTime
+###
 ATemplate.timelineBase = Handlebars.compile """
-<div class="header">
-  <div class="current_time">
-    6:43.12
-  </div>
+<div id="{{id}}" class="header">
+  <div class="current_time">{{ currentTime }}</div>
   <a href="#"><i class="fa fa-fw fa-fast-backward"></i></a>
   <a href="#"><i class="fa fa-fw fa-backward"></i></a>
   <a href="#"><i class="fa fa-fw fa-play"></i></a>
@@ -12,6 +15,7 @@ ATemplate.timelineBase = Handlebars.compile """
 </div>
 <div class="content">
   <div class="list">
+    {{{ contents }}}
   </div>
   <div class="time">
     <div class="cursor" style="left: 64px"></div>
@@ -19,6 +23,11 @@ ATemplate.timelineBase = Handlebars.compile """
 </div>
 """
 
+###
+# @property [String] id
+# @property [String] title
+# @property [String] value
+###
 ATemplate.timelineActorProperty = Handlebars.compile """
 <div id="{{id}}" class="row property">
   <div class="live">
@@ -32,6 +41,25 @@ ATemplate.timelineActorProperty = Handlebars.compile """
 </div>
 """
 
+###
+# @property [String] id
+# @property [String] title
+# @property [HTML] properties
+###
+ATemplate.timelineActor = Handlebars.compile """
+<div id="{{id}}" class="actor">
+  <div class="row">
+    <div class="visibility"><i class="fa fa-fw fa-eye"></i></div>
+    <div class="expand"><i class="fa fa-fw fa-caret-down"></i></div>
+    <div class="title">{{title}}</div>
+  </div>
+  {{{properties}}}
+</div>
+"""
+
+###
+# @property
+###
 ATemplate.timelineActor = Handlebars.compile """
 <div id="{{id}}" class="actor">
   <div class="row">

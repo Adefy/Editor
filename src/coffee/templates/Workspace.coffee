@@ -6,6 +6,16 @@ ATemplate.canvasContainer = Handlebars.compile """
 </div>
 """
 
+###
+# @property [String] currentSize
+# @property [String] cSize
+# @property [String] pSize
+# @property [String] pOrie
+# @property [String] chL
+# @property [String] chP
+# @property [String] curScale
+# @property [String] pScale
+###
 ATemplate.workspaceScreenSize = Handlebars.compile """
 <div class="input_group">
   <label>Current size: </label>
@@ -85,6 +95,18 @@ ATemplate.workspaceScreenSize = Handlebars.compile """
 </div>
 """
 
+###
+# @property [Hex] hex
+# @property [String] hexstr
+# @property [String] r
+# @property [String] g
+# @property [String] b
+# @property [Number] colorRed
+# @property [Number] colorGreen
+# @property [Number] colorBlue
+# @property [String] preview
+# @property [String] pInitial
+###
 ATemplate.workspaceBackgroundColor = Handlebars.compile """
 <div class="input_group">
   <label for="{{ hex }}">Hex: </label>

@@ -408,11 +408,13 @@ class AWidgetTimeline extends AWidget
     # Ship actor to the actor list
     @_renderActors @_actors.length - 1
 
+  ###
   # Remove an actor by id, re-renders timeline internals. Note that this
   # utilizies the ID of the AJS actor!
   #
   # @param [Number] id
   # @return [Boolean] success
+  ###
   removeActor: (id) ->
     param.required id
 
@@ -429,14 +431,18 @@ class AWidgetTimeline extends AWidget
 
     false
 
+  ###
   # Get current timeline duration
   #
   # @return [Number] duration
+  ###
   getDuration: -> @_duration
 
+  ###
   # Render initial structure.
   # Note that calling this clears the timeline visually, and does not render
   # objects! Objects are not destroyed, call @render to update them.
+  ###
   renderStructure: ->
 
     return $(@_sel).html ATemplate.timelineBase()

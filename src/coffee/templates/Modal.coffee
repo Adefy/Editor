@@ -1,4 +1,9 @@
 # @depend Templates.coffee
+###
+# @property [String] title
+# @property [HTML] content
+# @property [Boolean] cb is a callback present? (this will enable the Submit button)
+###
 ATemplate.modal = Handlebars.compile """
 <div class="modal-inner">
   <div class="modal-header">

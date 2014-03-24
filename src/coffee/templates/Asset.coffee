@@ -1,4 +1,10 @@
 # @depend Templates.coffee
+###
+# @property [String] directoryStateIcon
+# @property [Object] directory
+#   @property [String] name
+# @property [HTML] content
+###
 ATemplate.assetDirectory = Handlebars.compile """
   <dl>
     <dt><i class="fa fa-fw {{directoryStateIcon}}"></i></dt>
@@ -8,6 +14,11 @@ ATemplate.assetDirectory = Handlebars.compile """
     </dd>
   </dl>
 """
+
+###
+# @property [Object] file
+#   @property [String] name
+###
 ATemplate.assetFile = Handlebars.compile """
   <dl>
     <dt><i class="fa fa-fw"></i></dt>
