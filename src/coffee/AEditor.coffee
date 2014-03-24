@@ -778,7 +778,7 @@ class AdefyEditor
       _html += "<a href=\"#{result.link}\" target=\"_blank\">View</a>"
       _html += " or "
       _html += "<a href=\"#{result.link}?download=yes\">Download</a>"
-      new AWidgetModal "Exported", _html
+      new AWidgetModal title: "Exported", content: _html
 
   # @private
   # Note that we don't take start values into account. The initial state

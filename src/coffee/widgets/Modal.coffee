@@ -5,25 +5,31 @@
 # Bootstrap-like modal (except not!)
 class AWidgetModal extends AWidget
 
+  ###
   # Set to true once our event listeners have been registered
+  # @type [Boolean]
   # @private
+  ###
   @__listenersRegistered: false
 
+  ###
   # Instantiates us with a title and HTML content
   #
-  # @param [String] title displayed at the top
-  # @param [String] content html content
-  # @param [Boolean] modal direct action required, defaults to false
-  # @param [Method] cb callback, takes an object with input values (key - name)
-  # @param [Method] validation optional, called to validate with cb data
-  # @param [Method] change optional, called on input change with delta and data
-  constructor: (@title, @content, modal, @cb, @validation, @change) ->
-    param.required @title
-    param.required @content
-    modal = param.optional modal, false
-    @cb = param.optional @cb, null
-    @change = param.optional @change, null
-    @validation = param.optional @validation, null
+  # @param [Object] options
+  #   @option [String] title displayed at the top
+  #   @option [String] content html content
+  #   @option [Boolean] modal direct action required, defaults to false
+  #   @option [Method] cb callback, takes an object with input values (key - name)
+  #   @option [Method] validation optional, called to validate with cb data
+  #   @option [Method] change optional, called on input change with delta and data
+  ###
+  constructor: (options) ->
+    @title = param.required options.title
+    @content = param.required options.content
+    modal = param.optional options.modal, false
+    @cb = param.optional options.cb, null
+    @change = param.optional options.change, null
+    @validation = param.optional options.validation, null
 
     # Only one modal can be active at any one time
     if $("body").data("activeModal") != undefined

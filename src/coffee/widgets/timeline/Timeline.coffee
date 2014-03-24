@@ -16,7 +16,10 @@ class AWidgetTimeline extends AWidget
   # Always useful
   @__instance: null
 
+  ###
   # Timebar color classes, styled in colors.styl
+  # @type [Array<String>] css class names
+  ###
   @_timebarColors: [
     "atimebar-color-1"
     "atimebar-color-2"
@@ -24,7 +27,10 @@ class AWidgetTimeline extends AWidget
     "atimebar-color-4"
   ]
 
+  ###
   # Timebar bg color classes, styled in colors.styl
+  # @type [Array<String>] css class names
+  ###
   @_timebarBGColors: [
     "atimebar-color-1-bg"
     "atimebar-color-2-bg"
@@ -32,11 +38,13 @@ class AWidgetTimeline extends AWidget
     "atimebar-color-4-bg"
   ]
 
+  ###
   # Creates a timeline at the bottom of the screen. Note that it is absolutely
   # positioned, and adds padding to the body accordingly.
   #
   # @param [String] parent parent element selector
   # @param [Number] duration ad length in ms, can be expensively modified later
+  ###
   constructor: (parent, duration) ->
 
     if AWidgetTimeline.__exists
@@ -91,8 +99,10 @@ class AWidgetTimeline extends AWidget
     @_enableDrag()
     @_regListeners()
 
+  ###
   # Enables cursor dragging
   # @private
+  ###
   _enableDrag: ->
     me = @
 
@@ -109,8 +119,10 @@ class AWidgetTimeline extends AWidget
         me._onCursorDrag e, ui
         me._onCursorDragStop e, ui
 
+  ###
   # Animation keys lightbolts saving
   # @private
+  ###
   _saveKey: ->
     index = AWidgetWorkspace.getSelectedActor()
     # only enter checks if an actor is actually selected
@@ -121,8 +133,10 @@ class AWidgetTimeline extends AWidget
       ARELog.info "SAVED"
       @_actors[index].updateInTime()
 
+  ###
   # Registers event listeners
   # @private
+  ###
   _regListeners: ->
     me = @
 
@@ -143,19 +157,25 @@ class AWidgetTimeline extends AWidget
       # Sidebar save button
       $(document).on "click", ".asp-save", (e) -> me._saveKey e
 
+  ###
   # @private
+  ###
   _endPlayback: ->
     clearInterval @_playbackID
     @setCursorTime 0
     @_playbackID = null
 
+  ###
   # @private
+  ###
   _pausePlayback: ->
     clearInterval @_playbackID
     @_playbackID = null
 
+  ###
   # Playback toggle button clicked (play/pause)
   # @private
+  ###
   _toggleClicked: ->
 
     # If currently playing, remove the interval
@@ -178,8 +198,10 @@ class AWidgetTimeline extends AWidget
 
     , frameRate
 
+  ###
   # Visibilty toggle request
   # @private
+  ###
   _visToggleClicked: ->
 
     if $(@_sel).css("bottom") == "0px" and not @__animating
@@ -210,8 +232,10 @@ class AWidgetTimeline extends AWidget
           window.workspace.onResize()
         done: => @__animating = false
 
+  ###
   # Forward playback button clicked (next keyframe)
   # @private
+  ###
   _forwClicked: ->
     _currentPosition = @getCursorTime()
     _newPosition = null
@@ -242,8 +266,10 @@ class AWidgetTimeline extends AWidget
         @setCursorTime @_duration
         @_pausePlayback()
 
+  ###
   # Backward playback button clicked (prev keyframe)
   # @private
+  ###
   _prevClicked: ->
     _currentPosition = @getCursorTime()
     _newPosition = null
@@ -271,8 +297,10 @@ class AWidgetTimeline extends AWidget
         @setCursorTime 0
         @_endPlayback()
 
-
+  ###
   # Show dialog box for setting the preview framerate
+  # @return [AWidgetModal]
+  ###
   showSetPreviewRate: ->
 
     # Randomized input name
@@ -285,28 +313,36 @@ class AWidgetTimeline extends AWidget
     </div>
     """
 
-    new AWidgetModal "Set Preview Framerate", _html, false, (data) =>
-      @_previewRate = data[n]
-    , (data) ->
-      if isNaN(data[n]) then return "Framerate must be a number"
-      if Number(data[n]) <= 0 then return "Framerate must be > 0"
-      true
+    new AWidgetModal
+      title: "Set Preview Framerate"
+      content: _html
+      modal: false
+      cb: (data) =>
+        @_previewRate = data[n]
+      validation: (data) ->
+        if isNaN(data[n]) then return "Framerate must be a number"
+        if Number(data[n]) <= 0 then return "Framerate must be > 0"
+        true
 
+  ###
   # Cursor drag event
   #
   # @param [Event] e
   # @param [Object] ui
   # @private
+  ###
   _onCursorDrag: (e, ui) ->
 
     # Update our cursor time
     @_updateCursorTime()
 
+  ###
   # Cursor drag stop event, updates all living
   #
   # @param [Event] e
   # @param [Object] ui
   # @private
+  ###
   _onCursorDragStop: (e, ui) ->
 
     # TODO: Apply update to only existing actors.
@@ -496,16 +532,20 @@ class AWidgetTimeline extends AWidget
     # Ship
     $(@_sel).html _html
 
+  ###
   # Proper render function, fills in timeline internals. Since we have two
   # distinct sections, each is rendered by a seperate method. This helps
   # divide the necessary logic, into @_renderActors() and @_renderSpace(). This
   # function simply calls both.
+  ###
   render: ->
     @_renderActors()
     @_renderSpace()
 
+  ###
   # Refresh spacer length and actor color in the actor list
   # @private
+  ###
   _refreshActorRows: ->
 
     me = @
@@ -533,9 +573,11 @@ class AWidgetTimeline extends AWidget
       # Ship new color
       $(@).addClass AWidgetTimeline._timebarColors[a.timebarColor]
 
+  ###
   # Render the actor list Should never be called by itself, only by @render()
   #
   # @private
+  ###
   _renderActors: ->
 
     _h = ""
@@ -548,11 +590,13 @@ class AWidgetTimeline extends AWidget
 
     @_refreshActorRows()
 
+  ###
   # Appends a single actor to the actor list, used after registering an actor
   # and rendering their timebar
   #
   # @param [Number] index index of the actor to append to the list
   # @privvate
+  ###
   _renderSingleActor: (index, notouch) ->
     # notouch is an undocumented param, set to true when we are called from
     # @_renderActors. When it is true, we simply return our generated html
@@ -569,12 +613,14 @@ class AWidgetTimeline extends AWidget
     $("#ata-body").append _h
     @_refreshActorRows()
 
+  ###
   # Renders an individual actor timebar, used when registering new actors,
   # preventing a full re-render of the space. Also called internally by
   # @_renderSpace.
   #
   # @param [Number] index index of the actor whose space we are to render
   # @private
+  ###
   _renderActorSpace: (index, notouch) ->
     # notouch is an undocumented param, set to true when we are called from
     # @_renderSpace. When it is true, we simply return our generated html
@@ -637,10 +683,12 @@ class AWidgetTimeline extends AWidget
     if notouch then return _h
     else $("#att-space").append _h
 
+  ###
   # Render the timeline space. Should never be called by itself, only by
   # @render()
   #
   # @private
+  ###
   _renderSpace: ->
 
     _h = ""
@@ -653,9 +701,11 @@ class AWidgetTimeline extends AWidget
     # Ship
     $("#att-space").html _h
 
+  ###
   # Resize and apply our height to the body
   #
   # @param [Number] height
+  ###
   resize: (@_height) ->
     $(@_sel).css "height", "#{@_height}px"
     $("body").css "padding-bottom", @_bodyPadding + @_height

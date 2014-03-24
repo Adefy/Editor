@@ -5,27 +5,42 @@
 # Workspace widget
 class AWidgetWorkspace extends AWidget
 
-  # Set to true upon instantiation, prevents more than one instance
-  @__exists: false
-
+  ###
   # We store a static reference to ourselves, since some objects need to notify
   # us of their demise (muahahahahaha)
+  # @type [AWidgetWorkspace]
+  ###
   @__instance: null
 
+  ###
+  # @type [AHBaseActor*]
+  ###
   @_selectedActor: null
 
+  ###
+  # Fetch our static instance
+  #
+  # @return [AWidgetWorkspace] me
+  ###
+  @getMe: -> AWidgetWorkspace.__instance
+
+  ###
+  # Retrieves the currently selected actor, if any
+  # @return [AHBaseActor]
+  ###
+  @getSelectedActor: => @_selectedActor
+
+  ###
   # Creates a new workspace if one does not already exist
   #
   # @param [String] parent parent element selector
+  ###
   constructor: (parent) ->
-
-    if AWidgetWorkspace.__exists == true
-      AUtilLog.warn "A workspace already exists, refusing to continue!"
-      return
-
     param.required parent
 
-    AWidgetWorkspace.__exists = true
+    if AWidgetWorkspace.__instance
+      AUtilLog.warn "A workspace already exists, refusing to continue!"
+      return
     AWidgetWorkspace.__instance = @
 
     super prefId("workspace"), parent, [ "workspace" ]
@@ -33,16 +48,14 @@ class AWidgetWorkspace extends AWidget
     # Keep track of spawned handle actor objects
     @actorObjects = []
 
-    # Create an ARE instance on ourselves
-    me = @
     if window.ajax == undefined then window.ajax = microAjax
 
     #timelineBottom = Number($(".timeline").css("bottom").split("px")[0]) - 16
     #timelineHeight = ($(".timeline").height() + timelineBottom)
 
     # The canvas is fullscreen, minus the mainbar
-    @_cWidth = $(@_sel).width()
-    @_cHeight = $(window).height() - $(".menubar").height()
+    @_canvasWidth = $(@_sel).width()
+    @_canvasHeight = $(window).height() - $(".menubar").height()
 
     # Starting phone size is 800x480
     @_pWidth = 800
@@ -59,335 +72,60 @@ class AWidgetWorkspace extends AWidget
     # the canvas itself, it might prove useful in the future.
     $(@_sel).html ATemplate.canvasContainer()
 
-    AUtilLog.info "Starting ARE instance..."
-    new AREEngine @_cWidth, @_cHeight, (@_are) =>
+    # Create an ARE instance on ourselves
+    AUtilLog.info "Creating ARE instance..."
+    new AREEngine @_canvasWidth, @_canvasHeight, (@_are) =>
       @_engineInit()
       @_applyCanvasSizeUpdate()
     , 4, "aw-canvas-container"
 
+  ###
   # Get ARE instance
   #
   # @return [AREEngine] are
+  ###
   getARE: -> @_are
 
-  # Get phone width
-  #
-  # @return [Number] width
-  getPhoneWidth: -> @_pWidth
-
-  # Get phone height
-  #
-  # @return [Number] height
-  getPhoneHeight: -> @_pHeight
-
-  # Get phone scale
-  #
-  # @return [Number] scale
-  getPhoneScale: -> @_pScale
-
-  # Shows a modal allowing the user to set screen properties. Sizes are picked
-  # from device templates, rotation and scale are also available
-  showSetScreenProperties: ->
-
-    curScale = prefId "_wspscale"
-    cSize = prefId "_wspcsize"
-    pSize = prefId "_wsppsize"
-    pOrie = prefId "_wsporientation"
-
-    curSize = "#{@_pWidth}x#{@_pHeight}"
-    chL = ""
-    chP = ""
-
-    if @_pOrientation == "land" then chL = "checked=\"checked\""
-    else chP = "checked=\"checked\""
-
-    _html = ATemplate.workspaceScreenSize
-      cSize: cSize
-      pSize: pSize
-      pOrie: pOrie
-      chL: chL
-      chP: chP
-      curScale: curScale
-      pScale: @_pScale
-      currentSize: curSize
-
-    new AWidgetModal "Set Screen Properties", _html, false, (data) =>
-
-      # Submission
-      size = data[cSize].split "x"
-
-      @_pHeight = Number size[1]
-      @_pWidth = Number size[0]
-      @_pScale = Number data[curScale]
-      @_pOrientation = data[pOrie]
-      @updateOutline()
-
-    , (data) =>
-
-      # Validation
-      size = data[cSize].split "x"
-
-      if size.length != 2 then return "Size is of the format WidthxHeight"
-      else if isNaN(size[0]) or isNaN(size[1])
-        return "Dimensions must be numbers"
-      else if isNaN(data[curScale]) then return "Scale must be a number"
-
-      true
-    , (deltaName, deltaVal, data) =>
-
-      if deltaName == pSize
-        $("input[name=\"#{cSize}\"]").val deltaVal.split("_").join "x"
-
-  # Shows a modal allowing the user to set the background color
-  showSetBackgroundColor: ->
-
-    col = @_are.getClearColor()
-
-    _colR = col.getR()
-    _colG = col.getG()
-    _colB = col.getB()
-
-    valHex = _colB | (_colG << 8) | (_colR << 16)
-    valHex = (0x1000000 | valHex).toString(16).substring 1
-
-    preview = prefId "_wbgPreview"
-    hex = prefId "_wbgHex"
-    r = prefId "_wbgR"
-    g = prefId "_wbgG"
-    b = prefId "_wbgB"
-
-    pInitial = "background-color: rgb(#{_colR}, #{_colG}, #{_colB});"
-
-    _html = ATemplate.workspaceBackgroundColor
-      hex: hex
-      hexstr: valHex
-      r: r
-      g: g
-      b: b
-      colorRed: _colR
-      colorGreen: _colG
-      colorBlue: _colB
-      preview: preview
-      pInitial: pInitial
-
-    new AWidgetModal "Set Background Color", _html, false, (data) =>
-
-      # Submission
-      @_are.setClearColor data[r], data[g], data[b]
-
-    , (data) =>
-
-      # Validation
-      vR = data[r]
-      vG = data[g]
-      vB = data[b]
-
-      if isNaN(vR) or isNaN(vG) or isNaN(vB)
-        return "Components must be numbers"
-      else if vR < 0 or vG < 0 or vB < 0 or vR > 255 or vG > 255 or vB > 255
-        return "Components must be between 0 and 255"
-
-      true
-    , (deltaName, deltaVal, data) =>
-
-      cH = data[hex]
-      cR = data[r]
-      cG = data[g]
-      cB = data[b]
-
-      delta = {}
-
-      # On change
-      if deltaName == hex
-
-        # Recover rgb from hex
-        cH = cH.substring 1
-        _r = cH.substring 0, 2
-        _g = cH.substring 2, 4
-        _b = cH.substring 4, 6
-
-        delta[hex] = cH
-        delta[r] = parseInt _r, 16
-        delta[g] = parseInt _g, 16
-        delta[b] = parseInt _b, 16
-
-      else
-
-        # Build hex from rgba
-        newHex = cB | (cG << 8) | (cR << 16)
-        newHex = (0x1000000 | newHex).toString(16).substring 1
-
-        delta[hex] = "##{newHex}"
-        delta[r] = data[r]
-        delta[g] = data[g]
-        delta[b] = data[b]
-
-      # Apply bg color to preview
-      rgbCol = "rgb(#{delta[r]}, #{delta[g]}, #{delta[b]})"
-      $("##{preview}").css "background-color", rgbCol
-
-      # Return updates
-      delta
-
-  showAddTextures: ->
-
-    textName = ""
-    textPath = ""
-    textname = prefId "_wtexture"
-    textpath = prefId "_wtextpath"
-    _html = """
-      <div class="input_group">
-        <label for="#{textname}">Texture Name: </label>
-        <input name="#{textname}" type="text" value="#{textName}"></input>
-      <div>
-      <div class="input_group">
-        <label for="#{textpath}">Select Texture: </label>
-        <input name="#{textpath}" type="file" value="#{textPath}" multiple>
-        </input>
-      <div>
-    """
-    new AWidgetModal "Add textures...", _html, false, (data) =>
-
-      #Submission
-      @_uploadTextures data[textname], data[textpath]
-
-    , (data) =>
-      if data[textname] == ""
-        return "Texture must have a name"
-      if data[textpath] == null or data[textpath] == ""
-        return "You must select a texture"
-
-      true
-
-  # Upload the textures to the cloud for processing and usage
-  # @private
-  _uploadTextures: (name, path) ->
-
-    ARELog.info "Upload textures request"
-    ARELog.info name + "@" + path
-
+  ###
   # Retrieve canvas width
   #
   # @return [Number] width canvas width
-  getCanvasWidth: -> @_cWidth
+  ###
+  getCanvasWidth: -> @_canvasWidth
 
+  ###
   # Retrieve canvas height
   #
   # @return [Number] height canvas height
-  getCanvasHeight: -> @_cHeight
+  ###
+  getCanvasHeight: -> @_canvasHeight
 
-  # @private
-  # Update the canvas status, and alter the width of the canvas container
-  # This should be called either after instantiation, or after a canvas
-  # resize
-  _applyCanvasSizeUpdate: ->
-
-    # Resize canvas container
-    $("#aw-canvas-container").css
-      height: "#{@_cHeight}px"
-      width: "#{@_cWidth}px"
-
-    # Rebuild our picking resources
-    @_buildPickBuffer()
-
-  # Fetch our static instance
+  ###
+  # Get phone width
   #
-  # @return [AWidgetWorkspace] me
-  @getMe: -> AWidgetWorkspace.__instance
+  # @return [Number] width
+  ###
+  getPhoneWidth: -> @_pWidth
 
-  # Resets us completely, triggering the timeline death handler of every
-  # actor, and removing them from both us and the timeline
-  reset: ->
-
-    for o in @actorObjects
-      AWidgetTimeline.getMe().removeActor o.getActorId()
-      o.timelineDeath()
-      o.delete()
-
-    @actorObjects = []
-
-  # Any objects that need to tell us about their death have to do so by calling
-  # this method and passing themselves in.
+  ###
+  # Get phone height
   #
-  # @param [Object] obj dying object
-  notifyDemise: (obj) ->
+  # @return [Number] height
+  ###
+  getPhoneHeight: -> @_pHeight
 
-    # We keep track of actors internally, splice them out of our array
-    if obj instanceof AHBaseActor
-      for o, i in @actorObjects
-        if o.getId() == obj.getId()
-          @actorObjects.splice i, 1
-
-          # Remove actor from the timeline
-          AWidgetTimeline.getMe().removeActor obj.getActorId()
-
-          return
-
-  # @private
-  # Builds the framebuffer and texture needed to preform picking, deleting
-  # them if they already exist. This needs to be called whenever AREs' canvas
-  # is resized
+  ###
+  # Get phone scale
   #
-  # http://learningwebgl.com/blog/?p=1786
-  _buildPickBuffer: ->
+  # @return [Number] scale
+  ###
+  getPhoneScale: -> @_pScale
 
-    gl = @_are.getGL()
-
-    # Delete them if they already exist
-    if @_pickTexture != null then gl.deleteTexture @_pickTexture
-    if @_pickBuffer != null then gl.deleteFramebuffer @_pickBuffer
-
-    # Gogo
-    @_pickBuffer = gl.createFramebuffer()
-    @_pickTexture = gl.createTexture()
-
-    _w = @_are.getWidth()
-    _h = @_are.getHeight()
-
-    gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
-    gl.bindTexture gl.TEXTURE_2D, @_pickTexture
-
-    gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR
-    gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER \
-      , gl.LINEAR_MIPMAP_NEAREST
-
-    # Framebuffer is 512x512
-    gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, _w, _h, 0, gl.RGBA \
-      , gl.UNSIGNED_BYTE, null
-
-    gl.generateMipmap gl.TEXTURE_2D
-
-    # Set up a depth buffer, bind it and whatnot
-    _renderBuff = gl.createRenderbuffer()
-    gl.bindRenderbuffer gl.RENDERBUFFER, _renderBuff
-    gl.renderbufferStorage gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, _w, _h
-
-    gl.framebufferTexture2D gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 \
-      , gl.TEXTURE_2D, @_pickTexture, _renderBuff
-
-    gl.framebufferRenderbuffer gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT \
-      , gl.RENDERBUFFER, _renderBuff
-
-    # Cleanup
-    gl.bindTexture gl.TEXTURE_2D, null
-    gl.bindRenderbuffer gl.RENDERBUFFER, null
-    gl.bindFramebuffer gl.FRAMEBUFFER, null
-
-  # Manually register an actor
-  #
-  # @param [AHBaseActor] handle
-  registerActor: (handle) ->
-    param.required handle
-
-    if not handle instanceof AHBaseActor
-      throw new Error "You can only register actors that derive from BaseActor"
-
-    @actorObjects.push handle
-    AWidgetTimeline.getMe().registerActor handle
-
+  ###
   # @private
   # Called by AREEngine as soon as it's up and running, we continue our own
   # init from here.
+  ###
   _engineInit: ->
 
     AUtilLog.info "ARE instance up, initializing workspace"
@@ -640,12 +378,320 @@ class AWidgetWorkspace extends AWidget
     # Start rendering
     @_are.startRendering()
 
+  ###
+  # Shows a modal allowing the user to set screen properties. Sizes are picked
+  # from device templates, rotation and scale are also available
+  ###
+  showSetScreenProperties: ->
+
+    curScale = prefId "_wspscale"
+    cSize = prefId "_wspcsize"
+    pSize = prefId "_wsppsize"
+    pOrie = prefId "_wsporientation"
+
+    curSize = "#{@_pWidth}x#{@_pHeight}"
+    chL = ""
+    chP = ""
+
+    if @_pOrientation == "land" then chL = "checked=\"checked\""
+    else chP = "checked=\"checked\""
+
+    _html = ATemplate.workspaceScreenSize
+      cSize: cSize
+      pSize: pSize
+      pOrie: pOrie
+      chL: chL
+      chP: chP
+      curScale: curScale
+      pScale: @_pScale
+      currentSize: curSize
+
+    new AWidgetModal
+      title: "Set Screen Properties",
+      content: _html,
+      modal: false,
+      cb: (data) =>
+        # Submission
+        size = data[cSize].split "x"
+
+        @_pHeight = Number size[1]
+        @_pWidth = Number size[0]
+        @_pScale = Number data[curScale]
+        @_pOrientation = data[pOrie]
+        @updateOutline()
+
+      validation: (data) =>
+        # Validation
+        size = data[cSize].split "x"
+
+        if size.length != 2 then return "Size is of the format WidthxHeight"
+        else if isNaN(size[0]) or isNaN(size[1])
+          return "Dimensions must be numbers"
+        else if isNaN(data[curScale]) then return "Scale must be a number"
+
+        true
+      change: (deltaName, deltaVal, data) =>
+
+        if deltaName == pSize
+          $("input[name=\"#{cSize}\"]").val deltaVal.split("_").join "x"
+
+  ###
+  # Creates and shows the "Set Background Color" modal
+  # @return [AWidgetModal]
+  ###
+  showSetBackgroundColor: ->
+
+    col = @_are.getClearColor()
+
+    _colR = col.getR()
+    _colG = col.getG()
+    _colB = col.getB()
+
+    valHex = _colB | (_colG << 8) | (_colR << 16)
+    valHex = (0x1000000 | valHex).toString(16).substring 1
+
+    preview = prefId "_wbgPreview"
+    hex = prefId "_wbgHex"
+    r = prefId "_wbgR"
+    g = prefId "_wbgG"
+    b = prefId "_wbgB"
+
+    pInitial = "background-color: rgb(#{_colR}, #{_colG}, #{_colB});"
+
+    _html = ATemplate.workspaceBackgroundColor
+      hex: hex
+      hexstr: valHex
+      r: r
+      g: g
+      b: b
+      colorRed: _colR
+      colorGreen: _colG
+      colorBlue: _colB
+      preview: preview
+      pInitial: pInitial
+
+    new AWidgetModal
+      title: "Set Background Color",
+      content: _html,
+      modal: false,
+      cb: (data) =>
+        # Submission
+        @_are.setClearColor data[r], data[g], data[b]
+
+      validation: (data) =>
+        # Validation
+        vR = data[r]
+        vG = data[g]
+        vB = data[b]
+
+        if isNaN(vR) or isNaN(vG) or isNaN(vB)
+          return "Components must be numbers"
+        else if vR < 0 or vG < 0 or vB < 0 or vR > 255 or vG > 255 or vB > 255
+          return "Components must be between 0 and 255"
+
+        true
+      change: (deltaName, deltaVal, data) =>
+
+        cH = data[hex]
+        cR = data[r]
+        cG = data[g]
+        cB = data[b]
+
+        delta = {}
+
+        # On change
+        if deltaName == hex
+
+          # Recover rgb from hex
+          cH = cH.substring 1
+          _r = cH.substring 0, 2
+          _g = cH.substring 2, 4
+          _b = cH.substring 4, 6
+
+          delta[hex] = cH
+          delta[r] = parseInt _r, 16
+          delta[g] = parseInt _g, 16
+          delta[b] = parseInt _b, 16
+
+        else
+
+          # Build hex from rgba
+          newHex = cB | (cG << 8) | (cR << 16)
+          newHex = (0x1000000 | newHex).toString(16).substring 1
+
+          delta[hex] = "##{newHex}"
+          delta[r] = data[r]
+          delta[g] = data[g]
+          delta[b] = data[b]
+
+        # Apply bg color to preview
+        rgbCol = "rgb(#{delta[r]}, #{delta[g]}, #{delta[b]})"
+        $("##{preview}").css "background-color", rgbCol
+
+        # Return updates
+      delta
+
+  ###
+  # Creates and shows the "Add Textures" modal
+  # @return [AWidgetModal]
+  ###
+  showAddTextures: ->
+    textnameID = prefId "_wtexture"
+    textpathID = prefId "_wtextpath"
+
+    _html = ATemplate.workspaceAddTextures
+      textnameID: textnameID
+      textpathID: textpathID
+      textname: ""
+      textpath: ""
+
+    new AWidgetModal
+      title: "Add textures ..."
+      content: _html
+      modal: false
+      cb: (data) =>
+        #Submission
+        @_uploadTextures data[textnameID], data[textpathID]
+
+      validation:
+        if data[textnameID] == ""
+          return "Texture must have a name"
+        if data[textpathID] == null or data[textpathID] == ""
+          return "You must select a texture"
+
+        true
+
+  ###
+  # Upload the textures to the cloud for processing and usage
+  # @private
+  ###
+  _uploadTextures: (name, path) ->
+
+    ARELog.info "Upload textures request"
+    ARELog.info name + "@" + path
+
+  ###
+  # @private
+  # Update the canvas status, and alter the width of the canvas container
+  # This should be called either after instantiation, or after a canvas
+  # resize
+  ###
+  _applyCanvasSizeUpdate: ->
+
+    # Resize canvas container
+    $("#aw-canvas-container").css
+      height: "#{@_canvasHeight}px"
+      width: "#{@_canvasWidth}px"
+
+    # Rebuild our picking resources
+    @_buildPickBuffer()
+
+  ###
+  # Resets us completely, triggering the timeline death handler of every
+  # actor, and removing them from both us and the timeline
+  ###
+  reset: ->
+
+    for o in @actorObjects
+      AWidgetTimeline.getMe().removeActor o.getActorId()
+      o.timelineDeath()
+      o.delete()
+
+    @actorObjects = []
+
+  ###
+  # Any objects that need to tell us about their death have to do so by calling
+  # this method and passing themselves in.
+  #
+  # @param [Object] obj dying object
+  ###
+  notifyDemise: (obj) ->
+
+    # We keep track of actors internally, splice them out of our array
+    if obj instanceof AHBaseActor
+      for o, i in @actorObjects
+        if o.getId() == obj.getId()
+          @actorObjects.splice i, 1
+
+          # Remove actor from the timeline
+          AWidgetTimeline.getMe().removeActor obj.getActorId()
+
+          return
+
+  ###
+  # @private
+  # Builds the framebuffer and texture needed to preform picking, deleting
+  # them if they already exist. This needs to be called whenever AREs' canvas
+  # is resized
+  #
+  # http://learningwebgl.com/blog/?p=1786
+  ###
+  _buildPickBuffer: ->
+
+    gl = @_are.getGL()
+
+    # Delete them if they already exist
+    if @_pickTexture != null then gl.deleteTexture @_pickTexture
+    if @_pickBuffer != null then gl.deleteFramebuffer @_pickBuffer
+
+    # Gogo
+    @_pickBuffer = gl.createFramebuffer()
+    @_pickTexture = gl.createTexture()
+
+    _w = @_are.getWidth()
+    _h = @_are.getHeight()
+
+    gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
+    gl.bindTexture gl.TEXTURE_2D, @_pickTexture
+
+    gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR
+    gl.texParameteri gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER \
+      , gl.LINEAR_MIPMAP_NEAREST
+
+    # Framebuffer is 512x512
+    gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, _w, _h, 0, gl.RGBA \
+      , gl.UNSIGNED_BYTE, null
+
+    gl.generateMipmap gl.TEXTURE_2D
+
+    # Set up a depth buffer, bind it and whatnot
+    _renderBuff = gl.createRenderbuffer()
+    gl.bindRenderbuffer gl.RENDERBUFFER, _renderBuff
+    gl.renderbufferStorage gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, _w, _h
+
+    gl.framebufferTexture2D gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 \
+      , gl.TEXTURE_2D, @_pickTexture, _renderBuff
+
+    gl.framebufferRenderbuffer gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT \
+      , gl.RENDERBUFFER, _renderBuff
+
+    # Cleanup
+    gl.bindTexture gl.TEXTURE_2D, null
+    gl.bindRenderbuffer gl.RENDERBUFFER, null
+    gl.bindFramebuffer gl.FRAMEBUFFER, null
+
+  ###
+  # Manually register an actor
+  #
+  # @param [AHBaseActor] handle
+  ###
+  registerActor: (handle) ->
+    param.required handle
+
+    if not handle instanceof AHBaseActor
+      throw new Error "You can only register actors that derive from BaseActor"
+
+    @actorObjects.push handle
+    AWidgetTimeline.getMe().registerActor handle
+
+  ###
   # @private
   # Helper function to perform a pick at the specified canvas coordinates
   #
   # @param [Number] x x coordinate
   # @param [Number] y y coordinate
   # @param [Method] cb callback to call afterwards, passing r/g/b
+  ###
   _performPick: (x, y, cb) ->
     # Request a pick render from ARE, continue once we get it
     @_are.requestPickingRender @_pickBuffer, =>
@@ -659,11 +705,13 @@ class AWidgetWorkspace extends AWidget
 
       cb pick[0], pick[1], pick[2]
 
+  ###
   # Converts document-relative coordinates to ARE coordinates
   # NOTE: This does not currently take into account any camera transformation!
   #
   # @param [Number] x x coordinate
   # @param [Number] y y coordinate
+  ###
   domToGL: (x, y) ->
 
     # Bail
@@ -680,7 +728,9 @@ class AWidgetWorkspace extends AWidget
       x: x - canvasLeft
       y: @_are.getHeight() - (y - canvasTop)
 
+  ###
   # Resizes the display outline
+  ###
   updateOutline: ->
 
     if @_pOrientation == "port"
@@ -707,10 +757,12 @@ class AWidgetWorkspace extends AWidget
 
     $("#awcc-outline-text").text "#{width}x#{height}"
 
+  ###
   # Takes other widgets into account, and sets the height accordingly. Also
   # centers the phone outline
   #
   # Note that this does NOT resize the canvas
+  ###
   onResize: ->
 
     header = $("#aeditor header")
@@ -734,5 +786,3 @@ class AWidgetWorkspace extends AWidget
 
     # Center phone outline
     @updateOutline()
-
-  @getSelectedActor: -> AWidgetWorkspace._selectedActor
