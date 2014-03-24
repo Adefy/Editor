@@ -122,6 +122,252 @@ class AWidgetWorkspace extends AWidget
   getPhoneScale: -> @_pScale
 
   ###
+  # Because indenting gets ugly
+  ###
+  onDocumentReady: ->
+    ##
+    # TODO. Chop this up some more, its far too large imo
+    ##
+
+    # Set up draggable objects
+    $(".workspace-drag").draggable
+      addClasses: false
+      helper: "clone"
+      revert: "invalid"
+      cursor: "pointer"
+
+    # Set up our own capture of draggable objects
+    $(".workspace canvas").droppable
+      accept: ".workspace-drag"
+      drop: (event, ui) =>
+        # $.ui.ddmanager.current.cancelHelperRemoval = true
+
+        # Get the associated widget object
+        _sel = $(ui.draggable).children("div").attr("id")
+        _obj = $("body").data _sel
+
+        # Calculate workspace coordinates
+        _truePos = me.domToGL ui.position.left, ui.position.top
+
+        # TODO: Consider cleaning this up to just pass the domToGL result
+        handle = _obj.dropped "workspace", _truePos.x, _truePos.y
+
+        # TODO: Provide some flexibility here, take different actions if
+        #       something besides an actor is dropped. For the time being,
+        #       that can't happen. Yay.
+        if handle instanceof AHBaseActor
+
+          # Register actor with ourselves
+          me.actorObjects.push handle
+
+          # Register actor with the timeline
+          AWidgetTimeline.getMe().registerActor handle
+
+    # Actor dragging, whoop
+    __drag_start_x = 0      # Keeps track of the initial drag point, so
+    __drag_start_y = 0      # we know when to start listening
+
+    __drag_orig_x = 0       # Original object pos x so we can calculate dx
+    __drag_orig_y = 0       # Original object pos y so we can calculate dy
+
+    __drag_obj_index = -1   # Index of the object we are dragging
+    __drag_tolerance = 5    # How far the mouse should move before we pick up
+
+    __drag_update_props = false # Whether or not to update properties
+    __drag_props = null         # Handle on the properties widget
+    __drag_psyx = false         # Whether or not the object had a psyx body
+
+    # When true, enables logic in mousemove()
+    __drag_sys_active = false
+
+    # When true, disables the normal click listener. This is reset a moment
+    # after dragging actually stops
+    __dragging = false
+
+    # On mousedown, we need to setup pre-dragging state, perform a pick,
+    # and wait for movement
+    $(".workspace canvas").mousedown (e) ->
+
+      # Calculate workspace coordinates
+      _truePos = me.domToGL e.pageX, e.pageY
+
+      # Note this can be slightly inefficient, since two picks are performed
+      # on any click. Not when dragging, but when clicking both this and
+      # the click() event above fire.
+      #
+      # TODO: Optimise. Consider performing the pick here, and saving the
+      #       outcome for the click listener.
+      me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+
+        # Not over an object, just return
+        if b != 248 then return
+
+        # Id is stored as a sector and an offset. Recover proper object id
+        _id = r + (g * 255)
+
+        # Find the actor in question
+        for o, i in me.actorObjects
+          if o.getActorId() == _id
+            __drag_obj_index = i
+            break
+
+        # If we are above an object, wait for mouse movement
+        if __drag_obj_index != -1
+
+          # Check if the actor is present in the sidebar. If so, store a
+          # handle on the sidebar and enable property updating
+          props = $("body").data "default-properties"
+          if props instanceof AWidgetSidebarProperties
+            if props.privvyIface("get_id") == _id
+              __drag_update_props = true
+              __drag_props = props
+
+          # Save beginning drag point
+          __drag_start_x = e.pageX
+          __drag_start_y = e.pageY
+
+          # Save initial actor position
+          __drag_orig_x = me.actorObjects[__drag_obj_index].getPosition().x
+          __drag_orig_y = me.actorObjects[__drag_obj_index].getPosition().y
+
+          # Activate
+          __drag_sys_active = true
+
+    # Reset state after, dragging after 1ms, leaving time to prevent the
+    # click handler from taking effect
+    $(".workspace canvas").mouseup (e) ->
+
+      if __drag_psyx
+        me.actorObjects[__drag_obj_index].getActor().enablePsyx()
+
+      __drag_sys_active = false
+      __drag_obj_index = -1
+      __drag_props = null
+      __drag_update_props = false
+      __drag_psyx = false
+
+       # Calculate workspace coordinates
+      _truePos = me.domToGL e.pageX, e.pageY
+
+      me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+
+        # Objects have a blue component of 248. If this is not an object,
+        # perform the necessary clearing and continue
+        if b != 248
+          data = $("body").data("default-properties")
+          data.clear() if data
+          return
+
+        # Id is stored as a sector and an offset. Recover proper object id
+        _id = r + (g * 255)
+
+        # Find the actor in question
+        for o in me.actorObjects
+          if o.getActorId() == _id
+
+            # Update selected actor for use in AWidgetTimeline
+            AWidgetWorkspace._selectedActor = o.getId()
+
+            # Fill in property list!
+            o.onClick()
+
+      setTimeout ->
+        __dragging = false
+      , 1
+
+    # Core of the dragging logic
+    $(".workspace canvas").mousemove (e) ->
+
+      # Means we also have a valid object id
+      if __drag_sys_active
+
+        # Perform an initial check, destroy the physics body if there is one
+        if not __dragging
+
+          if me.actorObjects[__drag_obj_index].getActor().hasPsyx()
+            __drag_psyx = true
+            me.actorObjects[__drag_obj_index].getActor().disablePsyx()
+
+          __dragging = true
+
+        if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
+        or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
+
+          # Calc new coords (orig + offset)
+          _newX = Number(__drag_orig_x + (e.pageX - __drag_start_x))
+
+          # Note we need to invert the vertical offset
+          _newY = Number(__drag_orig_y + ((e.pageY - __drag_start_y) * -1))
+
+          # Update!
+          me.actorObjects[__drag_obj_index].setPosition _newX, _newY
+
+          # Update properties as well, if needed
+          if __drag_update_props
+            __drag_props.privvyIface "update_position", _newX, _newY
+
+    # Actor picking!
+    # NOTE: This should only be allowed when the scene is not being animated!
+    $(".workspace canvas").click (e) ->
+
+      # If we are dragging, gtfo
+      if __dragging then return
+
+      # Calculate workspace coordinates
+      _truePos = me.domToGL e.pageX, e.pageY
+
+      me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+
+        # Objects have a blue component of 248. If this is not an object,
+        # perform the necessary clearing and continue
+        if b != 248
+          data = $("body").data("default-properties")
+          data.clear() if data
+          return
+
+        # Id is stored as a sector and an offset. Recover proper object id
+        _id = r + (g * 255)
+
+        # Find the actor in question
+        for o in me.actorObjects
+          if o.getActorId() == _id
+
+            # Update selected actor for use in AWidgetTimeline
+            AWidgetWorkspace._selectedActor = o.getId()
+
+            # Fill in property list!
+            o.onClick()
+
+    # Bind a contextmenu listener
+    $(document).on "contextmenu", ".workspace canvas", (e) ->
+      e.preventDefault()
+
+      # We right clicked on the canvas, pick the object at our click position
+      # and get its associated handle
+      _truePos = me.domToGL e.pageX, e.pageY
+
+      # Pick
+      me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+
+        # Extract id if valid
+        if b != 248 then return
+        _id = r + (g * 255)
+
+        # Find the actor in question
+        for o in me.actorObjects
+          if o.getActorId() == _id
+
+            # We clicked on a handle, check for context functions
+            if not $.isEmptyObject o.getContextFunctions()
+
+              # Instantiate a new context menu, it handles the rest
+              new AWidgetContextMenu e.pageX, e.pageY, o
+
+            return
+
+      false
+
+  ###
   # @private
   # Called by AREEngine as soon as it's up and running, we continue our own
   # init from here.
@@ -135,245 +381,7 @@ class AWidgetWorkspace extends AWidget
 
     # Bind manipulatable handlers
     me = @
-    $(document).ready ->
-
-      # Set up draggable objects
-      $(".workspace-drag").draggable
-        addClasses: false
-        helper: "clone"
-        revert: "invalid"
-        cursor: "pointer"
-
-      # Set up our own capture of draggable objects
-      $(".workspace canvas").droppable
-        accept: ".workspace-drag"
-        drop: (event, ui) =>
-          # $.ui.ddmanager.current.cancelHelperRemoval = true
-
-          # Get the associated widget object
-          _sel = $(ui.draggable).children("div").attr("id")
-          _obj = $("body").data _sel
-
-          # Calculate workspace coordinates
-          _truePos = me.domToGL ui.position.left, ui.position.top
-
-          # TODO: Consider cleaning this up to just pass the domToGL result
-          handle = _obj.dropped "workspace", _truePos.x, _truePos.y
-
-          # TODO: Provide some flexibility here, take different actions if
-          #       something besides an actor is dropped. For the time being,
-          #       that can't happen. Yay.
-          if handle instanceof AHBaseActor
-
-            # Register actor with ourselves
-            me.actorObjects.push handle
-
-            # Register actor with the timeline
-            AWidgetTimeline.getMe().registerActor handle
-
-      # Actor dragging, whoop
-      __drag_start_x = 0      # Keeps track of the initial drag point, so
-      __drag_start_y = 0      # we know when to start listening
-
-      __drag_orig_x = 0       # Original object pos x so we can calculate dx
-      __drag_orig_y = 0       # Original object pos y so we can calculate dy
-
-      __drag_obj_index = -1   # Index of the object we are dragging
-      __drag_tolerance = 5    # How far the mouse should move before we pick up
-
-      __drag_update_props = false # Whether or not to update properties
-      __drag_props = null         # Handle on the properties widget
-      __drag_psyx = false         # Whether or not the object had a psyx body
-
-      # When true, enables logic in mousemove()
-      __drag_sys_active = false
-
-      # When true, disables the normal click listener. This is reset a moment
-      # after dragging actually stops
-      __dragging = false
-
-      # On mousedown, we need to setup pre-dragging state, perform a pick,
-      # and wait for movement
-      $(".workspace canvas").mousedown (e) ->
-
-        # Calculate workspace coordinates
-        _truePos = me.domToGL e.pageX, e.pageY
-
-        # Note this can be slightly inefficient, since two picks are performed
-        # on any click. Not when dragging, but when clicking both this and
-        # the click() event above fire.
-        #
-        # TODO: Optimise. Consider performing the pick here, and saving the
-        #       outcome for the click listener.
-        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
-
-          # Not over an object, just return
-          if b != 248 then return
-
-          # Id is stored as a sector and an offset. Recover proper object id
-          _id = r + (g * 255)
-
-          # Find the actor in question
-          for o, i in me.actorObjects
-            if o.getActorId() == _id
-              __drag_obj_index = i
-              break
-
-          # If we are above an object, wait for mouse movement
-          if __drag_obj_index != -1
-
-            # Check if the actor is present in the sidebar. If so, store a
-            # handle on the sidebar and enable property updating
-            props = $("body").data "default-properties"
-            if props instanceof AWidgetSidebarProperties
-              if props.privvyIface("get_id") == _id
-                __drag_update_props = true
-                __drag_props = props
-
-            # Save beginning drag point
-            __drag_start_x = e.pageX
-            __drag_start_y = e.pageY
-
-            # Save initial actor position
-            __drag_orig_x = me.actorObjects[__drag_obj_index].getPosition().x
-            __drag_orig_y = me.actorObjects[__drag_obj_index].getPosition().y
-
-            # Activate
-            __drag_sys_active = true
-
-      # Reset state after, dragging after 1ms, leaving time to prevent the
-      # click handler from taking effect
-      $(".workspace canvas").mouseup (e) ->
-
-        if __drag_psyx
-          me.actorObjects[__drag_obj_index].getActor().enablePsyx()
-
-        __drag_sys_active = false
-        __drag_obj_index = -1
-        __drag_props = null
-        __drag_update_props = false
-        __drag_psyx = false
-
-         # Calculate workspace coordinates
-        _truePos = me.domToGL e.pageX, e.pageY
-
-        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
-
-          # Objects have a blue component of 248. If this is not an object,
-          # perform the necessary clearing and continue
-          if b != 248
-            data = $("body").data("default-properties")
-            data.clear() if data
-            return
-
-          # Id is stored as a sector and an offset. Recover proper object id
-          _id = r + (g * 255)
-
-          # Find the actor in question
-          for o in me.actorObjects
-            if o.getActorId() == _id
-
-              # Update selected actor for use in AWidgetTimeline
-              AWidgetWorkspace._selectedActor = o.getId()
-
-              # Fill in property list!
-              o.onClick()
-
-        setTimeout ->
-          __dragging = false
-        , 1
-
-      # Core of the dragging logic
-      $(".workspace canvas").mousemove (e) ->
-
-        # Means we also have a valid object id
-        if __drag_sys_active
-
-          # Perform an initial check, destroy the physics body if there is one
-          if not __dragging
-
-            if me.actorObjects[__drag_obj_index].getActor().hasPsyx()
-              __drag_psyx = true
-              me.actorObjects[__drag_obj_index].getActor().disablePsyx()
-
-            __dragging = true
-
-          if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
-          or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
-
-            # Calc new coords (orig + offset)
-            _newX = Number(__drag_orig_x + (e.pageX - __drag_start_x))
-
-            # Note we need to invert the vertical offset
-            _newY = Number(__drag_orig_y + ((e.pageY - __drag_start_y) * -1))
-
-            # Update!
-            me.actorObjects[__drag_obj_index].setPosition _newX, _newY
-
-            # Update properties as well, if needed
-            if __drag_update_props
-              __drag_props.privvyIface "update_position", _newX, _newY
-
-      # Actor picking!
-      # NOTE: This should only be allowed when the scene is not being animated!
-      $(".workspace canvas").click (e) ->
-
-        # If we are dragging, gtfo
-        if __dragging then return
-
-        # Calculate workspace coordinates
-        _truePos = me.domToGL e.pageX, e.pageY
-
-        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
-
-          # Objects have a blue component of 248. If this is not an object,
-          # perform the necessary clearing and continue
-          if b != 248
-            data = $("body").data("default-properties")
-            data.clear() if data
-            return
-
-          # Id is stored as a sector and an offset. Recover proper object id
-          _id = r + (g * 255)
-
-          # Find the actor in question
-          for o in me.actorObjects
-            if o.getActorId() == _id
-
-              # Update selected actor for use in AWidgetTimeline
-              AWidgetWorkspace._selectedActor = o.getId()
-
-              # Fill in property list!
-              o.onClick()
-
-      # Bind a contextmenu listener
-      $(document).on "contextmenu", ".workspace canvas", (e) ->
-        e.preventDefault()
-
-        # We right clicked on the canvas, pick the object at our click position
-        # and get its associated handle
-        _truePos = me.domToGL e.pageX, e.pageY
-
-        # Pick
-        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
-
-          # Extract id if valid
-          if b != 248 then return
-          _id = r + (g * 255)
-
-          # Find the actor in question
-          for o in me.actorObjects
-            if o.getActorId() == _id
-
-              # We clicked on a handle, check for context functions
-              if not $.isEmptyObject o.getContextFunctions()
-
-                # Instantiate a new context menu, it handles the rest
-                new AWidgetContextMenu e.pageX, e.pageY, o
-
-              return
-
-        false
+    $(document).ready -> me.onDocumentReady()
 
     # Start rendering
     @_are.startRendering()
