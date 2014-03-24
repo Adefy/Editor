@@ -94,16 +94,15 @@ class AdefyEditor
 
     # CSS selector pointing to our DOM element
     @sel = param.optional sel, "#aeditor"
-    log = AUtilLog
 
     # Array of widgets to be managed internally
     @widgets = []
 
     if $(@sel).length == 0
-      log.warn "#{@sel} not found, creating it and continuing"
+      AUtilLog.warn "#{@sel} not found, creating it and continuing"
       $("body").prepend ATemplate.aEditorBase id: @sel.replace('#', '')
 
-    $(document).ready => me.onDocumentReady()
+    $(document).ready => @onDocumentReady()
 
     AdefyEditor.__instance = this
 
@@ -136,13 +135,13 @@ class AdefyEditor
       @onResize()
     , 10
 
-    log.info "Adefy Editor created id(#{@sel})"
+    AUtilLog.info "Adefy Editor created id(#{@sel})"
 
     #new AWidgetNotification "Initialized", "blue", 1000
 
     # Check if we need to load an ad
     if window.ad != undefined and window.ad.length == 24
-      log.info "Loading #{window.ad}"
+      AUtilLog.info "Loading Ad #{window.ad}"
       @load window.ad
 
   ###
