@@ -61,9 +61,16 @@
 # @depend templates/Workspace.coffee
 class AdefyEditor
 
-  ##
+  ###
   # Editor version number
+  # @type [String]
+  ###
   @version: "0.0.1"
+
+  ###
+  # @type [AdefyEditor]
+  ###
+  @__instance: null
 
   ###
   # Editor execution starts here. We spawn all other objects ourselves. If a
@@ -96,43 +103,47 @@ class AdefyEditor
       log.warn "#{@sel} not found, creating it and continuing"
       $("body").prepend ATemplate.aEditorBase id: @sel.replace('#', '')
 
-    me = @
+    $(document).ready => me.onDocumentReady()
 
-    $(document).ready ->
-      # Create workspace, sidebars, controlbar, and timeline
-      #
-      # Create and Push widgets
-      selector = me.sel
-      headSelector = "#{selector} header"
-      bodySelector = "#{selector} .main"
-      footSelector = "#{selector} footer"
-      me.widgets.push window.menubar = me.createMenubar(headSelector)
-      me.widgets.push window.toolbar = me.createToolbar(headSelector)
-      me.widgets.push window.timeline = me.createTimeline(footSelector)
-      me.widgets.push window.statusbar = me.createStatusbar(footSelector)
-      me.widgets.push window.sidebar = me.createSidebar(bodySelector)
-      me.widgets.push window.workspace = me.createWorkspace(bodySelector)
+    AdefyEditor.__instance = this
 
-      window.sidebar.postRender()
+  onDocumentReady: ->
+    # Create workspace, sidebars, controlbar, and timeline
+    #
+    # Create and Push widgets
+    selector = @sel
+    headSelector = "#{selector} header"
+    bodySelector = "#{selector} .main"
+    footSelector = "#{selector} footer"
+    @widgets.push window.menubar = @createMenubar(headSelector)
+    @widgets.push window.toolbar = @createToolbar(headSelector)
+    @widgets.push window.timeline = @createTimeline(footSelector)
+    @widgets.push window.statusbar = @createStatusbar(footSelector)
+    @widgets.push window.sidebar = @createSidebar(bodySelector)
+    @widgets.push window.workspace = @createWorkspace(bodySelector)
 
-      # Register resize handler
-      me.onResize()
-      $(window).resize -> me.onResize()
+    window.sidebar.postRender()
 
-      # For some reason, it has to be called a second time for things to settle
-      # properly (I'm looking at you AWidgetSidebar), so call it again
-      setTimeout ->
-        me.onResize()
-      , 10
+    ##
+    # First, trigger onResize to initialize all the widgets/elements
+    # Second, register the resize callback to the window
+    # Third, call onResize again:
+    #   For some reason, it has to be called a second time for things to settle
+    #   properly (I'm looking at you AWidgetSidebar), so call it again
+    @onResize()
+    $(window).resize => @onResize()
+    setTimeout =>
+      @onResize()
+    , 10
 
-      log.info "Adefy editor created on #{me.sel}"
+    log.info "Adefy Editor created id(#{@sel})"
 
-      #new AWidgetNotification "Initialized", "blue", 1000
+    #new AWidgetNotification "Initialized", "blue", 1000
 
-      # Check if we need to load an ad
-      if window.ad != undefined and window.ad.length == 24
-        log.info "Loading #{window.ad}"
-        me.load window.ad
+    # Check if we need to load an ad
+    if window.ad != undefined and window.ad.length == 24
+      log.info "Loading #{window.ad}"
+      @load window.ad
 
   ###
   # Creates the editor main menubar

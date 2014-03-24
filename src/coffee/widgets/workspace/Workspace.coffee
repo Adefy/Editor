@@ -561,9 +561,10 @@ class AWidgetWorkspace extends AWidget
         #Submission
         @_uploadTextures data[textnameID], data[textpathID]
 
-      validation:
+      validation: =>
         if data[textnameID] == ""
           return "Texture must have a name"
+
         if data[textpathID] == null or data[textpathID] == ""
           return "You must select a texture"
 
