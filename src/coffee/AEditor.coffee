@@ -1,5 +1,5 @@
 ##
-## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+## Copyright © 2014 Spectrum IT Solutions Gmbh - All Rights Reserved
 ##
 
 # The main class, AdefyEditor instantiates everything else and gets things
@@ -10,6 +10,7 @@
 # @depend util/AUtilId.coffee
 # @depend util/AUtilLog.coffee
 # @depend util/AUtilParam.coffee
+# @depend util/AUtilFormat.coffee
 #
 # Handles! Whoop!
 # @depend handles/AHandle.coffee
@@ -23,7 +24,7 @@
 # @depend widgets/ContextMenu.coffee
 # @depend widgets/Notification.coffee
 # @depend widgets/Modal.coffee
-
+#
 # @depend widgets/timeline/Timeline.coffee
 #
 # @depend widgets/workspace/Workspace.coffee
@@ -50,6 +51,7 @@
 #
 # @depend widgets/statusbar/Statusbar.coffee
 #
+# Templates
 # @depend templates/Templates.coffee
 # @depend templates/AEditor.coffee
 # @depend templates/Asset.coffee

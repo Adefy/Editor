@@ -1,5 +1,5 @@
 ##
-## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+## Copyright © 2014 Spectrum IT Solutions Gmbh - All Rights Reserved
 ##
 
 # Tiny utility to provide unique ids from anywhere

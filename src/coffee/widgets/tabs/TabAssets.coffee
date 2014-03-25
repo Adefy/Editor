@@ -1,14 +1,26 @@
+##
+## Copyright © 2014 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # @depend Tab.coffee
 class AWidgetTabAssets extends AWidgetTab
 
   constructor: (parent) ->
-    @_assets = []
-    super parent
+    super prefId("tab-assets"), parent, ["tab-assets"]
 
-  cssKlass: ->
+    @_assets = []
+
+  ###
+  # @return [String]
+  ###
+  cssAppendParentClass: ->
     "files"
 
-  renderAssets: (assets) ->
+  ###
+  # @param [Array<Object>] assets
+  # @private
+  ###
+  _renderAssets: (assets) ->
     result = []
     for asset in assets
       if asset.directory
@@ -27,5 +39,8 @@ class AWidgetTabAssets extends AWidgetTab
 
     result.join ""
 
+  ###
+  # @return [String]
+  ###
   render: ->
-    @renderAssets @_assets
+    @_renderAssets @_assets

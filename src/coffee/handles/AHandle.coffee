@@ -1,5 +1,5 @@
 ##
-## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+## Copyright © 2014 Spectrum IT Solutions Gmbh - All Rights Reserved
 ##
 
 # Base class for all elements that can be manipulated by the editor

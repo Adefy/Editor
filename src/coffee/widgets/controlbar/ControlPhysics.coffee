@@ -1,5 +1,5 @@
 ##
-## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+## Copyright © 2014 Spectrum IT Solutions Gmbh - All Rights Reserved
 ##
 
 # Allows us to control the physics engine. (start, pause, stop)

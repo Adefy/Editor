@@ -1,3 +1,7 @@
+##
+## Copyright © 2014 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # @depend SidebarItem.coffee
 class AWidgetSidebarPanel extends AWidgetSidebarItem
 
@@ -45,11 +49,15 @@ class AWidgetSidebarPanel extends AWidgetSidebarItem
           content =  tab.content
         else # probably is a Object
           content = tab.content.render()
-          contentKlass = tab.content.cssKlass()
+          contentKlass = tab.content.cssAppendParentClass()
 
         break
 
-    ATemplate.sidebarPanel id: @_id, tabs: @_tabs, content: content, contentKlass: contentKlass
+    ATemplate.sidebarPanel
+      id: @_id,
+      tabs: @_tabs,
+      content: content,
+      contentKlass: contentKlass
 
   postRender: ->
     $(@scrollbarSelector()).perfectScrollbar suppressScrollX: true

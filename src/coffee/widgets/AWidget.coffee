@@ -1,5 +1,5 @@
 ##
-## Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+## Copyright © 2014 Spectrum IT Solutions Gmbh - All Rights Reserved
 ##
 
 # @depend ../AHTMLRenderable.coffee
@@ -57,6 +57,20 @@ class AWidget extends AHTMLRenderable
   # @return [String] sel
   ###
   getSel: -> @_sel
+
+  ###
+  # Retrieve widget's element using its own selector, optional a subSelector
+  # can be provided to select an element inside the current.
+  #
+  # @param [String] subSelector
+  #   @optional
+  # @return [jQuery] element
+  ###
+  getElement: (subSelector) ->
+    if subSelector
+      $("#{@_sel} #{subSelector}")
+    else
+      $(@_sel)
 
   ###
   # Return widget id as a string

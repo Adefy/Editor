@@ -1,4 +1,9 @@
+##
+## Copyright © 2014 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # @depend Templates.coffee
+
 ###
 # @property [String] id
 # @property [Array<Object>] tabs

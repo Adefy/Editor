@@ -1,4 +1,9 @@
+##
+## Copyright © 2014 Spectrum IT Solutions Gmbh - All Rights Reserved
+##
+
 # @depend Templates.coffee
+
 ATemplate.canvasContainer = Handlebars.compile """
 <div id="aw-canvas-container">
   <div id="awcc-outline-text"></div>
