@@ -286,6 +286,115 @@ class AHBaseActor extends AHandle
           if v.enabled
             me._actor.enablePsyx v.mass, v.friction, v.elasticity
 
+
+  ###
+  # Get internal actors' id. Note that the actor must exist for this!
+  #
+  # @return [Number] id
+  ###
+  getActorId: ->
+    if @_actor != null then return @_actor.getId()
+    AUtilLog.warn "No actor, can't get id!"
+
+  ###
+  # Get our internal actor
+  #
+  # @param [AJSBaseActor] actor
+  ###
+  getActor: -> @_actor
+
+  ###
+  # Return actor opacity
+  #
+  # @return [Number] opacity
+  ###
+  getOpacity: -> 1.0
+
+  ###
+  # Return actor position as (x,y) relative to the GL world
+  #
+  # @return [Object] position
+  ###
+  getPosition: ->
+    if @_actor != null
+      _pos = @_actor.getPosition()
+      return { x: _pos.x, y: _pos.y }
+
+    AUtilLog.warn "No actor, can't get position!"
+
+  ###
+  # Get actor rotation
+  #
+  # @return [Number] angle in degrees
+  ###
+  getRotation: -> @_properties["rotation"]._value
+
+  ###
+  # Return actor color as (r,g,b)
+  #
+  # @param [Boolean] float defaults to false, returns components as 0.0-1.0
+  # @return [Object] color
+  ###
+  getColor: (float) ->
+    float = param.optional float, false
+
+    if @_actor != null
+      _col = @_actor.getColor()
+      return { r: _col.getR(float), g: _col.getG(float), b: _col.getB(float) }
+
+  ###
+  # Get buffer entry
+  #
+  # @param [Number] time
+  # @return [Object] entry prop buffer entry, may be undefined
+  ###
+  getBufferEntry: (time) -> @_propBuffer["#{Math.floor time}"]
+
+  ###
+  # @param [Number] _opacity
+  ###
+  setOpacity: (_opacity) -> null
+
+  ###
+  # Set actor position, relative to the GL world!
+  #
+  # @param [Number] x x coordinate
+  # @param [Number] y y coordinate
+  ###
+  setPosition: (x, y) ->
+    if @_actor != null
+      @_actor.setPosition new AJSVector2(x, y)
+    else
+      AUtilLog.warn "No actor, can't set position!"
+
+  ###
+  # Set actor rotation
+  #
+  # @param [Number] _angle
+  ###
+  setRotation: (_angle) ->
+    if @_actor != null
+      @_actor.setRotation _angle
+    else
+      AUtilLog.warn "No actor, can't set rotation!"
+
+  ###
+  # Set actor color with composite values, 0-255
+  #
+  # @param [Number] r
+  # @param [Number] g
+  # @param [Number] b
+  ###
+  setColor: (r, g, b) ->
+    param.required r
+    param.required g
+    param.required b
+
+    @_properties["color"].update { r: r, g: g, b: b}
+
+  setTexture: (texture) -> @_actor.setTexture(texture)
+
+  ###
   # Used when exporting, executes the corresponding property genAnimationOpts
   # method if one exists. Returns null if the property does not exist, or if
   # the property does not have a genAnimationOpts method.
@@ -295,6 +404,7 @@ class AHBaseActor extends AHandle
   # @param [Object] options input options
   # @param [String] component optional component name
   # @return [Object] options output options
+  ###
   genAnimationOpts: (property, anim, opts, component) ->
     param.required property
     param.required anim
@@ -312,26 +422,34 @@ class AHBaseActor extends AHandle
       if prop.genAnimationOpts == undefined then return null
       else return prop.genAnimationOpts anim, opts
 
+  ###
   # Called when the cursor leaves our lifetime on the timeline. We delete
   # our AJS actor if not already dead
+  ###
   timelineDeath: ->
     if not @_alive then return else @_alive = false
 
     @_actor.destroy()
     @_actor = null
 
+  ###
   # Virtual method that our children need to implement, called when our AJS
   # actor needs to be instantiated
   # @private
+  ###
   _birth: ->
 
+  ###
   # Get our living state
   #
   # @return [Boolean] alive
+  ###
   isAlive: -> @_alive
 
+  ###
   # Needs to be called after our are actor is instantiated, so we can prepare
   # our property buffer for proper use
+  ###
   postInit: ->
     if @_initialized
       AUtilLog.warn "postInit already called, bailing"
@@ -350,6 +468,7 @@ class AHBaseActor extends AHandle
     # Update prop buffer, injects our current values as our birth state
     @updateInTime()
 
+  ###
   # Helper function to call a cb for each property. Useful to avoid writing
   # composite-aware property iterating code.
   #
@@ -358,6 +477,7 @@ class AHBaseActor extends AHandle
   #
   # @param [Object] obj properties object to parse
   # @param [Method] cb callback to call with every property
+  ###
   perProp: (obj, cb) ->
 
     # Iterate over properties
@@ -372,9 +492,11 @@ class AHBaseActor extends AHandle
       else
         cb obj[p], false
 
+  ###
   # Materialize the actor from various stored value deltas (woah, that sounds
   # epic). Essentially, update our prop buffer, and then the actors' current
   # state
+  ###
   updateInTime: ->
 
     # Birth if required
@@ -392,11 +514,17 @@ class AHBaseActor extends AHandle
     # Save state
     @_lastTemporalState = Number Math.floor(cursor)
 
+    ##
     # Notify timeline to refresh
-    AWidgetTimeline.getMe().render()
+    #AWidgetTimeline.getMe().render()
+    # Refreshing after every change is too heavy, its better to update instead
+    # check timeline for more information
+    AWidgetTimeline.getMe().updateActor(@)
 
+  ###
   # Generates a new snapshot from our current properties
   # @private
+  ###
   _genSnapshot: ->
 
     @_propSnapshot = {}
@@ -417,11 +545,13 @@ class AHBaseActor extends AHandle
 
       @_propSnapshot[p] = _Sp
 
+  ###
   # Finds states between our last temporal state, and the supplied state, and
   # applies them in order
   #
   # @param [Number] state
   # @private
+  ###
   _applyKnownState: (state) ->
     param.required state
 
@@ -469,10 +599,12 @@ class AHBaseActor extends AHandle
     for s in intermStates
       @_applyPropBuffer @_propBuffer[s]
 
+  ###
   # Applies data in prop buffer entry
   #
   # @param [Object] buffer
   # @private
+  ###
   _applyPropBuffer: (b) ->
     param.required b
 
@@ -494,6 +626,7 @@ class AHBaseActor extends AHandle
       else
         @_properties[p].update _prop.value
 
+  ###
   # Updates our state according to the current cursor position. Goes through
   # our prop buffer, and calculates a new snapshot and property object
   # accordingly.
@@ -524,6 +657,7 @@ class AHBaseActor extends AHandle
   # end state
   #
   # @private
+  ###
   _updateActorState: ->
 
     ##
@@ -635,11 +769,13 @@ class AHBaseActor extends AHandle
     # TODO: Update individual properties
     $("body").data("default-properties").refresh @
 
+  ###
   # This gets called if the cursor is to the right of us, and it has not yet
   # been called since the cursor has been in that state. It applies all buffer
   # states in order
   #
   # @private
+  ###
   _capState: ->
     if @_capped then return else @_capped = true
 
@@ -654,11 +790,13 @@ class AHBaseActor extends AHandle
     for b in _buff
       @_applyPropBuffer @_propBuffer[String(b)]
 
+  ###
   # Returns an array containing the names of properties that have been
   # modified since our last snapshot. Used in @_updatePropBuffer
   #
   # @return [Array<String>] delta
   # @private
+  ###
   _getPropertiesDelta: ->
 
     # Check which properties have changed
@@ -686,6 +824,7 @@ class AHBaseActor extends AHandle
 
     delta
 
+  ###
   # Split the animation containing 'time', if it operates on prop. Used in
   # @_updatePropBuffer
   #
@@ -693,6 +832,7 @@ class AHBaseActor extends AHandle
   # @param [String] prop property key
   # @param [String] left optional pre-calculated left cap
   # @private
+  ###
   _splitAnimation: (time, p, left) ->
     param.required time
     param.required p
@@ -735,10 +875,12 @@ class AHBaseActor extends AHandle
         @_animations[animCheck][p]._start.x = _newX
         @_animations[animCheck][p]._start.y = _newY
 
+  ###
   # Calculates new prop buffer state, using current prop snapshot, cursor
   # position and existing properties.
   #
   # @private
+  ###
   _updatePropBuffer: ->
 
     # propSnapshot is null when we have just been initialized, current
@@ -822,11 +964,14 @@ class AHBaseActor extends AHandle
           bezzie = new ABezier _start, _end, 0, [], false
           @_animations["#{@_lastTemporalState}"][p] = bezzie
 
+  ###
   # Return animations array
   #
   # @return [Array<Object>] animations
+  ###
   getAnimations: -> @_animations
 
+  ###
   # Find the nearest prop buffer entry to the left/right of the supplied state
   # An optional property can be passed in, adding its existence as a criteria
   # for the returned state. Validation of the property is also performed
@@ -836,6 +981,7 @@ class AHBaseActor extends AHandle
   # @param [String] prop property name
   # @return [String] nearest key into @_propBuffer, or -1 if not found
   # @private
+  ###
   _findNearestState: (start, right, prop) ->
     start = Number(param.required start)
     right = param.optional right, false
@@ -862,6 +1008,7 @@ class AHBaseActor extends AHandle
 
     if nearest == -1 then return -1 else return String nearest
 
+  ###
   # Prepares our properties object for injection into the buffer. In essence,
   # builds a new object containing only current values, and returns it for
   # inclusion in the buffer.
@@ -869,6 +1016,7 @@ class AHBaseActor extends AHandle
   # @param [Array<String>] delta array of property names to serialize
   # @return [Object] serialProps properties ready to be buffered
   # @private
+  ###
   _serializeProperties: (delta) ->
 
     # If no property names are supplied, serialize all properties
@@ -903,12 +1051,14 @@ class AHBaseActor extends AHandle
 
     props
 
+  ###
   # Takes serialized properties at the specified cursor time, and de-serializes
   # them; essentially reading out values and setting them appropriately in our
   # live properties object.
   #
   # @param [String] time string index into our prop buffer (cursor time in ms)
   # @private
+  ###
   _deserializeProperties: (time) ->
 
     # Should never happen as we are only used internally
@@ -927,8 +1077,10 @@ class AHBaseActor extends AHandle
       else
         @_properties[p]._value = props[p].value
 
+  ###
   # Deletes us, muahahahaha. We notify the workspace, clear the properties
   # panel if it is targetting us, and destroy our actor.
+  ###
   delete: ->
 
     if @_actor != null
@@ -947,72 +1099,3 @@ class AHBaseActor extends AHandle
       @_actor = null
 
     super()
-
-  # Get internal actors' id. Note that the actor must exist for this!
-  #
-  # @return [Number] id
-  getActorId: ->
-    if @_actor != null then return @_actor.getId()
-    AUtilLog.warn "No actor, can't get id!"
-
-  # Return actor position as (x,y) relative to the GL world
-  #
-  # @return [Object] position
-  getPosition: ->
-
-    if @_actor != null
-      _pos = @_actor.getPosition()
-      return { x: _pos.x, y: _pos.y }
-
-    AUtilLog.warn "No actor, can't get position!"
-
-  # Return actor color as (r,g,b)
-  #
-  # @param [Boolean] float defaults to false, returns components as 0.0-1.0
-  # @return [Object] color
-  getColor: (float) ->
-    float = param.optional float, false
-
-    if @_actor != null
-      _col = @_actor.getColor()
-      return { r: _col.getR(float), g: _col.getG(float), b: _col.getB(float) }
-
-  # Set actor color with composite values, 0-255
-  #
-  # @param [Number] r
-  # @param [Number] g
-  # @param [Number] b
-  setColor: (r, g, b) ->
-    param.required r
-    param.required g
-    param.required b
-
-    @_properties["color"].update { r: r, g: g, b: b}
-
-  # Set actor position, relative to the GL world!
-  #
-  # @param [Number] x x coordinate
-  # @param [Number] y y coordinate
-  setPosition: (x, y) ->
-    if @_actor != null
-      @_actor.setPosition new AJSVector2(x, y)
-    else
-      AUtilLog.warn "No actor, can't set position!"
-
-  # Get our internal actor
-  #
-  # @param [AJSBaseActor] actor
-  getActor: -> @_actor
-
-  # Get actor rotation
-  #
-  # @return [Number] angle in degrees
-  getRotation: -> @_properties["rotation"]._value
-
-  # Get buffer entry
-  #
-  # @param [Number] time
-  # @return [Object] entry prop buffer entry, may be undefined
-  getBufferEntry: (time) -> @_propBuffer["#{Math.floor time}"]
-
-  setTexture: (texture) -> @_actor.setTexture(texture)

@@ -21,8 +21,13 @@
       height: 100%
       width: 1px
       z-index: 3
-      background-color: white
       cursor: ew-resize
+      background-color: #fff
+      border: 1px solid #555
+
+      &:hover
+        background-color: #fff
+        border-color: #ccc
 
     .header
       font-size: 16px
@@ -51,15 +56,27 @@
         &:hover
           color: #aaa
 
+    .timebar
+      height: 12px
+
     .list
       float: left
+      height: 100%
       width: 310px
       //padding: 15px
       border-right: 1px solid rgba(0,0,0,.35)
       box-shadow: inset -1px 0 rgba(255,255,255,.05)
       background-color: #232323
+
+      .timebar
+        background-color: #232323
+
     .time
+      height: 100%
       margin-left: 310px
+
+      .timebar
+        background-color: #171717
 
     .row
       height: 24px

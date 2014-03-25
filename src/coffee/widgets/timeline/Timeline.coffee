@@ -8,12 +8,13 @@
 # 9/6/2013: Escape while you still can
 #
 # @depend ABezier.coffee
+# @depend TimelineControl.coffee
 class AWidgetTimeline extends AWidget
 
-  # Only one instance can ever exist
-  @__exists: false
-
+  ###
   # Always useful
+  # @type [AWidgetTimeline]
+  ###
   @__instance: null
 
   ###
@@ -39,6 +40,22 @@ class AWidgetTimeline extends AWidget
   ]
 
   ###
+  # Return our instance (assuming we exist)
+  #
+  # @return [AWidgetTimeline] instance
+  ###
+  @getMe: -> @__instance
+
+  ###
+  # Get a random timebar color index, used when setting default actor timebar
+  # color
+  #
+  # @return [Number] colIndex
+  ###
+  @getRandomTimebarColor: ->
+    Math.floor(Math.random() * @_timebarColors.length)
+
+  ###
   # Creates a timeline at the bottom of the screen. Note that it is absolutely
   # positioned, and adds padding to the body accordingly.
   #
@@ -46,13 +63,12 @@ class AWidgetTimeline extends AWidget
   # @param [Number] duration ad length in ms, can be expensively modified later
   ###
   constructor: (parent, duration) ->
-
-    if AWidgetTimeline.__exists
+    if AWidgetTimeline.__instance
       throw new Error "Only one timeline can exist at any one time!"
       # You also can't destroy existing timelines, so HAH
-
-    AWidgetTimeline.__exists = true
     AWidgetTimeline.__instance = @
+
+    @_control = new AWidgetTimelineControl @
 
     # Default preview playback speed (fps)
     @_previewRate = 30
@@ -94,10 +110,29 @@ class AWidgetTimeline extends AWidget
     # Set initial time
     @_updateCursorTime()
 
-    me = @
-
     @_enableDrag()
     @_regListeners()
+
+  ###
+  # Returns the time space css selector
+  # @return [String] selector
+  # @private
+  ###
+  _spaceSelector: -> "#{@_sel} .content .time"
+
+  ###
+  # Returns the body space css selector
+  # @return [String] selector
+  # @private
+  ###
+  _bodySelector: -> "#{@_sel} .content .list"
+
+  ###
+  # Get current timeline duration
+  #
+  # @return [Number] duration
+  ###
+  getDuration: -> @_duration
 
   ###
   # Enables cursor dragging
@@ -107,7 +142,7 @@ class AWidgetTimeline extends AWidget
     me = @
 
     # Enable cursor dragging
-    $("#att-cursor").draggable
+    $("#timeline-cursor").draggable
       axis: "x"
       containment: "parent"
       drag: (e, ui) ->
@@ -133,169 +168,138 @@ class AWidgetTimeline extends AWidget
       ARELog.info "SAVED"
       @_actors[index].updateInTime()
 
+
+  ###
+  # Resize and apply our height to the body
+  #
+  # @param [Number] height
+  ###
+  resize: (@_height) ->
+    $(@_sel).css "height", "#{@_height}px"
+    #$("body").css "padding-bottom", @_bodyPadding + @_height
+
+  ###
+  # callback when a resize takes place
+  ###
+  onResize: ->
+    $("#{@_sel} .content").height $(@_sel).height() - $("#{@_sel} .header").height()
+
+  ###
+  # When an actor expand button is pressed this function is called
+  # @param [Event] e
+  ###
+  _onActorExpand: (e) ->
+    actorId = e.currentTarget.attributes.actorid.value
+    timeSelector = "#actor-time-#{actorId}.actor"
+    bodySelector = "#actor-body-#{actorId}.actor"
+
+    elm = $(bodySelector)
+    elm.toggleClass "expanded"
+    $(timeSelector).toggleClass "expanded", elm.hasClass("expanded")
+
+    icon = $("#{bodySelector} .expand i")
+    if elm.hasClass "expanded"
+      icon.removeClass "fa-caret-right"
+      icon.addClass "fa-caret-down"
+    else
+      icon.removeClass "fa-caret-down"
+      icon.addClass "fa-caret-right"
+
+  ###
+  # Cursor drag event
+  #
+  # @param [Event] e
+  # @param [Object] ui
+  # @private
+  ###
+  _onCursorDrag: (e, ui) ->
+    # Update our cursor time
+    @_updateCursorTime()
+
+  ###
+  # Cursor drag stop event, updates all living
+  #
+  # @param [Event] e
+  # @param [Object] ui
+  # @private
+  ###
+  _onCursorDragStop: (e, ui) ->
+    # TODO: Apply update to only existing actors.
+    #       Calculate actor births and deaths seperately (after this)
+    cursor = @getCursorTime()
+    for a in @_actors
+      # Check if actor needs to die
+      if (cursor < a.lifetimeStart or cursor > a.lifetimeEnd) and a.isAlive()
+        a.timelineDeath()
+
+      if a.isAlive() or (cursor >= a.lifetimeStart and cursor <= a.lifetimeEnd)
+        a.updateInTime()
+
+  ###
+  # Update displayed cursor time
+  # @private
+  ###
+  _updateCursorTime: ->
+    ms = @getCursorTime()
+    seconds = ms / 1000.0
+    minutes = seconds / 60.0
+    #hours = minutes / 60.0 # we will probably never get this far
+    $("#timeline-cursor-time").text "#{(minutes % 60).toFixed()}:#{(seconds % 60).toFixed(2)}"
+    #$("#timeline-cursor-time").text "Cursor: #{time}s @ #{@_previewRate} FPS"
+
   ###
   # Registers event listeners
   # @private
   ###
   _regListeners: ->
     me = @
-
     # Set up event listeners (this is where the magic happens)
     $(document).ready ->
+      # Handle expansions
+      $(document).on "click", ".actor .expand", (e) ->
+        me._onActorExpand e
 
       # Outer timebar
-      $(document).on "click", ".atts-outer", (e) -> me._outerClicked e, @
+      $(document).on "click", ".atts-outer", (e) ->
+        me._outerClicked e, @
 
       # Timeline visibility toggle
-      $(document).on "click", "#attt-toggle", (e) -> me._visToggleClicked e
+      $(document).on "click", "#timline-visible-toggle", (e) ->
+        me._control._visToggleClicked e
 
       # Timeline playback controls
-      $(document).on "click", "#atttc-toggle", (e) -> me._toggleClicked e
-      $(document).on "click", "#atttc-forward", (e) -> me._forwClicked e
-      $(document).on "click", "#atttc-backward", (e) -> me._prevClicked e
+      $(document).on "click", "#timeline-control-fast-backward", (e) ->
+        me._control.onClickFastBackward e
+
+      $(document).on "click", "#timeline-control-forward", (e) ->
+        me._control.onClickForward e
+
+      $(document).on "click", "#timeline-control-play", (e) ->
+        me._control.onClickPlay e
+
+      $(document).on "click", "#timeline-control-backward", (e) ->
+        me._control.onClickBackward e
+
+      $(document).on "click", "#timeline-control-fast-forward", (e) ->
+        me._control.onClickFastForward e
 
       # Sidebar save button
-      $(document).on "click", ".asp-save", (e) -> me._saveKey e
+      $(document).on "click", ".asp-save", (e) ->
+        me._saveKey e
 
   ###
-  # @private
+  # Return current cursor time in ms (relative to duration)
+  #
+  # @return [Number] time cursor time in ms
   ###
-  _endPlayback: ->
-    clearInterval @_playbackID
-    @setCursorTime 0
-    @_playbackID = null
+  getCursorTime: ->
+    # I thought about making this a warning and just returning '0', but that
+    # would mess up thing elsewhere (whoever uses our return value would be
+    # screwed). This makes the most sense
+    if $("#timeline-cursor").length == 0
+      throw new Error "Cursor not visible can't return time!"
 
-  ###
-  # @private
-  ###
-  _pausePlayback: ->
-    clearInterval @_playbackID
-    @_playbackID = null
-
-  ###
-  # Playback toggle button clicked (play/pause)
-  # @private
-  ###
-  _toggleClicked: ->
-
-    # If currently playing, remove the interval
-    if @_playbackID != undefined and @_playbackID != null
-      @_pausePlayback()
-      return
-
-    frameRate = 1000 / @_previewRate
-
-    # Play the ad at 30 frames per second
-    me = @
-    @_playbackStart = @getCursorTime()
-    @_playbackID = setInterval ->
-      nextTime = me.getCursorTime() + frameRate
-      if nextTime > me._duration then nextTime = me._duration
-
-      me.setCursorTime nextTime
-
-      if nextTime >= me._duration then me._endPlayback()
-
-    , frameRate
-
-  ###
-  # Visibilty toggle request
-  # @private
-  ###
-  _visToggleClicked: ->
-
-    if $(@_sel).css("bottom") == "0px" and not @__animating
-      @__animating = true
-
-      $(@_sel).animate
-        bottom: "-#{$(@_sel).height() - 24}px"
-      ,
-        duration: 500
-        easing: "swing"
-        step: =>
-          window.left_sidebar.onResize()
-          window.right_sidebar.onResize()
-          window.workspace.onResize()
-        done: => @__animating = false
-
-    else if not @__animating
-      @__animating = true
-
-      $(@_sel).animate
-        bottom: "0px"
-      ,
-        duration: 500
-        easing: "swing"
-        step: =>
-          window.left_sidebar.onResize()
-          window.right_sidebar.onResize()
-          window.workspace.onResize()
-        done: => @__animating = false
-
-  ###
-  # Forward playback button clicked (next keyframe)
-  # @private
-  ###
-  _forwClicked: ->
-    _currentPosition = @getCursorTime()
-    _newPosition = null
-    _min = 99999
-    index = AWidgetWorkspace.getSelectedActor()
-
-    # only enter checks if an actor is actually selected
-    if index != null and index != undefined
-      for actor, i in @_actors
-        if actor.getId() == index then index = i
-
-      _animations = @_actors[index].getAnimations()
-      for anim of _animations
-        if anim > _currentPosition
-          if anim - _currentPosition < _min and anim - _currentPosition > 1
-            _newPosition = anim
-            _min = Math.round(anim - _currentPosition)
-
-      # if no animations after current position, go to the end of the timeline
-      if _newPosition != null
-        if @_playbackID != null and @_playbackID != undefined
-          @_pausePlayback()
-        @setCursorTime _newPosition
-      else
-        # If we move cursor to duration, it is not on the screen anymore
-        # maybe an issue with the width, maybe just because of how my
-        # screens are set up. Something to keep an eye on.
-        @setCursorTime @_duration
-        @_pausePlayback()
-
-  ###
-  # Backward playback button clicked (prev keyframe)
-  # @private
-  ###
-  _prevClicked: ->
-    _currentPosition = @getCursorTime()
-    _newPosition = null
-    _min = 99999
-    index = AWidgetWorkspace.getSelectedActor()
-
-    # only enter checks if an actor is actually selected
-    if index != null and index != undefined
-      for actor, i in @_actors
-        if actor.getId() == index then index = i
-
-      _animations = @_actors[index].getAnimations()
-      for anim of _animations
-        if anim < _currentPosition
-          if _currentPosition - anim < _min and _currentPosition - anim > 1
-            _newPosition = anim
-            _min = Math.round(_currentPosition - anim)
-
-      # if no animtaions before this one we go to the beginning of the timeline
-      if _newPosition != null
-        if @_playbackID != null and @_playbackID != undefined
-          @_pausePlayback()
-        @setCursorTime _newPosition
-      else
-        @setCursorTime 0
-        @_endPlayback()
+    @_duration * ($("#timeline-cursor").position().left / $(@_spaceSelector()).width())
 
   ###
   # Show dialog box for setting the preview framerate
@@ -325,110 +329,29 @@ class AWidgetTimeline extends AWidget
         true
 
   ###
-  # Cursor drag event
-  #
-  # @param [Event] e
-  # @param [Object] ui
-  # @private
-  ###
-  _onCursorDrag: (e, ui) ->
-
-    # Update our cursor time
-    @_updateCursorTime()
-
-  ###
-  # Cursor drag stop event, updates all living
-  #
-  # @param [Event] e
-  # @param [Object] ui
-  # @private
-  ###
-  _onCursorDragStop: (e, ui) ->
-
-    # TODO: Apply update to only existing actors.
-    #       Calculate actor births and deaths seperately (after this)
-
-    for a in @_actors
-
-      cursor = @getCursorTime()
-
-      # Check if actor needs to die
-      if (cursor < a.lifetimeStart or cursor > a.lifetimeEnd) and a.isAlive()
-        a.timelineDeath()
-
-      if a.isAlive() or (cursor >= a.lifetimeStart and cursor <= a.lifetimeEnd)
-        a.updateInTime()
-
-  # Update displayed cursor time
-  # @private
-  _updateCursorTime: ->
-    time = (@getCursorTime() / 1000.0).toFixed 3
-    $("#attt-cursor-time").text "Cursor: #{time}s @ #{@_previewRate} FPS"
-
-  # Timebar click handler, magic and whatnot
-  #
-  # @param [Object] e click event
-  # @param [Object] element dom element that was clicked
-  # @private
-  _outerClicked: (e, element) ->
-    param.required e
-    param.required element
-
-    # Grab and validate index
-    index = Number $(element).attr("data-index")
-    if index < 0 or index > @_actors.length - 1 or isNaN(index)
-      AUtilLog.warn "Clicked timebar has an invalid index, bailing [#{index}]"
-      return
-
-    @_actors[index].onClick()
-
-  # Return our instance (assuming we exist)
-  #
-  # @return [AWidgetTimeline] instance
-  @getMe: -> AWidgetTimeline.__instance
-
-  # Get a random timebar color index, used when setting default actor timebar
-  # color
-  #
-  # @return [Number] colIndex
-  @getRandomTimebarColor: ->
-    Math.floor(Math.random() * AWidgetTimeline._timebarColors.length)
-
   # Set an arbitrary cursor time
   #
   # @param [Number] time cursor time in ms
+  ###
   setCursorTime: (time) ->
     param.required time
 
-    if $("#att-cursor").length == 0
+    if $("#timeline-cursor").length == 0
       throw new Error "Cursor not visible can't return time!"
 
     # Move cursor
-    $("#att-cursor").css "left", $("#att-space").width() * (time / @_duration)
+    $("#timeline-cursor").css "left", $(@_spaceSelector()).width() * (time / @_duration)
 
     # Update
     @_onCursorDrag()
     @_onCursorDragStop()
 
-  # Return current cursor time in ms (relative to duration)
-  #
-  # @return [Number] time cursor time in ms
-  getCursorTime: ->
-
-    return # skip the cursor check for now
-
-    # I thought about making this a warning and just returning '0', but that
-    # would mess up thing elsewhere (whoever uses our return value would be
-    # screwed). This makes the most sense
-    if $("#att-cursor").length == 0
-      throw new Error "Cursor not visible can't return time!"
-
-    @_duration * ($("#att-cursor").position().left / $("#att-space").width())
-
+  ###
   # Register actor, causes it to appear on the timeline starting from the
   # current cursor position.
   #
   # @param [AHBaseActor] actor
+  ###
   registerActor: (actor) ->
     param.required actor
 
@@ -468,127 +391,13 @@ class AWidgetTimeline extends AWidget
     false
 
   ###
-  # Get current timeline duration
-  #
-  # @return [Number] duration
-  ###
-  getDuration: -> @_duration
-
-  ###
-  # Render initial structure.
-  # Note that calling this clears the timeline visually, and does not render
-  # objects! Objects are not destroyed, call @render to update them.
-  ###
-  renderStructure: ->
-
-    return $(@_sel).html ATemplate.timelineBase()
-
-    _html = ""
-
-    # First up comes the actor listing. This is simply a flat list of all
-    # actors in the scene. Clicking an actor selects it in the workspace, and
-    # highlights its' timeline row.
-    _html += "<ul id=\"at-actors\">"
-    _html +=  "<hr>"
-    _html +=   "<div id=\"ata-title\">Actors</div>"
-    _html +=  "<hr>"
-    _html +=   "<div id=\"ata-body\"></div>"
-    _html += "</ul>"
-
-    # Next we have the timeline itself. This is one wild beast of functionality
-    # Or at least it is planned to be at the time of this comment. Hopefully,
-    # in a week or so, it'll be alive and working. Hopefully.
-    _html += "<div id=\"at-timeline\">"
-
-    # Our toolbar, serving both as an edge to resize ourselves with, and a
-    # container for generic timeline functions. Also displays current cursor
-    # position (time)
-    _html += """
-      <div id=\"att-toolbar\">
-        <div class=\"attt-third\">
-          <span id=\"attt-cursor-time\"></span>
-        </div>
-        <div class=\"attt-third\">
-          <div id=\"attt-controls\">
-            <i id=\"atttc-backward\" class=\"icon-step-backward\"></i>
-            <i id=\"atttc-toggle\" class=\"icon-play\"></i>
-            <i id=\"atttc-forward\" class=\"icon-step-forward\"></i>
-          </div>
-        </div>
-        <div class=\"attt-third\">
-          <i id=\"attt-toggle\" class=\"icon-caret-down\"></i>
-        </div>
-      </div>
-      """
-
-    # Timeline cursor, designates current time, draggable, sexy
-    _html +=   "<div id=\"att-cursor\"><div></div></div>"
-
-    # Proper timeline space, actor timelines are contained here.
-    _html +=   "<ul id=\"att-space\"></ul>"
-
-    _html += "</div>"
-
-    # Ship
-    $(@_sel).html _html
-
-  ###
-  # Proper render function, fills in timeline internals. Since we have two
-  # distinct sections, each is rendered by a seperate method. This helps
-  # divide the necessary logic, into @_renderActors() and @_renderSpace(). This
-  # function simply calls both.
-  ###
-  render: ->
-    @_renderActors()
-    @_renderSpace()
-
-  ###
   # Refresh spacer length and actor color in the actor list
   # @private
   ###
   _refreshActorRows: ->
-
     me = @
-    $(".atab-spacer").each ->
-      name = $(@).parent().find(".atab-name")[0]
-      a = me._actors[Number($(@).parent().attr("data-index"))]
-
-      # Set width
-      $(@).width $(@).parent().width() - $(name).width() - 24
-
-      # Remove current color
-      for c in AWidgetTimeline._timebarBGColors
-        $(@).removeClass c
-
-      # Ship new color
-      $(@).addClass AWidgetTimeline._timebarBGColors[a.timebarColor]
-
-    $(".atab-name").each ->
-      a = me._actors[Number($(@).parent().attr("data-index"))]
-
-      # Remove current color
-      for c in AWidgetTimeline._timebarColors
-        $(@).removeClass c
-
-      # Ship new color
-      $(@).addClass AWidgetTimeline._timebarColors[a.timebarColor]
-
-  ###
-  # Render the actor list Should never be called by itself, only by @render()
-  #
-  # @private
-  ###
-  _renderActors: ->
-
-    _h = ""
-
-    for a, i in @_actors
-      _h += @_renderSingleActor i, true
-
-    # Ship
-    $("#ata-body").html _h
-
-    @_refreshActorRows()
+    $("#{@_bodySelector()} actor").each ->
+      #
 
   ###
   # Appends a single actor to the actor list, used after registering an actor
@@ -604,13 +413,53 @@ class AWidgetTimeline extends AWidget
     notouch = param.optional notouch, false
     param.required index
 
-    spacer = "<div class=\"atab-spacer\"></div>"
-    name = "<div class=\"atab-name\">#{@_actors[index].name}</div>"
-    _h = "<li data-index=\"#{index}\">#{name}#{spacer}</li>"
+    actor = @_actors[index]
+    pos = actor.getPosition()
+    color = actor.getColor()
 
-    if notouch then return _h
+    _properties = []
+    _properties.push
+      id: "opacity"
+      title: "Opacity"
+      value: "#{actor.getOpacity()}"
 
-    $("#ata-body").append _h
+    _properties.push
+      id: "position"
+      title: "Position"
+      value: "#{pos.x}, #{pos.y}"
+
+    _properties.push
+      id: "rotation"
+      title: "Rotation"
+      value: "#{actor.getRotation()}"
+
+    _properties.push
+      id: "color"
+      title: "Color"
+      value: "#{color.r}, #{color.g}, #{color.b}"
+
+    _html = ATemplate.timelineActor
+      id: "actor-body-#{actor.getId()}"
+      actorId: actor.getId()
+      title: actor.name
+      properties: _properties
+
+    if notouch then return _html
+
+    $(@_bodySelector()).append _html
+    @_refreshActorRows()
+
+  ###
+  # Render the actor list Should never be called by itself, only by @render()
+  #
+  # @private
+  ###
+  _renderActors: ->
+    _h = ""
+    for a, i in @_actors
+      _h += @_renderSingleActor i, true
+    # Ship
+    $(@_bodySelector()).html _h
     @_refreshActorRows()
 
   ###
@@ -631,10 +480,10 @@ class AWidgetTimeline extends AWidget
     if index < 0 or index >= @_actors.length
       throw new Error "Invalid index, no actor at #{index}, can't render space"
 
-    _h = ""
-    spaceW = $("#att-space").width()
+    spaceW = $(@_spaceSelector()).width()
 
     a = @_actors[index]
+    aID = a.getId()
 
     # TODO: Consider moving the following two checks into our registerActor
     #       method. The only possible concern with that is the fact that
@@ -660,28 +509,84 @@ class AWidgetTimeline extends AWidget
     _start = spaceW * (a.lifetimeStart / @_duration)
     _length = spaceW * ((a.lifetimeEnd - a.lifetimeStart) / @_duration)
 
-    # Build style
-    style = "style=\"left:#{_start}px; width:#{_length}px\""
+    keyframes =
+      opacity: []
+      position: []
+      rotation: []
+      color: []
+      #psyx: []
 
-    _colorClass = AWidgetTimeline._timebarBGColors[a.timebarColor]
-
-    # Injectify
-    _h += "<div data-index=\"#{index}\" class=\"atts-outer\">"
-    _h +=   "<div #{style} class=\"attso-inner #{_colorClass}\">"
-
-    # Render animation handles
     _animations = a.getAnimations()
     for anim of _animations
+      continue unless anim.components
+
       offset = spaceW * ((Number(anim) - a.lifetimeStart) / @_duration)
-      _h += "<div style=\"left: #{offset}px;\" class=\"attso-key\">"
-      _h +=   "<i class=\"icon-bolt\"></i>"
-      _h += "</div>"
 
-    _h +=   "</div>"
-    _h += "</div>"
+      if anim.components.opacity
+        keyframes["opacity"].push
+          id: "opacity-#{aID}-key-#{keyframes["opacity"].length}"
+          left: offset
 
-    if notouch then return _h
-    else $("#att-space").append _h
+      if anim.components.position
+        keyframes["position"].push
+          id: "position-#{aID}-key-#{keyframes["position"].length}"
+          left: offset
+
+      if anim.components.rotation
+        keyframes["rotation"].push
+          id: "rotation-#{aID}-key-#{keyframes["rotation"].length}"
+          left: offset
+
+      if anim.components.color
+        keyframes["color"].push
+          id: "color-#{aID}-key-#{keyframes["color"].length}"
+          left: offset
+
+      #if anim.components.psyx
+      #  keyframes["psyx"].push
+      #    id: "psyx-#{aID}-key-#{keyframes["psyx"].length}"
+      #    left: offset
+
+    properties = []
+    properties.push
+      id: "actor-time-bar-#{aID}"
+      isProperty: false
+      left: _start
+      width: _length
+
+    properties.push
+      id: "actor-time-property-opacity-#{aID}"
+      isProperty: false
+      keyframes: keyframes["opacity"]
+
+    properties.push
+      id: "actor-time-property-position-#{aID}"
+      isProperty: false
+      keyframes: keyframes["position"]
+
+    properties.push
+      id: "actor-time-property-rotation-#{aID}"
+      isProperty: false
+      keyframes: keyframes["rotation"]
+
+    properties.push
+      id: "actor-time-property-color-#{aID}"
+      isProperty: false
+      keyframes: keyframes["color"]
+
+    #properties.push
+    #  id: "actor-time-property-psyx-#{aID}"
+    #  isProperty: false
+    #  keyframes: keyframes["psyx"]
+
+    _html = ATemplate.timelineActorTime
+      id: "actor-time-#{aID}"
+      dataIndex: index
+      isExpanded: $("#actor-body-#{aID}").hasClass("expanded")
+      properties: properties
+
+    if notouch then return _html
+    else $("#{@_spaceSelector()} .time-actors").append _html
 
   ###
   # Render the timeline space. Should never be called by itself, only by
@@ -690,22 +595,62 @@ class AWidgetTimeline extends AWidget
   # @private
   ###
   _renderSpace: ->
-
-    _h = ""
-
     # Create a time bar for each actor, positioned according to their birth and
     # death.
+    _h = ""
     for a, i in @_actors
       _h += @_renderActorSpace i, true
-
     # Ship
-    $("#att-space").html _h
+    $("#{@_spaceSelector()} .time-actors").html _h
 
   ###
-  # Resize and apply our height to the body
-  #
-  # @param [Number] height
+  # Render initial structure.
+  # Note that calling this clears the timeline visually, and does not render
+  # objects! Objects are not destroyed, call @render to update them.
   ###
-  resize: (@_height) ->
-    $(@_sel).css "height", "#{@_height}px"
-    $("body").css "padding-bottom", @_bodyPadding + @_height
+  renderStructure: ->
+    options =
+      id: "timeline-header"
+      currentTime: "0:00.00"
+      #contents: ""
+      #timeContents: ""
+
+    return $(@_sel).html ATemplate.timelineBase options
+
+  ###
+  # Proper render function, fills in timeline internals. Since we have two
+  # distinct sections, each is rendered by a seperate method. This helps
+  # divide the necessary logic, into @_renderActors() and @_renderSpace(). This
+  # function simply calls both.
+  ###
+  render: ->
+    @_renderActors()
+    @_renderSpace()
+
+  ###
+  # Called by actors, for updating its Timeline state
+  # this is a much gentle way of updating the data, instead of rendering
+  # over the HTML content
+  # @friend [AHBaseActor]
+  # @param [AHBaseActor] actor
+  # @private
+  ###
+  updateActor: (actor) ->
+    actorId = actor.getId()
+
+    pos = actor.getPosition()
+    color = actor.getColor()
+
+    selector = "actor-body-#{actor.getId()}.actor property"
+    $("#{selector} #opacity .value").text "#{actor.getOpacity()}"
+    $("#{selector} #position .value").text "#{pos.x}, #{pos.y}"
+    $("#{selector} #rotation .value").text "#{actor.getRotation()}"
+    $("#{selector} #color .value").text "#{color.r}, #{color.g}, #{color.b}"
+
+  ###
+  # Kills the interval and NULLs the playbackID
+  # @private
+  ###
+  clearPlaybackID: ->
+    clearInterval @_playbackID
+    @_playbackID = null
