@@ -26,9 +26,15 @@ class AWidgetWorkspace extends AWidget
 
   ###
   # Retrieves the currently selected actor, if any
-  # @return [AHBaseActor]
+  # @return [Id] actorId
   ###
-  @getSelectedActor: => @_selectedActor
+  @getSelectedActor: -> @_selectedActor
+
+  ###
+  # Sets the selectedActor instance
+  # @param [Id] actorId
+  ###
+  @setSelectedActor: (actorId) -> @_selectedActor = actorId
 
   ###
   # Creates a new workspace if one does not already exist
@@ -272,7 +278,7 @@ class AWidgetWorkspace extends AWidget
           if o.getActorId() == _id
 
             # Update selected actor for use in AWidgetTimeline
-            AWidgetWorkspace._selectedActor = o.getId()
+            AWidgetWorkspace.setSelectedActor o.getId()
 
             # Fill in property list!
             o.onClick()
@@ -339,7 +345,7 @@ class AWidgetWorkspace extends AWidget
           if o.getActorId() == _id
 
             # Update selected actor for use in AWidgetTimeline
-            AWidgetWorkspace._selectedActor = o.getId()
+            AWidgetWorkspace.setSelectedActor o.getId()
 
             # Fill in property list!
             o.onClick()
