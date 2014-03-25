@@ -122,12 +122,23 @@ class AWidgetWorkspace extends AWidget
   getPhoneScale: -> @_pScale
 
   ###
+  # Adds an actor to the workspace
+  ###
+  addActor: (actor) ->
+    # Register actor with ourselves
+    @actorObjects.push actor
+    # Register actor with the timeline
+    AWidgetTimeline.getMe().registerActor actor
+
+  ###
   # Because indenting gets ugly
   ###
   onDocumentReady: ->
     ##
     # TODO. Chop this up some more, its far too large imo
     ##
+
+    me = @
 
     # Set up draggable objects
     $(".workspace-drag").draggable
@@ -156,12 +167,7 @@ class AWidgetWorkspace extends AWidget
         #       something besides an actor is dropped. For the time being,
         #       that can't happen. Yay.
         if handle instanceof AHBaseActor
-
-          # Register actor with ourselves
-          me.actorObjects.push handle
-
-          # Register actor with the timeline
-          AWidgetTimeline.getMe().registerActor handle
+          me.addActor handle
 
     # Actor dragging, whoop
     __drag_start_x = 0      # Keeps track of the initial drag point, so
