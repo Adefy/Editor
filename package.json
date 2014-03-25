@@ -1,10 +1,30 @@
 {
-  "name": "adefyeditor",
+  "name": "Editor",
   "description": "Adefy HTML5 Ad Editor",
-  "author": "Cris Mihalache <cris.mihalache@spectrumit.eu>",
-  "version": "0.0.1",
+  "author": "Spectrum IT Solutions GmbH <office@spectrumit.eu>",
+  "version": "0.0.2",
   "dependencies": {},
+  "contributors": [
+    {
+      "name": "Cris Mihalache",
+      "email": "cris@adefy.com"
+    },
+    {
+      "name": "Blaž Hrastnik",
+      "email": "blaz@adefy.com"
+    },
+    {
+      "name": "Corey Powell",
+      "email": "corey@adefy.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Adefy/Editor.git"
+  },
   "devDependencies": {
+    "stylus": "~0.37.0",
+    "coffee-script": "~1.7.1",
     "grunt": "~0.4.1",
     "grunt-contrib-coffee": "~0.7.0",
     "grunt-contrib-watch": "~0.5.1",
@@ -15,7 +35,6 @@
     "grunt-lib-phantomjs": "~0.3.1",
     "grunt-contrib-copy": "~0.4.1",
     "grunt-coffeelint": "0.0.7",
-    "stylus": "~0.37.0",
     "grunt-contrib-stylus": "~0.8.0",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-uglify": "~0.2.4"
