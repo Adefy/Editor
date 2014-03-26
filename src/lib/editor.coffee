@@ -123,11 +123,8 @@ define (require) ->
       fileMenu.createChild "Quit"
 
       # View menu options
-      viewMenu.createChild "Toggle Toolbox Sidebar", null, \
-        "window.left_sidebar.toggle()"
-
-      viewMenu.createChild "Toggle Properties Sidebar", null, \
-        "window.right_sidebar.toggle()"
+      viewMenu.createChild "Toggle Sidebar", null, \
+        "window.sidebar.toggle()"
 
       viewMenu.createChild "Fullscreen"
 
