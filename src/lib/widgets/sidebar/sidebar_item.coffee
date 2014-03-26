@@ -1,9 +1,9 @@
-define [
-  "util/id"
-  "util/param"
-  "widgets/widget"
-  "widgets/sidebar/sidebar"
-], (ID, param, Widget, Sidebar) ->
+define (require) ->
+
+  param = require "util/param"
+  ID = require "util/id"
+  Widget = require "widgets/widget"
+  Sidebar = require "widgets/sidebar/sidebar"
 
   # Generic sidebar item meant to be extended
   class SidebarItem extends Widget

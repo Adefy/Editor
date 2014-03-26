@@ -1,4 +1,6 @@
-define ["widgets/controlbar/controlbar_control"], (ControlBarControl) ->
+define (require) ->
+
+  ControlBarControl = require "widgets/controlbar/controlbar_control"
 
   # Allows us to control the state of the renderer (start, pause, stop) the loop
   class ControlRender extends ControlBarControl

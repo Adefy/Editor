@@ -1,7 +1,7 @@
-define [
-  "widgets/sidebar/sidebar_item"
-  "templates/sidebar_panel"
-], (SidebarItem, SidebarPanelTemplate) ->
+define (require) ->
+
+  SidebarItem = require "widgets/sidebar/sidebar_item"
+  SidebarPanelTemplate = require "templates/sidebar_panel"
 
   class SidebarPanel extends SidebarItem
 

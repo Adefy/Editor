@@ -1,31 +1,26 @@
-define [
-  "util/log"
-  "util/param"
+define (require) ->
+  AUtilLog = require "util/log"
+  param = require "util/param"
 
-  "handles/actors/polygon"
-  "handles/actors/triangle"
-  "handles/actors/rectangle"
+  PolygonActor = require "handles/actors/polygon"
+  TriangleActor = require "handles/actors/triangle"
+  RectangleActor = require "handles/actors/rectangle"
 
-  "widgets/notification"
-  "widgets/modal"
-  "widgets/menubar/menubar"
+  Notification = require "widgets/notification"
+  Modal = require "widgets/modal"
+  MenuBar = require "widgets/menubar/menubar"
+  Sidebar = require "widgets/sidebar/sidebar"
+  SidebarObjectGroup = require "widgets/sidebar/sidebar_object_group"
+  SidebarPanel = require "widgets/sidebar/sidebar_panel"
+  StatusBar = require "widgets/statusbar/statusbar"
+  TabAssets = require "widgets/tabs/tab_assets"
+  TabProperties = require "widgets/tabs/tab_properties"
+  Bezier = require "widgets/timeline/bezier"
+  Timeline = require "widgets/timeline/timeline"
+  Toolbar = require "widgets/toolbar/toolbar"
+  Workspace = require "widgets/workspace/workspace"
 
-  "widgets/sidebar/sidebar"
-  "widgets/sidebar/sidebar_object_group"
-  "widgets/sidebar/sidebar_panel"
-
-  "widgets/statusbar/statusbar"
-  "widgets/tabs/tab_assets"
-  "widgets/tabs/tab_properties"
-
-  "widgets/timeline/bezier"
-  "widgets/timeline/timeline"
-
-  "widgets/toolbar/toolbar"
-  "widgets/workspace/workspace"
-
-  "templates/editor"
-], (AUtilLog, param, PolygonActor, TriangleActor, RectangleActor, Notification, Modal, MenuBar, Sidebar, SidebarObjectGroup, SidebarPanel, StatusBar, TabAssets, TabProperties, Bezier, Timeline, Toolbar, Workspace, EditorTemplate) ->
+  EditorTemplate = require "templates/editor"
 
   class Editor
 
@@ -198,7 +193,7 @@ define [
     # @return [Workspace]
     ###
     createWorkspace: (selector) ->
-      workspace = new Workspace selector
+      workspace = new Workspace selector, window.timeline
 
       workspace
 

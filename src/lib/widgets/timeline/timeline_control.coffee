@@ -1,9 +1,8 @@
-define [
-  "util/log"
-  "util/param"
-  "widgets/timeline/timeline"
-  "widgets/workspace/workspace"
-], (AUtilLog, param, Timeline, Workspace) ->
+define (require) ->
+
+  AUtilLog = require "util/log"
+  param = require "util/param"
+  Workspace = require "widgets/workspace/workspace"
 
   class TimelineControl
 

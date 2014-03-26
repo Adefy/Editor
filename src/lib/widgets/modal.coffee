@@ -1,9 +1,9 @@
-define [
-  "util/id"
-  "util/param"
-  "widgets/widget"
-  "templates/modal"
-], (ID, param, Widget, ModalTemplate) ->
+define (require) ->
+
+  param = require "util/param"
+  ID = require "util/id"
+  Widget = require "widgets/widget"
+  ModalTemplate = require "templates/modal"
 
   # Bootstrap-like modal (except not!)
   class Modal extends Widget

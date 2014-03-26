@@ -1,18 +1,16 @@
-define [
-  "util/log"
-  "util/id"
-  "util/param"
-  "handles/actors/base"
-  "widgets/widget"
-  "widgets/modal"
-  "widgets/context_menu"
-  "widgets/sidebar/sidebar_properties"
-  "widgets/timeline/timeline"
-  "templates/workspace/add_textures"
-  "templates/workspace/background_color"
-  "templates/workspace/screen_size"
-  "templates/workspace/canvas_container"
-], (AUtilLog, ID, param, BaseActor, Widget, Modal, ContextMenu, SidebarProperties, Timeline, AddTexturesTemplate, BackgroundColorTemplate, WorkspaceScreenSizeTemplate, WorkspaceCanvasContainerTemplate) ->
+define (require) ->
+
+  AUtilLog = require "util/log"
+  param = require "util/param"
+  ID = require "util/id"
+  Widget = require "widgets/widget"
+  Modal = require "widgets/modal"
+  ContextMenu = require "widgets/context_menu"
+  SidebarProperties = require "widgets/sidebar/sidebar_properties"
+  AddTexturesTemplate = require "templates/workspace/add_textures"
+  BackgroundColorTemplate = require "templates/workspace/background_color"
+  WorkspaceScreenSizeTemplate = require "templates/workspace/screen_size"
+  WorkspaceCanvasContainerTemplate = require "templates/workspace/canvas_container"
 
   # Workspace widget
   class Workspace extends Widget
@@ -52,8 +50,9 @@ define [
     # Creates a new workspace if one does not already exist
     #
     # @param [String] parent parent element selector
+    # @param [Timeline] timeline
     ###
-    constructor: (parent) ->
+    constructor: (parent, @timeline) ->
       param.required parent
 
       if Workspace.__instance
@@ -146,7 +145,7 @@ define [
       # Register actor with ourselves
       @actorObjects.push actor
       # Register actor with the timeline
-      Timeline.getMe().registerActor actor
+      @timeline.registerActor actor
 
     ###
     # Because indenting gets ugly
@@ -184,7 +183,7 @@ define [
           # TODO: Provide some flexibility here, take different actions if
           #       something besides an actor is dropped. For the time being,
           #       that can't happen. Yay.
-          if handle instanceof BaseActor
+          if handle.constructor.name == "BaseActor"
             me.addActor handle
 
       # Actor dragging, whoop
@@ -626,7 +625,7 @@ define [
     reset: ->
 
       for o in @actorObjects
-        Timeline.getMe().removeActor o.getActorId()
+        @timeline.removeActor o.getActorId()
         o.timelineDeath()
         o.delete()
 
@@ -641,13 +640,13 @@ define [
     notifyDemise: (obj) ->
 
       # We keep track of actors internally, splice them out of our array
-      if obj instanceof BaseActor
+      if obj.constructor.name == "BaseActor"
         for o, i in @actorObjects
           if o.getId() == obj.getId()
             @actorObjects.splice i, 1
 
             # Remove actor from the timeline
-            Timeline.getMe().removeActor obj.getActorId()
+            @timeline.removeActor obj.getActorId()
 
             return
 
@@ -711,11 +710,11 @@ define [
     registerActor: (handle) ->
       param.required handle
 
-      if not handle instanceof BaseActor
+      if not handle.constructor.name == "BaseActor"
         throw new Error "You can only register actors that derive from BaseActor"
 
       @actorObjects.push handle
-      Timeline.getMe().registerActor handle
+      @timeline.registerActor handle
 
     ###
     # @private

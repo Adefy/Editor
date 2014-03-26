@@ -1,4 +1,7 @@
-define ["util/param", "widgets/sidebar/sidebar_item"], (param, SidebarItem) ->
+define (require) ->
+
+  param = require "util/param"
+  SidebarItem = require "widgets/sidebar/sidebar_item"
 
   # Sidebar object, meant to be contained inside of a SidebarObjectGroup
   class SidebarObject extends SidebarItem

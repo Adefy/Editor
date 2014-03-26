@@ -1,4 +1,7 @@
-define ["util/param", "renderable"], (param, Renderable) ->
+define (requre) ->
+
+  param = require "util/param"
+  Renderable = require "renderable"
 
   # Widgets are the building blocks of the editor's interface
   class Widget extends Renderable

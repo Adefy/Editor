@@ -1,9 +1,9 @@
-define [
-  "util/id"
-  "util/param"
-  "widgets/controlbar/controlbar"
-  "renderable"
-], (ID, param, ControlBar, Renderable) ->
+define (require) ->
+
+  ID = require "util/id"
+  param = require "util/param"
+  ControlBar = require "widgets/controlbar/controlbar"
+  Renderable = require "renderable"
 
   # Control to appear on the controlbar, with inputs and a status
   class ControlBarControl extends Renderable

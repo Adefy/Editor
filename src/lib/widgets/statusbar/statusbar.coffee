@@ -1,9 +1,9 @@
-define [
-  "util/id"
-  "util/param"
-  "widgets/widget"
-  "templates/statusbar"
-], (ID, param, Widget, StatusBarTemplate) ->
+define (require) ->
+
+  param = require "util/param"
+  ID = require "util/id"
+  Widget = require "widgets/widget"
+  StatusBarTemplate = require "templates/statusbar"
 
   class StatusBar extends Widget
 

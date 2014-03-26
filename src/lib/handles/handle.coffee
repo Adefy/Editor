@@ -1,4 +1,7 @@
-define ["util/id", "util/param"], (ID, param) ->
+define (require) ->
+
+  param = require "util/param"
+  ID = require "util/id"
 
   # Base class for all elements that can be manipulated by the editor
   class Handle

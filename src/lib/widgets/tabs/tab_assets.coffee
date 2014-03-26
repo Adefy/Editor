@@ -1,9 +1,9 @@
-define [
-  "util/id"
-  "widgets/tabs/tab"
-  "templates/asset_directory"
-  "templates/asset_file"
-], (ID, Tab, AssetDirectoryTemplate, AssetFileTemplate) ->
+define (require) ->
+
+  ID = require "util/id"
+  Tab = require "widgets/tabs/tab"
+  AssetDirectoryTemplate = require "templates/asset_directory"
+  AssetFileTemplate = require "templates/asset_file"
 
   class TabAssets extends Tab
 

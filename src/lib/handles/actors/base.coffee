@@ -1,12 +1,12 @@
-define [
-  "util/log"
-  "util/param"
-  "handles/handle"
-  "widgets/sidebar/sidebar_properties"
-  "widgets/timeline/bezier"
-  "widgets/timeline/timeline"
-  "widgets/workspace/workspace"
-], (AUtilLog, param, Handle, SidebarProperties, Bezier, Timeline, Workspace) ->
+define (require) ->
+
+  AUtilLog = require "util/log"
+  param = require "util/param"
+  Handle = require "handles/handle"
+  SidebarProperties = require "widgets/sidebar/sidebar_properties"
+  Bezier = require "widgets/timeline/bezier"
+  Timeline = require "widgets/timeline/timeline"
+  Workspace = require "widgets/workspace/workspace"
 
   # Base manipulateable class for actors
   class BaseActor extends Handle

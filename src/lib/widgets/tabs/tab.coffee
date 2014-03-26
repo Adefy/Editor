@@ -1,4 +1,6 @@
-define ["widgets/widget"], (Widget) ->
+define (require) ->
+
+  Widget = require "widgets/widget"
 
   class Tab extends Widget
 

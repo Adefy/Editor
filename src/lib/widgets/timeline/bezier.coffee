@@ -1,4 +1,6 @@
-define ["util/param"], (param) ->
+define (require) ->
+
+  param = require "util/param"
 
   # Bezier curve implementation
   class Bezier

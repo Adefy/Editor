@@ -1,7 +1,7 @@
-define [
-  "widgets/controlbar/controlbar_control"
-  "widgets/workspace/workspace"
-], (ControlBarControl, Workspace) ->
+define (require) ->
+
+  ControlBarControl = require "widgets/controlbar/controlbar_control"
+  Workspace = require "widgets/workspace/workspace"
 
   # Exposes controls to modify the canvas size
   class ControlCanvas extends ControlBarControl

@@ -1,13 +1,13 @@
-define [
-  "util/log"
-  "util/id"
-  "util/param"
-  "widgets/widget"
-  "widgets/controlbar/control_canvas"
-  "widgets/controlbar/control_render"
-  "widgets/controlbar/control_physics"
-  "widgets/workspace/workspace"
-], (AUtilLog, ID, param, Widget, ControlCanvas, ControlRender, ControlPhysics, Workspace) ->
+define (require) ->
+
+  AUtilLog = require "util/log"
+  param = require "util/param"
+  ID = require "util/id"
+  Widget = require "widgets/widget"
+  ControlCanvas = require "widgets/controlbar/control_canvas"
+  ControlRender = require "widgets/controlbar/control_render"
+  ControlPhysics = require "widgets/controlbar/control_physics"
+  Workspace = require "widgets/workspace/workspace"
 
   # ARE control bar
   class ControlBar extends Widget

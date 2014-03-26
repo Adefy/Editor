@@ -1,10 +1,10 @@
-define [
-  "util/log"
-  "util/id"
-  "util/param"
-  "widgets/widget"
-  "widgets/menubar/menubar_item"
-], (AUtilLog, ID, param, Widget, MenuBarItem) ->
+define (require) ->
+
+  AUtilLog = require "util/log"
+  param = require "util/param"
+  ID = require "util/id"
+  Widget = require "widgets/widget"
+  MenuBarItem = require "widgets/menubar/menubar_item"
 
   # Main navigation bar widget
   class MenuBar extends Widget

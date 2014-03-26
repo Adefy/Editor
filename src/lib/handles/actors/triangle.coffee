@@ -1,4 +1,7 @@
-define ["util/param", "handles/actors/base"], (param, BaseActor) ->
+define (require) ->
+
+  param = require "util/param"
+  BaseActor = require "handles/actors/base"
 
   # Trianglular actor
   class TriangleActor extends BaseActor

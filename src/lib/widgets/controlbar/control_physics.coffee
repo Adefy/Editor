@@ -1,4 +1,6 @@
-define ["widgets/controlbar/controlbar_control"], (ControlBarControl) ->
+define (require) ->
+
+  ControlBarControl = require "widgets/controlbar/controlbar_control"
 
   # Allows us to control the physics engine. (start, pause, stop)
   class ControlPhysics extends ControlBarControl

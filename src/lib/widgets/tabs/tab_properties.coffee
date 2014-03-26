@@ -1,9 +1,9 @@
-define [
-  "util/id"
-  "util/format"
-  "widgets/tabs/tab"
-  "templates/object_properties"
-], (ID, aformat, Tab, ObjectPropertiesTemplate) ->
+define (require) ->
+
+  ID = require "util/id"
+  aformat = require "util/format"
+  Tab = require "widgets/tabs/tab"
+  ObjectPropertiesTemplate = require "templates/object_properties"
 
   class TabProperties extends Tab
 

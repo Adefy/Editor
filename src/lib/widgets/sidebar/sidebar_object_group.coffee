@@ -1,8 +1,8 @@
-define [
-  "util/param"
-  "widgets/sidebar/sidebar_item"
-  "widgets/sidebar/sidebar_object"
-], (param, SidebarItem, SidebarObject) ->
+define (require) ->
+
+  param = require "util/param"
+  SidebarObject = require "widgets/sidebar/sidebar_object"
+  SidebarItem = require "widgets/sidebar/sidebar_item"
 
   # Contains a group of sidebar objects, which can be dragged
   # onto the workspace

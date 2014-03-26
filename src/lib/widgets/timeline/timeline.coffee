@@ -1,24 +1,19 @@
-define [
-  "util/id"
-  "util/param"
-  "handles/actors/base"
+define (require) ->
 
-  "widgets/widget"
-  "widgets/modal"
-  "widgets/timeline/timeline_control"
-  "widgets/workspace/workspace"
-
-  "templates/timeline/base"
-  "templates/timeline/actor"
-  "templates/timeline/actor_time"
-], (ID, param, BaseActor, Widget, Modal, TimelineControl, Workspace, TimelineBaseTemplate, TimelineActorTemplate, TimelineActorTimeTemplate) ->
+  param = require "util/param"
+  ID = require "util/id"
+  Widget = require "widgets/widget"
+  Modal = require "widgets/modal"
+  TimelineControl = require "widgets/timeline/timeline_control"
+  Workspace = require "widgets/workspace/workspace"
+  TimelineBaseTemplate = require "templates/timeline/base"
+  TimelineActorTemplate = require "templates/timeline/actor"
+  TimelineActorTimeTemplate = require "templates/timeline/actor_time"
 
   # Timeline widget, serving as the main control center for objects.
   #
   # OH GAWD this is going to be complex.
   # 9/6/2013: Escape while you still can
-  #
-  # @depend TimelineControl.coffee
   class Timeline extends Widget
 
     ###
@@ -365,7 +360,7 @@ define [
     registerActor: (actor) ->
       param.required actor
 
-      if not actor instanceof BaseActor
+      unless actor.constructor.name == "BaseActor"
         throw new Error "Actor must be an instance of BaseActor!"
 
       # Ship to our array

@@ -1,9 +1,9 @@
-define [
-  "util/log"
-  "util/id"
-  "util/param"
-  "widgets/sidebar/sidebar_item"
-], (AUtilLog, ID, param, SidebarItem) ->
+define (require) ->
+
+  AUtilLog = require "util/log"
+  param = require "util/param"
+  ID = require "util/id"
+  SidebarItem = require "widgets/sidebar/sidebar_item"
 
   # Properties widget, dynamically refreshable
   #

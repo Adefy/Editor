@@ -1,9 +1,9 @@
-define [
-  "util/log"
-  "util/id"
-  "util/param"
-  "widgets/widget"
-], (AUtilLog, ID, param, Widget) ->
+define (require) ->
+
+  AUtilLog = require "util/log"
+  param = require "util/param"
+  ID = require "util/id"
+  Widget = require "widgets/widget"
 
   # Context menu widget, created when a handle is right-clicked and
   # supports actions

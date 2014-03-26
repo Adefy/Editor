@@ -1,8 +1,8 @@
-define [
-  "util/id"
-  "util/param"
-  "renderable"
-], (ID, param, Renderable) ->
+define (require) ->
+
+  param = require "util/param"
+  ID = require "util/id"
+  Renderable = require "renderable"
 
   # Menubar item class
   #

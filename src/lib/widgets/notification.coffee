@@ -1,4 +1,8 @@
-define ["util/id", "util/param", "widgets/widget"], (ID, param, Widget) ->
+define (require) ->
+
+  param = require "util/param"
+  ID = require "util/id"
+  Widget = require "widgets/widget"
 
   # Notification widget, handles stacking
   class Notification extends Widget
