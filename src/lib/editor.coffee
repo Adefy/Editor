@@ -87,13 +87,6 @@ define (require) ->
 
       AUtilLog.info "Adefy Editor created id(#{@sel})"
 
-      #new Notification "Initialized", "blue", 1000
-
-      # Check if we need to load an ad
-      if window.ad != undefined and window.ad.length == 24
-        AUtilLog.info "Loading Ad #{window.ad}"
-        @load window.ad
-
     ###
     # Creates the editor main menubar
     # @param [CSSSelector] selector

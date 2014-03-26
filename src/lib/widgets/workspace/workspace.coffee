@@ -65,8 +65,6 @@ define (require) ->
       # Keep track of spawned handle actor objects
       @actorObjects = []
 
-      if window.ajax == undefined then window.ajax = microAjax
-
       #timelineBottom = Number($(".timeline").css("bottom").split("px")[0]) - 16
       #timelineHeight = ($(".timeline").height() + timelineBottom)
 
