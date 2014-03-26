@@ -43,7 +43,7 @@ define (require) ->
       if $.isEmptyObject(@functions) then return
 
       # Create object
-      super ID.prefId("context-menu"), "#aeditor", [ "context-menu" ]
+      super ID.prefId("context-menu"), "#editor", [ "context-menu" ]
 
       # Add a handle to our instance on the body
       $("body").data @getId(), @

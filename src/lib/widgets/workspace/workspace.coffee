@@ -797,10 +797,10 @@ define (require) ->
     ###
     onResize: ->
 
-      header = $("#aeditor header")
-      main = $("#aeditor .main")
-      sidebar = $("#aeditor .main .sidebar")
-      footer = $("#aeditor footer")
+      header = $("#editor header")
+      main = $("#editor .main")
+      sidebar = $("#editor .main .sidebar")
+      footer = $("#editor footer")
       elm = $(@_sel)
 
       elm.width main.width() - sidebar.width()

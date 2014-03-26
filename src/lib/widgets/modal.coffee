@@ -42,7 +42,7 @@ define (require) ->
       # Protection against premature resurrection
       @dead = true
 
-      super ID.prefId("modal"), "#aeditor", [ "modal" ]
+      super ID.prefId("modal"), "#editor", [ "modal" ]
 
       @show()
 

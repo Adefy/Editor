@@ -20,8 +20,6 @@ define (require) ->
   Toolbar = require "widgets/toolbar/toolbar"
   Workspace = require "widgets/workspace/workspace"
 
-  EditorTemplate = require "templates/editor"
-
   class Editor
 
     ###
@@ -35,9 +33,11 @@ define (require) ->
     ###
     @__instance: null
 
+    sel: "#editor"
+
     ###
     # Editor execution starts here. We spawn all other objects ourselves. If a
-    # selector is not supplied, we go with #aeditor
+    # selector is not supplied, we go with #editor
     #
     # @param [String] sel container selector, created if non-existent
     ###
@@ -49,21 +49,8 @@ define (require) ->
       if _agent.search("Opera") != -1 || _agent.search("OPR") != -1
         alert "Opera does not fully support our editor, please use Chrome or FF!"
 
-      # Dep check
-      if window.jQuery == undefined or window.jQuery == null
-        throw new Error "JQuery not found!"
-      if $.ui == undefined or $.ui == null
-        throw new Error "JQuery UI not found!"
-
-      # CSS selector pointing to our DOM element
-      @sel = param.optional sel, "#aeditor"
-
       # Array of widgets to be managed internally
       @widgets = []
-
-      if $(@sel).length == 0
-        AUtilLog.warn "#{@sel} not found, creating it and continuing"
-        $("body").prepend EditorTemplate id: @sel.replace('#', '')
 
       $(document).ready => @onDocumentReady()
 
@@ -73,10 +60,10 @@ define (require) ->
       # Create workspace, sidebars, controlbar, and timeline
       #
       # Create and Push widgets
-      selector = @sel
-      headSelector = "#{selector} header"
-      bodySelector = "#{selector} .main"
-      footSelector = "#{selector} footer"
+      headSelector = "#{@sel} header"
+      bodySelector = "#{@sel} .main"
+      footSelector = "#{@sel} footer"
+
       @widgets.push window.menubar = @createMenubar(headSelector)
       @widgets.push window.toolbar = @createToolbar(headSelector)
       @widgets.push window.timeline = @createTimeline(footSelector)
