@@ -1,0 +1,32 @@
+doctype 5
+html(lang="en")
+  head
+
+    meta(charset="utf-8")
+    title Adefy Editor
+
+    link(rel="stylesheet" href="styles/style.css")
+
+    link(rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,300,700,500")
+    link(rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css")
+
+  body.tk-proxima-nova
+
+    //- Vendor libs
+    script(src="components/jquery/dist/jquery.min.js")
+    script(src="components/jquery-ui/ui/minified/jquery-ui.min.js")
+    script(src="components/jquery.mousewheel/jquery.mousewheel.js")
+    script(src="components/perfect-scrollbar/min/perfect-scrollbar-0.4.8.min.js")
+    script(src="components/handlebars/handlebars.min.js")
+
+    //- Adefy libraries
+    script(src="//cdn.adefy.com/are/are-full.js")
+    script(src="//cdn.adefy.com/ajs/ajs.js")
+
+    //- Load us up!
+    script(src="components/requirejs/require.js" data-main="lib/main.js")
+
+    //- Type Kit
+    script(src="//use.typekit.net/udl8vci.js")
+    script.
+      try{Typekit.load();}catch(e){}

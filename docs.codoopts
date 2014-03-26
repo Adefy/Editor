@@ -1,7 +1,0 @@
---name    "AdefyEditor"
---readme  Readme.md
---title   "Adefy Ad Editor Documentation"
---private
---quiet
---output-dir ./doc
-./lib

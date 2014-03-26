@@ -1,0 +1,32 @@
+define ->
+
+  ###
+  # Control bar and base
+  # @property [String] id
+  # @property [Time] currentTime
+  # -property [HTML] contents Actors will go here
+  # -property [HTML] timecontents Actor time & keyframes will go here
+  ###
+  Handlebars.compile """
+    <div id="{{ id }}" class="header">
+      <div id="timeline-cursor-time" class="current_time">{{ currentTime }}</div>
+      <a id="timeline-control-fast-backward"><i class="fa fa-fw fa-fast-backward"></i></a>
+      <a id="timeline-control-backward"><i class="fa fa-fw fa-backward"></i></a>
+      <a id="timeline-control-play"><i class="fa fa-fw fa-play"></i></a>
+      <a id="timeline-control-forward"><i class="fa fa-fw fa-forward"></i></a>
+      <a id="timeline-control-fast-forward"><i class="fa fa-fw fa-fast-forward"></i></a>
+    </div>
+    <div class="content">
+      <div class="list">
+        {{! <div class="timebar"></div> }}
+        {{! contents }}
+      </div>
+      <div class="time">
+        <div id="timeline-cursor" class="cursor"></div>
+        {{! <div class="timebar"></div> }}
+        <div class="time-actors">
+          {{! timeContents }}
+        </div>
+      </div>
+    </div>
+  """
