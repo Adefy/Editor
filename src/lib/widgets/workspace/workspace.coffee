@@ -49,18 +49,22 @@ define (require) ->
     ###
     # Creates a new workspace if one does not already exist
     #
-    # @param [String] parent parent element selector
     # @param [Timeline] timeline
     ###
-    constructor: (parent, @timeline) ->
-      param.required parent
+    constructor: (@timeline) ->
+      param.required @timeline
 
       if Workspace.__instance
         AUtilLog.warn "A workspace already exists, refusing to continue!"
         return
+
       Workspace.__instance = @
 
-      super ID.prefId("workspace"), parent, [ "workspace" ]
+      super
+        id: ID.prefId("workspace")
+        parent: "section#main"
+        classes: ["workspace"]
+        prepend: true
 
       # Keep track of spawned handle actor objects
       @actorObjects = []

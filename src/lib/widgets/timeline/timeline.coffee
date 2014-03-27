@@ -64,14 +64,17 @@ define (require) ->
     # Creates a timeline at the bottom of the screen. Note that it is absolutely
     # positioned, and adds padding to the body accordingly.
     #
-    # @param [String] parent parent element selector
-    # @param [Number] duration ad length in ms, can be expensively modified later
+    # The default duration is 5000ms
+    #
+    # @param [Number] duration ad length in ms, can be modified (expensive)
     ###
-    constructor: (parent, duration) ->
+    constructor: (duration) ->
       if Timeline.__instance
         throw new Error "Only one timeline can exist at any one time!"
         # You also can't destroy existing timelines, so HAH
       Timeline.__instance = @
+
+      @_duration = Number param.optional(duration, 5000)
 
       @_control = new TimelineControl @
 
@@ -80,9 +83,6 @@ define (require) ->
 
       # Visibility toggle animation status
       @__animating = false
-
-      param.required parent
-      @_duration = Number param.required(duration)
 
       # Sanity check on our internal color arrays
       _l1 = Timeline._timebarColors.length
@@ -96,7 +96,10 @@ define (require) ->
         throw new Error "Ad must be longer than 250ms!"
         # Although I have no idea who would want an ad 251ms long
 
-      super ID.prefId("timeline"), parent, [ "timeline" ]
+      super
+        id: ID.prefId("timeline")
+        parent: "footer"
+        classes: ["timeline"]
 
       # Actor array, access through registerActor/removeActor
       @_actors = []

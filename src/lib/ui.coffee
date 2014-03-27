@@ -2,6 +2,16 @@ define (requre) ->
 
   Toolbar = require "widgets/toolbar/toolbar"
   MenuBar = require "widgets/menubar/menubar"
+  StatusBar = require "widgets/statusbar/statusbar"
+  Timeline = require "widgets/timeline/timeline"
+  Workspace = require "widgets/workspace/workspace"
+
+  Sidebar = require "widgets/sidebar/sidebar"
+  SidebarObjectGroup = require "widgets/sidebar/sidebar_object_group"
+  SidebarPanel = require "widgets/sidebar/sidebar_panel"
+
+  TabProperties = require "widgets/tabs/tab_properties"
+  TabAssets = require "widgets/tabs/tab_assets"
 
   class UIManager
 
@@ -10,14 +20,100 @@ define (requre) ->
 
       @widgets.push @initializeMenu()
       @widgets.push @initializeToolbar()
+      @widgets.push @initializeTimeline()
+      @widgets.push @initializeWorkspace()
+      @widgets.push @initializeStatusbar()
+      @widgets.push @initializeSidebar()
 
       @renderAll()
+
+      @updateSidebarHeight()
+      @bindOnResize()
+
+    bindOnResize: ->
+      window.onresize = =>
+        @updateSidebarHeight()
 
     renderAll: ->
       widget.render() for widget in @widgets
 
-    initializeToolbar: ->
-      @toolbar = new Toolbar
+    updateSidebarHeight: ->
+      height = window.innerHeight - $("footer").height() - $("height").height()
+      $(@sidebar.getSel()).height height
+
+    initializeToolbar: -> @toolbar = new Toolbar
+    initializeStatusbar: -> @statusbar = new StatusBar
+    initializeTimeline: -> @timeline = new Timeline
+    initializeWorkspace: ->
+      throw new Error "Timeline required for workspace" unless @timeline
+      @workspace = new Workspace @timeline
+
+    initializeSidebar: ->
+      @sidebar = new Sidebar "Sidebar", "left", 310
+
+      ###
+      panel = new SidebarPanel sidebar
+      panel.newTab "Assets", (tab) =>
+        tabAssets = new TabAssets panel
+        file1 =
+          file:
+            name: "Ad.jpg"
+
+        file2 =
+          file:
+            name: "Some.txt"
+
+        diEmpty =
+          directory:
+            name: "TestDirectory"
+            assets: []
+            unfolded: false
+
+        diFil =
+          directory:
+            name: "TestDirectory"
+            assets: [diEmpty, diEmpty, file1]
+            unfolded: false
+
+        tabAssets._assets.push
+          directory:
+            name: "Directory1"
+            assets: []
+            unfolded: false
+
+        tabAssets._assets.push
+          directory:
+            name: "Directory2"
+            assets: [file2]
+            unfolded: true
+
+        tabAssets._assets.push
+          directory:
+            name: "Directory3"
+            assets: [diEmpty, diFil, diFil, diEmpty, file2]
+            unfolded: true
+
+        tabAssets._assets.push
+          directory:
+            name: "Directory4"
+            assets: [diFil, diFil, file2]
+            unfolded: false
+
+        tabAssets
+
+      panel.newTab "Tab2"
+      panel.newTab "Tab3"
+      ###
+
+      # panel.selectTab 0
+
+      panel2 = new SidebarPanel @sidebar
+      panel2.newTab "Properties", (tab) =>
+        new TabProperties panel2
+
+      panel2.selectTab 0
+
+      @sidebar
 
     initializeMenu: ->
       @menu = new MenuBar

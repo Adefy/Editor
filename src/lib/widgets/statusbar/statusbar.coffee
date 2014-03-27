@@ -7,12 +7,13 @@ define (require) ->
 
   class StatusBar extends Widget
 
-    constructor: (parent) ->
-      param.required parent
-
+    constructor: ->
       @_items = []
 
-      super ID.prefId("statusbar"), parent, [ "statusbar" ]
+      super
+        id: ID.prefId("statusbar")
+        parent: "footer"
+        classes: [ "statusbar" ]
 
     render: ->
 

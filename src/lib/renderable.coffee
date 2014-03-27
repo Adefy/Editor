@@ -4,6 +4,8 @@ define (requre) ->
 
   class Renderable
 
+    render: ->
+
     ###
     # For cases where templates don't really make sense
     # @param [String] type

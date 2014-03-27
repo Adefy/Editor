@@ -18,11 +18,10 @@ define (require) ->
     # Creates a new sidebar with a given origin. The element's id is randomized
     # to sbar + Math.floor(Math.random() * 1000)
     #
-    # @param [String] parent parent element selector
     # @param [String] name sidebar name
     # @param [String] origin 'left' or 'right', default is left
     # @param [Number] width
-    constructor: (parent, name, origin, width) ->
+    constructor: (name, origin, width) ->
 
       # Sidebar items of class SidebarItem (or implementations)
       @_items = []
@@ -31,8 +30,10 @@ define (require) ->
       @_origin = param.optional origin, "left", [ "left", "right" ]
       @_width = param.optional width, 300
 
-      param.required parent
-      super ID.prefId("sidebar"), parent, [ "sidebar" ]
+      super
+        id: ID.prefId("sidebar")
+        parent: "section#main"
+        classes: ["sidebar"]
 
       @_hiddenX = 0
       @_visibleX = 0
@@ -108,11 +109,9 @@ define (require) ->
 
     # Render! Fill the sidebar with html from the items rendered in order.
     render: ->
-      _html = ""
-      for i in @_items
-        _html += i.render()
+      $(@_sel).html @_items.map((i) -> i.render()).join ""
 
-      $(@_sel).html _html
+      @postRender()
 
     postRender: ->
       for i in @_items

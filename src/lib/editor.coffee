@@ -11,15 +11,8 @@ define (require) ->
 
   Notification = require "widgets/notification"
   Modal = require "widgets/modal"
-  Sidebar = require "widgets/sidebar/sidebar"
-  SidebarObjectGroup = require "widgets/sidebar/sidebar_object_group"
-  SidebarPanel = require "widgets/sidebar/sidebar_panel"
-  StatusBar = require "widgets/statusbar/statusbar"
-  TabAssets = require "widgets/tabs/tab_assets"
-  TabProperties = require "widgets/tabs/tab_properties"
+  
   Bezier = require "widgets/timeline/bezier"
-  Timeline = require "widgets/timeline/timeline"
-  Workspace = require "widgets/workspace/workspace"
 
   class Editor
 
@@ -56,21 +49,11 @@ define (require) ->
       Editor.__instance = this
 
     onDocumentReady: ->
-      # Create workspace, sidebars, controlbar, and timeline
-      #
-      # Create and Push widgets
       headSelector = "#{config.selector} header"
-      bodySelector = "#{config.selector} .main"
+      bodySelector = "#{config.selector} section#main"
       footSelector = "#{config.selector} footer"
 
       @ui = new UIManager
-
-      @widgets.push window.timeline = @createTimeline(footSelector)
-      @widgets.push window.statusbar = @createStatusbar(footSelector)
-      @widgets.push window.sidebar = @createSidebar(bodySelector)
-      @widgets.push window.workspace = @createWorkspace(bodySelector)
-
-      window.sidebar.postRender()
 
       ##
       # First, trigger onResize to initialize all the widgets/elements
@@ -87,117 +70,14 @@ define (require) ->
       AUtilLog.info "Adefy Editor created id(#{config.selector})"
 
     ###
-    # Creates the editor workspace
-    # Though its only their for aesthetics (unless...)
-    # @param [CSSSelector] selector
-    # @return [Workspace]
-    ###
-    createWorkspace: (selector) ->
-      workspace = new Workspace selector, window.timeline
-
-      workspace
-
-    ###
-    # Creates the editor timeline
-    # @param [CSSSelector] selector
-    # @return [Timeline]
-    ###
-    createTimeline: (selector) ->
-      timeline = new Timeline selector, 5000
-
-      timeline
-
-    ###
-    # Creates the editor statusbar
-    # @param [CSSSelector] selector
-    # @return [StatusBar]
-    ###
-    createStatusbar: (selector) ->
-      statusbar = new StatusBar selector
-      statusbar.render()
-      statusbar
-
-    ###
-    # Creates the editor sidebar
-    # Originally we used 2 sidebars, but now we only use one
-    # @param [CSSSelector] selector
-    # @return [Sidebar]
-    ###
-    createSidebar: (selector) ->
-      sidebar = new Sidebar selector, "Sidebar", "left", 310
-
-      panel = new SidebarPanel sidebar
-      panel.newTab "Assets", (tab) =>
-        tabAssets = new TabAssets panel
-        file1 =
-          file:
-            name: "Ad.jpg"
-
-        file2 =
-          file:
-            name: "Some.txt"
-
-        diEmpty =
-          directory:
-            name: "TestDirectory"
-            assets: []
-            unfolded: false
-
-        diFil =
-          directory:
-            name: "TestDirectory"
-            assets: [diEmpty, diEmpty, file1]
-            unfolded: false
-
-        tabAssets._assets.push
-          directory:
-            name: "Directory1"
-            assets: []
-            unfolded: false
-
-        tabAssets._assets.push
-          directory:
-            name: "Directory2"
-            assets: [file2]
-            unfolded: true
-
-        tabAssets._assets.push
-          directory:
-            name: "Directory3"
-            assets: [diEmpty, diFil, diFil, diEmpty, file2]
-            unfolded: true
-
-        tabAssets._assets.push
-          directory:
-            name: "Directory4"
-            assets: [diFil, diFil, file2]
-            unfolded: false
-
-        tabAssets
-
-      panel.newTab "Tab2"
-      panel.newTab "Tab3"
-
-      panel2 = new SidebarPanel sidebar
-      panel2.newTab "Properties", (tab) =>
-        new TabProperties panel2
-
-      panel2.newTab "Tab2"
-
-      panel.selectTab 0
-      panel2.selectTab 0
-
-      sidebar.render()
-
-      sidebar
-
-    ###
     # Creates the editor toolbox
     # I don't believe this is used anymore/yet
     # @param [CSSSelector] selector
     # @return [Sidebar]
     ###
     createToolbox: (sidebar) ->
+      return
+
       # Add some items to the left sidebar
       primGroup = new SidebarObjectGroup "Primitives", sidebar
       rectPrimitive = primGroup.createItem "Rectangle"
@@ -257,7 +137,7 @@ define (require) ->
     newAd: ->
 
       # Trigger a workspace reset
-      Workspace.getMe().reset()
+      @ui.workspace.reset()
 
     ###
     # Serialize all ad data in the workspace to send to the server
@@ -501,8 +381,6 @@ define (require) ->
     # @return [String] export
     export: ->
 
-      workspace = Workspace.getMe()
-
       # Program text
       final = ""
 
@@ -529,7 +407,7 @@ define (require) ->
       assign = (name, value) -> "var #{name} = #{value};"
 
       # Builds a function call, optional semicolon ending
-      call = (name, args, _new, end) ->
+      call = (name, args, _new, end) =>
         if _new == undefined then _new = false
         if args == undefined then args = []
         if end == undefined then end = false
@@ -553,7 +431,7 @@ define (require) ->
 
       # Set clear color
       # TODO: Enable clearColor animation
-      clearC = workspace.getARE().getClearColor()
+      clearC = @ui.workspace.getARE().getClearColor()
 
       _r = clearC.getR()
       _g = clearC.getG()
@@ -562,16 +440,16 @@ define (require) ->
       ex += "AJS.setClearColor(#{_r}, #{_g}, #{_b});"
 
       # Grab phone dimensions to offset actors
-      pWidth = workspace.getPhoneWidth()
-      pHeight = workspace.getPhoneHeight()
+      pWidth = @ui.workspace.getPhoneWidth()
+      pHeight = @ui.workspace.getPhoneHeight()
 
-      pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth()) / 2
-      pOffY = workspace.getCanvasHeight() - workspace.getPhoneHeight() - 35
+      pOffX = (@ui.workspace.getCanvasWidth() - @ui.workspace.getPhoneWidth()) / 2
+      pOffY = @ui.workspace.getCanvasHeight() - @ui.workspace.getPhoneHeight() - 35
 
       ##
       ## Actors
       ##
-      for a in workspace.actorObjects
+      for a in @ui.workspace.actorObjects
 
         type = ""
         actor = V()
@@ -664,12 +542,12 @@ define (require) ->
     # @param [String] properties array of properties, single or composite
     #
     # @return [String] export AJS.animate() statement
-    _compileAnimationExport: (actorName, actorObj, animations, properties) ->
+    _compileAnimationExport: (actorName, actorObj, animations, properties) =>
 
       options = []
 
-      pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth()) / 2
-      pOffY = workspace.getCanvasHeight() - workspace.getPhoneHeight() - 35
+      pOffX = (@ui.workspace.getCanvasWidth() - @ui.workspace.getPhoneWidth()) / 2
+      pOffY = @ui.workspace.getCanvasHeight() - @ui.workspace.getPhoneHeight() - 35
 
       # Build options
       for p, i in properties
