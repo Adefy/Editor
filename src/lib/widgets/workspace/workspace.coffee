@@ -49,9 +49,11 @@ define (require) ->
     ###
     # Creates a new workspace if one does not already exist
     #
+    # @param [UIManager] ui
     # @param [Timeline] timeline
     ###
-    constructor: (@timeline) ->
+    constructor: (@ui, @timeline) ->
+      param.required @ui
       param.required @timeline
 
       if Workspace.__instance
@@ -159,34 +161,23 @@ define (require) ->
 
       me = @
 
-      # Set up draggable objects
-      $(".workspace-drag").draggable
-        addClasses: false
-        helper: "clone"
-        revert: "invalid"
-        cursor: "pointer"
-
       # Set up our own capture of draggable objects
       $(".workspace canvas").droppable
         accept: ".workspace-drag"
         drop: (event, ui) =>
-          # $.ui.ddmanager.current.cancelHelperRemoval = true
-
-          # Get the associated widget object
-          _sel = $(ui.draggable).children("div").attr("id")
-          _obj = $("body").data _sel
 
           # Calculate workspace coordinates
-          _truePos = me.domToGL ui.position.left, ui.position.top
+          position = @domToGL ui.position.left, ui.position.top
+
+          object = @ui.toolbar.getItemById $(ui.draggable).attr "data-id"
 
           # TODO: Consider cleaning this up to just pass the domToGL result
-          handle = _obj.dropped "workspace", _truePos.x, _truePos.y
+          handle = object.spawn position.x, position.y
 
           # TODO: Provide some flexibility here, take different actions if
           #       something besides an actor is dropped. For the time being,
           #       that can't happen. Yay.
-          if handle.constructor.name == "BaseActor"
-            me.addActor handle
+          @addActor handle if handle.constructor.name == "BaseActor"
 
       # Actor dragging, whoop
       __drag_start_x = 0      # Keeps track of the initial drag point, so

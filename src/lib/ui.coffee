@@ -35,15 +35,15 @@ define (requre) ->
         widget.onResize() if widget.onResize
 
     renderAll: -> widget.render() for widget in @widgets
-    initializeToolbar: -> @toolbar = new Toolbar
-    initializeStatusbar: -> @statusbar = new StatusBar
-    initializeTimeline: -> @timeline = new Timeline
+    initializeToolbar: -> @toolbar = new Toolbar @
+    initializeStatusbar: -> @statusbar = new StatusBar @
+    initializeTimeline: -> @timeline = new Timeline @
     initializeWorkspace: ->
       throw new Error "Timeline required for workspace" unless @timeline
-      @workspace = new Workspace @timeline
+      @workspace = new Workspace @, @timeline
 
     initializeSidebar: ->
-      @sidebar = new Sidebar 310
+      @sidebar = new Sidebar @, 310
 
       propertiesPanel = new SidebarPanel @sidebar
       propertiesPanel.newTab "Properties", (tab) =>
@@ -54,7 +54,7 @@ define (requre) ->
       @sidebar
 
     initializeMenu: ->
-      @menu = new MenuBar
+      @menu = new MenuBar @
 
       # Set up the @menu
       fileMenu = @menu.addItem "File"

@@ -11,8 +11,12 @@ define (require) ->
 
     _items: []
 
+    ###
     # Creates a new menu bar if one does not already exist
-    constructor: ->
+    #
+    # @param [UIManager] ui
+    ###
+    constructor: (@ui) ->
       return unless @enforceSingleton()
 
       super

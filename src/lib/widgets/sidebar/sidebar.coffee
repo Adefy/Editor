@@ -18,8 +18,9 @@ define (require) ->
     # Creates a new sidebar with a given origin. The element's id is randomized
     # to sbar + Math.floor(Math.random() * 1000)
     #
+    # @param [UIManager] ui
     # @param [Number] width
-    constructor: (width) ->
+    constructor: (@ui, width) ->
 
       # Sidebar items of class SidebarItem (or implementations)
       @_items = []

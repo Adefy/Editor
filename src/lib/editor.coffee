@@ -47,54 +47,6 @@ define (require) ->
         alert "Opera is not supported at this time, you may experience problems"
 
     ###
-    # Creates the editor toolbox
-    # I don't believe this is used anymore/yet
-    # @param [CSSSelector] selector
-    # @return [Sidebar]
-    ###
-    createToolbox: (sidebar) ->
-      return
-
-      # Add some items to the left sidebar
-      primGroup = new SidebarObjectGroup "Primitives", sidebar
-      rectPrimitive = primGroup.createItem "Rectangle"
-      ngonPrimitive = primGroup.createItem "Polgyon"
-      triPrimitive = primGroup.createItem "Triangle"
-
-      rectPrimitive.icon = "img/icon_rectangle.png"
-      ngonPrimitive.icon = "img/icon_hexagon.png"
-      triPrimitive.icon = "img/icon_triangle.png"
-
-      rectPrimitive.dropped = (target, x, y) ->
-        param.required target
-        param.required x
-        param.required y
-
-        if target != "workspace" then return null
-
-        new RectangleActor Timeline.getMe().getCursorTime(), 100, 100, x, y
-
-      ngonPrimitive.dropped = (target, x, y) ->
-        param.required target
-        param.required x
-        param.required y
-
-        if target != "workspace" then return null
-
-        new PolygonActor Timeline.getMe().getCursorTime(), 5, 100, x, y
-
-      triPrimitive.dropped = (target, x, y) ->
-        param.required target
-        param.required x
-        param.required y
-
-        if target != "workspace" then return null
-
-        new TriangleActor Timeline.getMe().getCursorTime(), 20, 30, x, y
-
-      primGroup
-
-    ###
     # Clears the workspace, creating a new ad
     ###
     newAd: ->
