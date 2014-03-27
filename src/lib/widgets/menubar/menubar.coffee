@@ -1,5 +1,4 @@
 define (require) ->
-  config = require "config"
 
   AUtilLog = require "util/log"
   param = require "util/param"
@@ -14,14 +13,13 @@ define (require) ->
 
     # Creates a new menu bar if one does not already exist
     constructor: ->
-      param.required parent
-
       return unless @enforceSingleton()
 
       super
         id: ID.prefId("menubar")
         classes: ["menubar"]
         prepend: true
+        parent: "header"
 
       # Note that we don't render initially. This gives the engine the freedom
       # to set up initial items, and then render us appropriately

@@ -6,12 +6,13 @@ define (require) ->
 
   class Toolbar extends Widget
 
-    constructor: (parent) ->
-      param.required parent
-
+    constructor: ->
       @_items = []
 
-      super ID.prefId("toolbar"), parent, [ "toolbar" ]
+      super
+        id: ID.prefId("toolbar")
+        classes: ["toolbar"]
+        parent: "header"
 
     render: ->
       $(@_sel).append @genElement "a", class: "button active", =>

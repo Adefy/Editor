@@ -1,11 +1,23 @@
 define (requre) ->
 
+  Toolbar = require "widgets/toolbar/toolbar"
   MenuBar = require "widgets/menubar/menubar"
 
   class UIManager
 
     constructor: ->
-      @initializeMenu()
+      @widgets = []
+
+      @widgets.push @initializeMenu()
+      @widgets.push @initializeToolbar()
+
+      @renderAll()
+
+    renderAll: ->
+      widget.render() for widget in @widgets
+
+    initializeToolbar: ->
+      @toolbar = new Toolbar
 
     initializeMenu: ->
       @menu = new MenuBar
@@ -63,4 +75,4 @@ define (requre) ->
       helpMenu.createChild "Tutorials"
       helpMenu.createChild "Documentation"
 
-      @menu.render()
+      @menu

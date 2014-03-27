@@ -19,7 +19,6 @@ define (require) ->
   TabProperties = require "widgets/tabs/tab_properties"
   Bezier = require "widgets/timeline/bezier"
   Timeline = require "widgets/timeline/timeline"
-  Toolbar = require "widgets/toolbar/toolbar"
   Workspace = require "widgets/workspace/workspace"
 
   class Editor
@@ -66,7 +65,6 @@ define (require) ->
 
       @ui = new UIManager
 
-      @widgets.push window.toolbar = @createToolbar(headSelector)
       @widgets.push window.timeline = @createTimeline(footSelector)
       @widgets.push window.statusbar = @createStatusbar(footSelector)
       @widgets.push window.sidebar = @createSidebar(bodySelector)
@@ -87,17 +85,6 @@ define (require) ->
       , 10
 
       AUtilLog.info "Adefy Editor created id(#{config.selector})"
-
-    ###
-    # Creates the editor toolbar
-    # Though its only their for aesthetics (unless...)
-    # @param [CSSSelector] selector
-    # @return [Toolbar]
-    ###
-    createToolbar: (selector) ->
-      toolbar = new Toolbar selector
-      toolbar.render()
-      toolbar
 
     ###
     # Creates the editor workspace
