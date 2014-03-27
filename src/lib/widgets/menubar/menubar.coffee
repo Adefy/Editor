@@ -118,7 +118,6 @@ define (require) ->
     # @param [String] link href content, defaults to #
     # @return [MenuBarItem] item created item
     addItem: (label, link) ->
-
       param.required label
       link = param.optional link, "#"
 
@@ -128,18 +127,12 @@ define (require) ->
 
       child
 
-    # Removes an item using an id, returns false if the item is not found
+    # Removes an item using an id
     #
-    # @param [String,Number] id
-    # @return [Boolean] success false if item is not found
+    # @param [String] id
     removeItem: (id) ->
-
-      for i in [0...@_items.length]
-        if @_items[i].getId == id
-          @_items.splice i, 1
-          return true
-
-      false
+      @_items = _.filter @_items, (i) -> i.getId() != id
+      @
 
     ###
     #
