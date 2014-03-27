@@ -53,14 +53,13 @@ define (require) ->
       if not Sidebar.__staticInitialized
         Sidebar.__staticInitialized = true
 
-        $(document).ready ->
-          $(document).on "click", ".sidebar .button.toggle", ->
+        $(document).on "click", ".sidebar .button.toggle", ->
 
-            # Find the affected sidebar
-            selector = @attributes.sidebarid.value
-            sidebar = $("body").data "##{selector}"
+          # Find the affected sidebar
+          selector = @attributes.sidebarid.value
+          sidebar = $("body").data "##{selector}"
 
-            sidebar.toggle()
+          sidebar.toggle()
 
     ###
     # Add an item to the sidebar and re-render. An item is any object with a

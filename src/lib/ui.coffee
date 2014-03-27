@@ -15,6 +15,11 @@ define (requre) ->
   class UIManager
 
     constructor: ->
+      if UIManager.instance
+        throw new Error "UIManager already instantiated!"
+      else
+        UIManager.instance = @
+
       @widgets = []
 
       @widgets.push @initializeMenu()

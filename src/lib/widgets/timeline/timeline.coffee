@@ -17,12 +17,6 @@ define (require) ->
   class Timeline extends Widget
 
     ###
-    # Always useful
-    # @type [Timeline]
-    ###
-    @__instance: null
-
-    ###
     # Timebar color classes, styled in colors.styl
     # @type [Array<String>] css class names
     ###
@@ -45,13 +39,6 @@ define (require) ->
     ]
 
     ###
-    # Return our instance (assuming we exist)
-    #
-    # @return [Timeline] instance
-    ###
-    @getMe: -> @__instance
-
-    ###
     # Get a random timebar color index, used when setting default actor timebar
     # color
     #
@@ -70,10 +57,7 @@ define (require) ->
     # @param [Number] duration ad length in ms, can be modified (expensive)
     ###
     constructor: (@ui, duration) ->
-      if Timeline.__instance
-        throw new Error "Only one timeline can exist at any one time!"
-        # You also can't destroy existing timelines, so HAH
-      Timeline.__instance = @
+      return unless @enforceSingleton()
 
       @_duration = Number param.optional(duration, 5000)
 
@@ -123,6 +107,17 @@ define (require) ->
       @_regListeners()
 
     ###
+    # Checks if a timeline has already been created, and returns false if one
+    # has. Otherwise, sets a flag preventing future calls from returning true
+    ###
+    enforceSingleton: ->
+      if Timeline.__exists
+        AUtilLog.warn "A timeline already exists, refusing to initialize!"
+        return false
+
+      Timeline.__exists = true
+
+    ###
     # Returns the time space css selector
     # @return [String] selector
     # @private
@@ -148,20 +143,17 @@ define (require) ->
     # @private
     ###
     _enableDrag: ->
-      me = @
-
-      # Enable cursor dragging
       $("#timeline-cursor").draggable
         axis: "x"
         containment: "parent"
-        drag: (e, ui) ->
+        drag: (e, ui) =>
 
           # Cancel the drag if we are currently in the middle of playback
-          if me._playbackID != undefined and me._playbackID != null
+          if @_playbackID != undefined and @_playbackID != null
             return false
 
-          me._onCursorDrag e, ui
-          me._onCursorDragStop e, ui
+          @_onCursorDrag e, ui
+          @_onCursorDragStop e, ui
 
     ###
     # Animation keys lightbolts saving
@@ -261,40 +253,35 @@ define (require) ->
     # @private
     ###
     _regListeners: ->
-      me = @
-      # Set up event listeners (this is where the magic happens)
-      $(document).ready ->
-        # Handle expansions
-        $(document).on "click", ".actor .expand", (e) ->
-          me._onActorExpand e
 
-        # Outer timebar
-        $(document).on "click", ".atts-outer", (e) ->
-          me._outerClicked e, @
+      # Handle expansions
+      $(document).on "click", ".actor .expand", (e) => @_onActorExpand e
 
-        # Timeline visibility toggle
-        $(document).on "click", "#timline-visible-toggle", (e) ->
-          me._control._visToggleClicked e
+      # Outer timebar
+      $(document).on "click", ".atts-outer", (e) => @_outerClicked e, @
 
-        # Timeline playback controls
-        $(document).on "click", "#timeline-control-fast-backward", (e) ->
-          me._control.onClickFastBackward e
+      # Timeline visibility toggle
+      $(document).on "click", "#timline-visible-toggle", (e) =>
+        @_control._visToggleClicked e
 
-        $(document).on "click", "#timeline-control-forward", (e) ->
-          me._control.onClickForward e
+      # Timeline playback controls
+      $(document).on "click", "#timeline-control-fast-backward", (e) =>
+        @_control.onClickFastBackward e
 
-        $(document).on "click", "#timeline-control-play", (e) ->
-          me._control.onClickPlay e
+      $(document).on "click", "#timeline-control-forward", (e) =>
+        @_control.onClickForward e
 
-        $(document).on "click", "#timeline-control-backward", (e) ->
-          me._control.onClickBackward e
+      $(document).on "click", "#timeline-control-play", (e) =>
+        @_control.onClickPlay e
 
-        $(document).on "click", "#timeline-control-fast-forward", (e) ->
-          me._control.onClickFastForward e
+      $(document).on "click", "#timeline-control-backward", (e) =>
+        @_control.onClickBackward e
 
-        # Sidebar save button
-        $(document).on "click", ".asp-save", (e) ->
-          me._saveKey e
+      $(document).on "click", "#timeline-control-fast-forward", (e) =>
+        @_control.onClickFastForward e
+
+      # Sidebar save button
+      $(document).on "click", ".asp-save", (e) => @_saveKey e
 
     ###
     # Return current cursor time in ms (relative to duration)
@@ -404,7 +391,6 @@ define (require) ->
     # @private
     ###
     _refreshActorRows: ->
-      me = @
       $("#{@_bodySelector()} actor").each ->
         #
 
