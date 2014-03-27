@@ -263,7 +263,6 @@ define (require) ->
 
       $(document).on "click", ".timeline .button.toggle", (e) =>
 
-        console.log e
         # Find the affected timeline
         selector = e.currentTarget.attributes.timelineid.value
         timeline = $("body").data "##{selector}"

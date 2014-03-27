@@ -70,7 +70,6 @@ define (require) ->
         properties.position.y = aformat.num pos.y
 
         color = @_actor.getColor(true)
-        console.log color
         properties.color.r = aformat.num color.r, 2
         properties.color.g = aformat.num color.g, 2
         properties.color.b = aformat.num color.b, 2
