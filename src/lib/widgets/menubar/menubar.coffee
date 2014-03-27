@@ -1,4 +1,5 @@
 define (require) ->
+  config = require "config"
 
   AUtilLog = require "util/log"
   param = require "util/param"
@@ -13,27 +14,31 @@ define (require) ->
     @__exists: false
 
     # Creates a new menu bar if one does not already exist
-    #
-    # @param [String] parent parent element selector
-    constructor: (parent) ->
+    constructor: ->
       param.required parent
+
+      return unless @enforceSingleton()
 
       # Items on the menu, accessors are used to manipulate the array
       # After updating, call @render() to re-draw the menu
       @_items = []
 
-      if MenuBar.__exists == true
-        AUtilLog.warn "A menubar already exists, refusing to continue!"
-        return
+      super
+        id: ID.prefId("menubar")
+        classes: ["menubar"]
+        prepend: true
+
+      @_registerListeners()
+
+    enforceSingleton: ->
+      if MenuBar.__exists
+        AUtilLog.warn "A menubar already exists, refusing to initialize!"
+        return false
 
       MenuBar.__exists = true
 
-      super ID.prefId("menubar"), parent, [ "menubar" ]
-
-      @_regListeners()
-
     # @private
-    _regListeners: ->
+    _registerListeners: ->
       # Register listeners
       $(document).ready ->
 
@@ -55,7 +60,7 @@ define (require) ->
               deta_open.removeClass "open"
 
         # Click listener to open/close menu items
-        $(document).on "click", ".mb-primary-has-children", (e) ->
+        $(".mb-primary-has-children").on "click", (e) ->
           _menu = $(".menu[data-owner=\"#{$(@).attr("id")}\"]")
 
           if $(@).hasClass "open"
@@ -69,7 +74,7 @@ define (require) ->
           false
 
         # Close menu on item click
-        $(document).on "click", ".menu a", (e) ->
+        $(".menu a").on "click", (e) ->
           $(@).parent().hide()
           $(".mb-primary-has-children").removeClass "open"
 
@@ -78,7 +83,7 @@ define (require) ->
 
         # Hover listener, opens menus with children when hovered (if another is
         # already open)
-        $(document).on "mouseover", ".mb-primary-has-children", ->
+        $(".mb-primary-has-children").on "mouseover", ->
 
           # Check if any primaries are open
           if $(".mb-primary-has-children.open").length > 0

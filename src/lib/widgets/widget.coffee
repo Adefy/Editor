@@ -1,5 +1,6 @@
 define (requre) ->
 
+  config = require "config"
   param = require "util/param"
   Renderable = require "renderable"
 
@@ -17,7 +18,22 @@ define (requre) ->
     # @param [Boolean] prepend if true, we are prepended to the parent
     ###
     constructor: (@_id, parent, classes, prepend) ->
-      @_parent = param.optional parent, "body"
+
+      ##
+      ## New argument format, all useages need to be migrated to this, then we
+      ## can get rid of the old constructor signature (TODO)
+      ##
+      if typeof @_id == "object"
+        parent = @_id.parent
+        classes = @_id.classes
+        prepend = @_id.prepend
+        @_id = @_id.id
+      ##
+      ##
+      ##
+
+      @_parent = param.optional parent, config.selector
+      classes = param.optional classes, []
       prepend = param.optional prepend, false
 
       # container selector, defaults to no container
@@ -28,10 +44,10 @@ define (requre) ->
         @_sel = "##{@_id}"
 
         _parent_sel = ""
-        if typeof parent == "string"
-          _parent_sel = parent
-        else if parent.getSel != undefined and parent.getSel != null
-          _parent_sel = parent.getSel()
+        if typeof @_parent == "string"
+          _parent_sel = @_parent
+        else if @_parent.getSel != undefined and @_parent.getSel != null
+          _parent_sel = @_parent.getSel()
         else
           throw new Error "Invalid parent specified!"
 
@@ -42,9 +58,7 @@ define (requre) ->
           $(_parent_sel).append elm
 
         # Ship classes
-        if classes instanceof Array
-          for c in classes
-            $(@_sel).addClass c
+        $(@_sel).addClass c for c in classes
 
       # Bind a pointer to ourselves on the body, under a key matching our @_sel
       me = @

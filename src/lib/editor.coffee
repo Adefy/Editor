@@ -1,4 +1,5 @@
 define (require) ->
+  config = require "config"
   AUtilLog = require "util/log"
   param = require "util/param"
 
@@ -6,9 +7,10 @@ define (require) ->
   TriangleActor = require "handles/actors/triangle"
   RectangleActor = require "handles/actors/rectangle"
 
+  UIManager = require "ui"
+
   Notification = require "widgets/notification"
   Modal = require "widgets/modal"
-  MenuBar = require "widgets/menubar/menubar"
   Sidebar = require "widgets/sidebar/sidebar"
   SidebarObjectGroup = require "widgets/sidebar/sidebar_object_group"
   SidebarPanel = require "widgets/sidebar/sidebar_panel"
@@ -32,8 +34,6 @@ define (require) ->
     # @type [Editor]
     ###
     @__instance: null
-
-    sel: "#editor"
 
     ###
     # Editor execution starts here. We spawn all other objects ourselves. If a
@@ -60,11 +60,12 @@ define (require) ->
       # Create workspace, sidebars, controlbar, and timeline
       #
       # Create and Push widgets
-      headSelector = "#{@sel} header"
-      bodySelector = "#{@sel} .main"
-      footSelector = "#{@sel} footer"
+      headSelector = "#{config.selector} header"
+      bodySelector = "#{config.selector} .main"
+      footSelector = "#{config.selector} footer"
 
-      @widgets.push window.menubar = @createMenubar(headSelector)
+      @ui = new UIManager
+
       @widgets.push window.toolbar = @createToolbar(headSelector)
       @widgets.push window.timeline = @createTimeline(footSelector)
       @widgets.push window.statusbar = @createStatusbar(footSelector)
@@ -85,72 +86,7 @@ define (require) ->
         @onResize()
       , 10
 
-      AUtilLog.info "Adefy Editor created id(#{@sel})"
-
-    ###
-    # Creates the editor main menubar
-    # @param [CSSSelector] selector
-    ###
-    createMenubar: (selector) ->
-      # Create menubar first
-      menubar = new MenuBar selector
-
-      # Set up the menubar
-      fileMenu = menubar.addItem "File"
-      viewMenu = menubar.addItem "View"
-      timelineMenu = menubar.addItem "Timeline"
-      canvasMenu = menubar.addItem "Canvas"
-      toolsMenu = menubar.addItem "Tools"
-      helpMenu = menubar.addItem "Help"
-
-      ed = "window.adefy_editor"
-
-      # File menu options
-      fileMenu.createChild "New Ad...", null, "#{ed}.newAd()"
-      fileMenu.createChild "New From Template...", null, null, true
-
-      fileMenu.createChild "Save", null, "#{ed}.save()"
-      fileMenu.createChild "Save As..."
-      fileMenu.createChild "Export...", null, "#{ed}.export()", true
-
-      fileMenu.createChild "Quit"
-
-      # View menu options
-      viewMenu.createChild "Toggle Sidebar", null, \
-        "window.sidebar.toggle()"
-
-      viewMenu.createChild "Fullscreen"
-
-      # Timeline menu options
-      timelineMenu.createChild "Set preview framerate...", null, \
-        "window.timeline.showSetPreviewRate()"
-
-      # Canvas menu options
-      canvasMenu.createChild "Set screen properties...", null, \
-        "window.workspace.showSetScreenProperties()"
-
-      canvasMenu.createChild "Set background color...", null, \
-        "window.workspace.showSetBackgroundColor()"
-
-      # Tools menu options
-      toolsMenu.createChild "Preview..."
-      toolsMenu.createChild "Calculate device support..."
-      toolsMenu.createChild "Set export framerate..."
-      toolsMenu.createChild "Upload textures...", null, \
-        "window.workspace.showAddTextures()"
-
-      # Help menu options
-      helpMenu.createChild "About Editor"
-      helpMenu.createChild "Changelog", null, null, true
-
-      helpMenu.createChild "Take a Guided Tour"
-      helpMenu.createChild "Quick Start"
-      helpMenu.createChild "Tutorials"
-      helpMenu.createChild "Documentation"
-
-      menubar.render()
-
-      menubar
+      AUtilLog.info "Adefy Editor created id(#{config.selector})"
 
     ###
     # Creates the editor toolbar
@@ -321,9 +257,9 @@ define (require) ->
     ###
     onResize: ->
       doc = $(window)
-      header = $("#{@sel} header")
-      footer = $("#{@sel} footer")
-      $("#{@sel} .main").height doc.height() - header.height() - footer.height()
+      header = $("#{config.selector} header")
+      footer = $("#{config.selector} footer")
+      $("#{config.selector} .main").height doc.height() - header.height() - footer.height()
 
       for w in @widgets
         if w.onResize != undefined then w.onResize()
