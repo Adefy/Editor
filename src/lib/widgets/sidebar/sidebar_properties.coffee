@@ -13,9 +13,11 @@ define (require) ->
     # Prevents us from binding event listeners twice
     @__exists: false
 
+    ###
     # Instantiates, but does not set data!
     #
     # @param [Sidebar] parent sidebar parent
+    ###
     constructor: (parent) ->
       param.required parent
       super parent
@@ -38,7 +40,9 @@ define (require) ->
       @_curObject = null
       @_regListeners()
 
+    ###
     # @private
+    ###
     _regListeners: ->
       if SidebarProperties.__exists == false
         SidebarProperties.__exists = true
@@ -117,11 +121,13 @@ define (require) ->
           $(document).on "input", ".asp-control > input", ->
             me._executeLive $(@).parent().find("> input")[0]
 
+    ###
     # @private
     # Updates an input on change, called either as a result of a drag, or
     # manual manipulation. Only works if the input has a checked live box!
     #
     # @param [Object] input updated input
+    ###
     _executeLive: (input) ->
 
       # Traverse upwards until we find the proper parent
@@ -136,10 +142,12 @@ define (require) ->
       if _live.length == 1
         if $(_live[0]).is(":checked") then @saveControl control
 
+    ###
     # Called either externally, or when our save button is clicked. The
     # clicked object is passed in as our 'clicked'
     #
     # @param [Object] clicked clicked object
+    ###
     save: (clicked) ->
       param.required clicked
 
@@ -152,6 +160,7 @@ define (require) ->
       $(clicked).parent().find(".asp-control-group > .asp-control").each ->
         me.saveControl @
 
+    ###
     # Called either externally, or when a control is changed and live is
     # enabled. This method applies the state of the control to our current object
     #
@@ -161,6 +170,7 @@ define (require) ->
     # same for each sub control, and just add those as an object on the composite
     #
     # @param [Object] control control to save
+    ###
     saveControl: (control, _recurse) ->
       param.required control
 
@@ -175,12 +185,14 @@ define (require) ->
 
       type = $(control).attr "data-type"
 
-      # @private
+      ###
       # Saves space below, expects a single result, throws an error otherwise
       #
       # @param [Object] result jquery element search result
       # @param [String] type type of what we are looking for, used in messages
       # @return [Boolean] success true if there is a single result
+      # @private
+      ###
       _formatCheck = (result, type) ->
         if result.length == 0
           AUtilLog.error "No #{type} found! #{control}"
@@ -253,10 +265,12 @@ define (require) ->
         # Ship the results to our object
         @_curObject.updateProperties _retValues
 
+    ###
     # Refresh widget data using a manipulatable, not that this function is
     # not where injection occurs! We request a refresh from our parent for that
     #
     # @param [Handle] obj
+    ###
     refresh: (obj) ->
       @_curObject = param.required obj
 
@@ -275,24 +289,30 @@ define (require) ->
 
       @_parent.render()
 
+    ###
     # Clear the property widget
+    ###
     clear: ->
       @_builtHMTL = ""
       @_curObject = null
       @_parent.render()
 
+    ###
     # Return internally pre-rendered HTML. We need to pre-render since we rely
     # upon object data to be meaningful (note comment in the constructor)
     #
     # @return [String] html
+    ###
     render: -> @_builtHMTL
 
-    # @private
+    ###
     # Generates a mini HTML control widget for the property in question
     #
     # @param [String] name
     # @param [Object] value
     # @return [String] html rendered widget
+    # @private
+    ###
     _generateControl: (name, value, __recurse) ->
       # Note we have an extra, undocumented parameter! It is set to true when
       # the method is called by itself.
@@ -403,9 +423,11 @@ define (require) ->
 
       _html += "</div>"
 
+    ###
     # The following is only meant to be called by the workspace when updating
     # object information, or objects when they die! As such, parameters are not
     # documented.
+    ###
     privvyIface: (action, val1, val2) ->
       param.required action
 

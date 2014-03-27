@@ -101,4 +101,4 @@ define (requre) ->
     # @param [Number] y y coordinate of drop point
     # @param [Handle] handle created handle
     ###
-    dropped: (target, x, y) -> null
+    dropped: (target, x, y, handle) -> null

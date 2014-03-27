@@ -13,6 +13,9 @@ define (require) ->
   ###
   class Toolbar extends Widget
 
+    ###
+    # @param [UI] ui
+    ###
     constructor: (@ui) ->
       @items = [
         icon: "fa-square"
@@ -36,6 +39,9 @@ define (require) ->
         classes: ["toolbar"]
         parent: "header"
 
+    ###
+    # Render
+    ###
     render: ->
       for item in @items
         attributes =
@@ -47,9 +53,16 @@ define (require) ->
 
       @setupDraggables()
 
+    ###
+    # Locates and returns an item by its id
+    # @return [Item] id
+    ###
     getItemById: (id) ->
       _.find @items, (i) -> i.id == id
 
+    ###
+    # initializes draggable elements
+    ###
     setupDraggables: ->
       $("#{@_sel} .workspace-drag").draggable
         addClasses: false

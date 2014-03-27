@@ -5,7 +5,9 @@ define (require) ->
   # Allows us to control the state of the renderer (start, pause, stop) the loop
   class ControlRender extends ControlBarControl
 
+    ###
     # Buid eeeeeet
+    ###
     constructor: ->
 
       controls = [

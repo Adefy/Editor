@@ -7,27 +7,37 @@ define (require) ->
   # Notification widget, handles stacking
   class Notification extends Widget
 
+    ###
     # @property [Number] count Living instance count
+    ###
     @count: 0
 
+    ###
     # @property [Number] cHeight
+    ###
     @cHeight: 0
 
+    ###
     # @property [Object] colors color definitions
+    ###
     @colors:
       red: "#cc0000"
       green: "#669900"
       blue: "#0099cc"
 
+    ###
     # Set to true the first time, signifies the event listener was registered
     # @private
+    ###
     @_listenersRegistered: false
 
+    ###
     # Instantiates and renders us, sets timeout for death
     #
     # @param [Number] msg message to display
     # @param [Number] color notification color
     # @param [Number] life lifetime length in ms, defaults to 2000
+    ###
     constructor: (msg, color, life) ->
       param.required msg
       color = param.optional color, "blue", [ "blue", "red", "green" ]
@@ -76,8 +86,10 @@ define (require) ->
       Notification.count++
       Notification.cHeight += $(@_sel).height() + 16
 
+    ###
     # A tad morbid, but descriptive. Hides us, clears out the HTML and decrements
     # the counter
+    ###
     killMe: ->
 
       if @timeout != null then clearInterval @timeout

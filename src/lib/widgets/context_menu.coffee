@@ -9,15 +9,22 @@ define (require) ->
   # supports actions
   class ContextMenu extends Widget
 
+    ###
     # Set to true after initial instantiation, prevents redundant listeners
+    ###
     @_registeredMouseup: false
 
+    ###
     # @property [Boolean] animate enables/disables animation, true by default
+    ###
     @animate: true
 
+    ###
     # @property [Number] animateSpeed animation duration
+    ###
     @animateSpeed: 80
 
+    ###
     # Builds a context menu as a new div on the body. It is absolute
     # positioned, and as such requires a position at instantiation.
     #
@@ -26,6 +33,7 @@ define (require) ->
     # @param [Number] x x coordinate to spawn at
     # @param [Number] y y coordinate to spawn at
     # @param [Handle] handle object to create menu for
+    ###
     constructor: (x, y, handle) ->
       param.required x
       param.required y
@@ -61,11 +69,13 @@ define (require) ->
       else
         $(@_sel).show()
 
-    # @private
+    ###
     # Builds the html for the rendered menu, called in the constructor. Useful
     # to break it out here for testing and whatnot.
     #
     # @return [String] html ready for injection
+    # @private
+    ###
     _buildHTML: ->
       @genElement "ul", {}, =>
 
@@ -118,21 +128,27 @@ define (require) ->
 
         __html
 
-    # @private
+    ###
     # Shorthand, used in @_buildHTML and @remove
     #
     # @param [String] ident
+    # @private
+    ###
     _unbindListener: (ident) -> $(document).off "click", "[data-id=\"#{ident}\"]"
 
-    # @private
+    ###
     # Useful internal function, turns "Test 3" into test_3
     #
     # @param [String] name name to convert
     # @return [String] converted name in lowercase, underscored form
+    # @private
+    ###
     _convertToIdent: (name) -> name.toLowerCase().split(" ").join "_"
 
+    ###
     # Removes us from the page, fails if we have already been killed
     # Note that after this call is made, the menu should be recycled!
+    ###
     remove: ->
       if @alive
 

@@ -11,7 +11,7 @@ define (require) ->
 
   Notification = require "widgets/notification"
   Modal = require "widgets/modal"
-  
+
   Bezier = require "widgets/timeline/bezier"
 
   class Editor
@@ -153,12 +153,14 @@ define (require) ->
 
       ret
 
+    ###
     # Deserialize an animation that's been serialized by _serializeAnimation.
     # Returns a built bezier function
     #
     # @param [Object] anim
     # @return [Bezier] bezier
     # @private
+    ###
     _deserializeAnimation: (anim) ->
 
       _start =
@@ -186,10 +188,12 @@ define (require) ->
 
       new Bezier _start, _end, _degree, _control, false
 
+    ###
     # Take JSON from the server, de-serialize and apply it.
     #
     # @param [String] data
     # @private
+    ###
     _deserialize: (data) ->
       param.required data
 
@@ -263,7 +267,9 @@ define (require) ->
 
       null
 
+    ###
     # Saves us to the server
+    ###
     save: ->
       data = @_serialize()
 
@@ -273,9 +279,11 @@ define (require) ->
         else
           new Notification "Saved", "green", 1000
 
+    ###
     # Loads data from our backend, de-serializes it and applies state
     #
     # @param [String] id Server-recognizable ad id
+    ###
     load: (id) ->
       param.required id
 
@@ -286,6 +294,7 @@ define (require) ->
 
         @_deserialize result.ad
 
+    ###
     # I really thought this would be sexier, expecting that we could simply
     # build a function that when executed recreates our ad, and stringify it.
     # Turns out we can't. Sadness. We can, we just can't easily set arguments.
@@ -294,6 +303,7 @@ define (require) ->
     # sounds.
     #
     # @return [String] export
+    ###
     export: ->
 
       # Program text
@@ -446,6 +456,7 @@ define (require) ->
         _html += "<a href=\"#{result.link}?download=yes\">Download</a>"
         new Modal title: "Exported", content: _html
 
+    ###
     # @private
     # Note that we don't take start values into account. The initial state
     # is the only actual start value. After that, all animations start from
@@ -457,6 +468,7 @@ define (require) ->
     # @param [String] properties array of properties, single or composite
     #
     # @return [String] export AJS.animate() statement
+    ###
     _compileAnimationExport: (actorName, actorObj, animations, properties) =>
 
       options = []

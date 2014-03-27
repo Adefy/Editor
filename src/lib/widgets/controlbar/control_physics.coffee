@@ -5,7 +5,9 @@ define (require) ->
   # Allows us to control the physics engine. (start, pause, stop)
   class ControlPhysics extends ControlBarControl
 
+    ###
     # Set up controls
+    ###
     constructor: ->
 
       controls = [

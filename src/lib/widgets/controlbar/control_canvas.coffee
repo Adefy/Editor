@@ -6,7 +6,9 @@ define (require) ->
   # Exposes controls to modify the canvas size
   class ControlCanvas extends ControlBarControl
 
+    ###
     # A tad fancy, we also require initialization
+    ###
     constructor: ->
 
       controls = [
@@ -24,7 +26,9 @@ define (require) ->
       # The class we extend handles the heavy lifting
       super "Canvas", "-", controls
 
+    ###
     # Pull in the current size of the canvas
+    ###
     initialize: ->
 
       @_canvasHeight = Workspace.getMe().getCanvasHeight()

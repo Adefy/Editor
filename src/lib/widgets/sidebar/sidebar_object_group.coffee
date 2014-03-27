@@ -8,11 +8,13 @@ define (require) ->
   # onto the workspace
   class SidebarObjectGroup extends SidebarItem
 
+    ###
     # Sets things up, NOTE we add ourselves to the parent's item collection, do
     # NOT do so manually!
     #
     # @param [String] name group name
     # @param [Sidebar] parent sidebar parent
+    ###
     constructor: (name, parent) ->
 
       # SidebarItem ensures the parent is valid, so rely on super to check
@@ -28,9 +30,11 @@ define (require) ->
       @_parent.addItem @
       @_parent.render()
 
+    ###
     # Renders the category, returning the resulting html
     #
     # @return [String] html html representation of the category
+    ###
     render: ->
 
       _html =  "<div class=\"as-objgroup\">"
@@ -42,21 +46,27 @@ define (require) ->
 
       _html += "</ul></div>"
 
+    ###
     # Sets a new category name, and re-renders the group
     #
     # @param [String] name
+    ###
     setName: (name) ->
       @_name = param.required name
       @_parent.render()
 
+    ###
     # Fetch category name
     #
     # @return [String] name
+    ###
     getName: -> @_name
 
+    ###
     # Add an existing item to the group
     #
     # @param [SidebarObject] item
+    ###
     addItem: (item) ->
       param.required item
 
@@ -66,10 +76,12 @@ define (require) ->
       @_items.push item   # Ship itttt
       @_parent.render()   # Re-render
 
+    ###
     # Create a new object, automatically adding it to the group
     #
     # @param [String] name text to appear as object
     # @return [SidebarObject] item
+    ###
     createItem: (name) ->
       param.required name
       i = new SidebarObject name, @
@@ -77,10 +89,12 @@ define (require) ->
       @_parent.render()
       i
 
+    ###
     # Remove item by id
     #
     # @param [String,Number] id id of the item to remove
     # @return [Boolean] success false if item is not found
+    ###
     removeItem: (id) ->
       param.required id
 
@@ -92,7 +106,9 @@ define (require) ->
 
       false
 
+    ###
     # Get the parent sidebar
     #
     # @return [Sidebar] parent
+    ###
     getParent: -> @_parent

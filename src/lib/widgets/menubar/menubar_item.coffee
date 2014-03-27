@@ -12,6 +12,7 @@ define (require) ->
   #  - Detail     [Item in a sub-menu to the dropdown]
   class MenubarItem extends Renderable
 
+    ###
     # Creates item, does not render it!
     #
     # @param [String,Number] id unique id
@@ -21,6 +22,7 @@ define (require) ->
     # @param [String] label text to appear as the item
     # @param [String] href url the item points to
     # @param [Boolean] sectionEnd if true, marks the end of a section
+    ###
     constructor: (@_id, @_parent, @_menubar, @_role, label, href, sectionEnd) ->
       param.required @_id
       param.required @_parent
@@ -33,10 +35,12 @@ define (require) ->
 
       @_children = []
 
+    ###
     # Render function, returns HTML representing the item.
     # For nested items, the parent item decides where this HTML is inserted
     #
     # @return [String] html rendered item
+    ###
     render: ->
       opts = id: @_id, href: @href
       opts.onclick = @click if @click
@@ -51,6 +55,7 @@ define (require) ->
       @genElement "a", opts, =>
         @genElement "li", {}, => @label
 
+    ###
     # Create a child item if possible. A unique id and correct tree-level is
     # ensured
     #
@@ -59,6 +64,7 @@ define (require) ->
     # @param [Method] click click handler, optional
     # @param [Boolean] sectionEnd if true, child marks the end of a section
     # @return [MenubarItem] item null if the item could not be created
+    ###
     createChild: (label, href, click, sectionEnd) ->
       sectionEnd = param.optional sectionEnd, false
       label = param.optional label, ""
@@ -78,14 +84,18 @@ define (require) ->
 
       child
 
+    ###
     # Delete child using id
     #
     # @param [String] id child id
+    ###
     removeChild: (id) ->
       @_children = _.filter @_children, (i) -> i.getId() != id
       @
 
+    ###
     # Fetch item id
     #
     # @return [Number] id
+    ###
     getId: -> @_id

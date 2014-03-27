@@ -5,6 +5,10 @@ define (require) ->
 
   class SidebarPanel extends SidebarItem
 
+    ###
+    # Create a new SidebarPanel
+    # @param [Sidebar] parent
+    ###
     constructor: (parent, opts) ->
       @_tabs = []
 
@@ -12,13 +16,50 @@ define (require) ->
 
       @_parent.addItem @
 
+    ###
+    # returns the scrollbar selector
+    # @return [String]
+    ###
+    _scrollbarSelector: ->
+      "#{@_sel}.panel .content"
+
+    ###
+    # Returns the scrollbar element
+    # @return [jQuery]
+    ###
+    _scrollbarElement: ->
+      $(@_scrollbarSelector())
+
+    ###
+    # onresize callback function
+    ###
+    onResize: ->
+      @_scrollbarElement().perfectScrollbar "update"
+
+    ###
+    # Clear all tabs from this panel
+    ###
     clearTabs: ->
       @_tabs.length = 0
 
+    ###
+    # All the tabs have their index reset
+    ###
+    reindexTabs: ->
+      for i in [0...@_tabs.length]
+        @_tabs[i].index = i
+
+    ###
+    # Add a new tab to the panel, this will also automagically assign
+    # an index to the tab
+    ###
     addTab: (tab) ->
-      #tab.index = @_tabs.length
+      tab.index = @_tabs.length
       @_tabs.push(tab)
 
+    ###
+    # Selects a tab based on index
+    ###
     selectTab: (index) ->
       for tab in @_tabs
         tab.selected = ""
@@ -26,18 +67,20 @@ define (require) ->
       if tab = @_tabs[index]
         tab.selected = "selected"
 
+    ###
+    # @param [String] name The name of this tab
+    # @param [Function] cb The content callback, called immediately
+    #   @optional
+    ###
     newTab: (name, cb) ->
       tab = name: name, selected:""
       tab.content = cb() if cb
       @addTab tab
       tab
 
-    scrollbarSelector: ->
-      "#{@_sel}.panel .content"
-
-    onResize: ->
-      $(@scrollbarSelector()).perfectScrollbar "update"
-
+    ###
+    # @return [HTML]
+    ###
     render: ->
       content = ""
       contentKlass = ""
@@ -57,5 +100,8 @@ define (require) ->
         content: content,
         contentKlass: contentKlass
 
+    ###
+    #
+    ###
     postRender: ->
-      $(@scrollbarSelector()).perfectScrollbar suppressScrollX: true
+      @_scrollbarElement().perfectScrollbar suppressScrollX: true

@@ -9,8 +9,6 @@ define (require) ->
   # Main navigation bar widget
   class MenuBar extends Widget
 
-    _items: []
-
     ###
     # Creates a new menu bar if one does not already exist
     #
@@ -18,6 +16,8 @@ define (require) ->
     ###
     constructor: (@ui) ->
       return unless @enforceSingleton()
+
+      @_items = []
 
       super
         id: ID.prefId("menubar")
@@ -107,11 +107,13 @@ define (require) ->
           $(".menu[data-owner=\"#{$(@).attr("id")}\"]").show()
           $(@).addClass "open"
 
+    ###
     # Adds a menu item. Note that this function does not call render()!
     #
     # @param [String] label text that appears as the item
     # @param [String] link href content, defaults to #
     # @return [MenuBarItem] item created item
+    ###
     addItem: (label, link) ->
       param.required label
       link = param.optional link, "#"
@@ -122,9 +124,11 @@ define (require) ->
 
       child
 
+    ###
     # Removes an item using an id
     #
     # @param [String] id
+    ###
     removeItem: (id) ->
       @_items = _.filter @_items, (i) -> i.getId() != id
       @

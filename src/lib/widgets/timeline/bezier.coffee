@@ -5,6 +5,7 @@ define (require) ->
   # Bezier curve implementation
   class Bezier
 
+    ###
     # Instantiate with start, end, and control points. Values are expected to be
     # passed in as objects containing (x,y) keys. Only 1st and 2nd degree
     # beziers are expected, with 1 and 2 control points required respectively.
@@ -21,6 +22,7 @@ define (require) ->
     # @param [Number] degree 1st or 2nd degree (or 0th for linear interpolation)
     # @param [Array<Object>] control control points
     # @param [Boolean] buffer optionally enables eval buffering
+    ###
     constructor: (@_start, @_end, @_degree, @_control, @_buffer) ->
       param.required @_start
       param.required @_end
@@ -118,10 +120,14 @@ define (require) ->
 
       val
 
+    ###
     # Enable buffering
+    ###
     enableBuffer: -> @_buffer = true
 
+    ###
     # Disable buffering
+    ###
     disableBuffer: ->
       @_buffer = false
       @_bufferData = {}

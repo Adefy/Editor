@@ -4,9 +4,16 @@ define (require) ->
   ID = require "util/id"
   Widget = require "widgets/widget"
   StatusBarTemplate = require "templates/statusbar"
+  Version = require "version"
 
+  ###
+  # That StatusBar!
+  ###
   class StatusBar extends Widget
 
+    ###
+    # Make that StatusBar!
+    ###
     constructor: ->
       @_items = []
 
@@ -15,9 +22,8 @@ define (require) ->
         parent: "footer"
         classes: [ "statusbar" ]
 
+    ###
+    # Render that StatusBar! (now with a fancy smancy version number!)
+    ###
     render: ->
-
-      # TODO: In order to properly render the version here, we have to remove
-      #       the StatusBar dependency from the Editor class, so we can pull
-      #       it in here without causing a circular dependency.
-      $(@_sel).html StatusBarTemplate version: "FIX ME"
+      $(@_sel).html StatusBarTemplate version: Version.STRING

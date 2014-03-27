@@ -4,6 +4,9 @@ define (requre) ->
 
   class Renderable
 
+    ###
+    # render stub function
+    ###
     render: ->
 
     ###

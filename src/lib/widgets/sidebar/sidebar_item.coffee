@@ -8,10 +8,12 @@ define (require) ->
   # Generic sidebar item meant to be extended
   class SidebarItem extends Widget
 
+    ###
     # Creates a new base sidebar item.
     #
     # @param [Sidebar] parent sidebar parent
     # @param [Array<String>] classes optional array of classes
+    ###
     constructor: (parent, classes) ->
       param.required parent
 

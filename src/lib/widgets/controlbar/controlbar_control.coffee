@@ -8,18 +8,23 @@ define (require) ->
   # Control to appear on the controlbar, with inputs and a status
   class ControlBarControl extends Renderable
 
+    ###
     # Essential classes broken out for styling (or just to be awesome)
+    # @type [String]
+    ###
     @classSection: "awcb-section"
     @classTitle: "awcb-section-title"
     @classStatus: "awcb-control-status"
     @classControl: "awcb-control"
 
+    ###
     # We add ourselves to ControlBar's static objects array, so we get
     # rendered with it
     #
     # @param [String] title title to appear on the controlbar
     # @param [String] default status to show
     # @param [Array<Object>] controls an array of control definitions
+    ###
     constructor: (@title, @status, @controls) ->
       param.required @title
       @status = param.optional @status, "-"
@@ -33,16 +38,20 @@ define (require) ->
 
       ControlBar.getMe().addControl @
 
+    ###
     # Helpful function to set up initial state. Called on the next render if it
-    # hasn't already been called.
+    # hasn't already been called
+    ###
     initialize: ->
       if @_initialized then return
 
       #
 
+    ###
     # Shippp itttt! A bit overexited, eh.
     #
     # @return [String] html rendered html
+    ###
     render: ->
 
       # Shorter lines, sacrificing elegance day by day
@@ -89,20 +98,24 @@ define (require) ->
 
       _h
 
+    ###
     # Set the state of the status. This just changes the class applied to it.
     # This is used internally, but can be called from the outside
     #
     # @param [String] statusState
     # @param [Boolean] render whether or not to immediately re-render
+    ###
     setStatusState: (@statusState, render) ->
       param.required @statusState
       if render then ControlBar.getMe().render()
 
+    ###
     # Force a certain status. As with @setStatusState, this can be used both
     # internally and externally
     #
     # @param [String] status
     # @param [Boolean] render whether or not to immediately re-render
+    ###
     setStatus: (@status, render) ->
       param.required @status
       if render then ControlBar.getMe().render()

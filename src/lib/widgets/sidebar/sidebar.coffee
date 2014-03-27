@@ -10,16 +10,21 @@ define (require) ->
   # @depend SidebarItem.coffee
   class Sidebar extends Widget
 
+    ###
     # Set to true upon the first sidebar instantiation, signals that our
     # event listeners are bound
+    # @type [Boolean]
     # @private
+    ###
     @__staticInitialized: false
 
+    ###
     # Creates a new sidebar with a given origin. The element's id is randomized
     # to sbar + Math.floor(Math.random() * 1000)
     #
     # @param [UIManager] ui
     # @param [Number] width
+    ###
     constructor: (@ui, width) ->
 
       # Sidebar items of class SidebarItem (or implementations)
@@ -40,7 +45,9 @@ define (require) ->
       @onResize()           # Calculate X offsets
       @_bindToggle()        # Bind an event listener for sidebar toggles.
 
+    ###
     # @private
+    ###
     _bindToggle: ->
       if not Sidebar.__staticInitialized
         Sidebar.__staticInitialized = true
@@ -53,11 +60,13 @@ define (require) ->
 
             sidebar.toggle()
 
+    ###
     # Add an item to the sidebar and re-render. An item is any object with a
     # render function that returns HTML. Note that the function should not
     # inject it as it will be injected into the sidebar on render!
     #
     # @param [Object] item item with render() and getId() methods
+    ###
     addItem: (item) ->
       param.required item
 
@@ -75,11 +84,13 @@ define (require) ->
       @_items.push item
       @render()
 
+    ###
     # Remove item using id. Note that the id can be anything, since we don't
     # specify what it should be when adding the item. Also re-renders the sidebar
     #
     # @param [Object] id
     # @return [Boolean] success false if item is not found
+    ###
     removeItem: (id) ->
       param.required id
 
@@ -92,34 +103,45 @@ define (require) ->
 
       false
 
+    ###
     # Render! Fill the sidebar with html from the items rendered in order.
+    ###
     render: ->
       $(@_sel).html @_items.map((i) -> i.render()).join ""
 
       @postRender()
 
+    ###
+    # postRender! Calls all the child postRender
+    ###
     postRender: ->
       for i in @_items
         i.postRender() if i.postRender != undefined
 
+    ###
     # Take the navbar into account, and always position ourselves below it
+    ###
     onResize: ->
       height = window.innerHeight - $("footer").height() - $("height").height()
       $(@_sel).height height
 
       i.onResize() for i in @_items
 
+    ###
     # Set sidebar width, sets internal offset values
     #
     # @param [Number] width
+    ###
     setWidth: (width) ->
       @_width = param.required width
       $(@_sel).width @_width
 
+    ###
     # Toggle visibility of the sidebar with an optional animation
     #
     # @param [Method] cb callback
     # @param [Boolean] animate defaults to true
+    ###
     toggle: (cb, animate) ->
       return
       animate = param.optional animate, true
@@ -137,10 +159,12 @@ define (require) ->
       else
         @show cb, animate
 
+    ###
     # Show the sidebar with an optional animation
     #
     # @param [Method] cb callback
     # @param [Boolean] animate defaults to true
+    ###
     show: (cb, animate) ->
       return
       animate = param.optional animate, true
@@ -158,10 +182,12 @@ define (require) ->
 
       @_visiblity = true
 
+    ###
     # Hide the sidebar with an optional animation
     #
     # @param [Method] cb callback
     # @param [Boolean] animate defaults to true
+    ###
     hide: (cb, animate) ->
       return
       animate = param.optional animate, true
