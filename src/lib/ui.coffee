@@ -27,20 +27,14 @@ define (requre) ->
 
       @renderAll()
 
-      @updateSidebarHeight()
-      @bindOnResize()
+      @onResize()
+      window.onresize = @onResize
 
-    bindOnResize: ->
-      window.onresize = =>
-        @updateSidebarHeight()
+    onResize: =>
+      for widget in @widgets
+        widget.onResize() if widget.onResize
 
-    renderAll: ->
-      widget.render() for widget in @widgets
-
-    updateSidebarHeight: ->
-      height = window.innerHeight - $("footer").height() - $("height").height()
-      $(@sidebar.getSel()).height height
-
+    renderAll: -> widget.render() for widget in @widgets
     initializeToolbar: -> @toolbar = new Toolbar
     initializeStatusbar: -> @statusbar = new StatusBar
     initializeTimeline: -> @timeline = new Timeline

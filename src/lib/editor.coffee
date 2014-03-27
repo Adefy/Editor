@@ -44,28 +44,9 @@ define (require) ->
       # Array of widgets to be managed internally
       @widgets = []
 
-      $(document).ready => @onDocumentReady()
-
-      Editor.__instance = this
-
-    onDocumentReady: ->
-      headSelector = "#{config.selector} header"
-      bodySelector = "#{config.selector} section#main"
-      footSelector = "#{config.selector} footer"
-
       @ui = new UIManager
 
-      ##
-      # First, trigger onResize to initialize all the widgets/elements
-      # Second, register the resize callback to the window
-      # Third, call onResize again:
-      #   For some reason, it has to be called a second time for things to settle
-      #   properly (I'm looking at you Sidebar), so call it again
-      @onResize()
-      $(window).resize => @onResize()
-      setTimeout =>
-        @onResize()
-      , 10
+      Editor.__instance = @
 
       AUtilLog.info "Adefy Editor created id(#{config.selector})"
 
@@ -116,20 +97,6 @@ define (require) ->
         new TriangleActor Timeline.getMe().getCursorTime(), 20, 30, x, y
 
       primGroup
-
-    ###
-    # This function gets called immediately upon creation, and whenever
-    # our parent element is resized. Other elements register listeners are to be
-    # called within it
-    ###
-    onResize: ->
-      doc = $(window)
-      header = $("#{config.selector} header")
-      footer = $("#{config.selector} footer")
-      $("#{config.selector} .main").height doc.height() - header.height() - footer.height()
-
-      for w in @widgets
-        if w.onResize != undefined then w.onResize()
 
     ###
     # Clears the workspace, creating a new ad

@@ -119,31 +119,10 @@ define (require) ->
 
     # Take the navbar into account, and always position ourselves below it
     onResize: ->
+      height = window.innerHeight - $("footer").height() - $("height").height()
+      $(@_sel).height height
 
-      menubar = $(".menubar")
-      toolbar = $(".toolbar")
-      timeline = $(".timeline")
-      statusbar = $(".statusbar")
-
-      timelineBottom = 0
-      timelineHeight = 0
-
-      if timeline && timeline.length > 0
-        timelineHeight = timeline.height()
-        timelineBottom = timeline.position().top + timelineHeight
-
-      # Re-size
-      #$(@_sel).height $(document).height() -
-      #toolbar.height() - menubar.height() - statusbar.height() - timelineHeight
-      #$(@_sel).offset top: toolbar.position().top + toolbar.height(), left: 0
-
-      # Re-position
-      #if @_origin == "right"
-      #  @_hiddenX = $(document).width() - 32
-      #  @_visibleX = $(document).width() - @_width
-
-      for i in @_items
-        i.onResize()
+      i.onResize() for i in @_items
 
     # Set sidebar width, sets internal offset values
     #

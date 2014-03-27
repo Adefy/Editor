@@ -798,15 +798,7 @@ define (require) ->
     # Note that this does NOT resize the canvas
     ###
     onResize: ->
-
-      header = $("#editor header")
-      main = $("#editor .main")
-      sidebar = $("#editor .main .sidebar")
-      footer = $("#editor footer")
-      elm = $(@_sel)
-
-      elm.width main.width() - sidebar.width()
-      elm.height main.height()
+      $(@_sel).height $("section#main").height()
 
       #elm.offset
       #  top: toolb.position().top + toolb.height()
