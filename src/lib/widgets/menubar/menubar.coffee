@@ -64,7 +64,7 @@ define (require) ->
     ###
     # Click listener to open/close menu items
     ###
-    _reg_menuClick: -> 
+    _reg_menuClick: ->
       $(document).on "click", ".mb-primary-has-children", (e) ->
         _menu = $(".menu[data-owner=\"#{$(@).attr("id")}\"]")
 

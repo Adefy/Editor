@@ -87,6 +87,8 @@ define (require) ->
       # Picking resources
       @_pickBuffer = null
       @_pickTexture = null
+      @_pickInProgress = false
+      @_pickQueue = []
 
       # Inject our canvas container, along with its status bar
       # Although we currently don't add anything else to the container besides
@@ -177,7 +179,7 @@ define (require) ->
           # TODO: Provide some flexibility here, take different actions if
           #       something besides an actor is dropped. For the time being,
           #       that can't happen. Yay.
-          @addActor handle if handle.constructor.name == "BaseActor"
+          @addActor handle if handle.constructor.name.indexOf("Actor") != -1
 
       # Actor dragging, whoop
       __drag_start_x = 0      # Keeps track of the initial drag point, so
@@ -202,10 +204,9 @@ define (require) ->
 
       # On mousedown, we need to setup pre-dragging state, perform a pick,
       # and wait for movement
-      $(".workspace canvas").mousedown (e) ->
+      $(".workspace canvas").mousedown (e) =>
 
-        # Calculate workspace coordinates
-        _truePos = me.domToGL e.pageX, e.pageY
+        position = @domToGL e.pageX, e.pageY
 
         # Note this can be slightly inefficient, since two picks are performed
         # on any click. Not when dragging, but when clicking both this and
@@ -213,7 +214,7 @@ define (require) ->
         #
         # TODO: Optimise. Consider performing the pick here, and saving the
         #       outcome for the click listener.
-        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+        @_performPick position.x, position.y, (r, g, b) ->
 
           # Not over an object, just return
           if b != 248 then return
@@ -324,15 +325,11 @@ define (require) ->
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
-      $(".workspace canvas").click (e) ->
+      $(".workspace canvas").click (e) =>
+        return if __dragging
 
-        # If we are dragging, gtfo
-        if __dragging then return
-
-        # Calculate workspace coordinates
-        _truePos = me.domToGL e.pageX, e.pageY
-
-        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+        position = @domToGL e.pageX, e.pageY
+        @_performPick position.x, position.y, (r, g, b) =>
 
           # Objects have a blue component of 248. If this is not an object,
           # perform the necessary clearing and continue
@@ -341,45 +338,32 @@ define (require) ->
             data.clear() if data
             return
 
-          # Id is stored as a sector and an offset. Recover proper object id
-          _id = r + (g * 255)
+          id = r + (g * 255)
+          actor = _.filter(@actorObjects, (a) -> a.getActorId() == id)[0]
 
-          # Find the actor in question
-          for o in me.actorObjects
-            if o.getActorId() == _id
-
-              # Update selected actor for use in Timeline
-              Workspace.setSelectedActor o.getId()
-
-              # Fill in property list!
-              o.onClick()
+          if actor
+              Workspace.setSelectedActor actor.getId()
+              actor.onClick()
 
       # Bind a contextmenu listener
-      $(document).on "contextmenu", ".workspace canvas", (e) ->
+      $(document).on "contextmenu", ".workspace canvas", (e) =>
         e.preventDefault()
 
         # We right clicked on the canvas, pick the object at our click position
         # and get its associated handle
-        _truePos = me.domToGL e.pageX, e.pageY
+        position = @domToGL e.pageX, e.pageY
 
         # Pick
-        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+        @_performPick position.x, position.y, (r, g, b) =>
+          return unless b == 248
 
-          # Extract id if valid
-          if b != 248 then return
-          _id = r + (g * 255)
+          id = r + (g * 255)
+          actor = _.filter(@actorObjects, (a) -> a.getActorId() == id)[0]
 
-          # Find the actor in question
-          for o in me.actorObjects
-            if o.getActorId() == _id
-
-              # We clicked on a handle, check for context functions
-              if not $.isEmptyObject o.getContextFunctions()
-
-                # Instantiate a new context menu, it handles the rest
-                new ContextMenu e.pageX, e.pageY, o
-
-              return
+          # Instantiate a new context menu, it handles the rest
+          if actor
+            unless _.isEmpty actor.getContextFunctions()
+              new ContextMenu e.pageX, e.pageY, actor
 
         false
 
@@ -718,6 +702,14 @@ define (require) ->
     # @param [Method] cb callback to call afterwards, passing r/g/b
     ###
     _performPick: (x, y, cb) ->
+
+      # We can only perform one pick at a time, so queue 'er up if needed
+      if @_pickInProgress
+        @_pickQueue.push x: x, y: y, cb: cb
+        return 
+
+      @_pickInProgress = true
+
       # Request a pick render from ARE, continue once we get it
       @_are.requestPickingRender @_pickBuffer, =>
 
@@ -729,6 +721,15 @@ define (require) ->
         gl.bindFramebuffer gl.FRAMEBUFFER, null
 
         cb pick[0], pick[1], pick[2]
+
+        @_pickInProgress = false
+
+        # Start the next pick if one is queued (after a timeout)
+        if @_pickQueue.length > 0
+          setTimeout =>
+            @_performPick @_pickQueue[0].x, @_pickQueue[0].y, @_pickQueue[0].cb
+            @_pickQueue.splice 0, 1
+          , 0
 
     ###
     # Converts document-relative coordinates to ARE coordinates

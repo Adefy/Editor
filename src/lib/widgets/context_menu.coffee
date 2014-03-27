@@ -43,21 +43,23 @@ define (require) ->
       if $.isEmptyObject(@functions) then return
 
       # Create object
-      super ID.prefId("context-menu"), "#editor", [ "context-menu" ]
+      super
+        id: ID.prefId("context-menu")
+        classes: [ "context-menu" ]
 
       # Add a handle to our instance on the body
       $("body").data @getId(), @
 
       # Position and inject ourselves
-      $(@getSel()).css
+      $(@_sel).css
         left: x
         top: y
-      $(@getSel()).html @_buildHTML()
+      $(@_sel).html @_buildHTML()
 
       if ContextMenu.animate
-        $(@getSel()).slideDown ContextMenu.animateSpeed
+        $(@_sel).slideDown ContextMenu.animateSpeed
       else
-        $(@getSel()).show()
+        $(@_sel).show()
 
     # @private
     # Builds the html for the rendered menu, called in the constructor. Useful
@@ -65,15 +67,15 @@ define (require) ->
     #
     # @return [String] html ready for injection
     _buildHTML: ->
-      @genElement "ul", =>
+      @genElement "ul", {}, =>
 
         __bindListener = (f) =>
           # Insane in da membrane
-          if typeof me.functions[f] != "function"
+          if typeof @functions[f] != "function"
             AUtilLog.error "Only methods can be bound to context menu items"
             return
 
-          $(document).on "click", "[data-id=\"#{me.functions[f]._ident}\"]", =>
+          $(document).on "click", "[data-id=\"#{@functions[f]._ident}\"]", =>
             @remove()
             @functions[f]()
 

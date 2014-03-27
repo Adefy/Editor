@@ -66,9 +66,10 @@ define (require) ->
     #
     # The default duration is 5000ms
     #
+    # @param [UIManager] ui
     # @param [Number] duration ad length in ms, can be modified (expensive)
     ###
-    constructor: (duration) ->
+    constructor: (@ui, duration) ->
       if Timeline.__instance
         throw new Error "Only one timeline can exist at any one time!"
         # You also can't destroy existing timelines, so HAH
@@ -363,7 +364,7 @@ define (require) ->
     registerActor: (actor) ->
       param.required actor
 
-      unless actor.constructor.name == "BaseActor"
+      if actor.constructor.name.indexOf("Actor") == -1
         throw new Error "Actor must be an instance of BaseActor!"
 
       # Ship to our array
