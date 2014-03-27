@@ -102,3 +102,10 @@ define (requre) ->
     # @param [Handle] handle created handle
     ###
     dropped: (target, x, y, handle) -> null
+
+    ###
+    # Called by ui.pushEvent
+    # @param [String] type
+    # @param [Object] params
+    ###
+    respondToEvent: (type, params) ->

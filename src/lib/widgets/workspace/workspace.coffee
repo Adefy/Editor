@@ -44,7 +44,12 @@ define (require) ->
     # Sets the selectedActor instance
     # @param [Id] actorId
     ###
-    @setSelectedActor: (actorId) -> @_selectedActor = actorId
+    @setSelectedActor: (actor) ->
+      @_selectedActor = actor.getId()
+      if @__instance
+        @__instance.ui.pushEvent "selected.actor",
+          actorId: @_selectedActor
+          actor: actor
 
     ###
     # Creates a new workspace if one does not already exist
@@ -283,7 +288,7 @@ define (require) ->
             if o.getActorId() == _id
 
               # Update selected actor for use in Timeline
-              Workspace.setSelectedActor o.getId()
+              Workspace.setSelectedActor o
 
               # Fill in property list!
               o.onClick()
@@ -342,7 +347,7 @@ define (require) ->
           actor = _.filter(@actorObjects, (a) -> a.getActorId() == id)[0]
 
           if actor
-              Workspace.setSelectedActor actor.getId()
+              Workspace.setSelectedActor actor
               actor.onClick()
 
       # Bind a contextmenu listener
