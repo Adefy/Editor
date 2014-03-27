@@ -19,7 +19,7 @@ define ->
     # @return [String]
     ###
     @num: (n, preci) ->
-      if n
+      if n != null && n != undefined
         "#{n.toFixed(preci||0)}"
       else
         s = "-"

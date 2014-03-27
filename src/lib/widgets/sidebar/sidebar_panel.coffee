@@ -1,5 +1,6 @@
 define (require) ->
 
+  AUtilLog = require "util/log"
   SidebarItem = require "widgets/sidebar/sidebar_item"
   SidebarPanelTemplate = require "templates/sidebar_panel"
 
@@ -84,6 +85,7 @@ define (require) ->
     render: ->
       content = ""
       contentKlass = ""
+      contentId = ""
       for tab in @_tabs
         if tab.selected == "selected"
           if tab.content instanceof String
@@ -91,6 +93,7 @@ define (require) ->
           else # probably is a Object
             content = tab.content.render()
             contentKlass = tab.content.cssAppendParentClass()
+            contentId = tab.content.appendParentId()
 
           break
 
@@ -99,10 +102,21 @@ define (require) ->
         sidebarId: @_parent.getId()
         tabs: @_tabs
         content: content
+        contentId: contentId
         contentKlass: contentKlass
 
     ###
-    #
+    # @return [Void]
     ###
     postRender: ->
       @_scrollbarElement().perfectScrollbar suppressScrollX: true
+
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
+    respondToEvent: (type, params) ->
+      AUtilLog.info "#{@getId()} recieved event (type: #{type})"
+      for tab in @_tabs
+        if tab.content
+          tab.content.respondToEvent type, params if tab.content.respondToEvent

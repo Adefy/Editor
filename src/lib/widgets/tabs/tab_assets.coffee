@@ -7,6 +7,9 @@ define (require) ->
 
   class TabAssets extends Tab
 
+    ###
+    # @param [SidebarPanel] parent
+    ###
     constructor: (parent) ->
       super ID.prefId("tab-assets"), parent, ["tab-assets"]
 
