@@ -56,7 +56,9 @@ define (require) ->
         Notification._listenersRegistered = true
 
       # Create object
-      super ID.prefId("anotification"), "#editor", [ "anotification" ]
+      super
+        id: ID.prefId("anotification")
+        classes: [ "anotification" ]
 
       # Build and inject
       _html =  ""
