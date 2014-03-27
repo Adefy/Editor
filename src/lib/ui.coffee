@@ -110,3 +110,14 @@ define (requre) ->
       helpMenu.createChild "Documentation"
 
       @menu
+
+    ## UES - UI Event System
+
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
+    pushEvent: (type, params) ->
+      ## we should probably fine tune this later
+      for widget in @widgets
+        widget.respondToEvent type, params if widget.respondToEvent

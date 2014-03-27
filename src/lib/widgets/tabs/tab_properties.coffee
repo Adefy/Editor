@@ -1,5 +1,6 @@
 define (require) ->
 
+  AUtilLog = require "util/log"
   ID = require "util/id"
   aformat = require "util/format"
   Tab = require "widgets/tabs/tab"
@@ -58,6 +59,7 @@ define (require) ->
       properties = @_genProperties()
 
       if @_actor
+        AUtilLog.info "#{getId()} updating actor"
         properties.basic.width = aformat.px @_actor.width
         properties.basic.height = aformat.px @_actor.height
         properties.basic.opacity = aformat.num @_actor.opacity, 2
@@ -89,3 +91,13 @@ define (require) ->
       @getElement("#psyx #mass").text properties.psyx.mass
       @getElement("#psyx #elasticity").text properties.psyx.elasticity
       @getElement("#psyx #friction").text properties.psyx.friction
+
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
+    respondToEvent: (type, params) ->
+      AUtilLog.info "#{getId()} recieved event (type: #{type})"
+      if type == "selected.actor"
+        setActor params.actor
+        @update()

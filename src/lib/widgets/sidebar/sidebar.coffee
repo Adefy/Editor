@@ -223,3 +223,11 @@ define (require) ->
       @getElement(".button.toggle i").addClass("fa-arrow-right")
 
       @_visible = false
+
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
+    respondToEvent: (type, params) ->
+      for item in @_items
+        item.respondToEvent(type, params) if item.respondToEvent
