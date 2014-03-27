@@ -23,6 +23,7 @@
     "jquery-ui": "~1.10.4",
     "jquery.mousewheel": "*",
     "perfect-scrollbar": "~0.4.8",
-    "pace": "~0.5.1"
+    "pace": "~0.5.1",
+    "underscore": "~1.6.0"
   }
 }

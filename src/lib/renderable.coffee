@@ -1,46 +1,47 @@
-define ->
+define (requre) ->
+
+  param = require "util/param"
 
   class Renderable
 
     ###
     # For cases where templates don't really make sense
     # @param [String] type
-    # @param [Object] opts
-    #   @option [Object] attrs Attributes to add to this element
+    # @param [Object] attributes optional hash of attributes
+    # @param [Method] cb optional method that returns the element body
     # @return [String] html
     ###
-    genElement: (type, opts, cb) ->
-      _html = ""
-      _attrs = []
-      if opts
-        for k, v of opts
-          _attrs.push "#{k}=\"#{v}\""
+    genElement: (type, attributes, cb) ->
+      param.required type
+      attributes = param.optional attributes, {}
+      cb = param.optional cb, -> ""
 
-      _attr_str = ""
-      _attr_str += " " + _attrs.join(" ") if _attrs.length > 0
+      attributes_s = _.pairs(attributes).map (a) -> "#{a[0]}=\"#{a[1]}\""
 
-      _html = "<#{type}#{_attr_str}>"
-      _html += cb() if cb
-      _html + "</#{type}>"
+      """
+        <#{type} #{attributes_s.join " "}>
+          #{cb()}
+        </#{type}>
+      """
 
     ###
-    # Convinienve method for creating buttons with icons in them
+    # Convenience method for creating buttons with icons in them
     # @param [String] iconName
-    # @param [Object] opts
+    # @param [Object] options
     #   @option [Boolean] fixedWidth
     #   @option [Object] buttonAttrs
     #   @option [Object] iconAttrs
     # @return [String] html
     ###
-    genButtonIcon: (iconName, opts) ->
-      buttonAttrs = {}
-      buttonAttrs = opts.buttonAttrs if opts && opts.buttonAttrs
-      iconAttrs = {}
-      iconAttrs = opts.iconAttrs if opts && opts.iconAttrs
-      iconKlass = if opts && opts.fixedWidth
-        "fa fa-fw fa-#{iconName}"
+    genButtonIcon: (iconName, options) ->
+      options = param.optional options, {}
+      buttonAttrs = param.optional options.buttonAttrs, {}
+      iconAttrs = param.optional options.iconAttrs, {}
+
+      if options.fixedWidth
+        iconKlass = "fa fa-fw fa-#{iconName}"
       else
-        "fa fa-#{iconName}"
+        iconKlass = "fa fa-#{iconName}"
 
       iconAttrs["class"] = "" unless iconAttrs["class"]
       iconAttrs["class"] += iconKlass

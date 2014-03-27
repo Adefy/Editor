@@ -10,8 +10,7 @@ define (require) ->
   # Main navigation bar widget
   class MenuBar extends Widget
 
-    # Set to true upon instantiation, prevents more than one instance
-    @__exists: false
+    _items: []
 
     # Creates a new menu bar if one does not already exist
     constructor: ->
@@ -19,17 +18,19 @@ define (require) ->
 
       return unless @enforceSingleton()
 
-      # Items on the menu, accessors are used to manipulate the array
-      # After updating, call @render() to re-draw the menu
-      @_items = []
-
       super
         id: ID.prefId("menubar")
         classes: ["menubar"]
         prepend: true
 
+      # Note that we don't render initially. This gives the engine the freedom
+      # to set up initial items, and then render us appropriately
       @_registerListeners()
 
+    ###
+    # Checks if a menu bar has already been created, and returns false if one
+    # has. Otherwise, sets a flag preventing future calls from returning true
+    ###
     enforceSingleton: ->
       if MenuBar.__exists
         AUtilLog.warn "A menubar already exists, refusing to initialize!"
@@ -37,67 +38,79 @@ define (require) ->
 
       MenuBar.__exists = true
 
-    # @private
+    ###
+    # Register event listeners for menu objects
+    ###
     _registerListeners: ->
-      # Register listeners
-      $(document).ready ->
+      @_reg_globalMouseUp()
+      @_reg_menuClick()
+      @_reg_itemClick()
+      @_reg_mouseOver()
 
-        # Mouseup listener to close menu when clicked outside
-        $(document).mouseup (e) ->
+    ###
+    # Listener responsible for closing menu when user clicks outside
+    ###
+    _reg_globalMouseUp: ->
+      $(document).mouseup (e) ->
 
-          seco = $(".menu")
-          deta = $(".menubar-detail")
+        menus = $(".menu")
+        details = $(".menubar-detail")
 
-          if seco
-            seco_open = $(".bar .open")
-            if !seco.is(e.target) && seco.has(e.target).length == 0
-              seco.hide()
-              seco_open.removeClass "open"
-          if deta
-            deta_open = $(".menu .open")
-            if !deta.is(e.target) && deta.has(e.target).length == 0
-              deta.hide()
-              deta_open.removeClass "open"
+        if menus
+          if !menus.is(e.target) && menus.has(e.target).length == 0
+            menus.hide()
+            $(".bar .open").removeClass "open"
 
-        # Click listener to open/close menu items
-        $(".mb-primary-has-children").on "click", (e) ->
-          _menu = $(".menu[data-owner=\"#{$(@).attr("id")}\"]")
+        if details
+          if !details.is(e.target) && details.has(e.target).length == 0
+            details.hide()
+            $(".menu .open").removeClass "open"
 
-          if $(@).hasClass "open"
-            _menu.hide()
-            $(@).removeClass "open"
-          else
-            _menu.show()
-            $(@).addClass "open"
+    ###
+    # Click listener to open/close menu items
+    ###
+    _reg_menuClick: -> 
+      $(document).on "click", ".mb-primary-has-children", (e) ->
+        _menu = $(".menu[data-owner=\"#{$(@).attr("id")}\"]")
 
-          e.preventDefault()
-          false
+        if $(@).hasClass "open"
+          _menu.hide()
+        else
+          _menu.show()
 
-        # Close menu on item click
-        $(".menu a").on "click", (e) ->
-          $(@).parent().hide()
-          $(".mb-primary-has-children").removeClass "open"
+        $(@).toggleClass "open"
 
-          e.preventDefault()
-          false
+        e.preventDefault()
+        false
 
-        # Hover listener, opens menus with children when hovered (if another is
-        # already open)
-        $(".mb-primary-has-children").on "mouseover", ->
+    ###
+    # Close menu on item click
+    ###
+    _reg_itemClick: ->
+      $(document).on "click", ".menu a", (e) ->
+        $(@).parent().hide()
+        $(".mb-primary-has-children").removeClass "open"
 
-          # Check if any primaries are open
-          if $(".mb-primary-has-children.open").length > 0
+        e.preventDefault()
+        false
 
-            # Hide existing menus, remove class
-            $(".menu").hide()
-            $(".mb-primary-has-children.open").removeClass "open"
+    ###
+    # Hover listener, opens menus with children when hovered (if another is
+    # already open)
+    ###
+    _reg_mouseOver: ->
+      $(document).on "mouseover", ".mb-primary-has-children", ->
 
-            # Show our submenu, attach clas
-            $(".menu[data-owner=\"#{$(@).attr("id")}\"]").show()
-            $(@).addClass "open"
+        # Check if any primaries are open
+        if $(".mb-primary-has-children.open").length > 0
 
-      # Note that we don't render initially. This gives the engine the freedom
-      # to set up initial items, and then render us appropriatly
+          # Hide existing menus, remove class
+          $(".menu").hide()
+          $(".mb-primary-has-children.open").removeClass "open"
+
+          # Show our submenu, attach clas
+          $(".menu[data-owner=\"#{$(@).attr("id")}\"]").show()
+          $(@).addClass "open"
 
     # Adds a menu item. Note that this function does not call render()!
     #
@@ -135,52 +148,35 @@ define (require) ->
     ###
     render: ->
 
-      _secondary = [] # Keeps track of which items have children
-      _detail = [] # Like above, except this time one level lower
-
-      # Render primary children first
+      # Render our decorator
       _html = @genElement "div", id: "menubar-decorater"
-      _html += @genElement "ul", class: "bar", =>
-        __html = ""
-        for i in @_items
-          if i._role != "primary"
-            throw new Error "Invalid child at this level! #{i._role} (primary)"
 
-          __html += i.render()
-          _secondary.push i if i._children.length > 0
-        __html
+      # Menu items
+      _html += @genElement "ul", class: "bar", =>
+        primaries = _.filter @_items, (i) -> i._role == "primary"
+        primaries.map((i) -> i.render()).join ""
 
       $(@_sel).html _html
 
       # Now render secondary items, and append them to our selector
       # Note that this places them OUTSIDE the previous list!
-      for i in _secondary
-        _menuId = ID.nextId()
+      for item in _.filter(@_items, (i) -> i._children.length > 0)
+        secondaries = _.filter item._children, (c) -> c._role == "secondary"
 
-        _attrs = {}
-        _attrs["id"] = _menuId
-        _attrs["data-owner"] = i.getId()
-        _attrs["class"] = "menu"
+        attrs =
+          id: ID.nextId()
+          class: "menu"
+          "data-owner": item.getId()
 
-        # Append
-        $(@_sel).append @genElement "ul", _attrs, =>
-          __html = ""
-          for c in i._children
-            if c._role != "secondary"
-              throw new Error "Invalid child at this level! #{c._role} (secondary)"
+        # Append all secondary children
+        $(@_sel).append @genElement "ul", attrs, =>
+          secondaries.map((c) -> c.render()).join ""
 
-            __html += c.render()
-            _detail.push c if c._children.length > 0
-          __html
+        # Position us on the same left edge as our parents
+        $("##{attrs.id}").css
+          left: $("##{item.getId()}").offset().left
 
-        # Note that chrome requires 4px of extra padding, so we need to calc the
-        # real offset depending on the browser
-        _realOff = $("##{i.getId()}").offset().left
-
-        # Position
-        $("##{_menuId}").css
-          left: _realOff
-
+      ###
       # Finally, render detail items
       for i in _detail
         $(@_sel).append @genElement "ul", class: "menubar-detail", =>
@@ -193,5 +189,4 @@ define (require) ->
             if c._children.length > 0
               throw new Error "Detail item has children! Damn."
           __html
-
-      # At this point, we've rendered three sets of items, completely seperately.
+      ###
