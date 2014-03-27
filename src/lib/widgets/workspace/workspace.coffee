@@ -142,15 +142,27 @@ define (require) ->
       @timeline.registerActor actor
 
     ###
-    # Because indenting gets ugly
+    # Bind a contextmenu listener
     ###
-    onDocumentReady: ->
+    bindContextClick: ->
+      $(document).on "contextmenu", ".workspace canvas", (e) =>
+        @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
+          return unless @isValidPick r, g, b
 
-      ##
-      # TODO. Chop this up some more, its far too large imo
-      ##
+          actor = @getActorFromPick r, g, b
+          if actor
 
-      # Set up our own capture of draggable objects
+            # Instantiate a new context menu, it handles the rest
+            unless _.isEmpty actor.getContextFunctions()
+              new ContextMenu e.pageX, e.pageY, actor
+
+        e.preventDefault()
+        false
+
+    ###
+    # Set up our own capture of draggable objects
+    ###
+    setupDroppableCanvas: ->
       $(".workspace canvas").droppable
         accept: ".workspace-drag"
         drop: (event, ui) =>
@@ -168,191 +180,136 @@ define (require) ->
           #       that can't happen. Yay.
           @addActor handle if handle.constructor.name.indexOf("Actor") != -1
 
-      # Actor dragging, whoop
-      __drag_start_x = 0      # Keeps track of the initial drag point, so
-      __drag_start_y = 0      # we know when to start listening
+    ###
+    # Translate the pick values into an ID and fetch the associated actor
+    #
+    # @param [Number] r
+    # @param [Number] g
+    # @param [Number] b optional
+    # @return [Handle] actor
+    ###
+    getActorFromPick: (r, g, b) ->
+      if b
+        return unless @isValidPick r, g, b
 
-      __drag_orig_x = 0       # Original object pos x so we can calculate dx
-      __drag_orig_y = 0       # Original object pos y so we can calculate dy
+      id = r + (g * 255)
+      _.find @actorObjects, (h) -> h.getActorId() == id
 
-      __drag_obj_index = -1   # Index of the object we are dragging
-      __drag_tolerance = 5    # How far the mouse should move before we pick up
+    ###
+    # Checks if we've hit an actor object
+    ###
+    isValidPick: (r, g, b) ->
+      b == 248
 
-      __drag_update_props = false # Whether or not to update properties
-      __drag_props = null         # Handle on the properties widget
-      __drag_psyx = false         # Whether or not the object had a psyx body
+    ###
+    # Initializes dragging settings and attaches listeners
+    ###
+    setupActorDragging: ->
 
-      # When true, enables logic in mousemove()
-      __drag_sys_active = false
+      @_drag =
+        active: false       # Enables logic in mousemove()
+        dragging: false     # Disables the normal click listener.
 
-      # When true, disables the normal click listener. This is reset a moment
-      # after dragging actually stops
-      __dragging = false
+        start: x: 0, y: 0
+        orig: x: 0, y: 0
+
+        handle: null
+        tolerance: 5
+
+        updateProperties: false
+        propertiesWidget: null
+        hasPhysics: false
 
       # On mousedown, we need to setup pre-dragging state, perform a pick,
       # and wait for movement
       $(".workspace canvas").mousedown (e) =>
+        @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
+          return unless @isValidPick r, g, b
 
-        position = @domToGL e.pageX, e.pageY
-
-        # Note this can be slightly inefficient, since two picks are performed
-        # on any click. Not when dragging, but when clicking both this and
-        # the click() event above fire.
-        #
-        # TODO: Optimise. Consider performing the pick here, and saving the
-        #       outcome for the click listener.
-        @_performPick position.x, position.y, (r, g, b) =>
-
-          # Not over an object, just return
-          if b != 248 then return
-
-          # Id is stored as a sector and an offset. Recover proper object id
-          _id = r + (g * 255)
-
-          # Find the actor in question
-          for o, i in @actorObjects
-            if o.getActorId() == _id
-              __drag_obj_index = i
-              break
-
-          # If we are above an object, wait for mouse movement
-          if __drag_obj_index != -1
+          @_drag.handle = @getActorFromPick r, g, b
+          if @_drag.handle
 
             # Check if the actor is present in the sidebar. If so, store a
             # handle on the sidebar and enable property updating
             props = $("body").data "default-properties"
             if props instanceof SidebarProperties
-              if props.privvyIface("get_id") == _id
-                __drag_update_props = true
-                __drag_props = props
+              if props.privvyIface("get_id") == id
+                @_drag.updateProperties = true
+                @_drag.propertiesWidget = props
 
-            # Save beginning drag point
-            __drag_start_x = e.pageX
-            __drag_start_y = e.pageY
+            @_drag.start = x: e.pageX, y: e.pageY
+            @_drag.orig = @_drag.handle.getPosition()
 
-            # Save initial actor position
-            __drag_orig_x = @actorObjects[__drag_obj_index].getPosition().x
-            __drag_orig_y = @actorObjects[__drag_obj_index].getPosition().y
+            @_drag.active = true
 
-            # Activate
-            __drag_sys_active = true
-
-      # Reset state after, dragging after 1ms, leaving time to prevent the
-      # click handler from taking effect
+      # Reset state after 1ms post-drag, leaving time to prevent the click
+      # handler from taking effect
       $(".workspace canvas").mouseup (e) =>
 
-        if __drag_psyx
-          @actorObjects[__drag_obj_index].getActor().enablePsyx()
+        @_drag.handle.getActor().enablePsyx() if @_drag.hasPhysics
 
-        __drag_sys_active = false
-        __drag_obj_index = -1
-        __drag_props = null
-        __drag_update_props = false
-        __drag_psyx = false
+        @_drag.active = false
+        @_drag.handle = null
+        @_drag.propertiesWidget = null
+        @_drag.updateProperties = false
+        @_drag.hasPhysics = false
 
-         # Calculate workspace coordinates
-        position = @domToGL e.pageX, e.pageY
-
-        @_performPick position.x, position.y, (r, g, b) =>
-
-          # Objects have a blue component of 248. If this is not an object,
-          # perform the necessary clearing and continue
-          if b != 248
+        @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
+          unless @isValidPick r, g, b
             data = $("body").data("default-properties")
             data.clear() if data
             return
 
-          # Id is stored as a sector and an offset. Recover proper object id
-          _id = r + (g * 255)
+          actor = @getActorFromPick r, g, b
+          if actor
+            Workspace.setSelectedActor actor.getId()
+            actor.onClick()
 
-          # Find the actor in question
-          for o in @actorObjects
-            if o.getActorId() == _id
+        setTimeout (=> @_drag.dragging = false), 0
 
-              # Update selected actor for use in Timeline
-              Workspace.setSelectedActor o.getId()
-
-              # Fill in property list!
-              o.onClick()
-
-        setTimeout ->
-          __dragging = false
-        , 1
-
-      # Core of the dragging logic
+      # On-drag logic, at this point a click has already fired
       $(".workspace canvas").mousemove (e) =>
+        return unless @_drag.active
 
-        # Means we also have a valid object id
-        if __drag_sys_active
+        # Perform an initial check, destroy the physics body if there is one
+        unless @_drag.dragging
+          @_drag.dragging = true
 
-          # Perform an initial check, destroy the physics body if there is one
-          if not __dragging
+          if @_drag.handle.getActor().hasPsyx()
+            @_drag.handle.getActor().disablePsyx()
+            @_drag.hasPhysics = true
 
-            if @actorObjects[__drag_obj_index].getActor().hasPsyx()
-              __drag_psyx = true
-              @actorObjects[__drag_obj_index].getActor().disablePsyx()
+        dx = Math.pow(e.pageX - @_drag.start.x, 2)
+        dy = Math.pow(e.pageY - @_drag.start.y, 2)
 
-            __dragging = true
+        if Math.sqrt(dx + dy) > @_drag.tolerance
 
-          if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
-          or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
+          # Calc new coords (orig + offset)
+          newX = Number(@_drag.orig.x + (e.pageX - @_drag.start.x))
 
-            # Calc new coords (orig + offset)
-            _newX = Number(__drag_orig_x + (e.pageX - __drag_start_x))
+          # Note we need to invert the vertical offset
+          newY = Number(@_drag.orig.y + ((e.pageY - @_drag.start.y) * -1))
 
-            # Note we need to invert the vertical offset
-            _newY = Number(__drag_orig_y + ((e.pageY - __drag_start_y) * -1))
+          @_drag.handle.setPosition newX, newY
 
-            # Update!
-            @actorObjects[__drag_obj_index].setPosition _newX, _newY
-
-            # Update properties as well, if needed
-            if __drag_update_props
-              __drag_props.privvyIface "update_position", _newX, _newY
+          if @_drag.updateProperties
+            @_drag.propertiesWidget.privvyIface "update_position", newX, newY
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
       $(".workspace canvas").click (e) =>
-        return if __dragging
+        return if @_drag.dragging
 
-        position = @domToGL e.pageX, e.pageY
-        @_performPick position.x, position.y, (r, g, b) =>
-
-          # Objects have a blue component of 248. If this is not an object,
-          # perform the necessary clearing and continue
-          if b != 248
+        @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
+          unless @isValidPick r, g, b
             data = $("body").data("default-properties")
             data.clear() if data
             return
 
-          id = r + (g * 255)
-          actor = _.filter(@actorObjects, (a) -> a.getActorId() == id)[0]
-
+          actor = @getActorFromPick r, g, b
           if actor
-              Workspace.setSelectedActor actor.getId()
-              actor.onClick()
-
-      # Bind a contextmenu listener
-      $(document).on "contextmenu", ".workspace canvas", (e) =>
-        e.preventDefault()
-
-        # We right clicked on the canvas, pick the object at our click position
-        # and get its associated handle
-        position = @domToGL e.pageX, e.pageY
-
-        # Pick
-        @_performPick position.x, position.y, (r, g, b) =>
-          return unless b == 248
-
-          id = r + (g * 255)
-          actor = _.filter(@actorObjects, (a) -> a.getActorId() == id)[0]
-
-          # Instantiate a new context menu, it handles the rest
-          if actor
-            unless _.isEmpty actor.getContextFunctions()
-              new ContextMenu e.pageX, e.pageY, actor
-
-        false
+            Workspace.setSelectedActor actor.getId()
+            actor.onClick()
 
     ###
     # @private
@@ -360,14 +317,13 @@ define (require) ->
     # init from here.
     ###
     _engineInit: ->
-
       AUtilLog.info "ARE instance up, initializing workspace"
 
-      # Start with an off-white clear color
       @_are.setClearColor 240, 240, 240
 
-      # Bind manipulatable handlers
-      $(document).ready => @onDocumentReady()
+      @bindContextClick()
+      @setupDroppableCanvas()
+      @setupActorDragging()
 
       # Start rendering
       @_are.startRendering()
@@ -683,15 +639,14 @@ define (require) ->
     # @private
     # Helper function to perform a pick at the specified canvas coordinates
     #
-    # @param [Number] x x coordinate
-    # @param [Number] y y coordinate
+    # @param [Object] position hash with x, y values
     # @param [Method] cb callback to call afterwards, passing r/g/b
     ###
-    _performPick: (x, y, cb) ->
+    performPick: (pos, cb) ->
 
       # We can only perform one pick at a time, so queue 'er up if needed
       if @_pickInProgress
-        @_pickQueue.push x: x, y: y, cb: cb
+        @_pickQueue.push pos: pos, cb: cb
         return
 
       @_pickInProgress = true
@@ -703,7 +658,7 @@ define (require) ->
 
         gl = @_are.getGL()
         gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
-        gl.readPixels x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pick
+        gl.readPixels pos.x, pos.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pick
         gl.bindFramebuffer gl.FRAMEBUFFER, null
 
         cb pick[0], pick[1], pick[2]
@@ -713,7 +668,7 @@ define (require) ->
         # Start the next pick if one is queued (after a timeout)
         if @_pickQueue.length > 0
           setTimeout =>
-            @_performPick @_pickQueue[0].x, @_pickQueue[0].y, @_pickQueue[0].cb
+            @performPick @_pickQueue[0].pos, @_pickQueue[0].cb
             @_pickQueue.splice 0, 1
           , 0
 
