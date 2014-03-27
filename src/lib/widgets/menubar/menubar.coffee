@@ -52,19 +52,12 @@ define (require) ->
     ###
     _reg_globalMouseUp: ->
       $(document).mouseup (e) ->
-
         menus = $(".menu")
-        details = $(".menubar-detail")
 
         if menus
           if !menus.is(e.target) && menus.has(e.target).length == 0
             menus.hide()
             $(".bar .open").removeClass "open"
-
-        if details
-          if !details.is(e.target) && details.has(e.target).length == 0
-            details.hide()
-            $(".menu .open").removeClass "open"
 
     ###
     # Click listener to open/close menu items
@@ -140,6 +133,7 @@ define (require) ->
     #
     ###
     render: ->
+      $(@_sel).html ""
 
       # Render our decorator
       _html = @genElement "div", id: "menubar-decorater"
@@ -168,18 +162,3 @@ define (require) ->
         # Position us on the same left edge as our parents
         $("##{attrs.id}").css
           left: $("##{item.getId()}").offset().left
-
-      ###
-      # Finally, render detail items
-      for i in _detail
-        $(@_sel).append @genElement "ul", class: "menubar-detail", =>
-          __html = ""
-          for c in i._children
-            if c._role != "detail"
-              throw new Error "Invalid child at this level! #{c._role} (detail)"
-
-            __html += c.render()
-            if c._children.length > 0
-              throw new Error "Detail item has children! Damn."
-          __html
-      ###

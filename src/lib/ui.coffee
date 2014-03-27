@@ -34,8 +34,6 @@ define (requre) ->
       viewMenu.createChild "Toggle Sidebar", null, \
         "window.sidebar.toggle()"
 
-      viewMenu.createChild "Fullscreen"
-
       # Timeline menu options
       timelineMenu.createChild "Set preview framerate...", null, \
         "window.timeline.showSetPreviewRate()"
