@@ -27,3 +27,14 @@ define (require) ->
     ###
     render: ->
       $(@_sel).html StatusBarTemplate version: Version.STRING
+
+    ###
+    # Update the state of the statusbar
+    ###
+    update: ->
+      ##
+      # TODO replace this later with a proper save check
+      ##
+      needSaving = false
+      #@getElement(".version").text Version.STRING # if we ever need to update it
+      @getElement(".save").toggleClass "done", !needSaving
