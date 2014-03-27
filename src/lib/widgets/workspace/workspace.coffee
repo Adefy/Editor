@@ -537,7 +537,7 @@ define (require) ->
           $("##{preview}").css "background-color", rgbCol
 
           # Return updates
-        delta
+          delta
 
     ###
     # Creates and shows the "Add Textures" modal
