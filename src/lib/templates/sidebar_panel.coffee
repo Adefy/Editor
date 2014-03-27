@@ -6,6 +6,7 @@ define ->
   # @property [Array<Object>] tabs
   #   @property [String] selected
   #   @property [String] name
+  # @property [String] contentId
   # @property [String] contentKlass
   # @property [HTML] content
   ###
@@ -19,7 +20,7 @@ define ->
           <i class="fa fa-fw fa-arrow-left"></i>
         </div>
       </div>
-      <div class="content {{contentKlass}}">
+      <div id="{{contentId}}" class="content {{contentKlass}}">
         {{{ content }}}
       </div>
     </div>

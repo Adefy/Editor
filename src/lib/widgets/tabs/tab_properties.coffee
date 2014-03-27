@@ -59,22 +59,27 @@ define (require) ->
       properties = @_genProperties()
 
       if @_actor
-        AUtilLog.info "#{getId()} updating actor"
-        properties.basic.width = aformat.px @_actor.width
-        properties.basic.height = aformat.px @_actor.height
-        properties.basic.opacity = aformat.num @_actor.opacity, 2
-        properties.basic.rotation = aformat.degree @_actor.rotation, 2
+        AUtilLog.info "#{@getId()} updating actor"
+        properties.basic.width = aformat.px @_actor.getWidth()
+        properties.basic.height = aformat.px @_actor.getHeight()
+        properties.basic.opacity = aformat.num @_actor.getOpacity(), 2
+        properties.basic.rotation = aformat.degree @_actor.getRotation(), 2
 
-        properties.position.x = aformat.num @_actor.x
-        properties.position.y = aformat.num @_actor.y
+        pos = @_actor.getPosition()
+        properties.position.x = aformat.num pos.x
+        properties.position.y = aformat.num pos.y
 
-        properties.color.r = aformat.num @_actor.color.r, 2
-        properties.color.g = aformat.num @_actor.color.g, 2
-        properties.color.b = aformat.num @_actor.color.b, 2
+        color = @_actor.getColor(true)
+        console.log color
+        properties.color.r = aformat.num color.r, 2
+        properties.color.g = aformat.num color.g, 2
+        properties.color.b = aformat.num color.b, 2
 
-        properties.psyx.mass = aformat.num @_actor.mass
-        properties.psyx.elasticity = aformat.num @_actor.elasticity, 2
-        properties.psyx.friction = aformat.num @_actor.friction, 2
+        psyx = @_actor.getPsyX()
+        if psyx.enabled
+          properties.psyx.mass = aformat.num psyx.mass
+          properties.psyx.elasticity = aformat.num psyx.elasticity, 2
+          properties.psyx.friction = aformat.num psyx.friction, 2
 
       @getElement("#basic #width").text properties.basic.width
       @getElement("#basic #height").text properties.basic.height
@@ -97,7 +102,7 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      AUtilLog.info "#{getId()} recieved event (type: #{type})"
+      AUtilLog.info "#{@getId()} recieved event (type: #{type})"
       if type == "selected.actor"
-        setActor params.actor
+        @setActor params.actor
         @update()

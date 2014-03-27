@@ -301,7 +301,7 @@ define (require) ->
     # @return [Number] id
     ###
     getActorId: ->
-      if @_actor != null then return @_actor.getId()
+      return @_actor.getId() if @_actor
       AUtilLog.warn "No actor, can't get id!"
 
     ###
@@ -324,7 +324,7 @@ define (require) ->
     # @return [Object] position
     ###
     getPosition: ->
-      if @_actor != null
+      if @_actor
         _pos = @_actor.getPosition()
         return { x: _pos.x, y: _pos.y }
 
@@ -335,7 +335,7 @@ define (require) ->
     #
     # @return [Number] angle in degrees
     ###
-    getRotation: -> @_properties["rotation"]._value
+    getRotation: -> @_properties["rotation"].getValue()
 
     ###
     # Return actor color as (r,g,b)
@@ -346,9 +346,28 @@ define (require) ->
     getColor: (float) ->
       float = param.optional float, false
 
-      if @_actor != null
+      if @_actor
         _col = @_actor.getColor()
         return { r: _col.getR(float), g: _col.getG(float), b: _col.getB(float) }
+
+      AUtilLog.warn "No actor, can't get color!"
+
+    ###
+    # Return actor psyx
+    #
+    # @return [Object] psyx properties
+    ###
+    getPsyX: ->
+      if @_actor
+        _psyx = @_properties["psyx"].components
+        return {
+          enabled: _psyx.enabled.getValue()
+          mass: _psyx.mass.getValue()
+          elasticity: _psyx.elasticity.getValue()
+          friction: _psyx.friction.getValue()
+        }
+
+      AUtilLog.warn "No actor, can't get psyx!"
 
     ###
     # Get buffer entry

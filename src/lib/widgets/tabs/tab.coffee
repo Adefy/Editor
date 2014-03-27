@@ -15,6 +15,13 @@ define (require) ->
       ""
 
     ###
+    # What should the content id of the tab be
+    # @return [String]
+    ###
+    appendParentId: ->
+      @getId()
+
+    ###
     # @return [String]
     ###
     render: ->
