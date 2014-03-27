@@ -1,2 +1,3 @@
 requirejs.config baseUrl: "lib/"
-requirejs ["editor"], (Editor) -> new Editor
+requirejs ["editor"], (Editor) ->
+  window.editor = new Editor

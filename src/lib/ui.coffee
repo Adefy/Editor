@@ -64,7 +64,8 @@ define (requre) ->
       toolsMenu = @menu.addItem "Tools"
       helpMenu = @menu.addItem "Help"
 
-      ed = "window.adefy_editor"
+      ed = "window.editor"
+      edUI = "window.editor.ui"
 
       # File menu options
       fileMenu.createChild "New Ad...", null, "#{ed}.newAd()"
@@ -78,27 +79,27 @@ define (requre) ->
 
       # View menu options
       viewMenu.createChild "Toggle Sidebar", null, \
-        "window.sidebar.toggle()"
+        "#{edUI}.sidebar.toggle()"
 
       viewMenu.createChild "Fullscreen"
 
       # Timeline menu options
       timelineMenu.createChild "Set preview framerate...", null, \
-        "window.timeline.showSetPreviewRate()"
+        "#{edUI}.timeline.showSetPreviewRate()"
 
       # Canvas menu options
       canvasMenu.createChild "Set screen properties...", null, \
-        "window.workspace.showSetScreenProperties()"
+        "#{edUI}.workspace.showSetScreenProperties()"
 
       canvasMenu.createChild "Set background color...", null, \
-        "window.workspace.showSetBackgroundColor()"
+        "#{edUI}.workspace.showSetBackgroundColor()"
 
       # Tools menu options
       toolsMenu.createChild "Preview..."
       toolsMenu.createChild "Calculate device support..."
       toolsMenu.createChild "Set export framerate..."
       toolsMenu.createChild "Upload textures...", null, \
-        "window.workspace.showAddTextures()"
+        "#{edUI}.workspace.showAddTextures()"
 
       # Help menu options
       helpMenu.createChild "About Editor"
