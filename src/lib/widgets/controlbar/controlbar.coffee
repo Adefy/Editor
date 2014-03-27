@@ -74,7 +74,7 @@ define (require) ->
     # Our miniscule render function
     ###
     render: ->
-      $(@_sel).html @genElement "div", class: "awcb-inner", =>
+      @getElement().html @genElement "div", class: "awcb-inner", =>
         # Get the current canvas size. Note that this render function should really
         # only ever be called once; after it is, we will update our displayed
         # canvas size manually. Only initially do we need to read it in.

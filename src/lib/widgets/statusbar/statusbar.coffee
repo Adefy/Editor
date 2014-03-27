@@ -26,7 +26,7 @@ define (require) ->
     # Render that StatusBar! (now with a fancy smancy version number!)
     ###
     render: ->
-      $(@_sel).html StatusBarTemplate version: Version.STRING
+      @getElement().html StatusBarTemplate version: Version.STRING
 
     ###
     # Update the state of the statusbar

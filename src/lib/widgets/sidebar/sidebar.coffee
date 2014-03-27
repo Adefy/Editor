@@ -107,7 +107,7 @@ define (require) ->
     # Render! Fill the sidebar with html from the items rendered in order.
     ###
     render: ->
-      $(@_sel).html @_items.map((i) -> i.render()).join ""
+      @getElement().html @_items.map((i) -> i.render()).join ""
 
       @postRender()
 
@@ -123,7 +123,7 @@ define (require) ->
     ###
     onResize: ->
       height = window.innerHeight - $("footer").height() - $("height").height()
-      $(@_sel).height height
+      @getElement().height height
 
       i.onResize() for i in @_items
 
@@ -134,7 +134,7 @@ define (require) ->
     ###
     setWidth: (width) ->
       @_width = param.required width
-      $(@_sel).width @_width
+      @getElement().width @_width
 
     ###
     # Toggle visibility of the sidebar with an optional animation
@@ -175,10 +175,10 @@ define (require) ->
 
       # And
       if animate
-        $(@_sel).animate
+        @getElement().animate
           left: @_visibleX
         , 300
-      else $(@_sel).css { left: @_visibleX }
+      else @getElement().css { left: @_visibleX }
 
       @_visiblity = true
 
@@ -198,9 +198,9 @@ define (require) ->
 
       # Ham
       if animate
-        $(@_sel).animate
+        @getElement().animate
           left: @_hiddenX
         , 300
-      else $(@_sel).css { left: @_hiddenX }
+      else @getElement().css { left: @_hiddenX }
 
       @_visiblity = false

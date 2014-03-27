@@ -184,14 +184,14 @@ define (require) ->
     # @param [Number] height
     ###
     resize: (@_height) ->
-      $(@_sel).css "height", "#{@_height}px"
+      @getElement().css "height", "#{@_height}px"
       #$("body").css "padding-bottom", @_bodyPadding + @_height
 
     ###
     # callback when a resize takes place
     ###
     onResize: ->
-      $("#{@_sel} .content").height $(@_sel).height() - $("#{@_sel} .header").height()
+      @getElement(".content").height @getElement().height() - @getElement(".header").height()
 
     ###
     # When an actor expand button is pressed this function is called
@@ -624,7 +624,7 @@ define (require) ->
         #contents: ""
         #timeContents: ""
 
-      return $(@_sel).html TimelineBaseTemplate options
+      return @getElement().html TimelineBaseTemplate options
 
     ###
     # Proper render function, fills in timeline internals. Since we have two

@@ -65,11 +65,11 @@ define (require) ->
       _html += "<p>#{msg}</p>"
       # ...room for more info (a title, icon, etc)
 
-      $(@_sel).html _html
+      @getElement().html _html
 
       # Position
-      $(@_sel).css
-        left: $(window).width() - $(@_sel).width() - 32
+      @getElement().css
+        left: $(window).width() - @getElement().width() - 32
         top: 24 + Notification.cHeight + (8  * Notification.count)
         "background-color": Notification.colors[color]
 
@@ -78,13 +78,13 @@ define (require) ->
 
       # Show
       me = @
-      $(@_sel).show()
-      $(@_sel).animate { opacity: 1 }, 200, =>
+      @getElement().show()
+      @getElement().animate { opacity: 1 }, 200, =>
         @timeout = setTimeout (-> me.killMe() ), life
 
       # Notify others of our existence
       Notification.count++
-      Notification.cHeight += $(@_sel).height() + 16
+      Notification.cHeight += @getElement().height() + 16
 
     ###
     # A tad morbid, but descriptive. Hides us, clears out the HTML and decrements
@@ -95,8 +95,8 @@ define (require) ->
       if @timeout != null then clearInterval @timeout
 
       Notification.count--
-      Notification.cHeight -= $(@_sel).height() + 16
+      Notification.cHeight -= @getElement().height() + 16
 
       $("body").removeData @_sel
-      $("#{@_sel} i").css "opacity", "0"
-      $(@_sel).animate { opacity: 0 }, 400, => $(@_sel).remove()
+      @getElement("i").css "opacity", "0"
+      @getElement().animate { opacity: 0 }, 400, => @getElement().remove()

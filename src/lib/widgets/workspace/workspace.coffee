@@ -75,7 +75,7 @@ define (require) ->
       #timelineHeight = ($(".timeline").height() + timelineBottom)
 
       # The canvas is fullscreen, minus the mainbar
-      @_canvasWidth = $(@_sel).width()
+      @_canvasWidth = @getElement().width()
       @_canvasHeight = $(window).height() - $(".menubar").height()
 
       # Starting phone size is 800x480
@@ -93,7 +93,7 @@ define (require) ->
       # Inject our canvas container, along with its status bar
       # Although we currently don't add anything else to the container besides
       # the canvas itself, it might prove useful in the future.
-      $(@_sel).html WorkspaceCanvasContainerTemplate()
+      @getElement().html WorkspaceCanvasContainerTemplate()
 
       # Create an ARE instance on ourselves
       AUtilLog.info "Creating ARE instance..."
@@ -706,7 +706,7 @@ define (require) ->
       # We can only perform one pick at a time, so queue 'er up if needed
       if @_pickInProgress
         @_pickQueue.push x: x, y: y, cb: cb
-        return 
+        return
 
       @_pickInProgress = true
 
@@ -790,7 +790,7 @@ define (require) ->
     # Note that this does NOT resize the canvas
     ###
     onResize: ->
-      $(@_sel).height $("section#main").height()
+      @getElement().height $("section#main").height()
 
       #elm.offset
       #  top: toolb.position().top + toolb.height()
@@ -799,7 +799,7 @@ define (require) ->
       #timelineBottom = Number($(".timeline").css("bottom").split("px")[0]) - 16
       #timelineHeight = ($(".timeline").height() + timelineBottom)
       ## Our height
-      #$(@_sel).height $(document).height() - $(".menubar").height() + 2 - \
+      #@getElement().height $(document).height() - $(".menubar").height() + 2 - \
       #  timelineHeight
 
       # Center phone outline

@@ -59,15 +59,15 @@ define (require) ->
       $("body").data @getId(), @
 
       # Position and inject ourselves
-      $(@_sel).css
+      @getElement().css
         left: x
         top: y
-      $(@_sel).html @_buildHTML()
+      @getElement().html @_buildHTML()
 
       if ContextMenu.animate
-        $(@_sel).slideDown ContextMenu.animateSpeed
+        @getElement().slideDown ContextMenu.animateSpeed
       else
-        $(@_sel).show()
+        @getElement().show()
 
     ###
     # Builds the html for the rendered menu, called in the constructor. Useful

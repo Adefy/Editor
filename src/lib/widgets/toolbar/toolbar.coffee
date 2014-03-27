@@ -48,7 +48,7 @@ define (require) ->
           class: "button workspace-drag"
           "data-id": item.id
 
-        $(@_sel).append @genElement "a", attributes, =>
+        @getElement().append @genElement "a", attributes, =>
           @genElement "i", class: "fa fa-fw #{item.icon}"
 
       @setupDraggables()
@@ -64,7 +64,7 @@ define (require) ->
     # initializes draggable elements
     ###
     setupDraggables: ->
-      $("#{@_sel} .workspace-drag").draggable
+      @getElement(".workspace-drag").draggable
         addClasses: false
         helper: "clone"
         revert: "invalid"

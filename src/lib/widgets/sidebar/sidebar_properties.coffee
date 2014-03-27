@@ -448,8 +448,8 @@ define (require) ->
         # doesn't occur if jquery can't find it
         #
         # Grab labels
-        _xL = $("#{@_sel} label[data-name=\"x\"]")
-        _yL = $("#{@_sel} label[data-name=\"y\"]")
+        _xL = @getElement("label[data-name=\"x\"]")
+        _yL = @getElement("label[data-name=\"y\"]")
 
         if _xL.length > 0 and _yL.length > 0
           $(_xL).parent().find("input")[0].value = x

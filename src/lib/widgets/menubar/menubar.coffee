@@ -139,7 +139,7 @@ define (require) ->
     #
     ###
     render: ->
-      $(@_sel).html ""
+      @getElement().html ""
 
       # Render our decorator
       _html = @genElement "div", id: "menubar-decorater"
@@ -149,7 +149,7 @@ define (require) ->
         primaries = _.filter @_items, (i) -> i._role == "primary"
         primaries.map((i) -> i.render()).join ""
 
-      $(@_sel).html _html
+      @getElement().html _html
 
       # Now render secondary items, and append them to our selector
       # Note that this places them OUTSIDE the previous list!
@@ -162,7 +162,7 @@ define (require) ->
           "data-owner": item.getId()
 
         # Append all secondary children
-        $(@_sel).append @genElement "ul", attrs, =>
+        @getElement().append @genElement "ul", attrs, =>
           secondaries.map((c) -> c.render()).join ""
 
         # Position us on the same left edge as our parents

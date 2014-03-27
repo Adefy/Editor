@@ -58,7 +58,7 @@ define (requre) ->
           $(_parent_sel).append elm
 
         # Ship classes
-        $(@_sel).addClass c for c in classes
+        @getElement().addClass c for c in classes
 
       # Bind a pointer to ourselves on the body, under a key matching our @_sel
       me = @

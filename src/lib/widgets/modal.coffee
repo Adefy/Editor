@@ -86,11 +86,11 @@ define (require) ->
     scrapeData: ->
       data = {}
 
-      for i in $("#{@_sel} input")
+      for i in @getElement("input")
         if $(i).attr("type") != "radio" then data[$(i).attr("name")] = $(i).val()
         else if $(i).is ":checked" then data[$(i).attr("name")] = $(i).val()
 
-      for i in $("#{@_sel} textarea")
+      for i in @getElement("textarea")
         data[$(i).attr("name")] = $(i).val()
 
       data
@@ -112,7 +112,7 @@ define (require) ->
       if @validation != null then if @validation(data) != true then return
       delta = @change $(i).attr("name"), $(i).val(), data
 
-      $("#{@_sel} *[name=\"#{d}\"]").val v for d, v of delta
+      @getElement("*[name=\"#{d}\"]").val v for d, v of delta
 
     ###
     # Injects and shows us. Doesn't work if we aren't dead
@@ -121,12 +121,12 @@ define (require) ->
       if not @dead then return else @dead = false
 
       # Build!
-      $(@_sel).html ModalTemplate title: @title, content: @content, cb: !!@cb
+      @getElement().html ModalTemplate title: @title, content: @content, cb: !!@cb
 
       # Register us for later
       $("body").data "activeModal", @
 
-      $(@_sel).animate { opacity: 1 }, 400
+      @getElement().animate { opacity: 1 }, 400
 
     ###
     # Closes and kills us
@@ -155,11 +155,11 @@ define (require) ->
 
         if @dead then return else @dead = true
 
-        if not $(@_sel).is ":visible" then @_kill()
-        else $(@_sel).animate { opacity: 0 }, 400, => @_kill()
+        if not @getElement().is ":visible" then @_kill()
+        else @getElement().animate { opacity: 0 }, 400, => @_kill()
       else
-        if not $(@_sel).is ":visible" then @_kill()
-        else $(@_sel).animate { opacity: 0 }, 400, => @_kill()
+        if not @getElement().is ":visible" then @_kill()
+        else @getElement().animate { opacity: 0 }, 400, => @_kill()
 
     ###
     # Sets an error string to display
@@ -169,7 +169,7 @@ define (require) ->
     setError: (error) ->
       param.required error
 
-      $("#{@_sel} .modal-error").text error
+      @getElement(".modal-error").text error
 
     ###
     # Private kill method, called once we are no longer visible
@@ -177,4 +177,4 @@ define (require) ->
     ###
     _kill: ->
       $("body").removeData "activeModal"
-      $(@_sel).remove()
+      @getElement().remove()
