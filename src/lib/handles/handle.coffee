@@ -43,10 +43,7 @@ define (require) ->
     # Global handle onClick function, called by handles if they
     # wish to take advantage of its functionality.
     onClick: ->
-
-      # If a properties widget is avaliable, ship ourselves
-      if $("body").data("default-properties") != undefined
-        $("body").data("default-properties").refresh @
+      #
 
     # Return the html representation to show when dropped on the workspace.
     # This gets appended to the workspace, and is automatically positioned

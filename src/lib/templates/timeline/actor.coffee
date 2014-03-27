@@ -13,9 +13,9 @@ define ->
   Handlebars.compile """
     <div id="{{ id }}" class="actor">
       <div class="actor-info row">
-        <div actorid="{{actorId}}" class="visibility"><i class="fa fa-fw fa-eye"></i></div>
-        <div actorid="{{actorId}}" class="expand"><i class="fa fa-fw fa-caret-right"></i></div>
-        <div actorid="{{actorId}}" class="title">{{ title }}</div>
+        <div actorid="{{actorId}}" id="visible" class="visibility"><i class="fa fa-fw fa-eye"></i></div>
+        <div actorid="{{actorId}}" id="expanded" class="expand"><i class="fa fa-fw fa-caret-right"></i></div>
+        <div actorid="{{actorId}}" id="name" class="title">{{ title }}</div>
       </div>
      {{#each properties}}
       <div id="{{ id }}" class="actor-property row property">

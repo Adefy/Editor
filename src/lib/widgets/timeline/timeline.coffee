@@ -660,6 +660,27 @@ define (require) ->
       $("#{selector} #color .value").text "#{color.r}, #{color.g}, #{color.b}"
 
     ###
+    #
+    # @param [BaseActor] actor
+    # @private
+    ###
+    highlightActor: (actor) ->
+      AUtilLog.info "#{@getId()} highlighting actor"
+
+      actorId = actor.getId()
+
+      if @_lastSelectedActor
+        selector = "#actor-body-#{@_lastSelectedActor.getId()}.actor"
+        $("#{selector} .actor-info").removeClass("selected")
+
+      @_lastSelectedActor = actor
+
+      if @_lastSelectedActor
+        selector = "#actor-body-#{@_lastSelectedActor.getId()}.actor"
+        console.log selector
+        $("#{selector} .actor-info").addClass("selected")
+
+    ###
     # Kills the interval and NULLs the playbackID
     # @private
     ###
@@ -757,3 +778,5 @@ define (require) ->
     ###
     respondToEvent: (type, params) ->
       AUtilLog.info "#{@getId()} recieved event (type: #{type})"
+      if type == "selected.actor"
+        @highlightActor(params.actor)
