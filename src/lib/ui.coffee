@@ -44,7 +44,7 @@ define (requre) ->
     initializeTimeline: -> @timeline = new Timeline @
     initializeWorkspace: ->
       throw new Error "Timeline required for workspace" unless @timeline
-      @workspace = new Workspace @, @timeline
+      @workspace = new Workspace @
 
     initializeSidebar: ->
       @sidebar = new Sidebar @, 310

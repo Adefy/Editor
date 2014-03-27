@@ -41,13 +41,10 @@ define (require) ->
     # Creates a new workspace if one does not already exist
     #
     # @param [UIManager] ui
-    # @param [Timeline] timeline
     ###
-    constructor: (@ui, @timeline) ->
+    constructor: (@ui) ->
       return unless @enforceSingleton()
-
       param.required @ui
-      param.required @timeline
 
       super
         id: ID.prefId("workspace")
@@ -144,7 +141,7 @@ define (require) ->
     ###
     addActor: (actor) ->
       @actorObjects.push actor
-      @timeline.registerActor actor
+      @ui.timeline.registerActor actor
 
     ###
     # Bind a contextmenu listener
@@ -556,7 +553,7 @@ define (require) ->
     reset: ->
 
       for o in @actorObjects
-        @timeline.removeActor o.getActorId()
+        @ui.timeline.removeActor o.getActorId()
         o.timelineDeath()
         o.delete()
 
@@ -571,13 +568,13 @@ define (require) ->
     notifyDemise: (obj) ->
 
       # We keep track of actors internally, splice them out of our array
-      if obj.constructor.name == "BaseActor"
+      if obj.constructor.name.indexOf("Actor") != -1
         for o, i in @actorObjects
           if o.getId() == obj.getId()
             @actorObjects.splice i, 1
 
             # Remove actor from the timeline
-            @timeline.removeActor obj.getActorId()
+            @ui.timeline.removeActor obj.getActorId()
 
             return
 
@@ -641,11 +638,11 @@ define (require) ->
     registerActor: (handle) ->
       param.required handle
 
-      if not handle.constructor.name == "BaseActor"
+      if not handle.constructor.name.indexOf("Actor") != -1
         throw new Error "You can only register actors that derive from BaseActor"
 
       @actorObjects.push handle
-      @timeline.registerActor handle
+      @ui.timeline.registerActor handle
 
     ###
     # @private

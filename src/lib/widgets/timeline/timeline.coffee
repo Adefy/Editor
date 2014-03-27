@@ -469,6 +469,7 @@ define (require) ->
       _h = ""
       for a, i in @_actors
         _h += @_renderSingleActor i, true
+
       # Ship
       $(@_bodySelector()).html _h
       @_refreshActorRows()
