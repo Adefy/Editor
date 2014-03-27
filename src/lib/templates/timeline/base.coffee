@@ -3,6 +3,7 @@ define ->
   ###
   # Control bar and base
   # @property [String] id
+  # @property [String] timlineId
   # @property [Time] currentTime
   # -property [HTML] contents Actors will go here
   # -property [HTML] timecontents Actor time & keyframes will go here
@@ -15,6 +16,9 @@ define ->
       <a id="timeline-control-play"><i class="fa fa-fw fa-play"></i></a>
       <a id="timeline-control-forward"><i class="fa fa-fw fa-forward"></i></a>
       <a id="timeline-control-fast-forward"><i class="fa fa-fw fa-fast-forward"></i></a>
+      <div timelineid="{{timelineId}}" class="button toggle">
+        <i class="fa fa-fw fa-arrow-down"></i>
+      </div>
     </div>
     <div class="content">
       <div class="list">

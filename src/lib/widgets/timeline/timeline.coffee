@@ -1,5 +1,6 @@
 define (require) ->
 
+  AUtilLog = require "util/log"
   param = require "util/param"
   ID = require "util/id"
   Widget = require "widgets/widget"
@@ -38,6 +39,8 @@ define (require) ->
       "atimebar-color-4-bg"
     ]
 
+    @__staticInitialized: false
+
     ###
     # Get a random timebar color index, used when setting default actor timebar
     # color
@@ -66,8 +69,7 @@ define (require) ->
       # Default preview playback speed (fps)
       @_previewRate = 30
 
-      # Visibility toggle animation status
-      @__animating = false
+      @_visible = true
 
       # Sanity check on our internal color arrays
       _l1 = Timeline._timebarColors.length
@@ -176,14 +178,19 @@ define (require) ->
     # @param [Number] height
     ###
     resize: (@_height) ->
-      @getElement().css "height", "#{@_height}px"
-      #$("body").css "padding-bottom", @_bodyPadding + @_height
+      @getElement().height @_height
 
     ###
     # callback when a resize takes place
     ###
     onResize: ->
-      @getElement(".content").height @getElement().height() - @getElement(".header").height()
+      @_hiddenHeight = @getElement(".header").height()
+      if @_visible
+        @getElement().height @_height
+      else
+        @getElement().height @_hiddenHeight
+
+      @getElement(".content").height @getElement().height - @getElement(".header").height()
 
     ###
     # When an actor expand button is pressed this function is called
@@ -253,6 +260,15 @@ define (require) ->
     # @private
     ###
     _regListeners: ->
+
+      $(document).on "click", ".timeline .button.toggle", (e) =>
+
+        console.log e
+        # Find the affected timeline
+        selector = e.currentTarget.attributes.timelineid.value
+        timeline = $("body").data "##{selector}"
+
+        timeline.toggle()
 
       # Handle expansions
       $(document).on "click", ".actor .expand", (e) => @_onActorExpand e
@@ -606,6 +622,7 @@ define (require) ->
     renderStructure: ->
       options =
         id: "timeline-header"
+        timelineId: @getId()
         currentTime: "0:00.00"
         #contents: ""
         #timeContents: ""
@@ -649,3 +666,94 @@ define (require) ->
     clearPlaybackID: ->
       clearInterval @_playbackID
       @_playbackID = null
+
+    ###
+    # Toggle visibility of the sidebar with an optional animation
+    #
+    # @param [Method] cb callback
+    # @param [Boolean] animate defaults to false
+    ###
+    toggle: (cb, animate) ->
+      animate = param.optional animate, true
+
+      # Keep in mind this can cause issues with code that depends on the
+      # visibility state. I'm not sure if we should update it immediately,
+      # or after the animation is finished. For the time being, we'll do so
+      # immediately.
+
+      # Cheese.
+      if animate then AUtilLog.warn "Animation not yet supported"
+
+      if @_visible
+        @hide cb, animate
+      else
+        @show cb, animate
+
+    ###
+    # Show the sidebar with an optional animation
+    #
+    # @param [Method] cb callback
+    # @param [Boolean] animate defaults to true
+    ###
+    show: (cb, animate) ->
+      animate = param.optional animate, true
+
+      if @_visible == true
+        AUtilLog.warn "Timeline was already visible"
+        if cb then cb()
+        return
+
+      AUtilLog.info "Showing Timeline"
+
+      # And
+      if animate
+        @getElement().animate
+          height: @_height
+        , 300
+      else @getElement().height @_height
+
+      ##
+      # I'm sure jQuery's toggle class can do this, but I still haven't
+      # figured it out properly
+      @getElement(".button.toggle i").removeClass("fa-arrow-up")
+      @getElement(".button.toggle i").addClass("fa-arrow-down")
+
+      @_visible = true
+
+    ###
+    # Hide the sidebar with an optional animation
+    #
+    # @param [Method] cb callback
+    # @param [Boolean] animate defaults to true
+    ###
+    hide: (cb, animate) ->
+      animate = param.optional animate, true
+
+      if @_visible == false
+        AUtilLog.warn "Timeline was already hidden"
+        if cb then cb()
+        return
+
+      AUtilLog.info "Hiding Timeline"
+
+      # Ham
+      if animate
+        @getElement().animate
+          height: @_hiddenHeight
+        , 300
+      else @getElement().height @_hiddenHeight
+
+      ##
+      # I'm sure jQuery's toggle class can do this, but I still haven't
+      # figured it out properly
+      @getElement(".button.toggle i").removeClass("fa-arrow-down")
+      @getElement(".button.toggle i").addClass("fa-arrow-up")
+
+      @_visible = false
+
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
+    respondToEvent: (type, params) ->
+      AUtilLog.info "#{@getId()} recieved event (type: #{type})"
