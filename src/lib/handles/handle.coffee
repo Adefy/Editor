@@ -18,16 +18,14 @@ define (require) ->
       @_properties = {}
 
       # Basic right-click menu functions
-      me = @
       @_ctx =
-        "Delete": -> me.delete()
+        "Delete": => @delete()
 
       # Give ourselves a unique id so we can be discovered on the body
       @_id = ID.prefId "ahandle"
 
       # Attach ourselves to the body
-      me = @
-      $(document).ready -> $("body").data me.getId(), me
+      $("body").data @getId(), @
 
     # Get our id. TODO: Consider giving us a base class, possible giving doing
     # the same to Widget
@@ -40,8 +38,7 @@ define (require) ->
     delete: ->
 
       # Also remove ourselves from the body's object list
-      me = @
-      $(document).ready -> $("body").removeData me.getId()
+      $("body").removeData @getId()
 
     # Global handle onClick function, called by handles if they
     # wish to take advantage of its functionality.

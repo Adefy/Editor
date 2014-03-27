@@ -61,8 +61,7 @@ define (requre) ->
         @getElement().addClass c for c in classes
 
       # Bind a pointer to ourselves on the body, under a key matching our @_sel
-      me = @
-      $(document).ready -> $("body").data me._sel, me
+      $("body").data @_sel, @
 
     ###
     # Retrieve widget selector (typically the id)

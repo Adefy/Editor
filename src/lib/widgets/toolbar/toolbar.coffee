@@ -20,15 +20,15 @@ define (require) ->
       @items = [
         icon: "fa-square"
         spawn: (x, y) =>
-          new RectangleActor @ui.timeline.getCursorTime(), 100, 100, x, y
+          new RectangleActor @ui, @ui.timeline.getCursorTime(), 100, 100, x, y
       ,
         icon: "fa-circle"
         spawn: (x, y) =>
-          new PolygonActor @ui.timeline.getCursorTime(), 5, 100, x, y
+          new PolygonActor @ui, @ui.timeline.getCursorTime(), 5, 100, x, y
       ,
         icon: "fa-gavel"
         spawn: (x, y) =>
-          new TriangleActor @ui.timeline.getCursorTime(), 20, 30, x, y
+          new TriangleActor @ui, @ui.timeline.getCursorTime(), 20, 30, x, y
       ]
 
       # Give items unique IDs

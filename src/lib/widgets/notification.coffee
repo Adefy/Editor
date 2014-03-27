@@ -49,10 +49,9 @@ define (require) ->
       # Register listener
       if not Notification._listenersRegistered
 
-        $(document).ready ->
-          $(document).on "click", ".anotification .icon-remove", ->
-            target = $("body").data("##{$(@).parent().attr("id")}")
-            if target != undefined then target.killMe()
+        $(document).on "click", ".anotification .icon-remove", ->
+          target = $("body").data("##{$(@).parent().attr("id")}")
+          if target != undefined then target.killMe()
 
         Notification._listenersRegistered = true
 
@@ -77,10 +76,9 @@ define (require) ->
       $("body").data @_sel, @
 
       # Show
-      me = @
       @getElement().show()
       @getElement().animate { opacity: 1 }, 200, =>
-        @timeout = setTimeout (-> me.killMe() ), life
+        @timeout = setTimeout (=> @killMe() ), life
 
       # Notify others of our existence
       Notification.count++

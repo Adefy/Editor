@@ -5,8 +5,8 @@ define (require) ->
   Handle = require "handles/handle"
   SidebarProperties = require "widgets/sidebar/sidebar_properties"
   Bezier = require "widgets/timeline/bezier"
+
   Timeline = require "widgets/timeline/timeline"
-  Workspace = require "widgets/workspace/workspace"
 
   # Base manipulateable class for actors
   class BaseActor extends Handle
@@ -14,9 +14,11 @@ define (require) ->
     # Defines a raw actor, with no shape information or any other presets.
     # This serves as the base for the other actor classes
     #
+    # @param [UIManager] ui
     # @param [Number] lifetimeStart time at which we are created, in ms
     # @param [Number] lifetimeEnd time we are destroyed, defaults to end of ad
-    constructor: (lifetimestart, lifetimeEnd) ->
+    constructor: (@ui, lifetimestart, lifetimeEnd) ->
+      param.required @ui
 
       # Set up properties object (global defaults set)
       super()
@@ -34,7 +36,7 @@ define (require) ->
       @lifetimeStart = param.required lifetimestart
 
       # By default, we die at the end of the ad
-      @lifetimeEnd = Timeline.getMe().getDuration()
+      @lifetimeEnd = @ui.timeline.getDuration()
       @lifetimeEnd = param.optional lifetimeEnd, @lifetimeEnd
 
       # Tracks if we exist or not. Triggers AJS instantiation and such
@@ -508,7 +510,7 @@ define (require) ->
       # Birth if required
       if not @_alive then @_birth()
 
-      cursor = Timeline.getMe().getCursorTime()
+      cursor = @ui.timeline.getCursorTime()
 
       # Bail if nothing has changed
       return if Number(Math.floor cursor) == @_lastTemporalState
@@ -522,10 +524,10 @@ define (require) ->
 
       ##
       # Notify timeline to refresh
-      #Timeline.getMe().render()
+      #@ui.timeline.render()
       # Refreshing after every change is too heavy, its better to update instead
       # check timeline for more information
-      Timeline.getMe().updateActor(@)
+      @ui.timeline.updateActor(@)
 
     ###
     # Generates a new snapshot from our current properties
@@ -670,7 +672,7 @@ define (require) ->
       ## First, apply intermediary states
       ##
 
-      cursor = Math.floor Timeline.getMe().getCursorTime()
+      cursor = Math.floor @ui.timeline.getCursorTime()
 
       # If we haven't moved, drop out early
       if cursor == @_lastTemporalState then return
@@ -701,7 +703,7 @@ define (require) ->
       @_capped = false
 
       # Reset the cursor value
-      cursor = Math.floor Timeline.getMe().getCursorTime()
+      cursor = Math.floor @ui.timeline.getCursorTime()
 
       ##
       ## Now the fun part; find all values defined to the right of us
@@ -1092,7 +1094,7 @@ define (require) ->
       if @_actor != null
 
         # Notify the workspace
-        Workspace.getMe().notifyDemise @
+        @ui.workspace.notifyDemise @
 
         # Clear the properties panel if it is tied to us
         _prop = $("body").data "default-properties"

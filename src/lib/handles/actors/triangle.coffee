@@ -8,6 +8,7 @@ define (require) ->
 
     # Creates an AJSTriangle and keeps track of it
     #
+    # @param [UIManager] ui
     # @param [Number] birth time in ms at which we are to be created
     # @param [Number] b base width
     # @param [Number] h triangle height
@@ -16,7 +17,8 @@ define (require) ->
     # @param [Number] rotation optional, angle in degrees
     # @param [Number] death optional death time specification
     # @param [Boolean] manualInit optional, postInit() not called if true
-    constructor: (birth, b, h, x, y, rotation, death, manualInit) ->
+    constructor: (@ui, birth, b, h, x, y, rotation, death, manualInit) ->
+      param.required @ui
       param.required b
       param.required h
       param.required x
@@ -27,7 +29,7 @@ define (require) ->
       if b <= 0 or h <= 0 then throw new Error "Base/Height must be >0!"
 
       # Set up generic actor properties
-      super birth, death
+      super @ui, birth, death
 
       @name = "Triangle #{@_id.replace("ahandle-", "")}"
 

@@ -46,80 +46,78 @@ define (require) ->
     _regListeners: ->
       if SidebarProperties.__exists == false
         SidebarProperties.__exists = true
-        me = @
 
         # Event listeners!
-        $(document).ready ->
+        $(document).on "click", ".asp-texture", -> ARELog.info "Texture"
 
-          $(document).on "click", ".asp-texture", -> ARELog.info "Texture"
+        # Save
+        me = @
+        $(document).on "click", ".asp-save", -> me.save @
 
-          # Save
-          $(document).on "click", ".asp-save", -> me.save @
+        # Numeric drag modification
+        # This is very similar to actor dragging, see Workspace
+        __drag_start_x = 0      # Keeps track of the initial drag point, so
+        __drag_start_y = 0      # we know when to start listening
 
-          # Numeric drag modification
-          # This is very similar to actor dragging, see Workspace
-          __drag_start_x = 0      # Keeps track of the initial drag point, so
-          __drag_start_y = 0      # we know when to start listening
+        __drag_target = null      # Input we need to effect
+        __drag_orig_val = -1      # Value of the input when dragging started
 
-          __drag_target = null      # Input we need to effect
-          __drag_orig_val = -1      # Value of the input when dragging started
+        __drag_tolerance = 5  # How far the mouse should move before we pick up
+        __drag_sys_active = false
 
-          __drag_tolerance = 5  # How far the mouse should move before we pick up
+        # Start of dragging
+        $(document).on "mousedown", ".drag_mod", (e) ->
+
+          # Attempt to find a valid target input
+          __drag_target = $(@).parent().find("> input")[0]
+
+          if __drag_target == null
+            AUtilLog.warn "Drag start on a label with no input!"
+          else
+
+            # Store initial cursor position
+            __drag_start_x = e.pageX
+            __drag_start_y = e.pageY
+
+            # Store our target's value
+            __drag_orig_val = Number($(__drag_target).val())
+
+            # Enable mousemove listener
+            __drag_sys_active = true
+
+            # Tack on a permanent drag cursor, which is taken off when the drag
+            # ends
+            $("body").css "cursor", "e-resize"
+
+            # Prevent highlighting of the page and whatnot
+            e.preventDefault()
+            return false
+
+        # The following are global listeners, since mouseup and mousemove can
+        # happen anywhere on the page, yet still relate to us
+        $(document).mousemove (e) =>
+          if __drag_sys_active
+
+            e.preventDefault()
+
+            if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
+            or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
+
+              # Set val!
+              $(__drag_target).val __drag_orig_val + (e.pageX - __drag_start_x)
+
+              @_executeLive $(__drag_target).parent().find("> input")[0]
+
+            return false
+
+        $(document).mouseup ->
           __drag_sys_active = false
+          __drag_target = null
+          $("body").css "cursor", "auto"
 
-          # Start of dragging
-          $(document).on "mousedown", ".drag_mod", (e) ->
-
-            # Attempt to find a valid target input
-            __drag_target = $(@).parent().find("> input")[0]
-
-            if __drag_target == null
-              AUtilLog.warn "Drag start on a label with no input!"
-            else
-
-              # Store initial cursor position
-              __drag_start_x = e.pageX
-              __drag_start_y = e.pageY
-
-              # Store our target's value
-              __drag_orig_val = Number($(__drag_target).val())
-
-              # Enable mousemove listener
-              __drag_sys_active = true
-
-              # Tack on a permanent drag cursor, which is taken off when the drag
-              # ends
-              $("body").css "cursor", "e-resize"
-
-              # Prevent highlighting of the page and whatnot
-              e.preventDefault()
-              return false
-
-          # The following are global listeners, since mouseup and mousemove can
-          # happen anywhere on the page, yet still relate to us
-          $(document).mousemove (e) ->
-            if __drag_sys_active
-
-              e.preventDefault()
-
-              if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
-              or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
-
-                # Set val!
-                $(__drag_target).val __drag_orig_val + (e.pageX - __drag_start_x)
-
-                me._executeLive $(__drag_target).parent().find("> input")[0]
-
-              return false
-
-          $(document).mouseup ->
-            __drag_sys_active = false
-            __drag_target = null
-            $("body").css "cursor", "auto"
-
-          # Property update listeners, used when live is active
-          $(document).on "input", ".asp-control > input", ->
-            me._executeLive $(@).parent().find("> input")[0]
+        # Property update listeners, used when live is active
+        $(document).on "input", ".asp-control > input", ->
+          me._executeLive $(@).parent().find("> input")[0]
 
     ###
     # @private

@@ -49,33 +49,30 @@ define (require) ->
       if not Modal.__listenersRegistered
         Modal.__listenersRegistered = true
 
-        me = @
-        $(document).ready ->
+        # Closing non-modal on clicking
+        $(document).mouseup (e) ->
 
-          # Closing non-modal on clicking
-          $(document).mouseup (e) ->
+          if $("body").data("activeModal") == undefined then return
+          else us = $($("body").data("activeModal")._sel)
 
-            if $("body").data("activeModal") == undefined then return
-            else us = $($("body").data("activeModal")._sel)
+          # Clicked outside of us, hide if we aren't modal
+          if !us.is(e.target) && us.has(e.target).length == 0
+            if not modal then $("body").data("activeModal").close()
 
-            # Clicked outside of us, hide if we aren't modal
-            if !us.is(e.target) && us.has(e.target).length == 0
-              if not modal then $("body").data("activeModal").close()
+        # Close modal on dismiss click
+        $(document).on "click", ".modal .modal-dismiss", ->
+          id = $(@).closest(".modal").attr "id"
+          $("body").data("##{id}").close()
 
-          # Close modal on dismiss click
-          $(document).on "click", ".modal .modal-dismiss", ->
-            id = $(@).closest(".modal").attr "id"
-            $("body").data("##{id}").close()
+        # Close dialog on submit
+        $(document).on "click", ".modal .modal-submit", ->
+          id = $(@).closest(".modal").attr "id"
+          $("body").data("##{id}").close true
 
-          # Close dialog on submit
-          $(document).on "click", ".modal .modal-submit", ->
-            id = $(@).closest(".modal").attr "id"
-            $("body").data("##{id}").close true
-
-          # Input change
-          $(document).on "change", ".modal input, .modal select", (e) ->
-            id = $(@).closest(".modal").attr "id"
-            $("body").data("##{id}").changed e.target
+        # Input change
+        $(document).on "change", ".modal input, .modal select", (e) ->
+          id = $(@).closest(".modal").attr "id"
+          $("body").data("##{id}").changed e.target
 
     ###
     # Returns input values as an object with keys the same as input names. The

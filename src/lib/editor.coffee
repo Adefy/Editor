@@ -59,13 +59,13 @@ define (require) ->
       data = {}
 
       # Cursor position
-      data.cursorPosition = Timeline.getMe().getCursorTime()
+      data.cursorPosition = @ui.timeline.getCursorTime()
 
       # Actors!
       data.actors = []
 
       # Add the data we need to fully re-build each actor
-      for a in Workspace.getMe().actorObjects
+      for a in @ui.workspace.actorObjects
         _actor = {}
 
         # Figure out type, save relevant information
@@ -200,7 +200,7 @@ define (require) ->
       param.required data.actors
 
       # Note that we clear the current state!
-      Workspace.getMe().reset()
+      @ui.workspace.reset()
 
       # Set up actors
       for a in data.actors
@@ -220,7 +220,7 @@ define (require) ->
         valid = valid && (a.color != undefined)
 
         # Apply the cursor position
-        Timeline.getMe().setCursorTime data.cursorPosition
+        @ui.timeline.setCursorTime data.cursorPosition
 
         # Throw an error, since this should never happen if the data is from a
         # valid source. Failing quietly is just saddening.
@@ -257,7 +257,7 @@ define (require) ->
 
         # Init, register, and update
         handle.postInit()
-        Workspace.getMe().registerActor handle
+        @ui.workspace.registerActor handle
 
       null
 

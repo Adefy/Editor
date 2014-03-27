@@ -8,6 +8,7 @@ define (require) ->
 
     # Defines a variable-sided actor, psicktually
     #
+    # @param [UIManager] ui
     # @param [Number] birth time in ms at which we are to be created
     # @param [Number] sides the n in ngon
     # @param [Number] radius ngon radius
@@ -16,7 +17,8 @@ define (require) ->
     # @param [Number] rotation optional, angle in degrees
     # @param [Number] death optional death time specification
     # @param [Boolean] manualInit optional, postInit() not called if true
-    constructor: (birth, sides, radius, x, y, rotation, death, manualInit) ->
+    constructor: (@ui, birth, sides, radius, x, y, rotation, death, manualInit) ->
+      param.required @ui
       param.required sides
       param.required radius
       param.required x
@@ -31,7 +33,7 @@ define (require) ->
       if radius < 0 then radius *= -1
 
       # Take advantage of generic actor properties
-      super birth, death
+      super @ui, birth, death
       @name = "Polygon #{@_id.replace("ahandle-", "")}"
 
       @_properties["position"].components["x"]._value = x
