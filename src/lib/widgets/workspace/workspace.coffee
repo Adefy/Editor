@@ -16,23 +16,9 @@ define (require) ->
   class Workspace extends Widget
 
     ###
-    # We store a static reference to ourselves, since some objects need to notify
-    # us of their demise (muahahahahaha)
-    # @type [Workspace]
-    ###
-    @__instance: null
-
-    ###
     # @type [BaseActor]
     ###
     @_selectedActor: null
-
-    ###
-    # Fetch our static instance
-    #
-    # @return [Workspace] me
-    ###
-    @getMe: -> Workspace.__instance
 
     ###
     # Retrieves the currently selected actor, if any
@@ -53,14 +39,10 @@ define (require) ->
     # @param [Timeline] timeline
     ###
     constructor: (@ui, @timeline) ->
+      return unless @enforceSingleton()
+
       param.required @ui
       param.required @timeline
-
-      if Workspace.__instance
-        AUtilLog.warn "A workspace already exists, refusing to continue!"
-        return
-
-      Workspace.__instance = @
 
       super
         id: ID.prefId("workspace")
@@ -70,9 +52,6 @@ define (require) ->
 
       # Keep track of spawned handle actor objects
       @actorObjects = []
-
-      #timelineBottom = Number($(".timeline").css("bottom").split("px")[0]) - 16
-      #timelineHeight = ($(".timeline").height() + timelineBottom)
 
       # The canvas is fullscreen, minus the mainbar
       @_canvasWidth = @getElement().width()
@@ -101,6 +80,17 @@ define (require) ->
         @_engineInit()
         @_applyCanvasSizeUpdate()
       , 4, "aw-canvas-container"
+
+    ###
+    # Checks if a workspace has already been created, and returns false if one
+    # has. Otherwise, sets a flag preventing future calls from returning true
+    ###
+    enforceSingleton: ->
+      if Workspace.__exists
+        AUtilLog.warn "A workspace already exists, refusing to initialize!"
+        return false
+
+      Workspace.__exists = true
 
     ###
     # Get ARE instance
@@ -148,20 +138,17 @@ define (require) ->
     # Adds an actor to the workspace
     ###
     addActor: (actor) ->
-      # Register actor with ourselves
       @actorObjects.push actor
-      # Register actor with the timeline
       @timeline.registerActor actor
 
     ###
     # Because indenting gets ugly
     ###
     onDocumentReady: ->
+
       ##
       # TODO. Chop this up some more, its far too large imo
       ##
-
-      me = @
 
       # Set up our own capture of draggable objects
       $(".workspace canvas").droppable
@@ -214,7 +201,7 @@ define (require) ->
         #
         # TODO: Optimise. Consider performing the pick here, and saving the
         #       outcome for the click listener.
-        @_performPick position.x, position.y, (r, g, b) ->
+        @_performPick position.x, position.y, (r, g, b) =>
 
           # Not over an object, just return
           if b != 248 then return
@@ -223,7 +210,7 @@ define (require) ->
           _id = r + (g * 255)
 
           # Find the actor in question
-          for o, i in me.actorObjects
+          for o, i in @actorObjects
             if o.getActorId() == _id
               __drag_obj_index = i
               break
@@ -244,18 +231,18 @@ define (require) ->
             __drag_start_y = e.pageY
 
             # Save initial actor position
-            __drag_orig_x = me.actorObjects[__drag_obj_index].getPosition().x
-            __drag_orig_y = me.actorObjects[__drag_obj_index].getPosition().y
+            __drag_orig_x = @actorObjects[__drag_obj_index].getPosition().x
+            __drag_orig_y = @actorObjects[__drag_obj_index].getPosition().y
 
             # Activate
             __drag_sys_active = true
 
       # Reset state after, dragging after 1ms, leaving time to prevent the
       # click handler from taking effect
-      $(".workspace canvas").mouseup (e) ->
+      $(".workspace canvas").mouseup (e) =>
 
         if __drag_psyx
-          me.actorObjects[__drag_obj_index].getActor().enablePsyx()
+          @actorObjects[__drag_obj_index].getActor().enablePsyx()
 
         __drag_sys_active = false
         __drag_obj_index = -1
@@ -264,9 +251,9 @@ define (require) ->
         __drag_psyx = false
 
          # Calculate workspace coordinates
-        _truePos = me.domToGL e.pageX, e.pageY
+        position = @domToGL e.pageX, e.pageY
 
-        me._performPick _truePos.x, _truePos.y, (r, g, b) ->
+        @_performPick position.x, position.y, (r, g, b) =>
 
           # Objects have a blue component of 248. If this is not an object,
           # perform the necessary clearing and continue
@@ -279,7 +266,7 @@ define (require) ->
           _id = r + (g * 255)
 
           # Find the actor in question
-          for o in me.actorObjects
+          for o in @actorObjects
             if o.getActorId() == _id
 
               # Update selected actor for use in Timeline
@@ -293,7 +280,7 @@ define (require) ->
         , 1
 
       # Core of the dragging logic
-      $(".workspace canvas").mousemove (e) ->
+      $(".workspace canvas").mousemove (e) =>
 
         # Means we also have a valid object id
         if __drag_sys_active
@@ -301,9 +288,9 @@ define (require) ->
           # Perform an initial check, destroy the physics body if there is one
           if not __dragging
 
-            if me.actorObjects[__drag_obj_index].getActor().hasPsyx()
+            if @actorObjects[__drag_obj_index].getActor().hasPsyx()
               __drag_psyx = true
-              me.actorObjects[__drag_obj_index].getActor().disablePsyx()
+              @actorObjects[__drag_obj_index].getActor().disablePsyx()
 
             __dragging = true
 
@@ -317,7 +304,7 @@ define (require) ->
             _newY = Number(__drag_orig_y + ((e.pageY - __drag_start_y) * -1))
 
             # Update!
-            me.actorObjects[__drag_obj_index].setPosition _newX, _newY
+            @actorObjects[__drag_obj_index].setPosition _newX, _newY
 
             # Update properties as well, if needed
             if __drag_update_props
@@ -380,8 +367,7 @@ define (require) ->
       @_are.setClearColor 240, 240, 240
 
       # Bind manipulatable handlers
-      me = @
-      $(document).ready -> me.onDocumentReady()
+      $(document).ready => @onDocumentReady()
 
       # Start rendering
       @_are.startRendering()
