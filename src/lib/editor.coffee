@@ -23,32 +23,28 @@ define (require) ->
     @version: "0.0.1"
 
     ###
-    # @type [Editor]
-    ###
-    @__instance: null
-
-    ###
     # Editor execution starts here. We spawn all other objects ourselves. If a
     # selector is not supplied, we go with #editor
     #
     # @param [String] sel container selector, created if non-existent
     ###
     constructor: (sel) ->
+      @checkForOpera()
 
-      # We can't run properly in Opera, as it does not let us override the
-      # right-click context menu. Notify the user
-      _agent = navigator.userAgent
-      if _agent.search("Opera") != -1 || _agent.search("OPR") != -1
-        alert "Opera does not fully support our editor, please use Chrome or FF!"
-
-      # Array of widgets to be managed internally
       @widgets = []
-
       @ui = new UIManager
 
-      Editor.__instance = @
-
       AUtilLog.info "Adefy Editor created id(#{config.selector})"
+
+    ###
+    # We can't run properly in Opera, as it does not let us override the
+    # right-click context menu. Notify the user
+    ###
+    checkForOpera: ->
+      agent = navigator.userAgent
+
+      if agent.search("Opera") != -1 or agent.search("OPR") != -1
+        alert "Opera is not supported at this time, you may experience problems"
 
     ###
     # Creates the editor toolbox

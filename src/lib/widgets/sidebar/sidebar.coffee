@@ -18,16 +18,12 @@ define (require) ->
     # Creates a new sidebar with a given origin. The element's id is randomized
     # to sbar + Math.floor(Math.random() * 1000)
     #
-    # @param [String] name sidebar name
-    # @param [String] origin 'left' or 'right', default is left
     # @param [Number] width
-    constructor: (name, origin, width) ->
+    constructor: (width) ->
 
       # Sidebar items of class SidebarItem (or implementations)
       @_items = []
 
-      @_name = param.optional name, "Sidebar"
-      @_origin = param.optional origin, "left", [ "left", "right" ]
       @_width = param.optional width, 300
 
       super
@@ -55,18 +51,6 @@ define (require) ->
             sidebar = $("body").data "##{$(@).parent().parent().attr("id")}"
 
             sidebar.toggle()
-
-    # Set sidebar name, re-renders it
-    #
-    # @param [String] name
-    setName: (name) ->
-      @_name = param.required name
-      @render()
-
-    # Get sidebar name
-    #
-    # @return [String] name
-    getName: -> @_name
 
     # Add an item to the sidebar and re-render. An item is any object with a
     # render function that returns HTML. Note that the function should not
@@ -128,16 +112,7 @@ define (require) ->
     #
     # @param [Number] width
     setWidth: (width) ->
-      param.required width
-      @_width = width
-
-      #if @_origin == "left"
-      #  @_hiddenX = - @_width + 32
-      #  @_visibleX = 0
-      #else
-      #  @_hiddenX = $(document).width() - 32
-      #  @_visibleX = $(document).width() - @_width
-
+      @_width = param.required width
       $(@_sel).width @_width
 
     # Toggle visibility of the sidebar with an optional animation

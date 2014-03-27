@@ -27,11 +27,9 @@ define (require) ->
         tab.selected = "selected"
 
     newTab: (name, cb) ->
-      tab = {}
-      tab.name = name
-      tab.selected = ""
+      tab = name: name, selected:""
       tab.content = cb() if cb
-      @addTab(tab)
+      @addTab tab
       tab
 
     scrollbarSelector: ->

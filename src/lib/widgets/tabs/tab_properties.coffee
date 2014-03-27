@@ -8,15 +8,17 @@ define (require) ->
   class TabProperties extends Tab
 
     constructor: (parent) ->
-      super ID.prefId("tab-properties"), parent, ["tab-properties"]
+      super
+        id: ID.prefId("tab-properties")
+        parent: parent
+        classes: ["tab-properties"]
 
       @_actor = null
 
     ###
     # @param [BaseActor] actor
     ###
-    setActor: (actor) ->
-      @_actor = actor
+    setActor: (@_actor) ->
 
     ###
     # Creates a default properties object and returns it
