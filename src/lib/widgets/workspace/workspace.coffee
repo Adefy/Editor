@@ -156,8 +156,8 @@ define (require) ->
 
           actor = @getActorFromPick r, g, b
           if actor
+            @stopDragging()
 
-            # Instantiate a new context menu, it handles the rest
             unless _.isEmpty actor.getContextFunctions()
               new ContextMenu e.pageX, e.pageY, actor
 
@@ -210,20 +210,7 @@ define (require) ->
     # Initializes dragging settings and attaches listeners
     ###
     setupActorDragging: ->
-
-      @_drag =
-        active: false       # Enables logic in mousemove()
-        dragging: false     # Disables the normal click listener.
-
-        start: x: 0, y: 0
-        orig: x: 0, y: 0
-
-        handle: null
-        tolerance: 5
-
-        updateProperties: false
-        propertiesWidget: null
-        hasPhysics: false
+      @initializeDraggingData()
 
       # On mousedown, we need to setup pre-dragging state, perform a pick,
       # and wait for movement
@@ -250,14 +237,7 @@ define (require) ->
       # Reset state after 1ms post-drag, leaving time to prevent the click
       # handler from taking effect
       $(".workspace canvas").mouseup (e) =>
-
-        @_drag.handle.getActor().enablePsyx() if @_drag.hasPhysics
-
-        @_drag.active = false
-        @_drag.handle = null
-        @_drag.propertiesWidget = null
-        @_drag.updateProperties = false
-        @_drag.hasPhysics = false
+        @stopDragging()
 
         @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
           unless @isValidPick r, g, b
@@ -315,6 +295,33 @@ define (require) ->
           if actor
             Workspace.setSelectedActor actor
             actor.onClick()
+
+    initializeDraggingData: ->
+      @_drag =
+        active: false       # Enables logic in mousemove()
+        dragging: false     # Disables the normal click listener.
+
+        start: x: 0, y: 0
+        orig: x: 0, y: 0
+
+        handle: null
+        tolerance: 5
+
+        updateProperties: false
+        propertiesWidget: null
+        hasPhysics: false
+
+    ###
+    # Resets our dragging data structure
+    ###
+    stopDragging: ->
+      @_drag.handle.getActor().enablePsyx() if @_drag.hasPhysics
+
+      @_drag.active = false
+      @_drag.handle = null
+      @_drag.propertiesWidget = null
+      @_drag.updateProperties = false
+      @_drag.hasPhysics = false
 
     ###
     # @private
