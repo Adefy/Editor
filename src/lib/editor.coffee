@@ -24,6 +24,7 @@ define (require) ->
     ###
     constructor: (sel) ->
       @checkForOpera()
+      @checkForLocalStorage()
 
       @widgets = []
       @ui = new UIManager
@@ -39,6 +40,13 @@ define (require) ->
 
       if agent.search("Opera") != -1 or agent.search("OPR") != -1
         alert "Opera is not supported at this time, you may experience problems"
+
+    checkForLocalStorage: ->
+      unless window.localStorage
+        alert """
+          Your browser does not support HMTL5 local storage ;(
+          Please use a modern, evergreen browser like Chrome or Firefox
+        """
 
     ###
     # Clears the workspace, creating a new ad
