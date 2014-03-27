@@ -7,7 +7,6 @@ define (requre) ->
   Workspace = require "widgets/workspace/workspace"
 
   Sidebar = require "widgets/sidebar/sidebar"
-  SidebarObjectGroup = require "widgets/sidebar/sidebar_object_group"
   SidebarPanel = require "widgets/sidebar/sidebar_panel"
 
   TabProperties = require "widgets/tabs/tab_properties"
