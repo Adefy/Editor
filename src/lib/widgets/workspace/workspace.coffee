@@ -27,17 +27,6 @@ define (require) ->
     @getSelectedActor: -> @_selectedActor
 
     ###
-    # Sets the selectedActor instance
-    # @param [Id] actorId
-    ###
-    @setSelectedActor: (actor) ->
-      @_selectedActor = actor.getId()
-      if @__instance
-        @__instance.ui.pushEvent "selected.actor",
-          actorId: @_selectedActor
-          actor: actor
-
-    ###
     # Creates a new workspace if one does not already exist
     #
     # @param [UIManager] ui
@@ -144,6 +133,16 @@ define (require) ->
       @ui.timeline.registerActor actor
 
     ###
+    # Sets the selectedActor instance
+    # @param [Id] actorId
+    ###
+    setSelectedActor: (actor) ->
+      Workspace._selectedActor = actor.getId()
+      @ui.pushEvent "selected.actor",
+        actorId: @_selectedActor
+        actor: actor
+
+    ###
     # Bind a contextmenu listener
     ###
     bindContextClick: ->
@@ -244,7 +243,7 @@ define (require) ->
 
           actor = @getActorFromPick r, g, b
           if actor
-            Workspace.setSelectedActor actor
+            @setSelectedActor actor
             actor.onClick()
 
         setTimeout (=> @_drag.dragging = false), 0
@@ -290,7 +289,7 @@ define (require) ->
 
           actor = @getActorFromPick r, g, b
           if actor
-            Workspace.setSelectedActor actor
+            @setSelectedActor actor
             actor.onClick()
 
     initializeDraggingData: ->
