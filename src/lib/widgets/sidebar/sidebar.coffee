@@ -39,6 +39,7 @@ define (require) ->
 
       @_hiddenX = 0
       @_visibleX = 0
+      @_visible = true
 
       @setWidth @_width
       @show null, false     # Set us up as initially visible
@@ -53,10 +54,11 @@ define (require) ->
         Sidebar.__staticInitialized = true
 
         $(document).ready ->
-          $(document).on "click", ".as-toggle", ->
+          $(document).on "click", ".sidebar .button.toggle", ->
 
             # Find the affected sidebar
-            sidebar = $("body").data "##{$(@).parent().parent().attr("id")}"
+            selector = @attributes.sidebarid.value
+            sidebar = $("body").data "##{selector}"
 
             sidebar.toggle()
 
@@ -133,17 +135,18 @@ define (require) ->
     # @param [Number] width
     ###
     setWidth: (width) ->
-      @_width = param.required width
-      @getElement().width @_width
+      @getElement().width width
+      @_width = @getElement().width()
+      @_hiddenX = -(@_width - 40)
+      @_visibleX = 0
 
     ###
     # Toggle visibility of the sidebar with an optional animation
     #
     # @param [Method] cb callback
-    # @param [Boolean] animate defaults to true
+    # @param [Boolean] animate defaults to false
     ###
     toggle: (cb, animate) ->
-      return
       animate = param.optional animate, true
 
       # Keep in mind this can cause issues with code that depends on the
@@ -154,7 +157,7 @@ define (require) ->
       # Cheese.
       if animate then AUtilLog.warn "Animation not yet supported"
 
-      if @_visiblity
+      if @_visible
         @hide cb, animate
       else
         @show cb, animate
@@ -166,12 +169,14 @@ define (require) ->
     # @param [Boolean] animate defaults to true
     ###
     show: (cb, animate) ->
-      return
       animate = param.optional animate, true
 
-      if @_visiblity == true
+      if @_visible == true
+        AUtilLog.warn "Sidebar was already visible"
         if cb then cb()
         return
+
+      AUtilLog.info "Showing Sidebar"
 
       # And
       if animate
@@ -180,7 +185,13 @@ define (require) ->
         , 300
       else @getElement().css { left: @_visibleX }
 
-      @_visiblity = true
+      ##
+      # I'm sure jQuery's toggle class can do this, but I still haven't
+      # figured it out properly
+      @getElement(".button.toggle i").removeClass("fa-arrow-right")
+      @getElement(".button.toggle i").addClass("fa-arrow-left")
+
+      @_visible = true
 
     ###
     # Hide the sidebar with an optional animation
@@ -189,12 +200,14 @@ define (require) ->
     # @param [Boolean] animate defaults to true
     ###
     hide: (cb, animate) ->
-      return
       animate = param.optional animate, true
 
-      if @_visiblity == false
+      if @_visible == false
+        AUtilLog.warn "Sidebar was already hidden"
         if cb then cb()
         return
+
+      AUtilLog.info "Hiding Sidebar"
 
       # Ham
       if animate
@@ -203,4 +216,10 @@ define (require) ->
         , 300
       else @getElement().css { left: @_hiddenX }
 
-      @_visiblity = false
+      ##
+      # I'm sure jQuery's toggle class can do this, but I still haven't
+      # figured it out properly
+      @getElement(".button.toggle i").removeClass("fa-arrow-left")
+      @getElement(".button.toggle i").addClass("fa-arrow-right")
+
+      @_visible = false

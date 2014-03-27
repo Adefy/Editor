@@ -95,9 +95,10 @@ define (require) ->
           break
 
       SidebarPanelTemplate
-        id: @_id,
-        tabs: @_tabs,
-        content: content,
+        id: @_id
+        sidebarId: @_parent.getId()
+        tabs: @_tabs
+        content: content
         contentKlass: contentKlass
 
     ###
