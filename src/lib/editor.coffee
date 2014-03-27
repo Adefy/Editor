@@ -17,12 +17,6 @@ define (require) ->
   class Editor
 
     ###
-    # Editor version number
-    # @type [String]
-    ###
-    @version: "0.0.1"
-
-    ###
     # Editor execution starts here. We spawn all other objects ourselves. If a
     # selector is not supplied, we go with #editor
     #
