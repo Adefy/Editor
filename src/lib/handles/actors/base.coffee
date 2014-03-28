@@ -239,6 +239,10 @@ define (require) ->
 
         # We cache component values locally, and just pass those through
         components:
+          enabled:
+            type: "bool"
+            _value: false
+            getValue: -> @_value
           mass:
             type: "number"
             min: 0
@@ -262,10 +266,6 @@ define (require) ->
             placeholder: 0.2
             _value: 0.2
             getValue: -> @_value
-          enabled:
-            type: "bool"
-            _value: false
-            getValue: -> @_value
 
         # Physics values are stored locally, and only changed when we change them
         # As such, we cache everything internally and just pass that to our
@@ -279,10 +279,10 @@ define (require) ->
           param.required v
 
           # Save values internally
+          @components.enabled._value = param.required v.enabled
           @components.mass._value = param.required v.mass
           @components.elasticity._value = param.required v.elasticity
           @components.friction._value = param.required v.friction
-          @components.enabled._value = param.required v.enabled
 
           if me._actor != null
 
