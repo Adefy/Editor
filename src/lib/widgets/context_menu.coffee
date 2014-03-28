@@ -15,9 +15,9 @@ define (require) ->
     @_registeredMouseup: false
 
     ###
-    # @property [Boolean] animate enables/disables animation, true by default
+    # @property [Boolean] animate enables/disables animation
     ###
-    @animate: true
+    @animate: false
 
     ###
     # @property [Number] animateSpeed animation duration

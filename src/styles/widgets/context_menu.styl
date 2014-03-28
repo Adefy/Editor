@@ -7,16 +7,23 @@
   .context-menu
     position absolute
     font-size 12px
-    display none // We animate ourselves into existence
+    min-width 96px
+
+    display none
+    line-height 1.5
+
+    background-color rgba(35, 35, 35, .8)
+    border 1px solid rgba(0,0,0,.15)
+    box-shadow 0 2px 3px rgba(0,0,0,.25), inset 0 0 1px rgba(255,255,255,.15)
 
     li
       width 130px
-      padding 8px
-      background-color $col_ctxmenu_bg
-      color $dwhite
+      padding 5px 10px
+      color #aaa
 
-    li:hover
-      cursor hand
-      cursor pointer
-      background-color $col_ctxmenu_hover_bg
-      color $col_ctxmenu_hover_color
+      &:hover
+        cursor hand
+        cursor pointer
+
+        color #ddd
+        background-color $col_mainbar_secondary_hover_bg
