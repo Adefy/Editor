@@ -677,7 +677,6 @@ define (require) ->
 
       if @_lastSelectedActor
         selector = "#actor-body-#{@_lastSelectedActor.getId()}.actor"
-        console.log selector
         $("#{selector} .actor-info").addClass("selected")
 
     ###

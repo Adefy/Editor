@@ -120,9 +120,9 @@ define (require) ->
               if !menu.is(e.target) && menu.has(e.target).length == 0
                 if ContextMenu.animate
                   $(ins._sel).slideUp ContextMenu.animateSpeed, ->
-                    ins.remove()
+                    $(ins._sel).remove()
                 else
-                  ins.remove()
+                  $(ins._sel).remove()
 
           ContextMenu._registeredMouseup = true
 
