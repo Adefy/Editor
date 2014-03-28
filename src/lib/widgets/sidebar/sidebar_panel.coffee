@@ -116,7 +116,6 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      AUtilLog.info "#{@getId()} recieved event (type: #{type})"
       for tab in @_tabs
         if tab.content
           tab.content.respondToEvent type, params if tab.content.respondToEvent

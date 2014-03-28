@@ -752,4 +752,4 @@ define (require) ->
       #  timelineHeight
 
       # Center phone outline
-      @updateOutline()
+      # @updateOutline()

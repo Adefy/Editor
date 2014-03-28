@@ -59,7 +59,6 @@ define (require) ->
       properties = @_genProperties()
 
       if @_actor
-        AUtilLog.info "#{@getId()} updating actor"
         properties.basic.width = aformat.px @_actor.getWidth()
         properties.basic.height = aformat.px @_actor.getHeight()
         properties.basic.opacity = aformat.num @_actor.getOpacity(), 2
@@ -101,7 +100,6 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      AUtilLog.info "#{@getId()} recieved event (type: #{type})"
       if type == "selected.actor"
         @setActor params.actor
         @update()

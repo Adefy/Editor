@@ -667,8 +667,6 @@ define (require) ->
     # @private
     ###
     highlightActor: (actor) ->
-      AUtilLog.info "#{@getId()} highlighting actor"
-
       actorId = actor.getId()
 
       if @_lastSelectedActor
@@ -769,6 +767,5 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      AUtilLog.info "#{@getId()} recieved event (type: #{type})"
       if type == "selected.actor"
         @highlightActor(params.actor)

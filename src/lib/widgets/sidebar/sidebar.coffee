@@ -223,6 +223,5 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      AUtilLog.info "#{@getId()} recieved event (type: #{type})"
       for item in @_items
         item.respondToEvent(type, params) if item.respondToEvent
