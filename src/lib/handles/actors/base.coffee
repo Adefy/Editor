@@ -3,7 +3,6 @@ define (require) ->
   AUtilLog = require "util/log"
   param = require "util/param"
   Handle = require "handles/handle"
-  SidebarProperties = require "widgets/sidebar/sidebar_properties"
   Bezier = require "widgets/timeline/bezier"
 
   Timeline = require "widgets/timeline/timeline"
@@ -1117,7 +1116,7 @@ define (require) ->
 
         # Clear the properties panel if it is tied to us
         _prop = $("body").data "default-properties"
-        if _prop instanceof SidebarProperties
+        if _prop.constructor.name == "SidebarProperties"
           if _prop.privvyIface("get_id") == @_actor.getId()
             _prop.clear()
 

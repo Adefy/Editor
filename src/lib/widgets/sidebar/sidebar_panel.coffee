@@ -86,16 +86,16 @@ define (require) ->
       content = ""
       contentKlass = ""
       contentId = ""
-      for tab in @_tabs
-        if tab.selected == "selected"
-          if tab.content instanceof String
-            content =  tab.content
-          else # probably is a Object
-            content = tab.content.render()
-            contentKlass = tab.content.cssAppendParentClass()
-            contentId = tab.content.appendParentId()
 
-          break
+      tab = _.find @_tabs, (t) -> t.selected == "selected"
+      if tab
+        if tab.content instanceof String
+          content =  tab.content
+
+        else # probably is a Object
+          content = tab.content.render()
+          contentKlass = tab.content.cssAppendParentClass()
+          contentId = tab.content.appendParentId()
 
       SidebarPanelTemplate
         id: @_id

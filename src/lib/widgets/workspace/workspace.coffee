@@ -6,7 +6,6 @@ define (require) ->
   Widget = require "widgets/widget"
   Modal = require "widgets/modal"
   ContextMenu = require "widgets/context_menu"
-  SidebarProperties = require "widgets/sidebar/sidebar_properties"
   AddTexturesTemplate = require "templates/workspace/add_textures"
   BackgroundColorTemplate = require "templates/workspace/background_color"
   WorkspaceScreenSizeTemplate = require "templates/workspace/screen_size"
@@ -220,8 +219,8 @@ define (require) ->
             # Check if the actor is present in the sidebar. If so, store a
             # handle on the sidebar and enable property updating
             props = $("body").data "default-properties"
-            if props instanceof SidebarProperties
-              if props.privvyIface("get_id") == id
+            if props and props.constructor.name == "SidebarProperties"
+              if props.privvyIface("get_id") == @_drag.handle.getActorId()
                 @_drag.updateProperties = true
                 @_drag.propertiesWidget = props
 

@@ -3,12 +3,16 @@ define (require) ->
   AUtilLog = require "util/log"
   param = require "util/param"
   ID = require "util/id"
-  SidebarItem = require "widgets/sidebar/sidebar_item"
+  Tab = require "widgets/tabs/tab"
+
+  NumericControlTemplate = require "templates/sidebar/controls/numeric"
+  BooleanControlTemplate = require "templates/sidebar/controls/boolean"
+  TextControlTemplate = require "templates/sidebar/controls/text"
 
   # Properties widget, dynamically refreshable
   #
   # @depend SidebarItem.coffee
-  class SidebarProperties extends SidebarItem
+  class SidebarProperties extends Tab
 
     # Prevents us from binding event listeners twice
     @__exists: false
@@ -16,11 +20,16 @@ define (require) ->
     ###
     # Instantiates, but does not set data!
     #
+    # @param [UIManager] ui
     # @param [Sidebar] parent sidebar parent
     ###
-    constructor: (parent) ->
-      param.required parent
-      super parent
+    constructor: (@ui, parent) ->
+      return unless @enforceSingleton()
+
+      super
+        id: ID.prefId("tab-properties")
+        parent: parent
+        classes: ["tab-properties"]
 
       # We cache our internal built state, since we require an object to show
       # anything meaningful. Our state is refreshed externally, after which
@@ -32,92 +41,95 @@ define (require) ->
       # exists
       $("body").data "default-properties", @
 
-      # Add ourselves to the sidebar. We don't request a render since we haven't
-      # been notified of an object with any properties
-      @_parent.addItem @
-
       # Object that we are displaying properties for
       @_curObject = null
       @_regListeners()
 
     ###
+    # Checks if a menu bar has already been created, and returns false if one
+    # has. Otherwise, sets a flag preventing future calls from returning true
+    ###
+    enforceSingleton: ->
+      if SidebarProperties.__exists
+        AUtilLog.warn "A properties tab already exists, refusing to initialize!"
+        return false
+
+      SidebarProperties.__exists = true
+
+    ###
     # @private
     ###
     _regListeners: ->
-      if SidebarProperties.__exists == false
-        SidebarProperties.__exists = true
 
-        # Event listeners!
-        $(document).on "click", ".asp-texture", -> ARELog.info "Texture"
+      # Event listeners!
+      $(document).on "click", ".asp-texture", -> ARELog.info "Texture"
 
-        # Save
-        me = @
-        $(document).on "click", ".asp-save", -> me.save @
+      # Save
+      me = @
+      $(document).on "click", ".asp-save", -> me.save @
 
-        # Numeric drag modification
-        # This is very similar to actor dragging, see Workspace
-        __drag_start_x = 0      # Keeps track of the initial drag point, so
-        __drag_start_y = 0      # we know when to start listening
+      # Numeric drag modification
+      # This is very similar to actor dragging, see Workspace
+      __drag_start_x = 0      # Keeps track of the initial drag point, so
+      __drag_start_y = 0      # we know when to start listening
 
-        __drag_target = null      # Input we need to effect
-        __drag_orig_val = -1      # Value of the input when dragging started
+      __drag_target = null      # Input we need to effect
+      __drag_orig_val = -1      # Value of the input when dragging started
 
-        __drag_tolerance = 5  # How far the mouse should move before we pick up
+      __drag_tolerance = 5  # How far the mouse should move before we pick up
+      __drag_sys_active = false
+
+      # Start of dragging
+      $(document).on "mousedown", ".drag_mod", (e) ->
+
+        # Attempt to find a valid target input
+        __drag_target = $(@).parent().find("> input")[0]
+
+        if __drag_target == null
+          return AUtilLog.warn "Drag start on a label with no input!"
+
+        # Store initial cursor position
+        __drag_start_x = e.pageX
+        __drag_start_y = e.pageY
+
+        # Store our target's value
+        __drag_orig_val = Number($(__drag_target).val())
+
+        # Enable mousemove listener
+        __drag_sys_active = true
+
+        # Tack on a permanent drag cursor, which is taken off when the drag
+        # ends
+        $("body").css "cursor", "e-resize"
+
+        # Prevent highlighting of the page and whatnot
+        e.preventDefault()
+        false
+
+      # The following are global listeners, since mouseup and mousemove can
+      # happen anywhere on the page, yet still relate to us
+      $(document).mousemove (e) =>
+        return unless __drag_sys_active
+
+        if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
+        or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
+
+          # Set val!
+          $(__drag_target).val __drag_orig_val + (e.pageX - __drag_start_x)
+
+          @_executeLive $(__drag_target).parent().find("> input")[0]
+
+        e.preventDefault()
+        false
+
+      $(document).mouseup ->
         __drag_sys_active = false
+        __drag_target = null
+        $("body").css "cursor", "auto"
 
-        # Start of dragging
-        $(document).on "mousedown", ".drag_mod", (e) ->
-
-          # Attempt to find a valid target input
-          __drag_target = $(@).parent().find("> input")[0]
-
-          if __drag_target == null
-            AUtilLog.warn "Drag start on a label with no input!"
-          else
-
-            # Store initial cursor position
-            __drag_start_x = e.pageX
-            __drag_start_y = e.pageY
-
-            # Store our target's value
-            __drag_orig_val = Number($(__drag_target).val())
-
-            # Enable mousemove listener
-            __drag_sys_active = true
-
-            # Tack on a permanent drag cursor, which is taken off when the drag
-            # ends
-            $("body").css "cursor", "e-resize"
-
-            # Prevent highlighting of the page and whatnot
-            e.preventDefault()
-            return false
-
-        # The following are global listeners, since mouseup and mousemove can
-        # happen anywhere on the page, yet still relate to us
-        $(document).mousemove (e) =>
-          if __drag_sys_active
-
-            e.preventDefault()
-
-            if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
-            or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
-
-              # Set val!
-              $(__drag_target).val __drag_orig_val + (e.pageX - __drag_start_x)
-
-              @_executeLive $(__drag_target).parent().find("> input")[0]
-
-            return false
-
-        $(document).mouseup ->
-          __drag_sys_active = false
-          __drag_target = null
-          $("body").css "cursor", "auto"
-
-        # Property update listeners, used when live is active
-        $(document).on "input", ".asp-control > input", ->
-          me._executeLive $(@).parent().find("> input")[0]
+      # Property update listeners, used when live is active
+      $(document).on "input", ".asp-control > input", ->
+        me._executeLive $(@).parent().find("> input")[0]
 
     ###
     # @private
@@ -138,7 +150,7 @@ define (require) ->
 
       # Continue if live is checked
       if _live.length == 1
-        if $(_live[0]).is(":checked") then @saveControl control
+        @saveControl control if $(_live[0]).is(":checked")
 
     ###
     # Called either externally, or when our save button is clicked. The
@@ -194,11 +206,12 @@ define (require) ->
       _formatCheck = (result, type) ->
         if result.length == 0
           AUtilLog.error "No #{type} found! #{control}"
-          return false
+          false
         else if result.length > 1
           AUtilLog.error "Too many of type #{type} found! #{control}"
-          return false
-        true
+          false
+        else
+          true
 
       _valCheck = (value) -> _formatCheck value, "value"
       _labelCheck = (label) -> _formatCheck label, "label"
@@ -213,7 +226,7 @@ define (require) ->
       label = $(control).find "> label"
 
       # Integrity check, bail if necessary
-      if not _labelCheck(label) then return
+      return unless _labelCheck(label)
 
       # Pull out the actual label
       label = $(label[0]).attr("data-name")
@@ -225,8 +238,8 @@ define (require) ->
         # Verify integrity, then ship
         if _valCheck value
           if type == "number"
-            _pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth())/2
-            _pOffY = workspace.getCanvasHeight() - workspace.getPhoneHeight()-35
+            _pOffX = (@ui.workspace.getCanvasWidth() - @ui.workspace.getPhoneWidth())/2
+            _pOffY = @ui.workspace.getCanvasHeight() - @ui.workspace.getPhoneHeight()-35
             if label == "x"
               _retValues[label] = Number($(value[0]).val()) + _pOffX
             else
@@ -256,12 +269,10 @@ define (require) ->
           $.extend _retValues[label], @saveControl(c, true)
 
       # If we are recursing, just return what we've parsed so far
-      if _recurse
-        return _retValues
-      else
+      return _retValues if _recurse
 
-        # Ship the results to our object
-        @_curObject.updateProperties _retValues
+      # Ship the results to our object
+      @_curObject.updateProperties _retValues
 
     ###
     # Refresh widget data using a manipulatable, not that this function is
@@ -275,7 +286,7 @@ define (require) ->
       properties = obj.getProperties()
 
       # Generate html to inject
-      @_builtHMTL = "<ul id=\"#{@_id}\" class=\"as-properties\">"
+      @_builtHMTL = "<ul class=\"as-properties\">"
 
       for p of properties
         _controlHTML = @_generateControl p, properties[p]
@@ -285,7 +296,7 @@ define (require) ->
       @_builtHMTL += "<button class=\"asp-save\">Save</button><hr>"
       @_builtHMTL += "</ul>"
 
-      @_parent.render()
+      @getSidebar().render()
 
     ###
     # Clear the property widget
@@ -325,15 +336,15 @@ define (require) ->
       displayName = name.charAt(0).toUpperCase() + name.substring 1
 
       _html =  ""
-      _html += "<div data-type=\"#{value.type}\" class=\"asp-control\">"
+      _html += "<dl data-type=\"#{value.type}\" class=\"asp-control\">"
 
       # Iterate
       if value.type == "composite"
         param.required value.components
         _data = "data-name=\"#{name}\""
-        _class = "class=\"aspc-composite-name\""
+        # _class = "class=\"aspc-composite-name\""
 
-        _html += "<label #{_data} #{_class} >#{displayName}</label>"
+        _html += "<dt #{_data} >#{displayName}</dt>"
 
         # Update component values
         value.getValue()
@@ -354,7 +365,7 @@ define (require) ->
           _opts += " class=\"drag_mod\""
           displayName = "<i class=\"icon-resize-horizontal\"></i> #{displayName}"
 
-        _html += "<label #{_opts} for=\"#{_inputName}\">#{displayName}</label>"
+        _html += "<dt #{_opts} >#{displayName}</dt>"
 
         # Set up optional values
         if value.max == undefined then value.max = null
@@ -367,47 +378,40 @@ define (require) ->
           if value.float == undefined then value.float = true
 
           if name == "x" or name == "y"
-            _pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth())/2
-            _pOffY = workspace.getCanvasHeight() - workspace.getPhoneHeight()-35
+            _pOffX = (@ui.workspace.getCanvasWidth() - @ui.workspace.getPhoneWidth())/2
+            _pOffY = @ui.workspace.getCanvasHeight() - @ui.workspace.getPhoneHeight()-35
 
-          _html += "<input "
-          _html +=   "name=\"#{_inputName}\" "
-          _html +=   "type=\"text\" "
-          _html +=   "data-max=\"#{value.max}\" "
-          _html +=   "data-min=\"#{value.min}\" "
-          _html +=   "data-control=\"number\" "
-          _html +=   "data-float=\"#{value.float}\" "
-          _html +=   "placeholder=\"#{value.default}\" "
           if name == "x"
-            _html += "value=\"#{value.getValue() - _pOffX}\" "
+            controlValue = value.getValue() - _pOffX
+          else if name == "y"
+            controlValue = value.getValue() - _pOffY
           else
-            if name == "y"
-              _html += "value=\"#{value.getValue()-_pOffY}\" "
-            else  _html += "value=\"#{value.getValue()}\" "
-          _html += " />"
+            controlValue = value.getValue()
+
+          _html += NumericControlTemplate
+            name: _inputName
+            max: value.max or Infinity
+            min: value.min or -Infinity
+            float: value.float or false
+            placeholder: value.default or ""
+            value: controlValue
 
         else if value.type == "bool"
 
           if value.default == undefined then value.default = false
 
-          _html += "<input "
-          _html +=   "name=\"#{_inputName}\" "
-          _html +=   "type=\"checkbox\" "
-          _html +=   "data-control=\"bool\" "
-          _html +=   value.getValue() ? "checked " : ""
-          _html += " />"
+          _html += BooleanControlTemplate
+            name: _inputName
+            value: value.getValue()
 
         else if value.type == "text"
 
           if value.default == undefined then value.default = ""
 
-          _html += "<input "
-          _html +=   "name=\"#{_inputName}\" "
-          _html +=   "type=\"text\" "
-          _html +=   "data-control=\"text\" "
-          _html +=   "placeholder=\"#{value.default}\" "
-          _html +=   "value=\"#{value.getValue()}\" "
-          _html += " />"
+          _html += TextControlTemplate
+            name: _inputName
+            placeholder: value.default
+            value: value.getValue()
 
         else
           AUtilLog.warn "Unrecognized property type #{value.type}"
@@ -419,7 +423,7 @@ define (require) ->
         _html +=   "<input name=\"live-#{name}\" type=\"checkbox\" checked>"
         _html += "</div>"
 
-      _html += "</div>"
+      _html += "</dl>"
 
     ###
     # The following is only meant to be called by the workspace when updating
@@ -435,8 +439,8 @@ define (require) ->
       # this is a tad fugly on purpose; Haveing multiple methods purely to
       # serve the workspace seems wrong, as does documenting them.
       if action == "update_position"
-        _pOffX = (workspace.getCanvasWidth() - workspace.getPhoneWidth())/2
-        _pOffY = workspace.getCanvasHeight() - workspace.getPhoneHeight()-35
+        _pOffX = (@ui.workspace.getCanvasWidth() - @ui.workspace.getPhoneWidth())/2
+        _pOffY = @ui.workspace.getCanvasHeight() - @ui.workspace.getPhoneHeight()-35
 
         # Note mapping
         x = param.required val1 - _pOffX
@@ -458,3 +462,11 @@ define (require) ->
         if @_curObject then return @_curObject.getActorId()
 
       null
+
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
+    respondToEvent: (type, params) ->
+      if type == "selected.actor"
+        @refresh params.actor

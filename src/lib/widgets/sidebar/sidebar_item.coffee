@@ -22,3 +22,5 @@ define (require) ->
 
       # Build the containing div
       super ID.prefId("sidebar-item"), parent, classes
+
+    getSidebar: -> @_parent

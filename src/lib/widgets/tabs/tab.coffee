@@ -26,3 +26,14 @@ define (require) ->
     ###
     render: ->
       #
+
+    ###
+    # Iterate through our parents untill we reach our parent sidebar
+    ###
+    getSidebar: ->
+      sidebar = @_parent
+
+      while sidebar.getSidebar
+        sidebar = sidebar.getSidebar()
+
+      sidebar
