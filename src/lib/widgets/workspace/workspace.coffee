@@ -229,6 +229,7 @@ define (require) ->
             @_drag.orig = @_drag.handle.getPosition()
 
             @_drag.active = true
+            document.body.style.cursor = "pointer"
 
       # Reset state after 1ms post-drag, leaving time to prevent the click
       # handler from taking effect
@@ -318,6 +319,8 @@ define (require) ->
       @_drag.propertiesWidget = null
       @_drag.updateProperties = false
       @_drag.hasPhysics = false
+
+      document.body.style.cursor = "auto"
 
     ###
     # @private
