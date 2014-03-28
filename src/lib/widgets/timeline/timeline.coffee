@@ -11,6 +11,8 @@ define (require) ->
   TimelineActorTemplate = require "templates/timeline/actor"
   TimelineActorTimeTemplate = require "templates/timeline/actor_time"
 
+  Storage = require "storage"
+
   # Timeline widget, serving as the main control center for objects.
   #
   # OH GAWD this is going to be complex.
@@ -63,12 +65,9 @@ define (require) ->
       return unless @enforceSingleton()
 
       @_duration = Number param.optional(duration, 5000)
-
       @_control = new TimelineControl @
 
-      # Default preview playback speed (fps)
-      @_previewRate = 30
-
+      @_previewRateFPS = 30
       @_visible = true
 
       # Sanity check on our internal color arrays
@@ -79,9 +78,7 @@ define (require) ->
         throw new Error "Timeline color count != timeline bg color count!"
 
       # Enforce minimum duration of 250ms
-      if @_duration < 250
-        throw new Error "Ad must be longer than 250ms!"
-        # Although I have no idea who would want an ad 251ms long
+      throw new Error "Ad must be longer than 250ms!" unless @_duration > 250
 
       super
         id: ID.prefId("timeline")
@@ -107,6 +104,11 @@ define (require) ->
 
       @_enableDrag()
       @_regListeners()
+
+      if Storage.get("timeline.visible") != false
+        @show()
+      else
+        @hide()
 
     ###
     # Checks if a timeline has already been created, and returns false if one
@@ -253,7 +255,7 @@ define (require) ->
       minutes = seconds / 60.0
       #hours = minutes / 60.0 # we will probably never get this far
       $("#timeline-cursor-time").text "#{(minutes % 60).toFixed()}:#{(seconds % 60).toFixed(2)}"
-      #$("#timeline-cursor-time").text "Cursor: #{time}s @ #{@_previewRate} FPS"
+      #$("#timeline-cursor-time").text "Cursor: #{time}s @ #{@_previewRateFPS} FPS"
 
     ###
     # Registers event listeners
@@ -324,7 +326,7 @@ define (require) ->
       _html = """
       <div class="input_group">
       <label for="_tPreviewRate">Framerate: </label>
-      <input type="text" value="#{@_previewRate}" placeholder="30" name="#{n}" />
+      <input type="text" value="#{@_previewRateFPS}" placeholder="30" name="#{n}" />
       </div>
       """
 
@@ -333,7 +335,7 @@ define (require) ->
         content: _html
         modal: false
         cb: (data) =>
-          @_previewRate = data[n]
+          @_previewRateFPS = data[n]
         validation: (data) ->
           if isNaN(data[n]) then return "Framerate must be a number"
           if Number(data[n]) <= 0 then return "Framerate must be > 0"
@@ -697,14 +699,6 @@ define (require) ->
     toggle: (cb, animate) ->
       animate = param.optional animate, true
 
-      # Keep in mind this can cause issues with code that depends on the
-      # visibility state. I'm not sure if we should update it immediately,
-      # or after the animation is finished. For the time being, we'll do so
-      # immediately.
-
-      # Cheese.
-      if animate then AUtilLog.warn "Animation not yet supported"
-
       if @_visible
         @hide cb, animate
       else
@@ -719,19 +713,17 @@ define (require) ->
     show: (cb, animate) ->
       animate = param.optional animate, true
 
-      if @_visible == true
+      if @_visible
         AUtilLog.warn "Timeline was already visible"
-        if cb then cb()
+        cb() if cb
         return
 
       AUtilLog.info "Showing Timeline"
 
-      # And
       if animate
-        @getElement().animate
-          height: @_height
-        , 300
-      else @getElement().height @_height
+        @getElement().animate height: @_height, 300
+      else
+        @getElement().height @_height
 
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
@@ -739,6 +731,7 @@ define (require) ->
       @getElement(".button.toggle i").removeClass("fa-arrow-up")
       @getElement(".button.toggle i").addClass("fa-arrow-down")
 
+      Storage.set "timeline.visible", true
       @_visible = true
 
     ###
@@ -750,19 +743,17 @@ define (require) ->
     hide: (cb, animate) ->
       animate = param.optional animate, true
 
-      if @_visible == false
+      unless @_visible
         AUtilLog.warn "Timeline was already hidden"
-        if cb then cb()
+        cb() if cb
         return
 
       AUtilLog.info "Hiding Timeline"
 
-      # Ham
       if animate
-        @getElement().animate
-          height: @_hiddenHeight
-        , 300
-      else @getElement().height @_hiddenHeight
+        @getElement().animate height: @_hiddenHeight, 300
+      else
+        @getElement().height @_hiddenHeight
 
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
@@ -770,6 +761,7 @@ define (require) ->
       @getElement(".button.toggle i").removeClass("fa-arrow-down")
       @getElement(".button.toggle i").addClass("fa-arrow-up")
 
+      Storage.set "timeline.visible", false
       @_visible = false
 
     ###

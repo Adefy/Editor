@@ -4,6 +4,7 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
   Widget = require "widgets/widget"
+  Storage = require "storage"
 
   # Generic sidebar, needs to be specialized to be useful
   #
@@ -42,9 +43,13 @@ define (require) ->
       @_visible = true
 
       @setWidth @_width
-      @show null, false     # Set us up as initially visible
       @onResize()           # Calculate X offsets
       @_bindToggle()        # Bind an event listener for sidebar toggles.
+
+      if Storage.get("sidebar.visible") != false
+        @show()
+      else
+        @hide()
 
     ###
     # @private
@@ -148,14 +153,6 @@ define (require) ->
     toggle: (cb, animate) ->
       animate = param.optional animate, true
 
-      # Keep in mind this can cause issues with code that depends on the
-      # visibility state. I'm not sure if we should update it immediately,
-      # or after the animation is finished. For the time being, we'll do so
-      # immediately.
-
-      # Cheese.
-      if animate then AUtilLog.warn "Animation not yet supported"
-
       if @_visible
         @hide cb, animate
       else
@@ -170,19 +167,17 @@ define (require) ->
     show: (cb, animate) ->
       animate = param.optional animate, true
 
-      if @_visible == true
+      if @_visible
         AUtilLog.warn "Sidebar was already visible"
-        if cb then cb()
+        cb() if cb
         return
 
       AUtilLog.info "Showing Sidebar"
 
-      # And
       if animate
-        @getElement().animate
-          left: @_visibleX
-        , 300
-      else @getElement().css { left: @_visibleX }
+        @getElement().animate left: @_visibleX, 300
+      else
+        @getElement().css left: @_visibleX
 
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
@@ -190,6 +185,7 @@ define (require) ->
       @getElement(".button.toggle i").removeClass("fa-arrow-right")
       @getElement(".button.toggle i").addClass("fa-arrow-left")
 
+      Storage.set "sidebar.visible", true
       @_visible = true
 
     ###
@@ -201,19 +197,17 @@ define (require) ->
     hide: (cb, animate) ->
       animate = param.optional animate, true
 
-      if @_visible == false
+      unless @_visible
         AUtilLog.warn "Sidebar was already hidden"
-        if cb then cb()
+        cb() if cb
         return
 
       AUtilLog.info "Hiding Sidebar"
 
-      # Ham
       if animate
-        @getElement().animate
-          left: @_hiddenX
-        , 300
-      else @getElement().css { left: @_hiddenX }
+        @getElement().animate left: @_hiddenX , 300
+      else
+        @getElement().css left: @_hiddenX
 
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
@@ -221,6 +215,7 @@ define (require) ->
       @getElement(".button.toggle i").removeClass("fa-arrow-left")
       @getElement(".button.toggle i").addClass("fa-arrow-right")
 
+      Storage.set "sidebar.visible", false
       @_visible = false
 
     ###
