@@ -41,9 +41,9 @@ define ->
     </div>
 
     <h1><i class="fa fa-fw fa-anchor"></i>Physics</h1>
-    <div id="psyx">
-      <dl><dt>Mass</dt><dd id="mass" class="drag_mod">{{ psyx.mass }}</dd></dl>
-      <dl><dt>Elasticity</dt><dd id="elasticity" class="drag_mod">{{ psyx.elasticity }}</dd></dl>
-      <dl><dt>Friction</dt><dd id="friction" class="drag_mod">{{ psyx.friction }}</dd></dl>
+    <div id="physics">
+      <dl><dt>Mass</dt><dd id="mass" class="drag_mod">{{ physics.mass }}</dd></dl>
+      <dl><dt>Elasticity</dt><dd id="elasticity" class="drag_mod">{{ physics.elasticity }}</dd></dl>
+      <dl><dt>Friction</dt><dd id="friction" class="drag_mod">{{ physics.friction }}</dd></dl>
     </div>
   """

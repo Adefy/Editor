@@ -6,14 +6,17 @@ define ->
   # @property [Number] value
   ###
   Handlebars.compile """
-    <dd>
-      <input type="text"
-        data-control="text"
+    <dl style="width: {{ width }}">
+      <dt>{{ name }}</dt>
+      <dd>
+        <input type="text"
+          data-control="text"
 
-        data-controlgroup="{{ controlgroup }}"
-        name="{{ name }}"
-        placeholder="{{ placeholder }}"
-        value="{{ value }}"
-      />
-    </dd>
+          data-controlgroup="{{ controlgroup }}"
+          name="{{ name }}"
+          placeholder="{{ placeholder }}"
+          value="{{ value }}"
+        />
+      </dd>
+    </dl>
   """.split("\n").join " "

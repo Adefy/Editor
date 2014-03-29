@@ -233,7 +233,7 @@ define (require) ->
           if me._actor != null
             me._actor.setColor new AJSColor3 v.r, v.g, v.b
 
-      @_properties["psyx"] =
+      @_properties["physics"] =
         type: "composite"
         live: false
 
@@ -352,21 +352,21 @@ define (require) ->
       AUtilLog.warn "No actor, can't get color!"
 
     ###
-    # Return actor psyx
+    # Return actor physics
     #
-    # @return [Object] psyx properties
+    # @return [Object] physics properties
     ###
     getPsyX: ->
       if @_actor
-        _psyx = @_properties["psyx"].components
+        _physics = @_properties["physics"].components
         return {
-          enabled: _psyx.enabled.getValue()
-          mass: _psyx.mass.getValue()
-          elasticity: _psyx.elasticity.getValue()
-          friction: _psyx.friction.getValue()
+          enabled: _physics.enabled.getValue()
+          mass: _physics.mass.getValue()
+          elasticity: _physics.elasticity.getValue()
+          friction: _physics.friction.getValue()
         }
 
-      AUtilLog.warn "No actor, can't get psyx!"
+      AUtilLog.warn "No actor, can't get physics!"
 
     ###
     # Get buffer entry

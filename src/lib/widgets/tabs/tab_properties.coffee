@@ -40,7 +40,7 @@ define (require) ->
           r: aformat.num(null, 2)
           g: aformat.num(null, 2)
           b: aformat.num(null, 2)
-        psyx:
+        physics:
           mass: aformat.num()
           elasticity: aformat.num(null, 2)
           friction: aformat.num(null, 2)
@@ -73,11 +73,11 @@ define (require) ->
         properties.color.g = aformat.num color.g, 2
         properties.color.b = aformat.num color.b, 2
 
-        psyx = @_actor.getPsyX()
-        if psyx.enabled
-          properties.psyx.mass = aformat.num psyx.mass
-          properties.psyx.elasticity = aformat.num psyx.elasticity, 2
-          properties.psyx.friction = aformat.num psyx.friction, 2
+        physics = @_actor.getPsyX()
+        if physics.enabled
+          properties.physics.mass = aformat.num physics.mass
+          properties.physics.elasticity = aformat.num physics.elasticity, 2
+          properties.physics.friction = aformat.num physics.friction, 2
 
       @getElement("#basic #width").text properties.basic.width
       @getElement("#basic #height").text properties.basic.height
@@ -91,9 +91,9 @@ define (require) ->
       @getElement("#color #g").text properties.color.g
       @getElement("#color #b").text properties.color.b
 
-      @getElement("#psyx #mass").text properties.psyx.mass
-      @getElement("#psyx #elasticity").text properties.psyx.elasticity
-      @getElement("#psyx #friction").text properties.psyx.friction
+      @getElement("#physics #mass").text properties.physics.mass
+      @getElement("#physics #elasticity").text properties.physics.elasticity
+      @getElement("#physics #friction").text properties.physics.friction
 
     ###
     # @param [String] type

@@ -8,7 +8,6 @@ define (require) ->
   NumericControlTemplate = require "templates/sidebar/controls/numeric"
   BooleanControlTemplate = require "templates/sidebar/controls/boolean"
   TextControlTemplate = require "templates/sidebar/controls/text"
-  SidebarPropertiesTemplate = require "templates/sidebar/properties"
 
   # Properties widget, dynamically refreshable
   #
@@ -46,7 +45,7 @@ define (require) ->
       $("body").data "default-properties", @
 
       # Object that we are displaying properties for
-      @_curObject = null
+      @targetActor = null
       @_regListeners()
 
     ###
@@ -77,9 +76,12 @@ define (require) ->
       __drag_sys_active = false
 
       # Start of dragging
-      $(document).on "input", ".control", (e) ->
-        console.log e
-        @ui.pushEvent "actor.property.change", property: e, value: @val()
+      $(document).on "input", ".control", (e) =>
+        @saveControl e.target
+
+        # @ui.pushEvent "actor.property.change",
+        #   property: $(e.target).find("input")[0]
+        #   value: $(e.target).val()
 
       $(document).on "mousedown", ".drag_mod", (e) ->
 
@@ -118,7 +120,7 @@ define (require) ->
           # Set val!
           $(__drag_target).val __drag_orig_val + (e.pageX - __drag_start_x)
 
-          @_executeLive $(__drag_target).parent().find("> input")[0]
+          @saveControl $(__drag_target).parent().find("> input")[0]
 
         e.preventDefault()
         false
@@ -127,31 +129,6 @@ define (require) ->
         __drag_sys_active = false
         __drag_target = null
         $("body").css "cursor", "auto"
-
-      # Property update listeners, used when live is active
-      $(document).on "input", ".control > input", ->
-        me._executeLive $(@).parent().find("> input")[0]
-
-    ###
-    # @private
-    # Updates an input on change, called either as a result of a drag, or
-    # manual manipulation. Only works if the input has a checked live box!
-    #
-    # @param [Object] input updated input
-    ###
-    _executeLive: (input) ->
-
-      # Traverse upwards until we find the proper parent
-      control = $(input).parent()
-      while $(control).parent().hasClass("control")
-        control = $(control).parent()
-
-      # Check if we have the live option, and if it is enabled
-      _live = $(control).find ".aspc-live input"
-
-      # Continue if live is checked
-      if _live.length == 1
-        @saveControl control if $(_live[0]).is(":checked")
 
     ###
     # Called either externally, or when our save button is clicked. The
@@ -162,7 +139,7 @@ define (require) ->
     save: (clicked) ->
       param.required clicked
 
-      if @_curObject == null
+      if @targetActor == null
         AUtilLog.warn "Save requested with no associated object!"
         return
 
@@ -172,108 +149,71 @@ define (require) ->
         me.saveControl @
 
     ###
-    # Called either externally, or when a control is changed and live is
-    # enabled. This method applies the state of the control to our current object
+    # This method applies the state of the control to our current object, by
+    # parsing its value and calling updateProperties() on the current object.
     #
-    # Internally, we just build an object of property:value pairs, and then
-    # pass it to the object we are representing, at which points it uses the
-    # values how it sees fit. For composites, we loop through and do the
-    # same for each sub control, and just add those as an object on the composite
+    # For composites, we loop through and do the same for each sub control, and
+    # just add those as an object on the composite.
     #
     # @param [Object] control control to save
+    # @param [Boolean] apply if false, returns results without applying
     ###
-    saveControl: (control, _recurse) ->
+    saveControl: (control, apply) ->
       param.required control
+      apply = param.optional apply, true
 
-      if @_curObject == null
-        AUtilLog.warn "Save requested with no associated object!"
-        return
+      return unless @targetActor
 
-      # Note that we have an undocumented parameter! When _recurse is set to true
-      # that signifies that we have been called by ourselves. Knowing this, we
-      # will return our results instead of shipping them to the object.
-      _recurse = param.optional _recurse, false
+      unless $(control).is("dl") and $(control).hasClass("control")
+        control = $(control).closest "dl.control"
 
-      type = $(control).attr "data-type"
+      propType = $(control).attr "data-type"
+      propName = $(control).attr "data-name"
 
-      ###
-      # Saves space below, expects a single result, throws an error otherwise
-      #
-      # @param [Object] result jquery element search result
-      # @param [String] type type of what we are looking for, used in messages
-      # @return [Boolean] success true if there is a single result
-      # @private
-      ###
-      _formatCheck = (result, type) ->
-        if result.length == 0
-          AUtilLog.error "No #{type} found! #{control}"
-          false
-        else if result.length > 1
-          AUtilLog.error "Too many of type #{type} found! #{control}"
-          false
-        else
-          true
-
-      _valCheck = (value) -> _formatCheck value, "value"
-      _labelCheck = (label) -> _formatCheck label, "label"
-
-      # This is what we pass to our current object in the end, at which point
-      # it does as it pleases with the values
-      _retValues = {}
-
-      # All field types have a label
-      # NOTE: We don't break out the value as well, since not all fields use
-      #       the same element for value manipulation. select/input/textarea/etc
-      label = $(control).find "> label"
-
-      # Integrity check, bail if necessary
-      return unless _labelCheck(label)
-
-      # Pull out the actual label
-      label = $(label[0]).attr("data-name")
+      parsedProperties = {}
 
       # Standard input field .val()
-      if type == "number" or type == "text"
-        value = $(control).find "> input"
+      if propType == "number" or propType == "text"
+        value = $($(control).find("> dd input")[0]).val()
 
-        # Verify integrity, then ship
-        if _valCheck value
-          if type == "number"
-            _pOffX = (@ui.workspace.getCanvasWidth() - @ui.workspace.getPhoneWidth())/2
-            _pOffY = @ui.workspace.getCanvasHeight() - @ui.workspace.getPhoneHeight()-35
-            if label == "x"
-              _retValues[label] = Number($(value[0]).val()) + _pOffX
-            else
-              if label == "y"
-                _retValues[label] = Number($(value[0]).val()) + _pOffY
-              else _retValues[label] = Number($(value[0]).val())
+        if propType == "number"
+          value = Number value
+
+          _pOffX = (@ui.workspace.getCanvasWidth() - @ui.workspace.getPhoneWidth())/2
+          _pOffY = @ui.workspace.getCanvasHeight() - @ui.workspace.getPhoneHeight()-35
+
+          if propName == "x"
+            parsedProperties[propName] = value + _pOffX
+          else if propName == "y"
+            parsedProperties[propName] = value + _pOffY
           else
-            _retValues[label] = $(value[0]).val()
+            parsedProperties[propName] = value
+
+        else
+          parsedProperties[propName] = value
 
       # Still an input field, but requires .is() to check
-      else if type == "bool"
-        value = $(control).find "> input"
+      else if propType == "bool"
+        value = $($(control).find("> dd input")[0]).is ":checked"
 
-        if _valCheck value
-          _retValues[label] = $(value[0]).is ":checked"
+        parsedProperties[propName] = value
 
       # For composites, we just recurse for each individual control, and build
       # our result set out of that.
-      else if type == "composite"
+      else if propType == "composite"
         _subControls = $(control).find(".control")
 
         # Set up object
-        _retValues[label] = {}
+        parsedProperties[propName] = {}
 
         # Merge results with our own collection
         for c in _subControls
-          $.extend _retValues[label], @saveControl(c, true)
+          $.extend parsedProperties[propName], @saveControl(c, true)
 
-      # If we are recursing, just return what we've parsed so far
-      return _retValues if _recurse
-
-      # Ship the results to our object
-      @_curObject.updateProperties _retValues
+      unless apply
+        parsedProperties
+      else
+        @targetActor.updateProperties parsedProperties
 
     ###
     # Generates a mini HTML control widget for the property in question
@@ -283,111 +223,81 @@ define (require) ->
     # @return [String] html rendered widget
     # @private
     ###
-    _generateControl: (name, value, __recurse) ->
-      # Note we have an extra, undocumented parameter! It is set to true when
-      # the method is called by itself.
-      __recurse = param.optional __recurse, false
+    _generateControl: (name, value) ->
       param.required name
       param.required value
-
-      # We require a type to do anything
       param.required value.type
 
-      # Capitalize first letter
-      displayName = name.charAt(0).toUpperCase() + name.substring 1
+      return unless @["renderControl_#{value.type}"]
 
-      _html =  ""
-      _html += "<dl id=\"#{name}\"
-                    data-type=\"#{value.type}\"
-                    class=\"control\">"
+      @["renderControl_#{value.type}"] @prepareNameForDisplay(name), value
 
-      # Iterate
-      if value.type == "composite"
-        param.required value.components
-        _data = "data-name=\"#{name}\""
-        # _class = "class=\"aspc-composite-name\""
+    ###
+    # Capitalize first letter of name
+    #
+    # @param [String] name
+    # @return [String] displayName
+    ###
+    prepareNameForDisplay: (name) ->
+      name.charAt(0).toUpperCase() + name.substring 1
 
-        _html += "<dt #{_data} >#{displayName}</dt>"
+    renderControl_composite: (displayName, value) ->
+      param.required value.components
 
-        # Update component values
-        value.getValue()
+      # TODO: Document/rename/refactor this method call
+      value.getValue()
 
-        # Build the control by recursing and concating the result
-        for p of value.components
-          _html += @_generateControl p, value.components[p], true
+      label = "<h1>#{displayName}</h1>"
 
-      else
+      # Build the control by recursing and concating the result
+      label + _.pairs(value.components).map (component) =>
+        return "" unless @["renderControl_#{component[1].type}"]
 
-        # Generate a unique name for the input, to properly target its' label
-        _inputName = ID.prefId "aspc"
-        _opts = "data-name=\"#{name}\""
-
-        # Give ourselves a class to notify the user of draggability on hover,
-        # and prepend a drag icon
-        if value.type == "number"
-          _opts += " class=\"drag_mod\""
-          displayName = "<i class=\"icon-resize-horizontal\"></i> #{displayName}"
-
-        _html += "<dt #{_opts} >#{displayName}</dt>"
-
-        # Set up optional values
-        if value.max == undefined then value.max = null
-        if value.min == undefined then value.min = null
-        if value.live == undefined then value.live = false
-
-        if value.type == "number"
-
-          if value.default == undefined then value.default = 0
-          if value.float == undefined then value.float = true
-
-          if name == "x" or name == "y"
-            _pOffX = (@ui.workspace.getCanvasWidth() - @ui.workspace.getPhoneWidth())/2
-            _pOffY = @ui.workspace.getCanvasHeight() - @ui.workspace.getPhoneHeight()-35
-
-          if name == "x"
-            controlValue = value.getValue() - _pOffX
-          else if name == "y"
-            controlValue = value.getValue() - _pOffY
-          else
-            controlValue = value.getValue()
-
-          _html += NumericControlTemplate
-            name: _inputName
-            controlgroup:
-            max: value.max or Infinity
-            min: value.min or -Infinity
-            float: value.float or false
-            placeholder: value.default or ""
-            value: controlValue
-
-        else if value.type == "bool"
-
-          if value.default == undefined then value.default = false
-
-          _html += BooleanControlTemplate
-            name: _inputName
-            value: value.getValue()
-
-        else if value.type == "text"
-
-          if value.default == undefined then value.default = ""
-
-          _html += TextControlTemplate
-            name: _inputName
-            placeholder: value.default
-            value: value.getValue()
-
+        # Note that we handle the "Basic" composite differently here
+        if _.keys(value.components).length <= 3 and displayName != "Basic"
+          width = "#{100 / _.keys(value.components).length}%"
         else
-          AUtilLog.warn "Unrecognized property type #{value.type}"
+          width = "100%"
 
-      # Note that live defaults to on!
-      #if not __recurse and value.live
-      #  _html += "<div class=\"aspc-live\">"
-      #  _html +=   "<label for=\"live-#{name}\">Live</label>"
-      #  _html +=   "<input name=\"live-#{name}\" type=\"checkbox\" checked>"
-      #  _html += "</div>"
+        name = @prepareNameForDisplay component[0]
+        @["renderControl_#{component[1].type}"] name, component[1], width
 
-      _html += "</dl>"
+      .join ""
+
+    renderControl_number: (displayName, value, width) ->
+      width = param.optional width, "100%"
+
+      value.max = param.optional value.max, Infinity
+      value.min = param.optional value.min, -Infinity
+      value.default = param.optional value.default, ""
+      value.float = param.optional value.float, false
+
+      NumericControlTemplate
+        name: displayName
+        controlgroup: ""
+        max: value.max
+        min: value.min
+        float: value.float
+        placeholder: value.default
+        value: value.getValue()
+        width: width
+
+    renderControl_bool: (displayName, value, width) ->
+      width = param.optional width, "100%"
+
+      BooleanControlTemplate
+        name: displayName
+        value: value.getValue()
+        width: width
+
+    renderControl_text: (displayName, value, width) ->
+      width = param.optional width, "100%"
+      value.default = param.optional value.default, ""
+
+      TextControlTemplate
+        name: displayName
+        placeholder: value.default
+        value: value.getValue()
 
     ###
     # Refresh widget data using a manipulatable, not that this function is
@@ -396,16 +306,31 @@ define (require) ->
     # @param [Handle] obj
     ###
     refresh: (obj) ->
-      @_curObject = param.required obj
+      @targetActor = param.required obj
 
-      properties = obj.getProperties()
+      properties = _.pairs obj.getProperties()
 
-      # Generate html to inject
-      controls = []
-      for p of properties
-        controls.push(@_generateControl p, properties[p])
+      # Bring together all non-composites and render them under the "Basic"
+      # label
+      nonComposites = _.filter properties, (p) -> p[1].type != "composite"
+      composites = _.filter properties, (p) -> p[1].type == "composite"
 
-      @_builtHMTL = SidebarPropertiesTemplate controls: controls
+      if nonComposites.length > 0
+        fakeControl =
+          type: "composite"
+          components: _.object nonComposites
+          getValue: ->
+            c.getValue() for c in @components
+
+        nonCompositeHTML = @_generateControl "basic", fakeControl
+      else
+        nonCompositeHTML = ""
+
+      compositeHTML = composites.map (p) =>
+        @_generateControl p[0], p[1]
+      .join ""
+
+      @_builtHMTL = nonCompositeHTML + compositeHTML
 
       @getSidebar().render()
 
@@ -414,7 +339,7 @@ define (require) ->
     ###
     clear: ->
       @_builtHMTL = ""
-      @_curObject = null
+      @targetActor = null
       @_parent.render()
 
     ###
@@ -459,7 +384,7 @@ define (require) ->
 
       # If we have a current object, return its' id
       else if action == "get_id"
-        if @_curObject then return @_curObject.getActorId()
+        if @targetActor then return @targetActor.getActorId()
 
       null
 
@@ -467,10 +392,9 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     updateActor: (actor) ->
-      @_curObject = param.required actor
+      @targetActor = param.required actor
 
-      if !@_builtHMTL
-        @refresh actor
+      @refresh actor unless @_builtHMTL
 
       properties = actor.getProperties()
       pos = properties["position"]
@@ -487,12 +411,12 @@ define (require) ->
       @getElement("#color #g input").val color.components.g.getValue()
       @getElement("#color #b input").val color.components.b.getValue()
 
-      psyx = properties["psyx"]
-      psyx.getValue()
-      @getElement("#psyx #enabled input").val psyx.components.enabled.getValue()
-      @getElement("#psyx #mass input").val psyx.components.mass.getValue()
-      @getElement("#psyx #elasticity input").val psyx.components.elasticity.getValue()
-      @getElement("#psyx #friction input").val psyx.components.friction.getValue()
+      physics = properties["physics"]
+      physics.getValue()
+      @getElement("#physics #enabled input").val physics.components.enabled.getValue()
+      @getElement("#physics #mass input").val physics.components.mass.getValue()
+      @getElement("#physics #elasticity input").val physics.components.elasticity.getValue()
+      @getElement("#physics #friction input").val physics.components.friction.getValue()
 
     ###
     # @param [String] type

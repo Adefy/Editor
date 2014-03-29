@@ -534,7 +534,7 @@ define (require) ->
         position: []
         rotation: []
         color: []
-        #psyx: []
+        #physics: []
 
       _animations = a.getAnimations()
       for anim of _animations
@@ -562,9 +562,9 @@ define (require) ->
             id: "color-#{aID}-key-#{keyframes["color"].length}"
             left: offset
 
-        #if anim.components.psyx
-        #  keyframes["psyx"].push
-        #    id: "psyx-#{aID}-key-#{keyframes["psyx"].length}"
+        #if anim.components.physics
+        #  keyframes["physics"].push
+        #    id: "physics-#{aID}-key-#{keyframes["physics"].length}"
         #    left: offset
 
       properties = []
@@ -595,9 +595,9 @@ define (require) ->
         keyframes: keyframes["color"]
 
       #properties.push
-      #  id: "actor-time-property-psyx-#{aID}"
+      #  id: "actor-time-property-physics-#{aID}"
       #  isProperty: false
-      #  keyframes: keyframes["psyx"]
+      #  keyframes: keyframes["physics"]
 
       _html = TimelineActorTimeTemplate
         id: "actor-time-#{aID}"

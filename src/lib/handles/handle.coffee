@@ -78,10 +78,16 @@ define (require) ->
     updateProperties: (updates) ->
       param.required updates
 
+      console.log updates
+      console.log @_properties
+
       # Ship if we can
       for u of updates
+        console.log 1
         if @_properties[u] != undefined
+          console.log 2
           if typeof @_properties[u].update == "function"
+            console.log 3
             @_properties[u].update updates[u]
 
     # Set property in key, value form. Note that new properties can not be

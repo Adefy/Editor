@@ -508,7 +508,7 @@ define (require) ->
           # TODO: Take framerate into account
           # opts.fps = ...
 
-        else if animName == "psyx"
+        else if animName == "physics"
           AUtilLog.warn "Psyx animation export not yet implemented"
 
         else if animName == "vert"

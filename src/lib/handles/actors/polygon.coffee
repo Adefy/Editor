@@ -101,10 +101,10 @@ define (require) ->
     _birth: ->
       if @_alive then return else @_alive = true
 
-      _psyx = @_properties["psyx"].components["enabled"]._value
-      _mass = @_properties["psyx"].components["mass"]._value
-      _friction = @_properties["psyx"].components["friction"]._value
-      _elasticity = @_properties["psyx"].components["elasticity"]._value
+      _physics = @_properties["physics"].components["enabled"]._value
+      _mass = @_properties["physics"].components["mass"]._value
+      _friction = @_properties["physics"].components["friction"]._value
+      _elasticity = @_properties["physics"].components["elasticity"]._value
       _radius = @_properties["radius"]._value
       _segments = @_properties["sides"]._value
       _x = @_properties["position"].components["x"]._value
@@ -115,7 +115,7 @@ define (require) ->
       _b = @_properties["color"].components["b"]._value
 
       @_actor = new AJSPolygon
-        psyx: _psyx
+        physics: _physics
         mass: _mass
         friction: _friction
         elasticity: _elasticity
