@@ -18,7 +18,7 @@ define ->
     #   @param [Number] precision
     # @return [String]
     ###
-    @num: (n, precisionsion) ->
+    @num: (n, precision) ->
       if n != null && n != undefined
         "#{n.toFixed(precision||0)}"
       else
