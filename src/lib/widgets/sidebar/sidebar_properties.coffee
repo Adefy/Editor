@@ -8,13 +8,17 @@ define (require) ->
   NumericControlTemplate = require "templates/sidebar/controls/numeric"
   BooleanControlTemplate = require "templates/sidebar/controls/boolean"
   TextControlTemplate = require "templates/sidebar/controls/text"
+  SidebarPropertiesTemplate = require "templates/sidebar/properties"
 
   # Properties widget, dynamically refreshable
   #
   # @depend SidebarItem.coffee
   class SidebarProperties extends Tab
 
+    ###
     # Prevents us from binding event listeners twice
+    # @type [Boolean]
+    ###
     @__exists: false
 
     ###
@@ -60,13 +64,6 @@ define (require) ->
     # @private
     ###
     _regListeners: ->
-
-      # Event listeners!
-      $(document).on "click", ".asp-texture", -> ARELog.info "Texture"
-
-      # Save
-      me = @
-      $(document).on "click", ".asp-save", -> me.save @
 
       # Numeric drag modification
       # This is very similar to actor dragging, see Workspace
@@ -275,46 +272,6 @@ define (require) ->
       @_curObject.updateProperties _retValues
 
     ###
-    # Refresh widget data using a manipulatable, not that this function is
-    # not where injection occurs! We request a refresh from our parent for that
-    #
-    # @param [Handle] obj
-    ###
-    refresh: (obj) ->
-      @_curObject = param.required obj
-
-      properties = obj.getProperties()
-
-      # Generate html to inject
-      @_builtHMTL = "<ul class=\"as-properties\">"
-
-      for p of properties
-        _controlHTML = @_generateControl p, properties[p]
-        @_builtHMTL += "<li class=\"asp-control-group\">#{_controlHTML}</li><hr>"
-
-      @_builtHMTL += "<button class=\"asp-texture\">Choose Texture</button><hr>"
-      @_builtHMTL += "<button class=\"asp-save\">Save</button><hr>"
-      @_builtHMTL += "</ul>"
-
-      @getSidebar().render()
-
-    ###
-    # Clear the property widget
-    ###
-    clear: ->
-      @_builtHMTL = ""
-      @_curObject = null
-      @_parent.render()
-
-    ###
-    # Return internally pre-rendered HTML. We need to pre-render since we rely
-    # upon object data to be meaningful (note comment in the constructor)
-    #
-    # @return [String] html
-    ###
-    render: -> @_builtHMTL
-
-    ###
     # Generates a mini HTML control widget for the property in question
     #
     # @param [String] name
@@ -336,7 +293,9 @@ define (require) ->
       displayName = name.charAt(0).toUpperCase() + name.substring 1
 
       _html =  ""
-      _html += "<dl data-type=\"#{value.type}\" class=\"asp-control\">"
+      _html += "<dl id=\"#{name}\"
+                    data-type=\"#{value.type}\"
+                    class=\"asp-control\">"
 
       # Iterate
       if value.type == "composite"
@@ -417,13 +376,49 @@ define (require) ->
           AUtilLog.warn "Unrecognized property type #{value.type}"
 
       # Note that live defaults to on!
-      if not __recurse and value.live
-        _html += "<div class=\"aspc-live\">"
-        _html +=   "<label for=\"live-#{name}\">Live</label>"
-        _html +=   "<input name=\"live-#{name}\" type=\"checkbox\" checked>"
-        _html += "</div>"
+      #if not __recurse and value.live
+      #  _html += "<div class=\"aspc-live\">"
+      #  _html +=   "<label for=\"live-#{name}\">Live</label>"
+      #  _html +=   "<input name=\"live-#{name}\" type=\"checkbox\" checked>"
+      #  _html += "</div>"
 
       _html += "</dl>"
+
+    ###
+    # Refresh widget data using a manipulatable, not that this function is
+    # not where injection occurs! We request a refresh from our parent for that
+    #
+    # @param [Handle] obj
+    ###
+    refresh: (obj) ->
+      @_curObject = param.required obj
+
+      properties = obj.getProperties()
+
+      # Generate html to inject
+      controls = []
+      for p of properties
+        controls.push(@_generateControl p, properties[p])
+
+      @_builtHMTL = SidebarPropertiesTemplate controls: controls
+
+      @getSidebar().render()
+
+    ###
+    # Clear the property widget
+    ###
+    clear: ->
+      @_builtHMTL = ""
+      @_curObject = null
+      @_parent.render()
+
+    ###
+    # Return internally pre-rendered HTML. We need to pre-render since we rely
+    # upon object data to be meaningful (note comment in the constructor)
+    #
+    # @return [String] html
+    ###
+    render: -> @_builtHMTL
 
     ###
     # The following is only meant to be called by the workspace when updating
@@ -464,9 +459,40 @@ define (require) ->
       null
 
     ###
+    # @param [BaseActor] actor
+    ###
+    updateActor: (actor) ->
+      @_curObject = param.required actor
+
+      if !@_builtHMTL
+        @refresh actor
+
+      properties = actor.getProperties()
+      pos = properties["position"]
+      pos.getValue()
+      @getElement("#position #x input").val pos.components.x.getValue()
+      @getElement("#position #y input").val pos.components.y.getValue()
+
+      rotation = properties["rotation"]
+      @getElement("#rotation input").val rotation.getValue()
+
+      color = properties["color"]
+      color.getValue()
+      @getElement("#color #r input").val color.components.r.getValue()
+      @getElement("#color #g input").val color.components.g.getValue()
+      @getElement("#color #b input").val color.components.b.getValue()
+
+      psyx = properties["psyx"]
+      psyx.getValue()
+      @getElement("#psyx #enabled input").val psyx.components.enabled.getValue()
+      @getElement("#psyx #mass input").val psyx.components.mass.getValue()
+      @getElement("#psyx #elasticity input").val psyx.components.elasticity.getValue()
+      @getElement("#psyx #friction input").val psyx.components.friction.getValue()
+
+    ###
     # @param [String] type
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
       if type == "selected.actor"
-        @refresh params.actor
+        @updateActor params.actor
