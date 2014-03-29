@@ -440,22 +440,22 @@ define (require) ->
       _properties.push
         id: "opacity"
         title: "Opacity"
-        value: "#{actor.getOpacity()}"
+        value: aformat.num actor.getOpacity(), 2
 
       _properties.push
         id: "position"
         title: "Position"
-        value: "#{pos.x}, #{pos.y}"
+        value: aformat.pos pos, 0
 
       _properties.push
         id: "rotation"
         title: "Rotation"
-        value: "#{actor.getRotation()}"
+        value: aformat.degree actor.getRotation(), 2
 
       _properties.push
         id: "color"
         title: "Color"
-        value: "#{color.r}, #{color.g}, #{color.b}"
+        value: aformat.color color, 2
 
       _html = TimelineActorTemplate
         id: "actor-body-#{actor.getId()}"
@@ -665,10 +665,10 @@ define (require) ->
 
         bodySelector = @_actorBodySelector(actor)
         selector = "#{bodySelector} .property"
-        $("#{selector} #opacity .value").text aformat.num opacity, 2
-        $("#{selector} #position .value").text aformat.pos pos, 0
-        $("#{selector} #rotation .value").text aformat.degree rotation, 2
-        $("#{selector} #color .value").text aformat.color color, 2
+        $("#{selector}#opacity .value").text aformat.num opacity, 2
+        $("#{selector}#position .value").text aformat.pos pos, 0
+        $("#{selector}#rotation .value").text aformat.degree rotation, 2
+        $("#{selector}#color .value").text aformat.color color, 2
 
     ###
     #
@@ -778,3 +778,5 @@ define (require) ->
     respondToEvent: (type, params) ->
       if type == "selected.actor"
         @selectActor params.actor
+      else if type == "update.actor"
+        @updateActor params.actor
