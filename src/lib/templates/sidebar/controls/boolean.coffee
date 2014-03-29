@@ -9,6 +9,7 @@ define ->
       <input type="checkbox"
         data-control="bool"
 
+        data-controlgroup="{{ controlgroup }}"
         name="{{ name }}"
         {{bindAttr checked="value"}}
       />

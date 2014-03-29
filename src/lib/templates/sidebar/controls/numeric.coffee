@@ -13,6 +13,7 @@ define ->
       <input type="number"
         data-control="number"
 
+        data-controlgroup="{{ controlgroup }}"
         name="{{ name }}"
         data-max="{{ max }}"
         data-min="{{ min }}"

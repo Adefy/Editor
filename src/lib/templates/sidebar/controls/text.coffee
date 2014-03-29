@@ -10,6 +10,7 @@ define ->
       <input type="text"
         data-control="text"
 
+        data-controlgroup="{{ controlgroup }}"
         name="{{ name }}"
         placeholder="{{ placeholder }}"
         value="{{ value }}"

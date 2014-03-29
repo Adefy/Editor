@@ -77,6 +77,10 @@ define (require) ->
       __drag_sys_active = false
 
       # Start of dragging
+      $(document).on "input", ".control", (e) ->
+        console.log e
+        @ui.pushEvent "actor.property.change", property: e, value: @val()
+
       $(document).on "mousedown", ".drag_mod", (e) ->
 
         # Attempt to find a valid target input
@@ -125,7 +129,7 @@ define (require) ->
         $("body").css "cursor", "auto"
 
       # Property update listeners, used when live is active
-      $(document).on "input", ".asp-control > input", ->
+      $(document).on "input", ".control > input", ->
         me._executeLive $(@).parent().find("> input")[0]
 
     ###
@@ -139,7 +143,7 @@ define (require) ->
 
       # Traverse upwards until we find the proper parent
       control = $(input).parent()
-      while $(control).parent().hasClass("asp-control")
+      while $(control).parent().hasClass("control")
         control = $(control).parent()
 
       # Check if we have the live option, and if it is enabled
@@ -164,7 +168,7 @@ define (require) ->
 
       # Iterate over each parent control, calling our @saveControl method
       me = @
-      $(clicked).parent().find(".asp-control-group > .asp-control").each ->
+      $(clicked).parent().find(".control-group > .control").each ->
         me.saveControl @
 
     ###
@@ -256,7 +260,7 @@ define (require) ->
       # For composites, we just recurse for each individual control, and build
       # our result set out of that.
       else if type == "composite"
-        _subControls = $(control).find(".asp-control")
+        _subControls = $(control).find(".control")
 
         # Set up object
         _retValues[label] = {}
@@ -295,7 +299,7 @@ define (require) ->
       _html =  ""
       _html += "<dl id=\"#{name}\"
                     data-type=\"#{value.type}\"
-                    class=\"asp-control\">"
+                    class=\"control\">"
 
       # Iterate
       if value.type == "composite"
@@ -349,6 +353,7 @@ define (require) ->
 
           _html += NumericControlTemplate
             name: _inputName
+            controlgroup:
             max: value.max or Infinity
             min: value.min or -Infinity
             float: value.float or false
