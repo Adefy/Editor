@@ -44,7 +44,6 @@ define (require) ->
       # exists
       $("body").data "default-properties", @
 
-      # Object that we are displaying properties for
       @targetActor = null
       @_regListeners()
 
@@ -76,12 +75,15 @@ define (require) ->
       __drag_sys_active = false
 
       # Start of dragging
-      $(document).on "input", ".control", (e) =>
+      $(document).on "input", "dl > dd > input", (e) =>
         @saveControl e.target
 
         # @ui.pushEvent "actor.property.change",
         #   property: $(e.target).find("input")[0]
         #   value: $(e.target).val()
+      
+      ###
+      THIS IS ALL HORRIBLY BROKEN NOW!
 
       $(document).on "mousedown", ".drag_mod", (e) ->
 
@@ -130,23 +132,7 @@ define (require) ->
         __drag_target = null
         $("body").css "cursor", "auto"
 
-    ###
-    # Called either externally, or when our save button is clicked. The
-    # clicked object is passed in as our 'clicked'
-    #
-    # @param [Object] clicked clicked object
-    ###
-    save: (clicked) ->
-      param.required clicked
-
-      if @targetActor == null
-        AUtilLog.warn "Save requested with no associated object!"
-        return
-
-      # Iterate over each parent control, calling our @saveControl method
-      me = @
-      $(clicked).parent().find(".control-group > .control").each ->
-        me.saveControl @
+      ###
 
     ###
     # This method applies the state of the control to our current object, by
@@ -155,7 +141,7 @@ define (require) ->
     # For composites, we loop through and do the same for each sub control, and
     # just add those as an object on the composite.
     #
-    # @param [Object] control control to save
+    # @param [Object] control input field to save
     # @param [Boolean] apply if false, returns results without applying
     ###
     saveControl: (control, apply) ->
@@ -164,17 +150,17 @@ define (require) ->
 
       return unless @targetActor
 
-      unless $(control).is("dl") and $(control).hasClass("control")
-        control = $(control).closest "dl.control"
-
-      propType = $(control).attr "data-type"
-      propName = $(control).attr "data-name"
+      propType = $(control).attr "type"
+      propName = $(control).attr "name"
 
       parsedProperties = {}
+      parsedProperties[propName] =
+        parent: $(control).attr "data-parent"
+        value: null
 
       # Standard input field .val()
       if propType == "number" or propType == "text"
-        value = $($(control).find("> dd input")[0]).val()
+        value = $(control).val()
 
         if propType == "number"
           value = Number value
@@ -183,20 +169,22 @@ define (require) ->
           _pOffY = @ui.workspace.getCanvasHeight() - @ui.workspace.getPhoneHeight()-35
 
           if propName == "x"
-            parsedProperties[propName] = value + _pOffX
+            parsedProperties[propName].value = value + _pOffX
           else if propName == "y"
-            parsedProperties[propName] = value + _pOffY
+            parsedProperties[propName].value  = value + _pOffY
           else
-            parsedProperties[propName] = value
+            parsedProperties[propName].value  = value
 
         else
-          parsedProperties[propName] = value
+          parsedProperties[propName].value  = value
 
       # Still an input field, but requires .is() to check
-      else if propType == "bool"
-        value = $($(control).find("> dd input")[0]).is ":checked"
+      else if propType == "checkbox"
+        value = $(control).is ":checked"
 
-        parsedProperties[propName] = value
+        parsedProperties[propName].value  = value
+
+      ###
 
       # For composites, we just recurse for each individual control, and build
       # our result set out of that.
@@ -209,6 +197,8 @@ define (require) ->
         # Merge results with our own collection
         for c in _subControls
           $.extend parsedProperties[propName], @saveControl(c, true)
+
+      ###
 
       unless apply
         parsedProperties
@@ -223,7 +213,7 @@ define (require) ->
     # @return [String] html rendered widget
     # @private
     ###
-    _generateControl: (name, value) ->
+    generateControl: (name, value) ->
       param.required name
       param.required value
       param.required value.type
@@ -260,12 +250,20 @@ define (require) ->
           width = "100%"
 
         name = @prepareNameForDisplay component[0]
-        @["renderControl_#{component[1].type}"] name, component[1], width
+        type = component[1].type
+
+        unless displayName == "Basic"
+          parent = displayName.toLowerCase()
+        else
+          parent = ""
+
+        @["renderControl_#{type}"] name, component[1], width, parent
 
       .join ""
 
-    renderControl_number: (displayName, value, width) ->
+    renderControl_number: (displayName, value, width, parent) ->
       width = param.optional width, "100%"
+      parent = param.optional parent, false
 
       value.max = param.optional value.max, Infinity
       value.min = param.optional value.min, -Infinity
@@ -274,30 +272,34 @@ define (require) ->
 
       NumericControlTemplate
         name: displayName
-        controlgroup: ""
         max: value.max
         min: value.min
         float: value.float
         placeholder: value.default
         value: value.getValue()
         width: width
+        parent: parent
 
-    renderControl_bool: (displayName, value, width) ->
+    renderControl_bool: (displayName, value, width, parent) ->
       width = param.optional width, "100%"
+      parent = param.optional parent, false
 
       BooleanControlTemplate
         name: displayName
         value: value.getValue()
         width: width
+        parent: parent
 
-    renderControl_text: (displayName, value, width) ->
+    renderControl_text: (displayName, value, width, parent) ->
       width = param.optional width, "100%"
       value.default = param.optional value.default, ""
+      parent = param.optional parent, false
 
       TextControlTemplate
         name: displayName
         placeholder: value.default
         value: value.getValue()
+        parent: parent
 
     ###
     # Refresh widget data using a manipulatable, not that this function is
@@ -322,12 +324,12 @@ define (require) ->
           getValue: ->
             c.getValue() for c in @components
 
-        nonCompositeHTML = @_generateControl "basic", fakeControl
+        nonCompositeHTML = @generateControl "basic", fakeControl
       else
         nonCompositeHTML = ""
 
       compositeHTML = composites.map (p) =>
-        @_generateControl p[0], p[1]
+        @generateControl p[0], p[1]
       .join ""
 
       @_builtHMTL = nonCompositeHTML + compositeHTML

@@ -5,13 +5,16 @@ define ->
   # @property [Number] value
   ###
   Handlebars.compile """
-    <dl style="width: {{ width }}">
+    <dl style="width: {{ width }}" class="control">
       <dt>{{ name }}</dt>
       <dd>
         <input type="checkbox"
           data-control="bool"
 
-          data-controlgroup="{{ controlgroup }}"
+          {{#if parent}}
+          data-parent="{{ parent }}"
+          {{/if}}
+
           name="{{ name }}"
           {{bindAttr checked="value"}}
         />

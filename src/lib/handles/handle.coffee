@@ -78,17 +78,20 @@ define (require) ->
     updateProperties: (updates) ->
       param.required updates
 
-      console.log updates
-      console.log @_properties
+      for updateName, val of updates
+        lookup = updateName.toLowerCase()
+        payload = {}
 
-      # Ship if we can
-      for u of updates
-        console.log 1
-        if @_properties[u] != undefined
-          console.log 2
-          if typeof @_properties[u].update == "function"
-            console.log 3
-            @_properties[u].update updates[u]
+        # Apply parent if there is one (means control was a composite)
+        if val.parent
+          lookup = val.parent.toLowerCase()
+          payload[updateName.toLowerCase()] = val.value
+        else
+          payload= val.value
+
+        if @_properties[lookup] != undefined
+          if typeof @_properties[lookup].update == "function"
+            @_properties[lookup].update payload
 
     # Set property in key, value form. Note that new properties can not be
     # created!

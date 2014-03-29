@@ -150,6 +150,7 @@ define (require) ->
         # Position update, we expect val to be a composite
         update: (v) ->
           param.required v
+
           v.x = param.optional v.x, @components.x._value
           v.y = param.optional v.y, @components.y._value
 
