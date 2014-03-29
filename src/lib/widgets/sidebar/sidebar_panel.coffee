@@ -108,7 +108,7 @@ define (require) ->
     ###
     # @return [Void]
     ###
-    postRender: ->
+    setupScrollbar: ->
       @_scrollbarElement().perfectScrollbar suppressScrollX: true
 
     ###
