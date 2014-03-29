@@ -3,6 +3,7 @@ define (require) ->
   AUtilLog = require "util/log"
   param = require "util/param"
   ID = require "util/id"
+  aformat = require "util/format"
   Widget = require "widgets/widget"
   Modal = require "widgets/modal"
   TimelineControl = require "widgets/timeline/timeline_control"
@@ -134,6 +135,12 @@ define (require) ->
     # @private
     ###
     _bodySelector: -> "#{@_sel} .content .list"
+
+    ###
+    # @param [BaseActor] actor
+    ###
+    _actorBodySelector: (actor) ->
+      "#actor-body-#{actor.getId()}.actor"
 
     ###
     # Get current timeline duration
@@ -650,34 +657,37 @@ define (require) ->
     # @private
     ###
     updateActor: (actor) ->
-      actorId = actor.getId()
+      if actor
+        pos = actor.getPosition()
+        color = actor.getColor()
+        rotation = actor.getRotation()
+        opacity = actor.getOpacity()
 
-      pos = actor.getPosition()
-      color = actor.getColor()
-
-      selector = "actor-body-#{actor.getId()}.actor property"
-      $("#{selector} #opacity .value").text "#{actor.getOpacity()}"
-      $("#{selector} #position .value").text "#{pos.x}, #{pos.y}"
-      $("#{selector} #rotation .value").text "#{actor.getRotation()}"
-      $("#{selector} #color .value").text "#{color.r}, #{color.g}, #{color.b}"
+        bodySelector = @_actorBodySelector(actor)
+        selector = "#{bodySelector} .property"
+        $("#{selector} #opacity .value").text aformat.num opacity, 2
+        $("#{selector} #position .value").text aformat.pos pos, 0
+        $("#{selector} #rotation .value").text aformat.degree rotation, 2
+        $("#{selector} #color .value").text aformat.color color, 2
 
     ###
     #
     # @param [BaseActor] actor
     # @private
     ###
-    highlightActor: (actor) ->
-      actorId = actor.getId()
+    selectActor: (actor) ->
+      @updateActor actor
 
       if @_lastSelectedActor
-        selector = "#actor-body-#{@_lastSelectedActor.getId()}.actor"
+        selector = @_actorBodySelector(@_lastSelectedActor)
         $("#{selector} .actor-info").removeClass("selected")
 
       @_lastSelectedActor = actor
 
       if @_lastSelectedActor
-        selector = "#actor-body-#{@_lastSelectedActor.getId()}.actor"
+        selector = @_actorBodySelector(@_lastSelectedActor)
         $("#{selector} .actor-info").addClass("selected")
+
 
     ###
     # Kills the interval and NULLs the playbackID
@@ -767,4 +777,4 @@ define (require) ->
     ###
     respondToEvent: (type, params) ->
       if type == "selected.actor"
-        @highlightActor(params.actor)
+        @selectActor params.actor
