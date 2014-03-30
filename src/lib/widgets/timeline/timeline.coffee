@@ -68,7 +68,7 @@ define (require) ->
       @_duration = Number param.optional(duration, 5000)
       @_control = new TimelineControl @
 
-      @_previewRateFPS = 30
+      @_previewFPS = 30
       @_visible = true
 
       # Sanity check on our internal color arrays
@@ -155,6 +155,13 @@ define (require) ->
     # @return [Number] duration
     ###
     getDuration: -> @_duration
+
+    ###
+    # Get current preview FPS
+    #
+    # @return [Number] duration
+    ###
+    getPreviewFPS: -> @_previewFPS
 
     ###
     # Enables cursor dragging
@@ -281,7 +288,7 @@ define (require) ->
       minutes = seconds / 60.0
       #hours = minutes / 60.0 # we will probably never get this far
       $("#timeline-cursor-time").text "#{(minutes % 60).toFixed()}:#{(seconds % 60).toFixed(2)}"
-      #$("#timeline-cursor-time").text "Cursor: #{time}s @ #{@_previewRateFPS} FPS"
+      #$("#timeline-cursor-time").text "Cursor: #{time}s @ #{@getPreviewFPS()} FPS"
 
     ###
     # Registers event listeners
@@ -359,7 +366,7 @@ define (require) ->
       _html = """
       <div class="input_group">
       <label for="_tPreviewRate">Framerate: </label>
-      <input type="text" value="#{@_previewRateFPS}" placeholder="30" name="#{n}" />
+      <input type="text" value="#{@getPreviewFPS()}" placeholder="30" name="#{n}" />
       </div>
       """
 
@@ -368,7 +375,7 @@ define (require) ->
         content: _html
         modal: false
         cb: (data) =>
-          @_previewRateFPS = data[n]
+          @getPreviewFPS() = data[n]
         validation: (data) ->
           if isNaN(data[n]) then return "Framerate must be a number"
           if Number(data[n]) <= 0 then return "Framerate must be > 0"

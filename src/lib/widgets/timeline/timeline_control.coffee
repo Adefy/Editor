@@ -55,7 +55,7 @@ define (require) ->
         @_pausePlayback()
         return
 
-      frameRate = 1000 / @timeline._previewRateFPS
+      frameRate = 1000 / @timeline.getPreviewFPS()
 
       # Play the ad at 30 frames per second
       @timeline._playbackStart = @timeline.getCursorTime()
