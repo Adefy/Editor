@@ -81,17 +81,11 @@ define (require) ->
         # @ui.pushEvent "actor.property.change",
         #   property: $(e.target).find("input")[0]
         #   value: $(e.target).val()
-      
-      ###
-      THIS IS ALL HORRIBLY BROKEN NOW!
 
-      $(document).on "mousedown", ".drag_mod", (e) ->
+      $(document).on "mousedown", "input[type=number]", (e) ->
 
         # Attempt to find a valid target input
-        __drag_target = $(@).parent().find("> input")[0]
-
-        if __drag_target == null
-          return AUtilLog.warn "Drag start on a label with no input!"
+        __drag_target = e.target
 
         # Store initial cursor position
         __drag_start_x = e.pageX
@@ -103,13 +97,10 @@ define (require) ->
         # Enable mousemove listener
         __drag_sys_active = true
 
-        # Tack on a permanent drag cursor, which is taken off when the drag
-        # ends
-        $("body").css "cursor", "e-resize"
-
-        # Prevent highlighting of the page and whatnot
-        e.preventDefault()
-        false
+        setTimeout ->
+          if __drag_target
+            $(__drag_target).css "cursor", "e-resize"
+        , 100
 
       # The following are global listeners, since mouseup and mousemove can
       # happen anywhere on the page, yet still relate to us
@@ -122,17 +113,12 @@ define (require) ->
           # Set val!
           $(__drag_target).val __drag_orig_val + (e.pageX - __drag_start_x)
 
-          @saveControl $(__drag_target).parent().find("> input")[0]
+          @saveControl $(__drag_target)[0]
 
-        e.preventDefault()
-        false
-
-      $(document).mouseup ->
+      $(document).mouseup (e) ->
+        $(__drag_target).css "cursor", "auto"
         __drag_sys_active = false
         __drag_target = null
-        $("body").css "cursor", "auto"
-
-      ###
 
     ###
     # This method applies the state of the control to our current object, by
