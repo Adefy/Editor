@@ -69,6 +69,9 @@ define (require) ->
 
       , frameRate
 
+      @timeline.controlState.play = true
+      @timeline.updateControls()
+
     ###
     # Visibilty toggle request
     # @private
