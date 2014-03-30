@@ -11,6 +11,7 @@ define (require) ->
   TimelineBaseTemplate = require "templates/timeline/base"
   TimelineActorTemplate = require "templates/timeline/actor"
   TimelineActorTimeTemplate = require "templates/timeline/actor_time"
+  ModalSetPreviewFPS = require "templates/modal/set_preview_fps"
 
   Storage = require "storage"
 
@@ -363,12 +364,9 @@ define (require) ->
       # Randomized input name
       n = ID.prefId "_tPreviewRate"
 
-      _html = """
-      <div class="input_group">
-      <label for="_tPreviewRate">Framerate: </label>
-      <input type="text" value="#{@getPreviewFPS()}" placeholder="30" name="#{n}" />
-      </div>
-      """
+      _html = ModalSetPreviewFPS
+        previewFPS: @getPreviewFPS()
+        name: n
 
       new Modal
         title: "Set Preview Framerate"
