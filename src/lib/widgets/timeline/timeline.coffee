@@ -375,7 +375,7 @@ define (require) ->
         content: _html
         modal: false
         cb: (data) =>
-          @getPreviewFPS() = data[n]
+          @_previewFPS = data[n]
         validation: (data) ->
           if isNaN(data[n]) then return "Framerate must be a number"
           if Number(data[n]) <= 0 then return "Framerate must be > 0"
