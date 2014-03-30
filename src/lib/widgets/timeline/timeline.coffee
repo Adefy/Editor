@@ -86,6 +86,13 @@ define (require) ->
         parent: "footer"
         classes: ["timeline"]
 
+      @controlState =
+        fast_backward: false
+        backward: false
+        play: false
+        forward: false
+        fast_forward: false
+
       # Actor array, access through registerActor/removeActor
       @_actors = []
 
@@ -180,6 +187,17 @@ define (require) ->
         ARELog.info "SAVED"
         @_actors[index].updateInTime()
 
+    ###
+    # Kills the interval and NULLs the playbackID
+    # @private
+    ###
+    clearPlaybackID: ->
+      clearInterval @_playbackID
+      @_playbackID = null
+      ##
+      # we need to update the play control state
+      @controlState.play = false
+      @updateControls()
 
     ###
     # Resize and apply our height to the body
@@ -199,7 +217,8 @@ define (require) ->
       else
         @getElement().height @_hiddenHeight
 
-      @getElement(".content").height @getElement().height - @getElement(".header").height()
+      @getElement(".content").height @getElement().height -
+                                     @getElement(".header").height()
 
     ###
     # When an actor expand button is pressed this function is called
@@ -282,27 +301,34 @@ define (require) ->
       $(document).on "click", ".actor .expand", (e) => @_onActorExpand e
 
       # Outer timebar
-      $(document).on "click", ".atts-outer", (e) => @_outerClicked e, @
+      $(document).on "click", ".timeline .list .actor", (e) =>
+        @_control.onOuterClicked e.currentTarget
 
       # Timeline visibility toggle
       $(document).on "click", "#timline-visible-toggle", (e) =>
         @_control._visToggleClicked e
+        @updateControls()
 
       # Timeline playback controls
       $(document).on "click", "#timeline-control-fast-backward", (e) =>
         @_control.onClickFastBackward e
+        @updateControls()
 
       $(document).on "click", "#timeline-control-forward", (e) =>
         @_control.onClickForward e
+        @updateControls()
 
       $(document).on "click", "#timeline-control-play", (e) =>
         @_control.onClickPlay e
+        @updateControls()
 
       $(document).on "click", "#timeline-control-backward", (e) =>
         @_control.onClickBackward e
+        @updateControls()
 
       $(document).on "click", "#timeline-control-fast-forward", (e) =>
         @_control.onClickFastForward e
+        @updateControls()
 
       # Sidebar save button
       $(document).on "click", ".asp-save", (e) => @_saveKey e
@@ -459,6 +485,7 @@ define (require) ->
 
       _html = TimelineActorTemplate
         id: "actor-body-#{actor.getId()}"
+        index: index
         actorId: actor.getId()
         title: actor.name
         properties: _properties
@@ -649,6 +676,22 @@ define (require) ->
       @_renderSpace()
 
     ###
+    # Update the state of the controls bar
+    # @return [Void]
+    ###
+    updateControls: ->
+      @getElement("#timeline-control-fast-backward")
+        .toggleClass("active", @controlState.fast_backward)
+      @getElement("#timeline-control-backward")
+        .toggleClass("active", @controlState.backward)
+      @getElement("#timeline-control-play")
+        .toggleClass("active", @controlState.play)
+      @getElement("#timeline-control-forward")
+        .toggleClass("active", @controlState.forward)
+      @getElement("#timeline-control-fast-forward")
+        .toggleClass("active", @controlState.fast_forward)
+
+    ###
     # Called by actors, for updating its Timeline state
     # this is a much gentle way of updating the data, instead of rendering
     # over the HTML content
@@ -670,6 +713,8 @@ define (require) ->
         $("#{selector}#rotation .value").text aformat.degree rotation, 2
         $("#{selector}#color .value").text aformat.color color, 2
 
+      actor
+
     ###
     #
     # @param [BaseActor] actor
@@ -688,14 +733,13 @@ define (require) ->
         selector = @_actorBodySelector(@_lastSelectedActor)
         $("#{selector} .actor-info").addClass("selected")
 
+      actor
 
     ###
-    # Kills the interval and NULLs the playbackID
-    # @private
+    # @param [Number] index
     ###
-    clearPlaybackID: ->
-      clearInterval @_playbackID
-      @_playbackID = null
+    selectActorByIndex: (index) ->
+      @selectActor @_actors[index]
 
     ###
     # Toggle visibility of the sidebar with an optional animation

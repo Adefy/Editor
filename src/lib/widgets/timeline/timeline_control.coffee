@@ -13,25 +13,6 @@ define (require) ->
       @timeline = _timeline
 
     ###
-    # Timebar click handler, magic and whatnot
-    #
-    # @param [Object] e click event
-    # @param [Object] element dom element that was clicked
-    # @private
-    ###
-    _outerClicked: (e, element) ->
-      param.required e
-      param.required element
-
-      # Grab and validate index
-      index = Number $(element).attr("data-index")
-      if index < 0 or index > @timeline._actors.length - 1 or isNaN(index)
-        AUtilLog.warn "Clicked timebar has an invalid index, bailing [#{index}]"
-        return
-
-      @timeline._actors[index].onClick()
-
-    ###
     # @private
     ###
     _endPlayback: ->
@@ -43,6 +24,25 @@ define (require) ->
     ###
     _pausePlayback: ->
       @timeline.clearPlaybackID()
+
+    ###
+    # Timebar click handler, magic and whatnot
+    #
+    # @param [Object] e click event
+    # @param [Object] element dom element that was clicked
+    # @private
+    ###
+    onOuterClicked: (element) ->
+      param.required element
+
+      # Grab and validate index
+      index = Number $(element).attr("data-index")
+      if index < 0 or index > @timeline._actors.length - 1 or isNaN(index)
+        AUtilLog.warn "Clicked timebar has an invalid index, bailing [#{index}]"
+        return
+
+      actor = @timeline.selectActorByIndex index
+      @timeline.ui.pushEvent "timeline.selected.actor", actor: actor
 
     ###
     # Playback toggle button clicked (play/pause)

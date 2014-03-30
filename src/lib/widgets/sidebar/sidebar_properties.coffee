@@ -335,7 +335,7 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      if type == "selected.actor"
+      if type == "selected.actor" || type == "timeline.selected.actor"
         @updateActor params.actor
       else if type == "selected.actor.changed"
         @updateActor()
