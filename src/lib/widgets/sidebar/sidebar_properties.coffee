@@ -144,47 +144,12 @@ define (require) ->
         parent: $(control).attr "data-parent"
         value: null
 
-      # Standard input field .val()
-      if propType == "number" or propType == "text"
-        value = $(control).val()
-
-        if propType == "number"
-          value = Number value
-
-          _pOffX = (@ui.workspace.getCanvasWidth() - @ui.workspace.getPhoneWidth())/2
-          _pOffY = @ui.workspace.getCanvasHeight() - @ui.workspace.getPhoneHeight()-35
-
-          if propName == "x"
-            parsedProperties[propName].value = value + _pOffX
-          else if propName == "y"
-            parsedProperties[propName].value  = value + _pOffY
-          else
-            parsedProperties[propName].value  = value
-
-        else
-          parsedProperties[propName].value  = value
-
-      # Still an input field, but requires .is() to check
+      if propType == "number"
+        parsedProperties[propName].value = Number $(control).val()
+      else if propType == "text"
+        parsedProperties[propName].value  = $(control).val()
       else if propType == "checkbox"
-        value = $(control).is ":checked"
-
-        parsedProperties[propName].value  = value
-
-      ###
-
-      # For composites, we just recurse for each individual control, and build
-      # our result set out of that.
-      else if propType == "composite"
-        _subControls = $(control).find(".control")
-
-        # Set up object
-        parsedProperties[propName] = {}
-
-        # Merge results with our own collection
-        for c in _subControls
-          $.extend parsedProperties[propName], @saveControl(c, true)
-
-      ###
+        parsedProperties[propName].value = $(control).is ":checked"
 
       unless apply
         parsedProperties
@@ -223,14 +188,18 @@ define (require) ->
       # TODO: Document/rename/refactor this method call
       value.getValue()
 
-      label = "<h1>#{displayName}</h1>"
+      label = """
+        <h1 data-name="#{displayName.toLowerCase()}">#{displayName}</h1>
+        <div>
+      """
 
       # Build the control by recursing and concating the result
       label + _.pairs(value.components).map (component) =>
         return "" unless @["renderControl_#{component[1].type}"]
 
         # Note that we handle the "Basic" composite differently here
-        if _.keys(value.components).length <= 3 and displayName != "Basic"
+        componentCount = _.keys(value.components).length
+        if componentCount <= 3 and displayName.toLowerCase() != "basic"
           width = "#{100 / _.keys(value.components).length}%"
         else
           width = "100%"
@@ -238,14 +207,14 @@ define (require) ->
         name = @prepareNameForDisplay component[0]
         type = component[1].type
 
-        unless displayName == "Basic"
+        unless displayName.toLowerCase() == "basic"
           parent = displayName.toLowerCase()
         else
           parent = ""
 
         @["renderControl_#{type}"] name, component[1], width, parent
 
-      .join ""
+      .join("") + "</div>"
 
     renderControl_number: (displayName, value, width, parent) ->
       width = param.optional width, "100%"
@@ -257,7 +226,7 @@ define (require) ->
       value.float = param.optional value.float, false
 
       NumericControlTemplate
-        name: displayName
+        name: displayName.toLowerCase()
         max: value.max
         min: value.min
         float: value.float
@@ -271,7 +240,7 @@ define (require) ->
       parent = param.optional parent, false
 
       BooleanControlTemplate
-        name: displayName
+        name: displayName.toLowerCase()
         value: value.getValue()
         width: width
         parent: parent
@@ -282,7 +251,7 @@ define (require) ->
       parent = param.optional parent, false
 
       TextControlTemplate
-        name: displayName
+        name: displayName.toLowerCase()
         placeholder: value.default
         value: value.getValue()
         parent: parent
@@ -339,73 +308,31 @@ define (require) ->
     render: -> @_builtHMTL
 
     ###
-    # The following is only meant to be called by the workspace when updating
-    # object information, or objects when they die! As such, parameters are not
-    # documented.
-    ###
-    privvyIface: (action, val1, val2) ->
-      param.required action
-
-      # "action" can either be "update_position" or "get_id"
-      #
-      # This can be expanded in the future, but for now it works. Note that
-      # this is a tad fugly on purpose; Haveing multiple methods purely to
-      # serve the workspace seems wrong, as does documenting them.
-      if action == "update_position"
-        _pOffX = (@ui.workspace.getCanvasWidth() - @ui.workspace.getPhoneWidth())/2
-        _pOffY = @ui.workspace.getCanvasHeight() - @ui.workspace.getPhoneHeight()-35
-
-        # Note mapping
-        x = param.required val1 - _pOffX
-        y = param.required val2 - _pOffY
-
-        # We don't assume we actually have a position control, the update simply
-        # doesn't occur if jquery can't find it
-        #
-        # Grab labels
-        _xL = @getElement("label[data-name=\"x\"]")
-        _yL = @getElement("label[data-name=\"y\"]")
-
-        if _xL.length > 0 and _yL.length > 0
-          $(_xL).parent().find("input")[0].value = x
-          $(_yL).parent().find("input")[0].value = y
-
-      # If we have a current object, return its' id
-      else if action == "get_id"
-        if @targetActor then return @targetActor.getActorId()
-
-      null
-
-    ###
     # @param [BaseActor] actor
     ###
     updateActor: (actor) ->
-      @targetActor = param.required actor
+      @targetActor = param.optional actor, @targetActor
+      return unless @targetActor
 
-      @refresh actor unless @_builtHMTL
+      return @refresh @targetActor unless @_builtHMTL
 
-      properties = actor.getProperties()
-      pos = properties["position"]
-      pos.getValue()
-      @getElement("#position #x input").val pos.components.x.getValue()
-      @getElement("#position #y input").val pos.components.y.getValue()
+      for property, value of @targetActor.getProperties()
+        value.getValue()
 
-      rotation = properties["rotation"]
-      @getElement("#rotation input").val rotation.getValue()
+        if value.components
+          parent = "h1[data-name=#{property}]"
+        else
+          parent = "h1[data-name=basic]"
 
-      color = properties["color"]
-      color.getValue()
-      @getElement("#color #r input").val color.components.r.getValue()
-      @getElement("#color #g input").val color.components.g.getValue()
-      @getElement("#color #b input").val color.components.b.getValue()
+        if value.components
+          for component, value of value.components
 
-      physics = properties["physics"]
-      physics.getValue()
-      @getElement("#physics #enabled input").val physics.components.enabled.getValue()
-      @getElement("#physics #mass input").val physics.components.mass.getValue()
-      @getElement("#physics #elasticity input").val physics.components.elasticity.getValue()
-      @getElement("#physics #friction input").val physics.components.friction.getValue()
+            input = $("#{@_sel} #{parent} + div > dl input[name=#{component}]")
+            $(input).val value.getValue()
 
+        else
+          input = $("#{@_sel} #{parent} + div > dl input[name=#{property}]")
+          $(input).val value.getValue()
     ###
     # @param [String] type
     # @param [Object] params
@@ -413,3 +340,5 @@ define (require) ->
     respondToEvent: (type, params) ->
       if type == "selected.actor"
         @updateActor params.actor
+      else if type == "selected.actor.changed"
+        @updateActor()

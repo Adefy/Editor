@@ -216,13 +216,7 @@ define (require) ->
           @_drag.handle = @getActorFromPick r, g, b
           if @_drag.handle
 
-            # Check if the actor is present in the sidebar. If so, store a
-            # handle on the sidebar and enable property updating
-            props = $("body").data "default-properties"
-            if props and props.constructor.name == "SidebarProperties"
-              if props.privvyIface("get_id") == @_drag.handle.getActorId()
-                @_drag.updateProperties = true
-                @_drag.propertiesWidget = props
+            @_drag.updateProperties = true
 
             @_drag.start = x: e.pageX, y: e.pageY
             @_drag.orig = @_drag.handle.getPosition()
@@ -273,8 +267,7 @@ define (require) ->
 
           @_drag.handle.setPosition newX, newY
 
-          if @_drag.updateProperties
-            @_drag.propertiesWidget.privvyIface "update_position", newX, newY
+          @ui.pushEvent "selected.actor.changed"
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
@@ -304,7 +297,6 @@ define (require) ->
         tolerance: 5
 
         updateProperties: false
-        propertiesWidget: null
         hasPhysics: false
 
     ###
@@ -315,7 +307,6 @@ define (require) ->
 
       @_drag.active = false
       @_drag.handle = null
-      @_drag.propertiesWidget = null
       @_drag.updateProperties = false
       @_drag.hasPhysics = false
 
