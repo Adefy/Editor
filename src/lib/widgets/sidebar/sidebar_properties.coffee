@@ -77,10 +77,7 @@ define (require) ->
       # Start of dragging
       $(document).on "input", "dl > dd > input", (e) =>
         @saveControl e.target
-
-        # @ui.pushEvent "actor.property.change",
-        #   property: $(e.target).find("input")[0]
-        #   value: $(e.target).val()
+        @ui.pushEvent "update.actor", actor: @targetActor
 
       $(document).on "mousedown", "input[type=number]", (e) ->
 
