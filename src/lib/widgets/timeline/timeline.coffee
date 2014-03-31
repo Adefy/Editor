@@ -583,7 +583,6 @@ define (require) ->
 
       html = TimelineActorTimeTemplate
         id: "actor-time-#{aID}"
-        isExpanded: $("#actor-body-#{aID}").hasClass("expanded")
         properties: properties
 
       if apply

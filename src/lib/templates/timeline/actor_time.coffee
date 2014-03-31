@@ -15,11 +15,11 @@ define ->
   #     @property [Number] left
   ###
   Handlebars.compile """
-    {{#if isExpanded}}
-    <div id="{{ id }}" class="actor expanded">
-    {{else}}
     <div id="{{ id }}" class="actor">
-    {{/if}}
+
+      <div class="row">
+        <div class="bar"></div>
+      </div>
 
       {{#each properties}}
        {{#if isProperty}}
