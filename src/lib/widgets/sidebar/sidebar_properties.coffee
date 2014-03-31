@@ -9,9 +9,9 @@ define (require) ->
   BooleanControlTemplate = require "templates/sidebar/controls/boolean"
   TextControlTemplate = require "templates/sidebar/controls/text"
 
+  ###
   # Properties widget, dynamically refreshable
-  #
-  # @depend SidebarItem.coffee
+  ###
   class SidebarProperties extends Tab
 
     ###
@@ -330,13 +330,24 @@ define (require) ->
         else
           input = $("#{@_sel} #{parent} + div > dl input[name=#{property}]")
           $(input).val value.getValue()
+
+    ###
+    #
+    ###
+    clearActor: (actor) ->
+      if actor && @targetActor
+        if actor.getActorId() == @targetActor.getActorId()
+          @clear()
+
     ###
     # @param [String] type
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      if type == "selected.actor" || type == "timeline.selected.actor" ||
-         type == "workspace.add.actor"
-        @updateActor params.actor
-      else if type == "selected.actor.changed"
-        @updateActor()
+      switch type
+        when "selected.actor", "timeline.selected.actor", "workspace.add.actor"
+          @updateActor params.actor
+        when "workspace.remove.actor"
+          @clearActor params.actor
+        when "selected.actor.changed"
+          @updateActor()

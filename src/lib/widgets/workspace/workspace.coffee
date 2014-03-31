@@ -546,7 +546,7 @@ define (require) ->
     reset: ->
 
       for o in @actorObjects
-        @ui.timeline.removeActor o.getActorId()
+        @ui.pushEvent "workspace.remove.actor", actor: o
         o.timelineDeath()
         o.delete()
 
@@ -564,11 +564,8 @@ define (require) ->
       if obj.constructor.name.indexOf("Actor") != -1
         for o, i in @actorObjects
           if o.getId() == obj.getId()
+            @ui.pushEvent "workspace.remove.actor", actor: o
             @actorObjects.splice i, 1
-
-            # Remove actor from the timeline
-            @ui.timeline.removeActor obj.getActorId()
-
             return
 
     ###
@@ -670,8 +667,9 @@ define (require) ->
         # Start the next pick if one is queued (after a timeout)
         if @_pickQueue.length > 0
           setTimeout =>
-            @performPick @_pickQueue[0].pos, @_pickQueue[0].cb
+            obj = @_pickQueue[0]
             @_pickQueue.splice 0, 1
+            @performPick obj.pos, obj.cb if obj
           , 0
 
     ###

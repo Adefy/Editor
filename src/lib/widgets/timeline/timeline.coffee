@@ -214,25 +214,48 @@ define (require) ->
                                      @getElement(".header").height()
 
     ###
-    # When an actor expand button is pressed this function is called
-    # @param [HTMLElement] element
+    # @param [Number] index
+    # @param [Boolean] forceState
+    #   @optional
     ###
-    _onActorExpand: (element) ->
-      index = $(element).attr("data-index")
+    toggleActorExpandByIndex: (index, forceState) ->
+      param.required index
+
       actor = @_actors[index]
+      return unless actor
+      bodySelector = @_actorBodySelector(actor)
       timeSelector = @_actorTimeSelector(actor)
 
-      $(element).toggleClass "expanded"
-      $(timeSelector).toggleClass "expanded", $(element).hasClass("expanded")
+      $(bodySelector).toggleClass "expanded", forceState
+      $(timeSelector).toggleClass "expanded", $(bodySelector).hasClass("expanded")
 
-      icon = $(element).find ".expand i"
+      icon = $(bodySelector).find ".expand i"
 
-      if $(element).hasClass "expanded"
+      if $(bodySelector).hasClass "expanded"
         icon.removeClass "fa-caret-right"
         icon.addClass "fa-caret-down"
       else
         icon.removeClass "fa-caret-down"
         icon.addClass "fa-caret-right"
+
+    ###
+    # @param [BaseActor] actor
+    # @param [Boolean] forceState
+    ###
+    toggleActorExpand: (actor, forceState) ->
+      param.required actor
+
+      id = actor.getActorId()
+      actorIndex = _.findIndex @_actors, (a) -> a.getActorId() == id
+      @toggleActorExpandByIndex actorIndex , forceState
+
+    ###
+    # When an actor expand button is pressed this function is called
+    # @param [HTMLElement] element
+    ###
+    _onActorExpand: (element) ->
+      index = $(element).attr "data-index"
+      @toggleActorExpandByIndex index
 
     ###
     # Cursor drag event
@@ -261,6 +284,18 @@ define (require) ->
 
         else if a.isAlive() or (t >= a.lifetimeStart and t <= a.lifetimeEnd)
           a.updateInTime()
+
+    ###
+    # @param [HTMLElement] element
+    # @private
+    ###
+    _onOuterClicked: (element) ->
+      param.required element
+
+      index = Number $(element).attr "data-index"
+
+      @selectActorByIndex index
+      @ui.pushEvent "timeline.selected.actor", actor: @_actors[index]
 
     ###
     # Update displayed cursor time
@@ -329,16 +364,25 @@ define (require) ->
       @_duration * ($("#timeline-cursor").position().left / $(@_spaceSelector()).width())
 
     ###
-    # @param [HTMLElement] element
+    # Validates an actor's lifetime
+    # @param [BaseActor] actor
     # @private
     ###
-    _onOuterClicked: (element) ->
-      param.required element
+    _checkActorLifetime: (actor) ->
+      # Sanity check, actor must die after it is created
+      if actor.lifetimeEnd < actor.lifetimeStart
+        throw new Error "Actor lifetime end must come after lifetime start! " +\
+                        "start: #{actor.lifetimeStart}, " +\
+                        "end: #{actor.lifetimeEnd}"
 
-      index = Number $(element).attr "data-index"
+      # Make sure actors' lifetime is contained in our duration!
+      #
+      # TODO: In the future, we can allow for actor deaths after our duration,
+      #       to ease timeline resizing.
+      if actor.lifetimeStart < 0 or actor.lifetimeEnd > @_duration
+        throw new Error "Actor exists beyond our duration!"
 
-      @selectActorByIndex index
-      @ui.pushEvent "timeline.selected.actor", actor: @_actors[index]
+      true
 
     ###
     # Show dialog box for setting the preview framerate
@@ -396,12 +440,13 @@ define (require) ->
     # Remove an actor by id, re-renders timeline internals. Note that this
     # utilizies the ID of the AJS actor!
     #
-    # @param [Number] id
+    # @param [BaseActor] actor
     # @return [Boolean] success
     ###
-    removeActor: (id) ->
-      param.required id
+    removeActor: (actor) ->
+      param.required actor
 
+      id = actor.getActorId()
       actorIndex = _.findIndex @_actors, (a) -> a.getActorId() == id
       return false unless actorIndex != -1
 
@@ -489,26 +534,7 @@ define (require) ->
 
       actorId = actor.getId()
 
-      # TODO: Consider moving the following two checks into our registerActor
-      #       method. The only possible concern with that is the fact that
-      #       the lifetime can change outside of our supervision (it is public
-      #       and whatnot).
-      #
-      #       A possible remedy to this would be to make the lifetime private,
-      #       and only allow modification through ourselves. Hmmm....
-
-      # Sanity check, actor must die after it is created
-      if actor.lifetimeEnd < actor.lifetimeStart
-        throw new Error "Actor lifetime end must come after lifetime start! " +\
-                        "start: #{actor.lifetimeStart}, " +\
-                        "end: #{actor.lifetimeEnd}"
-
-      # Make sure actors' lifetime is contained in our duration!
-      #
-      # TODO: In the future, we can allow for actor deaths after our duration,
-      #       to ease timeline resizing.
-      if actor.lifetimeStart < 0 or actor.lifetimeEnd > @_duration
-        throw new Error "Actor exists beyond our duration!"
+      return false unless @_checkActorLifetime actor
 
       # Calculate actor x offset
       _start = spaceW * (actor.lifetimeStart / @_duration)
@@ -652,6 +678,23 @@ define (require) ->
         .toggleClass("active", @controlState.fast_forward)
 
     ###
+    # Update the state of the actor timebar
+    ###
+    updateActorTime: (actor) ->
+      return unless actor
+
+      ###
+      # TODO. Lets not refresh everytime the actor updates...
+      ###
+      #timeSelector = @_actorTimeSelector actor
+      #$("#{timeSelector} .bar")
+      @renderActorTimebar actor
+      # Sadly, when a refresh takes place the timebar's expanded state
+      # is reset, so we need to update it, in a rather crude way...
+      bodySelector = @_actorBodySelector actor
+      @toggleActorExpand actor, $(bodySelector).hasClass("expanded")
+
+    ###
     # Called by actors, for updating its Timeline state
     # this is a much gentle way of updating the data, instead of rendering
     # over the HTML content
@@ -667,7 +710,7 @@ define (require) ->
       rotation = actor.getRotation()
       opacity = actor.getOpacity()
 
-      bodySelector = @_actorBodySelector(actor)
+      bodySelector = @_actorBodySelector actor
       selector = "#{bodySelector} .property"
 
       $("#{selector}#opacity .value").text aformat.num opacity, 2
@@ -675,7 +718,7 @@ define (require) ->
       $("#{selector}#rotation .value").text aformat.degree rotation, 2
       $("#{selector}#color .value").text aformat.color color, 2
 
-      @renderActorTimebar actor
+      @updateActorTime actor
 
     ###
     #
@@ -780,10 +823,13 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      if type == "workspace.add.actor"
-        @registerActor params.actor
-      else if type == "selected.actor"
-        @updateActor params.actor
-        @switchSelectedActor params.actor
-      else if type == "update.actor"
-        @updateActor params.actor
+      switch type
+        when "workspace.add.actor"
+          @registerActor params.actor
+        when "workspace.remove.actor"
+          @removeActor params.actor
+        when "selected.actor"
+          @updateActor params.actor
+          @switchSelectedActor params.actor
+        when "update.actor"
+          @updateActor params.actor
