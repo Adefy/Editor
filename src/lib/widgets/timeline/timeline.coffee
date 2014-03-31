@@ -389,9 +389,8 @@ define (require) ->
         throw new Error "Actor must be an instance of BaseActor!"
 
       @_actors.push actor
-      index = @_actors.length-1
-      @renderActorTimebar index
-      @renderActorListEntry index
+      @renderActorTimebar _.last @_actors
+      @renderActorListEntry _.last @_actors
 
     ###
     # Remove an actor by id, re-renders timeline internals. Note that this
@@ -429,16 +428,14 @@ define (require) ->
     # @param [Boolean] apply optional, if false we only return the render HTML
     # @privvate
     ###
-    renderActorListEntry: (index, apply) ->
-      param.required index
+    renderActorListEntry: (actor, apply) ->
+      param.required actor
       apply = param.optional apply, true
-
-      actor = @_actors[index]
 
       html = TimelineActorTemplate
         id: "actor-body-#{actor.getId()}"
         actorId: actor.getId()
-        index: index
+        index: _.findIndex @_actors, (a) -> a.getId() == actor.getId()
         title: actor.name
         properties: [
           id: "opacity"
@@ -470,8 +467,7 @@ define (require) ->
     # @private
     ###
     renderActorList: ->
-      entriesHTML = @_actors.map (actor, index) =>
-        @renderActorListEntry index, false
+      entriesHTML = @_actors.map (actor) => @renderActorListEntry actor, false
 
       $(@_bodySelector()).html entriesHTML.join ""
       @_refreshActorRows()
@@ -485,13 +481,12 @@ define (require) ->
     # @param [Boolean] apply optional, if false we only return the render HTML
     # @private
     ###
-    renderActorTimebar: (index, apply) ->
-      param.required index
+    renderActorTimebar: (actor, apply) ->
+      param.required actor
       apply = param.optional apply, true
 
       spaceW = $(@_spaceSelector()).width()
 
-      actor = @_actors[index]
       actorId = actor.getId()
 
       # TODO: Consider moving the following two checks into our registerActor
@@ -595,12 +590,12 @@ define (require) ->
       html = TimelineActorTimeTemplate
         id: "actor-time-#{actorId}"
         actorid: actorId
-        index: index
+        index: _.findIndex @_actors, (a) -> a.getId() == actorId
         properties: properties
 
       if apply
-        if $("#actor-time-#{aID}").length
-          $("#actor-time-#{aID}").html html
+        if $("#actor-time-#{actorId}").length
+          $("#actor-time-#{actorId}").html html
         else
           $("#{@_spaceSelector()} .time-actors").append html
       else
@@ -613,8 +608,7 @@ define (require) ->
     # @private
     ###
     _renderSpace: ->
-      entriesHTML = @_actors.map (actor, index) =>
-        @renderActorTimebar index, false
+      entriesHTML = @_actors.map (actor) => @renderActorTimebar actor, false
 
       $("#{@_spaceSelector()} .time-actors").html entriesHTML.join ""
 
