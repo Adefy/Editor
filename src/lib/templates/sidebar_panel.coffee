@@ -14,8 +14,15 @@ define ->
     <div id="{{ id }}" class="panel">
       <div class="tabs">
         {{#each tabs}}
-        <div class="tab {{selected}}">{{ name }}</div>
+
+        {{#if selected}}
+        <div class="tab selected" data-index="{{ index }}">{{ name }}</div>
+        {{else}}
+        <div class="tab" data-index="{{ index }}">{{ name }}</div>
+        {{/if}}
+
         {{/each}}
+
         <div data-sidebarid="{{sidebarId}}" class="button toggle">
           <i class="fa fa-fw fa-arrow-left"></i>
         </div>

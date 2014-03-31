@@ -63,49 +63,50 @@
         i
           margin-right .5em
 
-      dl
-        display inline-block
-        vertical-align top
-
-        dt
-          float left
+      .tab-properties
+        dl
+          display inline-block
           vertical-align top
 
-        dd
-          text-align left
-          float right
-          vertical-align top
-          color #666
-          margin 5px 0 0 0
+          dt
+            float left
+            vertical-align top
 
-          > *
-            max-width 90%
+          dd
+            text-align left
             float right
+            vertical-align top
+            color #666
+            margin 5px 0 0 0
 
-            font-weight 600
-            font-size 14px
-            line-height 1.2
+            > *
+              max-width 90%
+              float right
 
-          > input
-            padding 0
-            margin 0
-            box-shadow none
-            background-color transparent
+              font-weight 600
+              font-size 14px
+              line-height 1.2
 
-      dt, dd
-        display inline-block
-        padding 0 6px
-        margin 2px 0
-      dt
-        width 30%
-        color #999
+            > input
+              padding 0
+              margin 0
+              box-shadow none
+              background-color transparent
 
-        text-align right
-      dd
-        width 70%
-        color #666
-        text-align center
-        cursor ew-resize
+        dt, dd
+          display inline-block
+          padding 0 6px
+          margin 2px 0
+        dt
+          width 30%
+          color #999
+
+          text-align right
+        dd
+          width 70%
+          color #666
+          text-align center
+          cursor ew-resize
 
     // files panel
     .files
@@ -117,6 +118,9 @@
         width 100%
         line-height 1.6
         padding-left 8px
+        font-size 14px
+        font-weight 600
+
         dt, dd
           cursor pointer
           display table-cell
@@ -125,6 +129,10 @@
         dt
           width 1%
           margin-right 4px
+          color #999
+        dd
+          width 70%
+          color #666
         i
           margin-right 4px
       dl dl

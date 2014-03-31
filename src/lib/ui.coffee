@@ -10,7 +10,7 @@ define (requre) ->
   SidebarPanel = require "widgets/sidebar/sidebar_panel"
 
   PropertiesTab = require "widgets/tabs/tab_properties"
-  TabAssets = require "widgets/tabs/tab_assets"
+  AssetsTab = require "widgets/tabs/tab_assets"
 
   class UIManager
 
@@ -50,8 +50,12 @@ define (requre) ->
       @sidebar = new Sidebar @, 310
 
       propertiesPanel = new SidebarPanel @sidebar
+
       propertiesPanel.newTab "Properties", (tab) =>
         new PropertiesTab @, propertiesPanel
+
+      propertiesPanel.newTab "Textures", (tab) =>
+        new AssetsTab @, propertiesPanel
 
       propertiesPanel.selectTab 0
 

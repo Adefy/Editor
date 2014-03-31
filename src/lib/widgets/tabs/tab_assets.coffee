@@ -5,15 +5,41 @@ define (require) ->
   AssetDirectoryTemplate = require "templates/asset_directory"
   AssetFileTemplate = require "templates/asset_file"
 
-  class TabAssets extends Tab
+  class AssetsTab extends Tab
 
     ###
+    # @param [UIManager] ui
     # @param [SidebarPanel] parent
     ###
-    constructor: (parent) ->
-      super ID.prefId("tab-assets"), parent, ["tab-assets"]
+    constructor: (@ui, parent) ->
+      super
+        id: ID.prefId("tab-assets")
+        parent: parent
+        classes: ["tab-assets"]
 
-      @_assets = []
+      @_assets = [
+        directory:
+          name: "I'm a directory"
+          assets: [
+            file:
+              name: "A"
+          ,
+            file:
+              name: "B"
+          ]
+      ,
+        file:
+          name: "A"
+      ,
+        file:
+          name: "B"
+      ,
+        file:
+          name: "C"
+      ,
+        file:
+          name: "D"
+      ]
 
     ###
     # @return [String]
@@ -26,23 +52,22 @@ define (require) ->
     # @private
     ###
     _renderAssets: (assets) ->
-      result = []
-      for asset in assets
-        if asset.directory
-          directoryStateIcon = "fa-caret-right"
-          content = ""
-          if asset.directory.unfolded
-            directoryStateIcon = "fa-caret-down"
-            content = @_renderAssets asset.directory.assets
+      assets.map (asset) =>
+        return AssetFileTemplate file: asset.file unless asset.directory
 
-          result.push AssetDirectoryTemplate
-            directoryStateIcon: directoryStateIcon
-            directory: asset.directory
-            content: content
-        else
-          result.push AssetFileTemplate file: asset.file
+        directoryStateIcon = "fa-caret-right"
+        content = ""
 
-      result.join ""
+        if asset.directory.unfolded
+          directoryStateIcon = "fa-caret-down"
+          content = @_renderAssets asset.directory.assets
+
+        AssetDirectoryTemplate
+          directoryStateIcon: directoryStateIcon
+          directory: asset.directory
+          content: content
+
+      .join ""
 
     ###
     # @return [String]

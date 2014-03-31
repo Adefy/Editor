@@ -16,6 +16,7 @@ define (require) ->
       super parent, [ "panel" ]
 
       @_parent.addItem @
+      @registerEvents()
 
     ###
     # returns the scrollbar selector
@@ -79,11 +80,8 @@ define (require) ->
     # Selects a tab based on index
     ###
     selectTab: (index) ->
-      for tab in @_tabs
-        tab.selected = ""
-
-      if tab = @_tabs[index]
-        tab.selected = "selected"
+      tab.selected = false for tab in @_tabs
+      @_tabs[index].selected = true
 
     ###
     # @param [String] name The name of this tab
@@ -91,7 +89,7 @@ define (require) ->
     #   @optional
     ###
     newTab: (name, cb) ->
-      tab = name: name, selected:""
+      tab = name: name, selected: ""
       tab.content = cb() if cb
       @addTab tab
       tab
@@ -104,10 +102,11 @@ define (require) ->
       contentKlass = ""
       contentId = ""
 
-      tab = _.find @_tabs, (t) -> t.selected == "selected"
+      tab = _.find @_tabs, (t) -> t.selected
+
       if tab
         if tab.content instanceof String
-          content =  tab.content
+          content = tab.content
 
         else # probably is a Object
           content = tab.content.render()
@@ -121,6 +120,14 @@ define (require) ->
         content: content
         contentId: contentId
         contentKlass: contentKlass
+
+    ###
+    # @return [Void]
+    ###
+    registerEvents: ->
+      $(document).on "click", "#{@_sel} .tab", (e) =>
+        @selectTab Number $(e.target).closest(".tab").attr "data-index"
+        @_parent.render()
 
     ###
     # @return [Void]

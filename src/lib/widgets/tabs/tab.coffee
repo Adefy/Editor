@@ -12,7 +12,7 @@ define (require) ->
     # @return [String]
     ###
     cssAppendParentClass: ->
-      ""
+      @getClasses().join " "
 
     ###
     # What should the content id of the tab be

@@ -33,7 +33,7 @@ define (requre) ->
       ##
 
       @_parent = param.optional parent, config.selector
-      classes = param.optional classes, []
+      @_classes = param.optional classes, []
       prepend = param.optional prepend, false
 
       # container selector, defaults to no container
@@ -57,11 +57,17 @@ define (requre) ->
         else
           $(_parent_sel).append elm
 
-        # Ship classes
         @getElement().addClass c for c in classes
 
       # Bind a pointer to ourselves on the body, under a key matching our @_sel
       $("body").data @_sel, @
+
+    ###
+    # Get the classes present on our main element
+    #
+    # @return [Array<String>] classes
+    ###
+    getClasses: -> @_classes
 
     ###
     # Retrieve widget selector (typically the id)

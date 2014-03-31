@@ -8,7 +8,7 @@ define ->
   ###
   Handlebars.compile """
     <dl>
-      <dt><i class="fa fa-fw {{directoryStateIcon}}"></i></dt>
+      <dt><i class="fa fa-fw {{directoryStateIcon}} toggle-directory"></i></dt>
       <dd>
         <i class="fa fa-fw fa-folder"></i>{{directory.name}}
         {{{ content }}}
