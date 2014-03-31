@@ -141,6 +141,32 @@ define (require) ->
       "#actor-time-#{actor.getId()}.actor"
 
     ###
+    # returns the scrollbar selector
+    # @return [String]
+    ###
+    _scrollbarSelector: ->
+      "#{@_sel} .content"
+
+    ###
+    # Returns the scrollbar element
+    # @return [jQuery]
+    ###
+    _scrollbarElement: ->
+      $(@_scrollbarSelector())
+
+    ###
+    # @return [Void]
+    ###
+    setupScrollbar: ->
+      @_scrollbarElement().perfectScrollbar suppressScrollX: true
+
+    ###
+    # @return [Void]
+    ###
+    updateScrollbar: ->
+      @_scrollbarElement().perfectScrollbar "update"
+
+    ###
     # Get current timeline duration
     #
     # @return [Number] duration
@@ -212,6 +238,8 @@ define (require) ->
 
       @getElement(".content").height @getElement().height -
                                      @getElement(".header").height()
+
+      @updateScrollbar()
 
     ###
     # @param [Number] index
@@ -435,6 +463,9 @@ define (require) ->
       @_actors.push actor
       @renderActorTimebar _.last @_actors
       @renderActorListEntry _.last @_actors
+      @updateScrollbar()
+
+      true
 
     ###
     # Remove an actor by id, re-renders timeline internals. Note that this
@@ -454,6 +485,7 @@ define (require) ->
 
       @renderActorList()
       @_renderSpace()
+      @updateScrollbar()
 
       true
 
@@ -660,6 +692,7 @@ define (require) ->
     render: ->
       @renderActorList()
       @_renderSpace()
+      @setupScrollbar()
 
     ###
     # Update the state of the controls bar
