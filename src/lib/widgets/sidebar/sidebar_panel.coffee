@@ -32,10 +32,23 @@ define (require) ->
       $(@_scrollbarSelector())
 
     ###
+    # @return [Void]
+    ###
+    setupScrollbar: ->
+      @_scrollbarElement().perfectScrollbar suppressScrollX: true
+
+    ###
+    # @return [Void]
+    ###
+    updateScrollbar: ->
+      @_scrollbarElement().perfectScrollbar "update"
+
+    ###
     # onresize callback function
+    # @return [Void]
     ###
     onResize: ->
-      @_scrollbarElement().perfectScrollbar "update"
+      @updateScrollbar()
 
     ###
     # Clear all tabs from this panel
@@ -108,8 +121,8 @@ define (require) ->
     ###
     # @return [Void]
     ###
-    setupScrollbar: ->
-      @_scrollbarElement().perfectScrollbar suppressScrollX: true
+    postRender: ->
+      @setupScrollbar()
 
     ###
     # @param [String] type

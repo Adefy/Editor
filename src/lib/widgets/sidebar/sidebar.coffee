@@ -121,14 +121,14 @@ define (require) ->
     # postRender! Calls all the child postRender
     ###
     postRender: ->
-      for i in @_items
-        i.postRender() if i.postRender != undefined
+      for item in @_items
+        item.postRender() if item.postRender
 
     ###
     # Take the navbar into account, and always position ourselves below it
     ###
     onResize: ->
-      height = window.innerHeight - $("footer").height() - $("height").height()
+      height = window.innerHeight - $("footer").height() - $("header").height()
       @getElement().height height
 
       i.onResize() for i in @_items
