@@ -20,6 +20,7 @@ define (require) ->
     ###
     # returns the scrollbar selector
     # @return [String]
+    # @private
     ###
     _scrollbarSelector: ->
       "#{@_sel}.panel .content"
@@ -27,20 +28,23 @@ define (require) ->
     ###
     # Returns the scrollbar element
     # @return [jQuery]
+    # @private
     ###
     _scrollbarElement: ->
       $(@_scrollbarSelector())
 
     ###
     # @return [Void]
+    # @private
     ###
-    setupScrollbar: ->
+    _setupScrollbar: ->
       @_scrollbarElement().perfectScrollbar suppressScrollX: true
 
     ###
     # @return [Void]
+    # @private
     ###
-    updateScrollbar: ->
+    _updateScrollbar: ->
       @_scrollbarElement().perfectScrollbar "update"
 
     ###
@@ -48,7 +52,7 @@ define (require) ->
     # @return [Void]
     ###
     onResize: ->
-      @updateScrollbar()
+      @_updateScrollbar()
 
     ###
     # Clear all tabs from this panel
@@ -122,7 +126,7 @@ define (require) ->
     # @return [Void]
     ###
     postRender: ->
-      @setupScrollbar()
+      @_setupScrollbar()
 
     ###
     # @param [String] type

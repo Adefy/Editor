@@ -40,6 +40,9 @@ define (require) ->
       "atimebar-color-4-bg"
     ]
 
+    ###
+    # @type [Boolean]
+    ###
     @__staticInitialized: false
 
     ###
@@ -92,10 +95,9 @@ define (require) ->
 
       @resize 256
 
-      @renderStructure()
+      @_renderStructure()
       @_updateCursorTime()
 
-      @_enableDrag()
       @_regListeners()
 
       if Storage.get("timeline.visible") != false
@@ -155,18 +157,6 @@ define (require) ->
       $(@_scrollbarSelector())
 
     ###
-    # @return [Void]
-    ###
-    setupScrollbar: ->
-      @_scrollbarElement().perfectScrollbar suppressScrollX: true
-
-    ###
-    # @return [Void]
-    ###
-    updateScrollbar: ->
-      @_scrollbarElement().perfectScrollbar "update"
-
-    ###
     # Get current timeline duration
     #
     # @return [Number] duration
@@ -181,101 +171,34 @@ define (require) ->
     getPreviewFPS: -> @_previewFPS
 
     ###
-    # Enables cursor dragging
-    # @private
-    ###
-    _enableDrag: ->
-      $("#timeline-cursor").draggable
-        axis: "x"
-        containment: "parent"
-        drag: (e, ui) =>
-
-          # Cancel the drag if we are currently in the middle of playback
-          if @_playbackID != undefined and @_playbackID != null
-            return false
-
-          @_onCursorDrag e, ui
-          @_onCursorDragStop e, ui
-
-    ###
-    # Animation keys lightbolts saving
-    # @private
-    ###
-    _saveKey: ->
-      selectedId = Workspace.getSelectedActor()
-
-      actor = _.find @_actors, (a) -> a.getId() == selectedId
-      actor.updateInTime() if actor and actor.isAlive()
-
-    ###
-    # Kills the interval and NULLs the playbackID
-    # @private
-    ###
-    clearPlaybackID: ->
-      clearInterval @_playbackID
-      @_playbackID = null
-
-      # we need to update the play control state
-      @controlState.play = false
-      @updateControls()
-
-    ###
-    # Resize and apply our height to the body
+    # Return current cursor time in ms (relative to duration)
     #
-    # @param [Number] height
+    # @return [Number] time cursor time in ms
     ###
-    resize: (@_height) -> @getElement().height @_height
-
-    ###
-    # callback when a resize takes place
-    ###
-    onResize: ->
-      @_hiddenHeight = @getElement(".header").height()
-      if @_visible
-        @getElement().height @_height
-      else
-        @getElement().height @_hiddenHeight
-
-      @getElement(".content").height @getElement().height -
-                                     @getElement(".header").height()
-
-      @updateScrollbar()
+    getCursorTime: ->
+      @_duration * ($("#timeline-cursor").position().left /
+                    $(@_spaceSelector()).width())
 
     ###
-    # @param [Number] index
-    # @param [Boolean] forceState
-    #   @optional
-    ###
-    toggleActorExpandByIndex: (index, forceState) ->
-      param.required index
-
-      actor = @_actors[index]
-      return unless actor
-      bodySelector = @_actorBodySelector(actor)
-      timeSelector = @_actorTimeSelector(actor)
-
-      $(bodySelector).toggleClass "expanded", forceState
-      $(timeSelector).toggleClass "expanded", $(bodySelector).hasClass("expanded")
-
-      icon = $(bodySelector).find ".expand i"
-
-      if $(bodySelector).hasClass "expanded"
-        icon.removeClass "fa-caret-right"
-        icon.addClass "fa-caret-down"
-      else
-        icon.removeClass "fa-caret-down"
-        icon.addClass "fa-caret-right"
-
-    ###
+    # Validates an actor's lifetime
     # @param [BaseActor] actor
-    # @param [Boolean] forceState
+    # @private
     ###
-    toggleActorExpand: (actor, forceState) ->
-      param.required actor
+    _checkActorLifetime: (actor) ->
+      # Sanity check, actor must die after it is created
+      if actor.lifetimeEnd < actor.lifetimeStart
+        throw new Error "Actor lifetime end must come after lifetime start! " +\
+                        "start: #{actor.lifetimeStart}, " +\
+                        "end: #{actor.lifetimeEnd}"
 
-      id = actor.getActorId()
-      actorIndex = _.findIndex @_actors, (a) -> a.getActorId() == id
-      @toggleActorExpandByIndex actorIndex , forceState
+      # Make sure actors' lifetime is contained in our duration!
+      #
+      # TODO: In the future, we can allow for actor deaths after our duration,
+      #       to ease timeline resizing.
+      if actor.lifetimeStart < 0 or actor.lifetimeEnd > @_duration
+        throw new Error "Actor exists beyond our duration!"
+
+      true
 
     ###
     # When an actor expand button is pressed this function is called
@@ -322,8 +245,15 @@ define (require) ->
 
       index = Number $(element).attr "data-index"
 
-      @selectActorByIndex index
+      @switchSelectedActorByIndex index
       @ui.pushEvent "timeline.selected.actor", actor: @_actors[index]
+
+    ###
+    # Update the size and position of the scrollbar
+    # @return [Void]
+    ###
+    _updateScrollbar: ->
+      @_scrollbarElement().perfectScrollbar "update"
 
     ###
     # Update displayed cursor time
@@ -379,38 +309,106 @@ define (require) ->
         @_control.onClickFastForward e
         @updateControls()
 
-      # Sidebar save button
-      ## TODO: WTF is this? Likely we don't need it
-      # $(document).on "click", ".asp-save", (e) => @_saveKey e
+      $("#timeline-cursor").draggable
+        axis: "x"
+        containment: "parent"
+        drag: (e, ui) =>
+
+          # Cancel the drag if we are currently in the middle of playback
+          if @_playbackID != undefined and @_playbackID != null
+            return false
+
+          @_onCursorDrag e, ui
+          @_onCursorDragStop e, ui
 
     ###
-    # Return current cursor time in ms (relative to duration)
-    #
-    # @return [Number] time cursor time in ms
-    ###
-    getCursorTime: ->
-      @_duration * ($("#timeline-cursor").position().left / $(@_spaceSelector()).width())
-
-    ###
-    # Validates an actor's lifetime
-    # @param [BaseActor] actor
+    # Animation keys lightbolts saving
     # @private
     ###
-    _checkActorLifetime: (actor) ->
-      # Sanity check, actor must die after it is created
-      if actor.lifetimeEnd < actor.lifetimeStart
-        throw new Error "Actor lifetime end must come after lifetime start! " +\
-                        "start: #{actor.lifetimeStart}, " +\
-                        "end: #{actor.lifetimeEnd}"
+    _saveKey: ->
+      selectedId = Workspace.getSelectedActor()
 
-      # Make sure actors' lifetime is contained in our duration!
-      #
-      # TODO: In the future, we can allow for actor deaths after our duration,
-      #       to ease timeline resizing.
-      if actor.lifetimeStart < 0 or actor.lifetimeEnd > @_duration
-        throw new Error "Actor exists beyond our duration!"
+      actor = _.find @_actors, (a) -> a.getId() == selectedId
+      actor.updateInTime() if actor and actor.isAlive()
 
-      true
+    ###
+    # Construct a new scrollbar
+    # @return [Void]
+    # @private
+    ###
+    _setupScrollbar: ->
+      @_scrollbarElement().perfectScrollbar suppressScrollX: true
+
+    ###
+    # Kills the interval and NULLs the playbackID
+    # @friend [TimelineControl]
+    # @private
+    ###
+    clearPlaybackID: ->
+      clearInterval @_playbackID
+      @_playbackID = null
+
+      # we need to update the play control state
+      @controlState.play = false
+      @updateControls()
+
+    ###
+    # Resize and apply our height to the body
+    #
+    # @param [Number] height
+    ###
+    resize: (@_height) -> @getElement().height @_height
+
+    ###
+    # callback when a resize takes place
+    ###
+    onResize: ->
+      @_hiddenHeight = @getElement(".header").height()
+      if @_visible
+        @getElement().height @_height
+      else
+        @getElement().height @_hiddenHeight
+
+      @getElement(".content").height @getElement().height -
+                                     @getElement(".header").height()
+
+      @_updateScrollbar()
+
+    ###
+    # @param [Number] index
+    # @param [Boolean] forceState
+    #   @optional
+    ###
+    toggleActorExpandByIndex: (index, forceState) ->
+      param.required index
+
+      actor = @_actors[index]
+      return unless actor
+      bodySelector = @_actorBodySelector(actor)
+      timeSelector = @_actorTimeSelector(actor)
+
+      $(bodySelector).toggleClass "expanded", forceState
+      $(timeSelector).toggleClass "expanded", $(bodySelector).hasClass("expanded")
+
+      icon = $(bodySelector).find ".expand i"
+
+      if $(bodySelector).hasClass "expanded"
+        icon.removeClass "fa-caret-right"
+        icon.addClass "fa-caret-down"
+      else
+        icon.removeClass "fa-caret-down"
+        icon.addClass "fa-caret-right"
+
+    ###
+    # @param [BaseActor] actor
+    # @param [Boolean] forceState
+    ###
+    toggleActorExpand: (actor, forceState) ->
+      param.required actor
+
+      id = actor.getActorId()
+      actorIndex = _.findIndex @_actors, (a) -> a.getActorId() == id
+      @toggleActorExpandByIndex actorIndex , forceState
 
     ###
     # Show dialog box for setting the preview framerate
@@ -461,9 +459,9 @@ define (require) ->
         throw new Error "Actor must be an instance of BaseActor!"
 
       @_actors.push actor
-      @renderActorTimebar _.last @_actors
-      @renderActorListEntry _.last @_actors
-      @updateScrollbar()
+      @_renderActorTimebar _.last @_actors
+      @_renderActorListEntry _.last @_actors
+      @_updateScrollbar()
 
       true
 
@@ -483,9 +481,9 @@ define (require) ->
 
       @_actors.splice actorIndex, 1
 
-      @renderActorList()
+      @_renderActorList()
       @_renderSpace()
-      @updateScrollbar()
+      @_updateScrollbar()
 
       true
 
@@ -505,7 +503,7 @@ define (require) ->
     # @param [Boolean] apply optional, if false we only return the render HTML
     # @privvate
     ###
-    renderActorListEntry: (actor, apply) ->
+    _renderActorListEntry: (actor, apply) ->
       param.required actor
       apply = param.optional apply, true
 
@@ -543,8 +541,8 @@ define (require) ->
     #
     # @private
     ###
-    renderActorList: ->
-      entriesHTML = @_actors.map (actor) => @renderActorListEntry actor, false
+    _renderActorList: ->
+      entriesHTML = @_actors.map (actor) => @_renderActorListEntry actor, false
 
       $(@_bodySelector()).html entriesHTML.join ""
       @_refreshActorRows()
@@ -558,7 +556,7 @@ define (require) ->
     # @param [Boolean] apply optional, if false we only return the render HTML
     # @private
     ###
-    renderActorTimebar: (actor, apply) ->
+    _renderActorTimebar: (actor, apply) ->
       param.required actor
       apply = param.optional apply, true
 
@@ -666,7 +664,7 @@ define (require) ->
     # @private
     ###
     _renderSpace: ->
-      entriesHTML = @_actors.map (actor) => @renderActorTimebar actor, false
+      entriesHTML = @_actors.map (actor) => @_renderActorTimebar actor, false
 
       $("#{@_spaceSelector()} .time-actors").html entriesHTML.join ""
 
@@ -675,7 +673,7 @@ define (require) ->
     # Note that calling this clears the timeline visually, and does not render
     # objects! Objects are not destroyed, call @render to update them.
     ###
-    renderStructure: ->
+    _renderStructure: ->
       options =
         id: "timeline-header"
         timelineId: @getId()
@@ -685,14 +683,14 @@ define (require) ->
 
     ###
     # Proper render function, fills in timeline internals. Since we have two
-    # distinct sections, each is rendered by a seperate method. This helps
-    # divide the necessary logic, into @renderActorList() and @_renderSpace(). This
-    # function simply calls both.
+    # distinct sections, each is rendered by a seperate function. This helps
+    # divide the necessary logic, into @_renderActorList() and @_renderSpace().
+    # This function simply calls both.
     ###
     render: ->
-      @renderActorList()
+      @_renderActorList()
       @_renderSpace()
-      @setupScrollbar()
+      @_setupScrollbar()
 
     ###
     # Update the state of the controls bar
@@ -721,7 +719,7 @@ define (require) ->
       ###
       #timeSelector = @_actorTimeSelector actor
       #$("#{timeSelector} .bar")
-      @renderActorTimebar actor
+      @_renderActorTimebar actor
       # Sadly, when a refresh takes place the timebar's expanded state
       # is reset, so we need to update it, in a rather crude way...
       bodySelector = @_actorBodySelector actor
@@ -754,18 +752,24 @@ define (require) ->
       @updateActorTime actor
 
     ###
-    #
+    # Sets the actor as the currently selected and highlights it
     # @param [BaseActor] actor
-    # @private
     ###
     selectActor: (actor) ->
       @_lastSelectedActor = param.required actor
       $("#{@_actorBodySelector(actor)} .actor-info").addClass("selected")
 
+    ###
+    # Clears the actor selection
+    # @param [BaseActor] actor
+    ###
     deselectActor: (actor) ->
       param.required actor
       $("#{@_actorBodySelector(actor)} .actor-info").removeClass("selected")
 
+    ###
+    # @param [BaseActor] actor
+    ###
     switchSelectedActor: (actor) ->
       param.required actor
 
@@ -775,7 +779,7 @@ define (require) ->
     ###
     # @param [Number] index
     ###
-    selectActorByIndex: (index) -> @switchSelectedActor @_actors[index]
+    switchSelectedActorByIndex: (index) -> @switchSelectedActor @_actors[index]
 
     ###
     # Toggle visibility of the sidebar with an optional animation
