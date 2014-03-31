@@ -19,40 +19,9 @@ define (require) ->
   class Timeline extends Widget
 
     ###
-    # Timebar color classes, styled in colors.styl
-    # @type [Array<String>] css class names
-    ###
-    @_timebarColors: [
-      "atimebar-color-1"
-      "atimebar-color-2"
-      "atimebar-color-3"
-      "atimebar-color-4"
-    ]
-
-    ###
-    # Timebar bg color classes, styled in colors.styl
-    # @type [Array<String>] css class names
-    ###
-    @_timebarBGColors: [
-      "atimebar-color-1-bg"
-      "atimebar-color-2-bg"
-      "atimebar-color-3-bg"
-      "atimebar-color-4-bg"
-    ]
-
-    ###
     # @type [Boolean]
     ###
     @__staticInitialized: false
-
-    ###
-    # Get a random timebar color index, used when setting default actor timebar
-    # color
-    #
-    # @return [Number] colIndex
-    ###
-    @getRandomTimebarColor: ->
-      Math.floor(Math.random() * @_timebarColors.length)
 
     ###
     # Creates a timeline at the bottom of the screen. Note that it is absolutely
@@ -492,8 +461,6 @@ define (require) ->
     # @private
     ###
     _refreshActorRows: ->
-      $("#{@_bodySelector()} actor").each ->
-        #
 
     ###
     # Appends a single actor to the actor list, used after registering an actor
