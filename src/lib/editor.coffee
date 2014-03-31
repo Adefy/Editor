@@ -97,7 +97,6 @@ define (require) ->
 
           # Saved elements are self-explanatory
           _actor.name = a.name
-          _actor.timebarColor = a.timebarColor
           _actor.lifetimeStart = a.lifetimeStart
           _actor.lifetimeEnd = a.lifetimeEnd
           _actor.propBuffer = a._propBuffer

@@ -41,11 +41,6 @@ define (require) ->
       # Tracks if we exist or not. Triggers AJS instantiation and such
       @_alive = false
 
-      # Our timebar color, can be changed freely (timeline requires notification)
-      # To see avaliable colors, check Timeline for their declarations,
-      # and colors.styl for their definitions
-      @timebarColor = Timeline.getRandomTimebarColor()
-
       # Property buffer, holds values at different points in time. Current
       # property values are calculated based on the current cursor position,
       # nearest two values and the described bezier representing the transition
