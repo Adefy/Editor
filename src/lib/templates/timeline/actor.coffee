@@ -4,7 +4,7 @@ define ->
   # Content that appears on the left of the Timeline
   # @property [String] id
   # @property [Number] index
-  # @property [Id] actorId
+  # @property [Id] actorid
   # @property [String] title
   # @property [Array<Object>] properties
   #   @property [String] id
@@ -12,7 +12,9 @@ define ->
   #   @property [String] value
   ###
   Handlebars.compile """
-    <div data-actorid="{{ actorid }}" data-index="{{ index }}" id="{{ id }}" class="actor">
+    <div data-actorid="{{ actorid }}"
+         data-index="{{ index }}"
+         id="{{ id }}" class="actor">
 
       <div class="actor-info row">
         <div class="visibility"><i class="fa fa-fw fa-eye"></i></div>

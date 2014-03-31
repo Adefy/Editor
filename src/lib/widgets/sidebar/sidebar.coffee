@@ -61,7 +61,7 @@ define (require) ->
         $(document).on "click", ".sidebar .button.toggle", ->
 
           # Find the affected sidebar
-          selector = @attributes.sidebarid.value
+          selector = @attributes["data-sidebarid"].value
           sidebar = $("body").data "##{selector}"
 
           sidebar.toggle()

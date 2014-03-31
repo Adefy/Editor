@@ -3,6 +3,8 @@ define ->
   ###
   # Content that appears on the right of the Timeline
   # @property [String] id
+  # @property [Number] index
+  # @property [Id] actorid
   # @property [Number] dataIndex
   # @property [Boolean] isExpanded
   # @property [Array<Object>] properties
@@ -15,24 +17,22 @@ define ->
   #     @property [Number] left
   ###
   Handlebars.compile """
-    <div id="{{ id }}" class="actor">
-
-      <div class="row">
-        <div class="bar"></div>
-      </div>
-
+    <div data-actorid="{{ actorid }}"
+         data-index="{{ index }}"
+         id="{{ id }}"
+         class="actor">
       {{#each properties}}
        {{#if isProperty}}
         <div id="{{ id }}" class="row property">
-          <div style="left: {{ left }}px; width: {{ width }}px" class="bar"></div>
-        </div>
-       {{else}}
-        <div id="{{ id }}" class="row">
 
          {{#each keyframes}}
           <div id="{{ id }}" style="left: {{ left }}px" class="keyframe"></div>
          {{/each}}
 
+        </div>
+       {{else}}
+        <div id="{{ id }}" class="row">
+          <div style="left: {{ left }}px; width: {{ width }}px" class="bar"></div>
         </div>
        {{/if}}
       {{/each}}

@@ -1115,12 +1115,6 @@ define (require) ->
         # Notify the workspace
         @ui.workspace.notifyDemise @
 
-        # Clear the properties panel if it is tied to us
-        _prop = $("body").data "default-properties"
-        if _prop.constructor.name == "SidebarProperties"
-          if _prop.privvyIface("get_id") == @_actor.getId()
-            _prop.clear()
-
         # Go through and remove ourselves from
         @_actor.destroy()
         @_actor = null

@@ -16,7 +16,7 @@ define ->
         {{#each tabs}}
         <div class="tab {{selected}}">{{ name }}</div>
         {{/each}}
-        <div sidebarid="{{sidebarId}}" class="button toggle">
+        <div data-sidebarid="{{sidebarId}}" class="button toggle">
           <i class="fa fa-fw fa-arrow-left"></i>
         </div>
       </div>
