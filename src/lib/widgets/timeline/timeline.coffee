@@ -391,7 +391,7 @@ define (require) ->
       @_actors.push actor
       index = @_actors.length-1
       @renderActorTimebar index
-      @renderActorList()
+      @renderActorListEntry index
 
     ###
     # Remove an actor by id, re-renders timeline internals. Note that this
@@ -608,7 +608,7 @@ define (require) ->
     # @private
     ###
     _renderSpace: ->
-      entriesHTML = @_actors.map (actor, index) ->
+      entriesHTML = @_actors.map (actor, index) =>
         @renderActorTimebar index, false
 
       $("#{@_spaceSelector()} .time-actors").html entriesHTML.join ""
