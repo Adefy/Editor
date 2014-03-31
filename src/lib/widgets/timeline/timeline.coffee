@@ -11,7 +11,7 @@ define (require) ->
   TimelineBaseTemplate = require "templates/timeline/base"
   TimelineActorTemplate = require "templates/timeline/actor"
   TimelineActorTimeTemplate = require "templates/timeline/actor_time"
-  ModalSetPreviewFPS = require "templates/modal/set_preview_fps"
+  ModalSetPreviewFPSTemplate = require "templates/modal/set_preview_fps"
 
   Storage = require "storage"
 
@@ -135,6 +135,12 @@ define (require) ->
       "#actor-body-#{actor.getId()}.actor"
 
     ###
+    # @param [BaseActor] actor
+    ###
+    _actorTimeSelector: (actor) ->
+      "#actor-time-#{actor.getId()}.actor"
+
+    ###
     # Get current timeline duration
     #
     # @return [Number] duration
@@ -212,9 +218,9 @@ define (require) ->
     # @param [HTMLElement] element
     ###
     _onActorExpand: (element) ->
-      actorId = $(element).attr "data-actorid"
-
-      timeSelector = "#actor-time-#{actorId}.actor"
+      index = $(element).attr("data-index")
+      actor = @_actors[index]
+      timeSelector = @_actorTimeSelector(actor)
 
       $(element).toggleClass "expanded"
       $(timeSelector).toggleClass "expanded", $(element).hasClass("expanded")
@@ -343,7 +349,7 @@ define (require) ->
       # Randomized input name
       name = ID.prefId "_tPreviewRate"
 
-      _html = ModalSetPreviewFPS
+      _html = ModalSetPreviewFPSTemplate
         previewFPS: @getPreviewFPS()
         name: name
 
@@ -383,8 +389,9 @@ define (require) ->
         throw new Error "Actor must be an instance of BaseActor!"
 
       @_actors.push actor
-      @renderActorTimebar _.last @_actors
-      @renderActorList _.last @_actors
+      index = @_actors.length-1
+      @renderActorTimebar index
+      @renderActorList()
 
     ###
     # Remove an actor by id, re-renders timeline internals. Note that this
@@ -422,11 +429,11 @@ define (require) ->
     # @param [Boolean] apply optional, if false we only return the render HTML
     # @privvate
     ###
-    renderActorListEntry: (actor, apply) ->
-      param.required actor
+    renderActorListEntry: (index, apply) ->
+      param.required index
       apply = param.optional apply, true
 
-      index = _.findIndex @_actors, (a) -> a.getId() == actor.getId()
+      actor = @_actors[index]
 
       html = TimelineActorTemplate
         id: "actor-body-#{actor.getId()}"
@@ -463,7 +470,8 @@ define (require) ->
     # @private
     ###
     renderActorList: ->
-      entriesHTML = @_actors.map (actor) => @renderActorListEntry actor, false
+      entriesHTML = @_actors.map (actor, index) =>
+        @renderActorListEntry index, false
 
       $(@_bodySelector()).html entriesHTML.join ""
       @_refreshActorRows()
@@ -477,15 +485,14 @@ define (require) ->
     # @param [Boolean] apply optional, if false we only return the render HTML
     # @private
     ###
-    renderActorTimebar: (actor, apply) ->
-      param.required actor
+    renderActorTimebar: (index, apply) ->
+      param.required index
       apply = param.optional apply, true
 
       spaceW = $(@_spaceSelector()).width()
 
-      # TODO: Refactor this
-      a = actor
-      aID = a.getId()
+      actor = @_actors[index]
+      actorId = actor.getId()
 
       # TODO: Consider moving the following two checks into our registerActor
       #       method. The only possible concern with that is the fact that
@@ -496,20 +503,21 @@ define (require) ->
       #       and only allow modification through ourselves. Hmmm....
 
       # Sanity check, actor must die after it is created
-      if a.lifetimeEnd < a.lifetimeStart
+      if actor.lifetimeEnd < actor.lifetimeStart
         throw new Error "Actor lifetime end must come after lifetime start! " +\
-                        "start: #{a.lifetimeStart}, end: #{a.lifetimeEnd}"
+                        "start: #{actor.lifetimeStart}, " +\
+                        "end: #{actor.lifetimeEnd}"
 
       # Make sure actors' lifetime is contained in our duration!
       #
       # TODO: In the future, we can allow for actor deaths after our duration,
       #       to ease timeline resizing.
-      if a.lifetimeStart < 0 or a.lifetimeEnd > @_duration
+      if actor.lifetimeStart < 0 or actor.lifetimeEnd > @_duration
         throw new Error "Actor exists beyond our duration!"
 
       # Calculate actor x offset
-      _start = spaceW * (a.lifetimeStart / @_duration)
-      _length = spaceW * ((a.lifetimeEnd - a.lifetimeStart) / @_duration)
+      _start = spaceW * (actor.lifetimeStart / @_duration)
+      _length = spaceW * ((actor.lifetimeEnd - actor.lifetimeStart) / @_duration)
 
       keyframes =
         opacity: []
@@ -518,71 +526,74 @@ define (require) ->
         color: []
         #physics: []
 
-      _animations = a.getAnimations()
+      _animations = actor.getAnimations()
       for anim of _animations
         continue unless anim.components
 
-        offset = spaceW * ((Number(anim) - a.lifetimeStart) / @_duration)
+        offset = spaceW * ((Number(anim) - actor.lifetimeStart) / @_duration)
 
         if anim.components.opacity
           keyframes["opacity"].push
-            id: "opacity-#{aID}-key-#{keyframes["opacity"].length}"
+            id: "opacity-#{actorId}-key-#{keyframes["opacity"].length}"
             left: offset
 
         if anim.components.position
           keyframes["position"].push
-            id: "position-#{aID}-key-#{keyframes["position"].length}"
+            id: "position-#{actorId}-key-#{keyframes["position"].length}"
             left: offset
 
         if anim.components.rotation
           keyframes["rotation"].push
-            id: "rotation-#{aID}-key-#{keyframes["rotation"].length}"
+            id: "rotation-#{actorId}-key-#{keyframes["rotation"].length}"
             left: offset
 
         if anim.components.color
           keyframes["color"].push
-            id: "color-#{aID}-key-#{keyframes["color"].length}"
+            id: "color-#{actorId}-key-#{keyframes["color"].length}"
             left: offset
 
         #if anim.components.physics
         #  keyframes["physics"].push
-        #    id: "physics-#{aID}-key-#{keyframes["physics"].length}"
+        #    id: "physics-#{actorId}-key-#{keyframes["physics"].length}"
         #    left: offset
 
       properties = []
+      # The actor's timebar
       properties.push
-        id: "actor-time-bar-#{aID}"
+        id: "actor-time-bar-#{actorId}"
         isProperty: false
         left: _start
         width: _length
 
       properties.push
-        id: "actor-time-property-opacity-#{aID}"
-        isProperty: false
+        id: "actor-time-property-opacity-#{actorId}"
+        isProperty: true
         keyframes: keyframes["opacity"]
 
       properties.push
-        id: "actor-time-property-position-#{aID}"
-        isProperty: false
+        id: "actor-time-property-position-#{actorId}"
+        isProperty: true
         keyframes: keyframes["position"]
 
       properties.push
-        id: "actor-time-property-rotation-#{aID}"
-        isProperty: false
+        id: "actor-time-property-rotation-#{actorId}"
+        isProperty: true
         keyframes: keyframes["rotation"]
 
       properties.push
-        id: "actor-time-property-color-#{aID}"
-        isProperty: false
+        id: "actor-time-property-color-#{actorId}"
+        isProperty: true
         keyframes: keyframes["color"]
 
       #properties.push
-      #  id: "actor-time-property-physics-#{aID}"
-      #  isProperty: false
+      #  id: "actor-time-property-physics-#{actorId}"
+      #  isProperty: true
       #  keyframes: keyframes["physics"]
 
       html = TimelineActorTimeTemplate
-        id: "actor-time-#{aID}"
+        id: "actor-time-#{actorId}"
+        actorid: actorId
+        index: index
         properties: properties
 
       if apply
@@ -597,7 +608,9 @@ define (require) ->
     # @private
     ###
     _renderSpace: ->
-      entriesHTML = @_actors.map (actor) -> @renderActorTimebar actor, false
+      entriesHTML = @_actors.map (actor, index) ->
+        @renderActorTimebar index, false
+
       $("#{@_spaceSelector()} .time-actors").html entriesHTML.join ""
 
     ###

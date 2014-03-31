@@ -11,11 +11,21 @@ define ->
   Handlebars.compile """
     <div id="{{ id }}" class="header timeline-control-bar">
       <div id="timeline-cursor-time" class="current_time">{{ currentTime }}</div>
-      <a id="timeline-control-fast-backward" class="control"><i class="fa fa-fw fa-fast-backward"></i></a>
-      <a id="timeline-control-backward" class="control"><i class="fa fa-fw fa-backward"></i></a>
-      <a id="timeline-control-play" class="control"><i class="fa fa-fw fa-play"></i></a>
-      <a id="timeline-control-forward" class="control"><i class="fa fa-fw fa-forward"></i></a>
-      <a id="timeline-control-fast-forward" class="control"><i class="fa fa-fw fa-fast-forward"></i></a>
+      <a id="timeline-control-fast-backward" class="control">
+        <i class="fa fa-fw fa-fast-backward"></i>
+      </a>
+      <a id="timeline-control-backward" class="control">
+        <i class="fa fa-fw fa-backward"></i>
+      </a>
+      <a id="timeline-control-play" class="control">
+        <i class="fa fa-fw fa-play"></i>
+      </a>
+      <a id="timeline-control-forward" class="control">
+        <i class="fa fa-fw fa-forward"></i>
+      </a>
+      <a id="timeline-control-fast-forward" class="control">
+        <i class="fa fa-fw fa-fast-forward"></i>
+      </a>
       <div timelineid="{{timelineId}}" class="button toggle">
         <i class="fa fa-fw fa-arrow-down"></i>
       </div>
