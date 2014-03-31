@@ -11,6 +11,7 @@ define (require) ->
   TimelineBaseTemplate = require "templates/timeline/base"
   TimelineActorTemplate = require "templates/timeline/actor"
   TimelineActorTimeTemplate = require "templates/timeline/actor_time"
+  TimelineKeyframeTemplate = require "templates/timeline/keyframe"
   ModalSetPreviewFPSTemplate = require "templates/modal/set_preview_fps"
 
   Storage = require "storage"
@@ -172,10 +173,20 @@ define (require) ->
     ###
     # When an actor expand button is pressed this function is called
     # @param [HTMLElement] element
+    # @private
     ###
-    _onActorExpand: (element) ->
+    _onActorToggleExpand: (element) ->
       index = $(element).attr "data-index"
       @toggleActorExpandByIndex index
+
+    ###
+    # When an actor visibility button is pressed this function is called
+    # @param [HTMLElement] element
+    # @private
+    ###
+    _onActorToggleVisible: (element) ->
+      index = $(element).attr "data-index"
+      @toggleActorVisibilityByIndex index
 
     ###
     # Cursor drag event
@@ -247,14 +258,17 @@ define (require) ->
         @toggle()
 
       $(document).on "click", ".actor .expand", (e) =>
-        @_onActorExpand $(e.target).closest ".actor"
+        @_onActorToggleExpand $(e.target).closest ".actor"
+
+      $(document).on "click", ".actor .visibility", (e) =>
+        @_onActorToggleVisible $(e.target).closest ".actor"
 
       ##
       ## TODO: Move all of the control listeners into the timeline_control class
       ##
 
       # Outer timebar
-      $(document).on "click", ".timeline .list .actor", (e) =>
+      $(document).on "click", ".timeline .list .actor .title", (e) =>
         @_onOuterClicked $(e.target).closest ".actor"
 
       # Timeline playback controls
@@ -289,16 +303,6 @@ define (require) ->
 
           @_onCursorDrag e, ui
           @_onCursorDragStop e, ui
-
-    ###
-    # Animation keys lightbolts saving
-    # @private
-    ###
-    _saveKey: ->
-      selectedId = Workspace.getSelectedActor()
-
-      actor = _.find @_actors, (a) -> a.getId() == selectedId
-      actor.updateInTime() if actor and actor.isAlive()
 
     ###
     # Construct a new scrollbar
@@ -367,6 +371,27 @@ define (require) ->
       else
         icon.removeClass "fa-caret-down"
         icon.addClass "fa-caret-right"
+
+    ###
+    # @param [Number] index
+    # @param [Boolean] forceState
+    #   @optional
+    ###
+    toggleActorVisibilityByIndex: (index, forceState) ->
+      param.required index
+
+      actor = @_actors[index]
+      return unless actor
+      bodySelector = @_actorBodySelector(actor)
+      iconSelector = "#{bodySelector} .visibility i"
+
+      if forceState != null || forceState != undefined
+        actor.setVisible forceState
+      else
+        actor.setVisible !actor.getVisible()
+
+      $(iconSelector).toggleClass "fa-eye", actor.getVisible()
+
 
     ###
     # @param [BaseActor] actor
@@ -463,6 +488,131 @@ define (require) ->
     _refreshActorRows: ->
 
     ###
+    # @param [BaseActor]
+    # @return [Object]
+    #   @property [Number] spaceW
+    #   @property [Number] start
+    #   @property [Number] length
+    # @private
+    ###
+    _calcActorTimebar: (actor) ->
+      param.required actor
+      spaceW = $(@_spaceSelector()).width()
+      {
+        spaceW: spaceW
+        start: spaceW * (actor.lifetimeStart / @_duration)
+        length: spaceW * ((actor.lifetimeEnd - actor.lifetimeStart) / @_duration)
+      }
+
+    ###
+    # @return [Object]
+    #   @property [Array<Object>] *
+    #     @property [String] id
+    #     @property [Number] left
+    # @private
+    ###
+    _calcActorKeyframes: (actor, timebarData) ->
+      param.required actor
+      param.required timebarData
+
+      actorId = actor.getId()
+
+      keyframes =
+        opacity: []
+        position: []
+        rotation: []
+        color: []
+        #physics: []
+
+      _animations = actor.getAnimations()
+      for time, anim of _animations
+        offset = timebarData.spaceW *
+                 ((Number(time) - actor.lifetimeStart) / @_duration)
+
+        if anim.opacity
+          keyframes["opacity"].push
+            id: "opacity-#{actorId}-key-#{keyframes["opacity"].length}"
+            left: offset
+
+        if anim.position
+          keyframes["position"].push
+            id: "position-#{actorId}-key-#{keyframes["position"].length}"
+            left: offset
+
+        if anim.rotation
+          keyframes["rotation"].push
+            id: "rotation-#{actorId}-key-#{keyframes["rotation"].length}"
+            left: offset
+
+        if anim.color
+          keyframes["color"].push
+            id: "color-#{actorId}-key-#{keyframes["color"].length}"
+            left: offset
+
+        #if anim.components.physics
+        #  keyframes["physics"].push
+        #    id: "physics-#{actorId}-key-#{keyframes["physics"].length}"
+        #    left: offset
+
+      keyframes
+
+    ###
+    # @return [Array<Object>]
+    #   @property [String] id
+    #   @property [Boolean] isProperty
+    #   @property [Number] left
+    #     @optional
+    #   @property [Number] width
+    #     @optional
+    #   @property [Array<Object>] keyframes
+    #     @optional
+    #     @property [String] id
+    #     @property [Number] left
+    # @private
+    ###
+    _calcActorTimeProperties: (actor) ->
+      param.required actor
+
+      actorId = actor.getId()
+      timebarData = @_calcActorTimebar actor
+      keyframes = @_calcActorKeyframes actor, timebarData
+
+      properties = []
+      # The actor's timebar
+      properties.push
+        id: "actor-time-bar-#{actorId}"
+        isProperty: false
+        left: timebarData.start
+        width: timebarData.length
+
+      properties.push
+        id: "actor-time-property-opacity-#{actorId}"
+        isProperty: true
+        keyframes: keyframes["opacity"]
+
+      properties.push
+        id: "actor-time-property-position-#{actorId}"
+        isProperty: true
+        keyframes: keyframes["position"]
+
+      properties.push
+        id: "actor-time-property-rotation-#{actorId}"
+        isProperty: true
+        keyframes: keyframes["rotation"]
+
+      properties.push
+        id: "actor-time-property-color-#{actorId}"
+        isProperty: true
+        keyframes: keyframes["color"]
+
+      #properties.push
+      #  id: "actor-time-property-physics-#{actorId}"
+      #  isProperty: true
+      #  keyframes: keyframes["physics"]
+
+      properties
+
+    ###
     # Appends a single actor to the actor list, used after registering an actor
     # and rendering their timebar
     #
@@ -521,90 +671,19 @@ define (require) ->
     #
     # @param [BaseActor] actor
     # @param [Boolean] apply optional, if false we only return the render HTML
+    # @return [HTML]
     # @private
     ###
     _renderActorTimebar: (actor, apply) ->
       param.required actor
       apply = param.optional apply, true
 
-      spaceW = $(@_spaceSelector()).width()
-
       actorId = actor.getId()
+      index = _.findIndex @_actors, (a) -> a.getId() == actorId
 
       return false unless @_checkActorLifetime actor
 
-      # Calculate actor x offset
-      _start = spaceW * (actor.lifetimeStart / @_duration)
-      _length = spaceW * ((actor.lifetimeEnd - actor.lifetimeStart) / @_duration)
-
-      keyframes =
-        opacity: []
-        position: []
-        rotation: []
-        color: []
-        #physics: []
-
-      _animations = actor.getAnimations()
-      for time, anim of _animations
-        offset = spaceW * ((Number(time) - actor.lifetimeStart) / @_duration)
-
-        if anim.opacity
-          keyframes["opacity"].push
-            id: "opacity-#{actorId}-key-#{keyframes["opacity"].length}"
-            left: offset
-
-        if anim.position
-          keyframes["position"].push
-            id: "position-#{actorId}-key-#{keyframes["position"].length}"
-            left: offset
-
-        if anim.rotation
-          keyframes["rotation"].push
-            id: "rotation-#{actorId}-key-#{keyframes["rotation"].length}"
-            left: offset
-
-        if anim.color
-          keyframes["color"].push
-            id: "color-#{actorId}-key-#{keyframes["color"].length}"
-            left: offset
-
-        #if anim.components.physics
-        #  keyframes["physics"].push
-        #    id: "physics-#{actorId}-key-#{keyframes["physics"].length}"
-        #    left: offset
-
-      properties = []
-      # The actor's timebar
-      properties.push
-        id: "actor-time-bar-#{actorId}"
-        isProperty: false
-        left: _start
-        width: _length
-
-      properties.push
-        id: "actor-time-property-opacity-#{actorId}"
-        isProperty: true
-        keyframes: keyframes["opacity"]
-
-      properties.push
-        id: "actor-time-property-position-#{actorId}"
-        isProperty: true
-        keyframes: keyframes["position"]
-
-      properties.push
-        id: "actor-time-property-rotation-#{actorId}"
-        isProperty: true
-        keyframes: keyframes["rotation"]
-
-      properties.push
-        id: "actor-time-property-color-#{actorId}"
-        isProperty: true
-        keyframes: keyframes["color"]
-
-      #properties.push
-      #  id: "actor-time-property-physics-#{actorId}"
-      #  isProperty: true
-      #  keyframes: keyframes["physics"]
+      properties = @_calcActorTimeProperties actor
 
       ##
       ## TODO: Check that something has actually changed before sending the HTML
@@ -613,7 +692,7 @@ define (require) ->
       html = TimelineActorTimeTemplate
         id: "actor-time-#{actorId}"
         actorid: actorId
-        index: _.findIndex @_actors, (a) -> a.getId() == actorId
+        index: index
         properties: properties
 
       if apply
@@ -627,7 +706,7 @@ define (require) ->
     ###
     # Render the timeline space. Should never be called by itself, only by
     # @render()
-    #
+    # @return [Void]
     # @private
     ###
     _renderSpace: ->
@@ -639,6 +718,7 @@ define (require) ->
     # Render initial structure.
     # Note that calling this clears the timeline visually, and does not render
     # objects! Objects are not destroyed, call @render to update them.
+    # @return [Void]
     ###
     _renderStructure: ->
       options =
@@ -646,13 +726,14 @@ define (require) ->
         timelineId: @getId()
         currentTime: "0:00.00"
 
-      return @getElement().html TimelineBaseTemplate options
+      @getElement().html TimelineBaseTemplate options
 
     ###
     # Proper render function, fills in timeline internals. Since we have two
     # distinct sections, each is rendered by a seperate function. This helps
     # divide the necessary logic, into @_renderActorList() and @_renderSpace().
     # This function simply calls both.
+    # @return [Void]
     ###
     render: ->
       @_renderActorList()
@@ -677,20 +758,59 @@ define (require) ->
 
     ###
     # Update the state of the actor timebar
+    # @return [Void]
     ###
     updateActorTime: (actor) ->
       return unless actor
 
+      timeSelector = @_actorTimeSelector actor
+      properties = @_calcActorTimeProperties actor
+
+      for property in properties
+        if property.isProperty
+          keyframes = property.keyframes
+
+          ## hard refresh
+          elem = $("#{timeSelector} ##{property.id}")
+          elem.empty()
+          for keyframe in keyframes
+            elem.append TimelineKeyframeTemplate
+              id: keyframe.id
+              left: keyframe.left
+
+          ## soft refresh (and it doesnt work)
+          #elems = $("#{timeSelector} ##{property.id} keyframe")
+          ## adjust the size of the keyframes container
+          #if keyframes.length < elems.length
+          #  diff = elems.length - keyframes.length
+          #  for i in [0...diff]
+          #    elems.remove(elems[0])
+          #else if keyframes.length > elems.length
+          #  diff = keyframes.length - elems.length
+          #  for i in [0...diff]
+          #    elems.append TimelineKeyframeTemplate
+          #      id: "placeholder"
+          #      left: 0
+          #$("#{timeSelector} ##{property.id} keyframe").each (index, e) ->
+          #  keyframe = keyframes[index]
+          #  e.attr "id", keyframe.id
+          #  e.css left: keyframe.left
+
+        else
+          $("#{timeSelector} ##{property.id}").css
+            left: "#{property.left}px"
+            width: "#{property.width}px"
+
       ###
-      # TODO. Lets not refresh everytime the actor updates...
+      ## Hard Refresh
       ###
-      #timeSelector = @_actorTimeSelector actor
-      #$("#{timeSelector} .bar")
-      @_renderActorTimebar actor
-      # Sadly, when a refresh takes place the timebar's expanded state
-      # is reset, so we need to update it, in a rather crude way...
-      bodySelector = @_actorBodySelector actor
-      @toggleActorExpand actor, $(bodySelector).hasClass("expanded")
+      #@_renderActorTimebar actor
+      ####
+      ## Sadly, when a refresh takes place the timebar's expanded state
+      ## is reset, so we need to update it, in a rather crude way...
+      ####
+      #bodySelector = @_actorBodySelector actor
+      #@toggleActorExpand actor, $(bodySelector).hasClass("expanded")
 
     ###
     # Called by actors, for updating its Timeline state
@@ -832,13 +952,14 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
+      console.log "event: #{type}"
       switch type
         when "workspace.add.actor"
           @registerActor params.actor
         when "workspace.remove.actor"
           @removeActor params.actor
         when "selected.actor"
-          @updateActor params.actor
           @switchSelectedActor params.actor
+          @updateActor params.actor
         when "update.actor"
           @updateActor params.actor

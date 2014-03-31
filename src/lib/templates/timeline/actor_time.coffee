@@ -23,7 +23,7 @@ define ->
          class="actor">
       {{#each properties}}
        {{#if isProperty}}
-        <div id="{{ id }}" class="row property">
+        <div id="{{ id }}" class="row property keyframes">
 
          {{#each keyframes}}
           <div id="{{ id }}" style="left: {{ left }}px" class="keyframe"></div>

@@ -307,6 +307,16 @@ define (require) ->
     getActor: -> @_actor
 
     ###
+    # @param [Booleab] _visible
+    ###
+    getVisible: ->
+      if @_actor != null
+        #@_actor.setVisible _visible
+        @_actor.visible
+      else
+        AUtilLog.warn "No actor, can't get visibility!"
+
+    ###
     # Return actor opacity
     #
     # @return [Number] opacity
@@ -321,9 +331,9 @@ define (require) ->
     getPosition: ->
       if @_actor
         _pos = @_actor.getPosition()
-        return { x: _pos.x, y: _pos.y }
-
-      AUtilLog.warn "No actor, can't get position!"
+        { x: _pos.x, y: _pos.y }
+      else
+        AUtilLog.warn "No actor, can't get position!"
 
     ###
     # Get actor rotation
@@ -332,9 +342,9 @@ define (require) ->
     ###
     getRotation: ->
       if @_actor
-        return @_properties["rotation"].getValue()
-
-      AUtilLog.warn "No actor, can't get rotation!"
+        @_properties["rotation"].getValue()
+      else
+        AUtilLog.warn "No actor, can't get rotation!"
 
     ###
     # Return actor color as (r,g,b)
@@ -347,9 +357,9 @@ define (require) ->
 
       if @_actor
         _col = @_actor.getColor()
-        return { r: _col.getR(float), g: _col.getG(float), b: _col.getB(float) }
-
-      AUtilLog.warn "No actor, can't get color!"
+        { r: _col.getR(float), g: _col.getG(float), b: _col.getB(float) }
+      else
+        AUtilLog.warn "No actor, can't get color!"
 
     ###
     # Return actor physics
@@ -359,27 +369,41 @@ define (require) ->
     getPsyX: ->
       if @_actor
         _physics = @_properties["physics"].components
-        return {
+        {
           enabled: _physics.enabled.getValue()
           mass: _physics.mass.getValue()
           elasticity: _physics.elasticity.getValue()
           friction: _physics.friction.getValue()
         }
-
-      AUtilLog.warn "No actor, can't get physics!"
+      else
+        AUtilLog.warn "No actor, can't get physics!"
 
     ###
     # Get buffer entry
     #
-    # @param [Number] time
+    # @param [Number] _time
     # @return [Object] entry prop buffer entry, may be undefined
     ###
-    getBufferEntry: (time) -> @_propBuffer["#{Math.floor time}"]
+    getBufferEntry: (_time) -> @_propBuffer["#{Math.floor _time}"]
+
+    ###
+    # @param [Booleab] _visible
+    ###
+    setVisible: (_visible) ->
+      if @_actor != null
+        @_actor.setVisible _visible
+      else
+        AUtilLog.warn "No actor, can't set visibility!"
 
     ###
     # @param [Number] _opacity
     ###
-    setOpacity: (_opacity) -> null
+    setOpacity: (_opacity) ->
+      if @_actor != null
+        AUtilLog.warn "AJS does not support actor with an opacity, yet."
+        #@_actor.setOpacity _opacity
+      else
+        AUtilLog.warn "No actor, can't set opacity!"
 
     ###
     # Set actor position, relative to the GL world!
@@ -418,6 +442,9 @@ define (require) ->
 
       @_properties["color"].update { r: r, g: g, b: b}
 
+    ###
+    # @param [Texture] texture
+    ###
     setTexture: (texture) -> @_actor.setTexture(texture)
 
     ###
@@ -540,12 +567,7 @@ define (require) ->
       # Save state
       @_lastTemporalState = Number Math.floor(cursor)
 
-      ##
-      # Notify timeline to refresh
-      #@ui.timeline.render()
-      # Refreshing after every change is too heavy, its better to update instead
-      # check timeline for more information
-      @ui.timeline.updateActor(@)
+      @ui.pushEvent "update.actor", actor: @
 
     ###
     # Generates a new snapshot from our current properties
@@ -790,10 +812,6 @@ define (require) ->
 
             # Store new value
             @_properties[v.name].update val
-
-      # Update property bar, wooooo
-      # TODO: Update individual properties
-      $("body").data("default-properties").refresh @
 
     ###
     # This gets called if the cursor is to the right of us, and it has not yet
