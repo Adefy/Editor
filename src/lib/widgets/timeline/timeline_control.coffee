@@ -26,25 +26,6 @@ define (require) ->
       @timeline.clearPlaybackID()
 
     ###
-    # Timebar click handler, magic and whatnot
-    #
-    # @param [Object] e click event
-    # @param [Object] element dom element that was clicked
-    # @private
-    ###
-    onOuterClicked: (element) ->
-      param.required element
-
-      # Grab and validate index
-      index = Number $(element).attr("data-index")
-      if index < 0 or index > @timeline._actors.length - 1 or isNaN(index)
-        AUtilLog.warn "Clicked timebar has an invalid index, bailing [#{index}]"
-        return
-
-      actor = @timeline.selectActorByIndex index
-      @timeline.ui.pushEvent "timeline.selected.actor", actor: actor
-
-    ###
     # Playback toggle button clicked (play/pause)
     # @private
     ###
@@ -71,40 +52,6 @@ define (require) ->
 
       @timeline.controlState.play = true
       @timeline.updateControls()
-
-    ###
-    # Visibilty toggle request
-    # @private
-    ###
-    _visToggleClicked: ->
-
-      if $(@timeline._sel).css("bottom") == "0px" and not @timeline.__animating
-        @timeline.__animating = true
-
-        $(@timeline._sel).animate
-          bottom: "-#{$(@timeline._sel).height() - 24}px"
-        ,
-          duration: 500
-          easing: "swing"
-          step: =>
-            window.left_sidebar.onResize()
-            window.right_sidebar.onResize()
-            window.workspace.onResize()
-          done: => @timeline.__animating = false
-
-      else if not @timeline.__animating
-        @timeline.__animating = true
-
-        $(@timeline._sel).animate
-          bottom: "0px"
-        ,
-          duration: 500
-          easing: "swing"
-          step: =>
-            window.left_sidebar.onResize()
-            window.right_sidebar.onResize()
-            window.workspace.onResize()
-          done: => @timeline.__animating = false
 
     ###
     # Forward playback button clicked (next keyframe)

@@ -16,9 +16,6 @@ define (require) ->
   Storage = require "storage"
 
   # Timeline widget, serving as the main control center for objects.
-  #
-  # OH GAWD this is going to be complex.
-  # 9/6/2013: Escape while you still can
   class Timeline extends Widget
 
     ###
@@ -66,26 +63,16 @@ define (require) ->
     constructor: (@ui, duration) ->
       return unless @enforceSingleton()
 
+      super
+        id: ID.prefId("timeline")
+        parent: "footer"
+        classes: ["timeline"]
+
       @_duration = Number param.optional(duration, 5000)
       @_control = new TimelineControl @
 
       @_previewFPS = 30
       @_visible = true
-
-      # Sanity check on our internal color arrays
-      _l1 = Timeline._timebarColors.length
-      _l2 = Timeline._timebarBGColors.length
-
-      if _l1 != _l2
-        throw new Error "Timeline color count != timeline bg color count!"
-
-      # Enforce minimum duration of 250ms
-      throw new Error "Ad must be longer than 250ms!" unless @_duration > 250
-
-      super
-        id: ID.prefId("timeline")
-        parent: "footer"
-        classes: ["timeline"]
 
       @controlState =
         fast_backward: false
@@ -98,17 +85,14 @@ define (require) ->
       @_actors = []
 
       # Check for any existing padding on the body (and format accordingly)
-      @_bodyPadding = $("body").css "padding-bottom"
-      if @_bodyPadding == "auto" then @_bodyPadding = 0
-      @_bodyPadding = @_bodyPadding.split("px").join ""
+      if $("body").css("padding-bottom") == "auto"
+        @_bodyPadding = 0
+      else
+        @_bodyPadding = $("body").css("padding-bottom").split("px").join ""
 
-      # Set initial height and resize
       @resize 256
 
-      # Inject our layout
       @renderStructure()
-
-      # Set initial time
       @_updateCursorTime()
 
       @_enableDrag()
@@ -186,14 +170,10 @@ define (require) ->
     # @private
     ###
     _saveKey: ->
-      index = Workspace.getSelectedActor()
-      # only enter checks if an actor is actually selected
-      if index != null and index != undefined
-        for actor, i in @_actors
-          if actor.getId() == index then index = i
-      if @_actors[index].isAlive()
-        ARELog.info "SAVED"
-        @_actors[index].updateInTime()
+      selectedId = Workspace.getSelectedActor()
+
+      actor = _.find @_actors, (a) -> a.getId() == selectedId
+      actor.updateInTime() if actor and actor.isAlive()
 
     ###
     # Kills the interval and NULLs the playbackID
@@ -202,7 +182,7 @@ define (require) ->
     clearPlaybackID: ->
       clearInterval @_playbackID
       @_playbackID = null
-      ##
+
       # we need to update the play control state
       @controlState.play = false
       @updateControls()
@@ -212,8 +192,7 @@ define (require) ->
     #
     # @param [Number] height
     ###
-    resize: (@_height) ->
-      @getElement().height @_height
+    resize: (@_height) -> @getElement().height @_height
 
     ###
     # callback when a resize takes place
@@ -230,19 +209,19 @@ define (require) ->
 
     ###
     # When an actor expand button is pressed this function is called
-    # @param [Event] e
+    # @param [HTMLElement] element
     ###
-    _onActorExpand: (e) ->
-      actorId = e.currentTarget.attributes.actorid.value
+    _onActorExpand: (element) ->
+      actorId = $(element).attr "data-actorid"
+
       timeSelector = "#actor-time-#{actorId}.actor"
-      bodySelector = "#actor-body-#{actorId}.actor"
 
-      elm = $(bodySelector)
-      elm.toggleClass "expanded"
-      $(timeSelector).toggleClass "expanded", elm.hasClass("expanded")
+      $(element).toggleClass "expanded"
+      $(timeSelector).toggleClass "expanded", $(element).hasClass("expanded")
 
-      icon = $("#{bodySelector} .expand i")
-      if elm.hasClass "expanded"
+      icon = $(element).find ".expand i"
+
+      if $(element).hasClass "expanded"
         icon.removeClass "fa-caret-right"
         icon.addClass "fa-caret-down"
       else
@@ -256,9 +235,7 @@ define (require) ->
     # @param [Object] ui
     # @private
     ###
-    _onCursorDrag: (e, ui) ->
-      # Update our cursor time
-      @_updateCursorTime()
+    _onCursorDrag: (e, ui) -> @_updateCursorTime()
 
     ###
     # Cursor drag stop event, updates all living
@@ -268,15 +245,15 @@ define (require) ->
     # @private
     ###
     _onCursorDragStop: (e, ui) ->
-      # TODO: Apply update to only existing actors.
-      #       Calculate actor births and deaths seperately (after this)
-      cursor = @getCursorTime()
+      t = @getCursorTime()
+
       for a in @_actors
+
         # Check if actor needs to die
-        if (cursor < a.lifetimeStart or cursor > a.lifetimeEnd) and a.isAlive()
+        if (t < a.lifetimeStart or t > a.lifetimeEnd) and a.isAlive()
           a.timelineDeath()
 
-        if a.isAlive() or (cursor >= a.lifetimeStart and cursor <= a.lifetimeEnd)
+        else if a.isAlive() or (t >= a.lifetimeStart and t <= a.lifetimeEnd)
           a.updateInTime()
 
     ###
@@ -285,11 +262,12 @@ define (require) ->
     ###
     _updateCursorTime: ->
       ms = @getCursorTime()
+
       seconds = ms / 1000.0
       minutes = seconds / 60.0
-      #hours = minutes / 60.0 # we will probably never get this far
-      $("#timeline-cursor-time").text "#{(minutes % 60).toFixed()}:#{(seconds % 60).toFixed(2)}"
-      #$("#timeline-cursor-time").text "Cursor: #{time}s @ #{@getPreviewFPS()} FPS"
+      timeText = "#{(minutes % 60).toFixed()}:#{(seconds % 60).toFixed(2)}"
+
+      $("#timeline-cursor-time").text timeText
 
     ###
     # Registers event listeners
@@ -298,24 +276,18 @@ define (require) ->
     _regListeners: ->
 
       $(document).on "click", ".timeline .button.toggle", (e) =>
+        @toggle()
 
-        # Find the affected timeline
-        selector = e.currentTarget.attributes.timelineid.value
-        timeline = $("body").data "##{selector}"
+      $(document).on "click", ".actor .expand", (e) =>
+        @_onActorExpand $(e.target).closest ".actor"
 
-        timeline.toggle()
-
-      # Handle expansions
-      $(document).on "click", ".actor .expand", (e) => @_onActorExpand e
+      ##
+      ## TODO: Move all of the control listeners into the timeline_control class
+      ##
 
       # Outer timebar
       $(document).on "click", ".timeline .list .actor", (e) =>
-        @_control.onOuterClicked e.currentTarget
-
-      # Timeline visibility toggle
-      $(document).on "click", "#timline-visible-toggle", (e) =>
-        @_control._visToggleClicked e
-        @updateControls()
+        @_onOuterClicked $(e.target).closest ".actor"
 
       # Timeline playback controls
       $(document).on "click", "#timeline-control-fast-backward", (e) =>
@@ -339,7 +311,8 @@ define (require) ->
         @updateControls()
 
       # Sidebar save button
-      $(document).on "click", ".asp-save", (e) => @_saveKey e
+      ## TODO: WTF is this? Likely we don't need it
+      # $(document).on "click", ".asp-save", (e) => @_saveKey e
 
     ###
     # Return current cursor time in ms (relative to duration)
@@ -347,13 +320,19 @@ define (require) ->
     # @return [Number] time cursor time in ms
     ###
     getCursorTime: ->
-      # I thought about making this a warning and just returning '0', but that
-      # would mess up thing elsewhere (whoever uses our return value would be
-      # screwed). This makes the most sense
-      if $("#timeline-cursor").length == 0
-        throw new Error "Cursor not visible can't return time!"
-
       @_duration * ($("#timeline-cursor").position().left / $(@_spaceSelector()).width())
+
+    ###
+    # @param [HTMLElement] element
+    # @private
+    ###
+    _onOuterClicked: (element) ->
+      param.required element
+
+      index = Number $(element).attr "data-index"
+
+      @selectActorByIndex index
+      @ui.pushEvent "timeline.selected.actor", actor: @_actors[index]
 
     ###
     # Show dialog box for setting the preview framerate
@@ -362,21 +341,20 @@ define (require) ->
     showSetPreviewRate: ->
 
       # Randomized input name
-      n = ID.prefId "_tPreviewRate"
+      name = ID.prefId "_tPreviewRate"
 
       _html = ModalSetPreviewFPS
         previewFPS: @getPreviewFPS()
-        name: n
+        name: name
 
       new Modal
         title: "Set Preview Framerate"
         content: _html
         modal: false
-        cb: (data) =>
-          @_previewFPS = data[n]
+        cb: (data) => @_previewFPS = data[name]
         validation: (data) ->
-          if isNaN(data[n]) then return "Framerate must be a number"
-          if Number(data[n]) <= 0 then return "Framerate must be > 0"
+          return "Framerate must be a number" if isNaN data[name]
+          return "Framerate must be > 0" if data[name] <= 0
           true
 
     ###
@@ -387,13 +365,8 @@ define (require) ->
     setCursorTime: (time) ->
       param.required time
 
-      if $("#timeline-cursor").length == 0
-        throw new Error "Cursor not visible can't return time!"
-
-      # Move cursor
       $("#timeline-cursor").css "left", $(@_spaceSelector()).width() * (time / @_duration)
 
-      # Update
       @_onCursorDrag()
       @_onCursorDragStop()
 
@@ -409,14 +382,9 @@ define (require) ->
       if actor.constructor.name.indexOf("Actor") == -1
         throw new Error "Actor must be an instance of BaseActor!"
 
-      # Ship to our array
       @_actors.push actor
-
-      # Render actor internals
-      @_renderActorSpace @_actors.length - 1
-
-      # Ship actor to the actor list
-      @_renderActors @_actors.length - 1
+      @renderActorTimebar _.last @_actors
+      @renderActorList _.last @_actors
 
     ###
     # Remove an actor by id, re-renders timeline internals. Note that this
@@ -428,18 +396,15 @@ define (require) ->
     removeActor: (id) ->
       param.required id
 
-      for a, i in @_actors
-        if a.getActorId() == id
+      actorIndex = _.findIndex @_actors, (a) -> a.getActorId() == id
+      return false unless actorIndex != -1
 
-          # Remove actor from our internal array
-          @_actors.splice i, 1
+      @_actors.splice actorIndex, 1
 
-          @_renderActors()
-          @_renderSpace()
+      @renderActorList()
+      @_renderSpace()
 
-          return true
-
-      false
+      true
 
     ###
     # Refresh spacer length and actor color in the actor list
@@ -453,65 +418,54 @@ define (require) ->
     # Appends a single actor to the actor list, used after registering an actor
     # and rendering their timebar
     #
-    # @param [Number] index index of the actor to append to the list
+    # @param [BaseActor] actor
+    # @param [Boolean] apply optional, if false we only return the render HTML
     # @privvate
     ###
-    _renderSingleActor: (index, notouch) ->
-      # notouch is an undocumented param, set to true when we are called from
-      # @_renderActors. When it is true, we simply return our generated html
-      # instead of injecting it
-      notouch = param.optional notouch, false
-      param.required index
+    renderActorListEntry: (actor, apply) ->
+      param.required actor
+      apply = param.optional apply, true
 
-      actor = @_actors[index]
-      pos = actor.getPosition()
-      color = actor.getColor()
+      index = _.findIndex @_actors, (a) -> a.getId() == actor.getId()
 
-      _properties = []
-      _properties.push
-        id: "opacity"
-        title: "Opacity"
-        value: aformat.num actor.getOpacity(), 2
-
-      _properties.push
-        id: "position"
-        title: "Position"
-        value: aformat.pos pos, 0
-
-      _properties.push
-        id: "rotation"
-        title: "Rotation"
-        value: aformat.degree actor.getRotation(), 2
-
-      _properties.push
-        id: "color"
-        title: "Color"
-        value: aformat.color color, 2
-
-      _html = TimelineActorTemplate
+      html = TimelineActorTemplate
         id: "actor-body-#{actor.getId()}"
-        index: index
         actorId: actor.getId()
+        index: index
         title: actor.name
-        properties: _properties
+        properties: [
+          id: "opacity"
+          title: "Opacity"
+          value: aformat.num actor.getOpacity(), 2
+        ,
+          id: "position"
+          title: "Position"
+          value: aformat.pos actor.getPosition(), 0
+        ,
+          id: "rotation"
+          title: "Rotation"
+          value: aformat.degree actor.getRotation(), 2
+        ,
+          id: "color"
+          title: "Color"
+          value: aformat.color actor.getColor(), 2
+        ]
 
-      if notouch then return _html
-
-      $(@_bodySelector()).append _html
-      @_refreshActorRows()
+      if apply
+        $(@_bodySelector()).append html
+        @_refreshActorRows()
+      else
+        html
 
     ###
     # Render the actor list Should never be called by itself, only by @render()
     #
     # @private
     ###
-    _renderActors: ->
-      _h = ""
-      for a, i in @_actors
-        _h += @_renderSingleActor i, true
+    renderActorList: ->
+      entriesHTML = @_actors.map (actor) => @renderActorListEntry actor, false
 
-      # Ship
-      $(@_bodySelector()).html _h
+      $(@_bodySelector()).html entriesHTML.join ""
       @_refreshActorRows()
 
     ###
@@ -519,22 +473,18 @@ define (require) ->
     # preventing a full re-render of the space. Also called internally by
     # @_renderSpace.
     #
-    # @param [Number] index index of the actor whose space we are to render
+    # @param [BaseActor] actor
+    # @param [Boolean] apply optional, if false we only return the render HTML
     # @private
     ###
-    _renderActorSpace: (index, notouch) ->
-      # notouch is an undocumented param, set to true when we are called from
-      # @_renderSpace. When it is true, we simply return our generated html
-      # instead of injecting it
-      notouch = param.optional notouch, false
-      param.required index
-
-      if index < 0 or index >= @_actors.length
-        throw new Error "Invalid index, no actor at #{index}, can't render space"
+    renderActorTimebar: (actor, apply) ->
+      param.required actor
+      apply = param.optional apply, true
 
       spaceW = $(@_spaceSelector()).width()
 
-      a = @_actors[index]
+      # TODO: Refactor this
+      a = actor
       aID = a.getId()
 
       # TODO: Consider moving the following two checks into our registerActor
@@ -631,14 +581,15 @@ define (require) ->
       #  isProperty: false
       #  keyframes: keyframes["physics"]
 
-      _html = TimelineActorTimeTemplate
+      html = TimelineActorTimeTemplate
         id: "actor-time-#{aID}"
-        dataIndex: index
         isExpanded: $("#actor-body-#{aID}").hasClass("expanded")
         properties: properties
 
-      if notouch then return _html
-      else $("#{@_spaceSelector()} .time-actors").append _html
+      if apply
+        $("#{@_spaceSelector()} .time-actors").append html
+      else
+        html
 
     ###
     # Render the timeline space. Should never be called by itself, only by
@@ -647,13 +598,8 @@ define (require) ->
     # @private
     ###
     _renderSpace: ->
-      # Create a time bar for each actor, positioned according to their birth and
-      # death.
-      _h = ""
-      for a, i in @_actors
-        _h += @_renderActorSpace i, true
-      # Ship
-      $("#{@_spaceSelector()} .time-actors").html _h
+      entriesHTML = @_actors.map (actor) -> @renderActorTimebar actor, false
+      $("#{@_spaceSelector()} .time-actors").html entriesHTML.join ""
 
     ###
     # Render initial structure.
@@ -665,19 +611,17 @@ define (require) ->
         id: "timeline-header"
         timelineId: @getId()
         currentTime: "0:00.00"
-        #contents: ""
-        #timeContents: ""
 
       return @getElement().html TimelineBaseTemplate options
 
     ###
     # Proper render function, fills in timeline internals. Since we have two
     # distinct sections, each is rendered by a seperate method. This helps
-    # divide the necessary logic, into @_renderActors() and @_renderSpace(). This
+    # divide the necessary logic, into @renderActorList() and @_renderSpace(). This
     # function simply calls both.
     ###
     render: ->
-      @_renderActors()
+      @renderActorList()
       @_renderSpace()
 
     ###
@@ -705,20 +649,20 @@ define (require) ->
     # @private
     ###
     updateActor: (actor) ->
-      if actor
-        pos = actor.getPosition()
-        color = actor.getColor()
-        rotation = actor.getRotation()
-        opacity = actor.getOpacity()
+      return unless actor
 
-        bodySelector = @_actorBodySelector(actor)
-        selector = "#{bodySelector} .property"
-        $("#{selector}#opacity .value").text aformat.num opacity, 2
-        $("#{selector}#position .value").text aformat.pos pos, 0
-        $("#{selector}#rotation .value").text aformat.degree rotation, 2
-        $("#{selector}#color .value").text aformat.color color, 2
+      pos = actor.getPosition()
+      color = actor.getColor()
+      rotation = actor.getRotation()
+      opacity = actor.getOpacity()
 
-      actor
+      bodySelector = @_actorBodySelector(actor)
+      selector = "#{bodySelector} .property"
+
+      $("#{selector}#opacity .value").text aformat.num opacity, 2
+      $("#{selector}#position .value").text aformat.pos pos, 0
+      $("#{selector}#rotation .value").text aformat.degree rotation, 2
+      $("#{selector}#color .value").text aformat.color color, 2
 
     ###
     #
@@ -726,25 +670,23 @@ define (require) ->
     # @private
     ###
     selectActor: (actor) ->
-      @updateActor actor
+      @_lastSelectedActor = param.required actor
+      $("#{@_actorBodySelector(actor)} .actor-info").addClass("selected")
 
-      if @_lastSelectedActor
-        selector = @_actorBodySelector(@_lastSelectedActor)
-        $("#{selector} .actor-info").removeClass("selected")
+    deselectActor: (actor) ->
+      param.required actor
+      $("#{@_actorBodySelector(actor)} .actor-info").removeClass("selected")
 
-      @_lastSelectedActor = actor
+    switchSelectedActor: (actor) ->
+      param.required actor
 
-      if @_lastSelectedActor
-        selector = @_actorBodySelector(@_lastSelectedActor)
-        $("#{selector} .actor-info").addClass("selected")
-
-      actor
+      @deselectActor @_lastSelectedActor if @_lastSelectedActor
+      @selectActor actor
 
     ###
     # @param [Number] index
     ###
-    selectActorByIndex: (index) ->
-      @selectActor @_actors[index]
+    selectActorByIndex: (index) -> @switchSelectedActor @_actors[index]
 
     ###
     # Toggle visibility of the sidebar with an optional animation
@@ -825,7 +767,10 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      if type == "selected.actor"
-        @selectActor params.actor
+      if type == "workspace.add.actor"
+        @registerActor params.actor
+      else if type == "selected.actor"
+        @updateActor params.actor
+        @switchSelectedActor params.actor
       else if type == "update.actor"
         @updateActor params.actor

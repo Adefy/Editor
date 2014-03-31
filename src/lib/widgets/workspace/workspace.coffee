@@ -129,7 +129,6 @@ define (require) ->
     ###
     addActor: (actor) ->
       @actorObjects.push actor
-      @ui.timeline.registerActor actor
       @ui.pushEvent "workspace.add.actor", actor: actor
 
     ###

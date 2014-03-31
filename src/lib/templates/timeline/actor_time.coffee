@@ -16,10 +16,11 @@ define ->
   ###
   Handlebars.compile """
     {{#if isExpanded}}
-    <div id="{{ id }}" data-index="{{ dataIndex }}" class="actor expanded">
+    <div id="{{ id }}" class="actor expanded">
     {{else}}
-    <div id="{{ id }}" data-index="{{ dataIndex }}" class="actor">
+    <div id="{{ id }}" class="actor">
     {{/if}}
+
       {{#each properties}}
        {{#if isProperty}}
         <div id="{{ id }}" class="row property">
@@ -27,11 +28,14 @@ define ->
         </div>
        {{else}}
         <div id="{{ id }}" class="row">
+
          {{#each keyframes}}
           <div id="{{ id }}" style="left: {{ left }}px" class="keyframe"></div>
          {{/each}}
+
         </div>
        {{/if}}
       {{/each}}
+
     </div>
   """
