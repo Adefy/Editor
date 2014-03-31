@@ -519,27 +519,25 @@ define (require) ->
         #physics: []
 
       _animations = a.getAnimations()
-      for anim of _animations
-        continue unless anim.components
+      for time, anim of _animations
+        offset = spaceW * ((Number(time) - a.lifetimeStart) / @_duration)
 
-        offset = spaceW * ((Number(anim) - a.lifetimeStart) / @_duration)
-
-        if anim.components.opacity
+        if anim.opacity
           keyframes["opacity"].push
             id: "opacity-#{aID}-key-#{keyframes["opacity"].length}"
             left: offset
 
-        if anim.components.position
+        if anim.position
           keyframes["position"].push
             id: "position-#{aID}-key-#{keyframes["position"].length}"
             left: offset
 
-        if anim.components.rotation
+        if anim.rotation
           keyframes["rotation"].push
             id: "rotation-#{aID}-key-#{keyframes["rotation"].length}"
             left: offset
 
-        if anim.components.color
+        if anim.color
           keyframes["color"].push
             id: "color-#{aID}-key-#{keyframes["color"].length}"
             left: offset
@@ -558,35 +556,38 @@ define (require) ->
 
       properties.push
         id: "actor-time-property-opacity-#{aID}"
-        isProperty: false
-        keyframes: keyframes["opacity"]
+        keyframes: keyframes.opacity
 
       properties.push
         id: "actor-time-property-position-#{aID}"
-        isProperty: false
-        keyframes: keyframes["position"]
+        keyframes: keyframes.position
 
       properties.push
         id: "actor-time-property-rotation-#{aID}"
-        isProperty: false
-        keyframes: keyframes["rotation"]
+        keyframes: keyframes.rotation
 
       properties.push
         id: "actor-time-property-color-#{aID}"
-        isProperty: false
-        keyframes: keyframes["color"]
+        keyframes: keyframes.color
 
       #properties.push
       #  id: "actor-time-property-physics-#{aID}"
       #  isProperty: false
       #  keyframes: keyframes["physics"]
 
+      ##
+      ## TODO: Check that something has actually changed before sending the HTML
+      ##
+
       html = TimelineActorTimeTemplate
         id: "actor-time-#{aID}"
         properties: properties
 
       if apply
-        $("#{@_spaceSelector()} .time-actors").append html
+        if $("#actor-time-#{aID}").length
+          $("#actor-time-#{aID}").html html
+        else
+          $("#{@_spaceSelector()} .time-actors").append html
       else
         html
 
@@ -662,6 +663,8 @@ define (require) ->
       $("#{selector}#position .value").text aformat.pos pos, 0
       $("#{selector}#rotation .value").text aformat.degree rotation, 2
       $("#{selector}#color .value").text aformat.color color, 2
+
+      @renderActorTimebar actor
 
     ###
     #
