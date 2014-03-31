@@ -335,7 +335,11 @@ define (require) ->
     #
     # @return [Number] angle in degrees
     ###
-    getRotation: -> @_properties["rotation"].getValue()
+    getRotation: ->
+      if @_actor
+        return @_properties["rotation"].getValue()
+
+      AUtilLog.warn "No actor, can't get rotation!"
 
     ###
     # Return actor color as (r,g,b)
