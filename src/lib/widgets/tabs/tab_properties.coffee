@@ -1,105 +1,353 @@
 define (require) ->
 
   AUtilLog = require "util/log"
+  param = require "util/param"
   ID = require "util/id"
-  aformat = require "util/format"
   Tab = require "widgets/tabs/tab"
-  ObjectPropertiesTemplate = require "templates/object_properties"
 
-  class TabProperties extends Tab
+  NumericControlTemplate = require "templates/sidebar/controls/numeric"
+  BooleanControlTemplate = require "templates/sidebar/controls/boolean"
+  TextControlTemplate = require "templates/sidebar/controls/text"
 
-    constructor: (parent) ->
+  ###
+  # Properties widget, dynamically refreshable
+  ###
+  class PropertiesTab extends Tab
+
+    ###
+    # Prevents us from binding event listeners twice
+    # @type [Boolean]
+    ###
+    @__exists: false
+
+    ###
+    # Instantiates, but does not set data!
+    #
+    # @param [UIManager] ui
+    # @param [Sidebar] parent sidebar parent
+    ###
+    constructor: (@ui, parent) ->
+      return unless @enforceSingleton()
+
       super
         id: ID.prefId("tab-properties")
         parent: parent
         classes: ["tab-properties"]
 
-      @_actor = null
+      # We cache our internal built state, since we require an object to show
+      # anything meaningful. Our state is refreshed externally, after which
+      # we save the HTML in this property, request a render from our parent,
+      # and then pass it down once our parent responds
+      @_builtHMTL = ""
+
+      # Automatically register self as the default properties widget if none yet
+      # exists
+      $("body").data "default-properties", @
+
+      @targetActor = null
+      @_regListeners()
+
+    ###
+    # Checks if a menu bar has already been created, and returns false if one
+    # has. Otherwise, sets a flag preventing future calls from returning true
+    ###
+    enforceSingleton: ->
+      if PropertiesTab.__exists
+        AUtilLog.warn "A properties tab already exists, refusing to initialize!"
+        return false
+
+      PropertiesTab.__exists = true
+
+    ###
+    # @private
+    ###
+    _regListeners: ->
+
+      # Numeric drag modification
+      # This is very similar to actor dragging, see Workspace
+      __drag_start_x = 0      # Keeps track of the initial drag point, so
+      __drag_start_y = 0      # we know when to start listening
+
+      __drag_target = null      # Input we need to effect
+      __drag_orig_val = -1      # Value of the input when dragging started
+
+      __drag_tolerance = 5  # How far the mouse should move before we pick up
+      __drag_sys_active = false
+
+      # Start of dragging
+      $(document).on "input", "dl > dd > input", (e) =>
+        @saveControl e.target
+        @ui.pushEvent "update.actor", actor: @targetActor
+
+      $(document).on "mousedown", "input[type=number]", (e) ->
+
+        # Attempt to find a valid target input
+        __drag_target = e.target
+
+        # Store initial cursor position
+        __drag_start_x = e.pageX
+        __drag_start_y = e.pageY
+
+        # Store our target's value
+        __drag_orig_val = Number($(__drag_target).val())
+
+        # Enable mousemove listener
+        __drag_sys_active = true
+
+        setTimeout ->
+          if __drag_target
+            $(__drag_target).css "cursor", "e-resize"
+        , 100
+
+      # The following are global listeners, since mouseup and mousemove can
+      # happen anywhere on the page, yet still relate to us
+      $(document).mousemove (e) =>
+        return unless __drag_sys_active
+
+        if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
+        or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
+
+          # Set val!
+          $(__drag_target).val __drag_orig_val + (e.pageX - __drag_start_x)
+
+          @saveControl $(__drag_target)[0]
+
+      $(document).mouseup (e) ->
+        $(__drag_target).css "cursor", "auto"
+        __drag_sys_active = false
+        __drag_target = null
+
+    ###
+    # This method applies the state of the control to our current object, by
+    # parsing its value and calling updateProperties() on the current object.
+    #
+    # For composites, we loop through and do the same for each sub control, and
+    # just add those as an object on the composite.
+    #
+    # @param [Object] control input field to save
+    # @param [Boolean] apply if false, returns results without applying
+    ###
+    saveControl: (control, apply) ->
+      param.required control
+      apply = param.optional apply, true
+
+      return unless @targetActor
+
+      propType = $(control).attr "type"
+      propName = $(control).attr "name"
+
+      parsedProperties = {}
+      parsedProperties[propName] =
+        parent: $(control).attr "data-parent"
+        value: null
+
+      if propType == "number"
+        parsedProperties[propName].value = Number $(control).val()
+      else if propType == "text"
+        parsedProperties[propName].value  = $(control).val()
+      else if propType == "checkbox"
+        parsedProperties[propName].value = $(control).is ":checked"
+
+      unless apply
+        parsedProperties
+      else
+        @targetActor.updateProperties parsedProperties
+
+    ###
+    # Generates a mini HTML control widget for the property in question
+    #
+    # @param [String] name
+    # @param [Object] value
+    # @return [String] html rendered widget
+    # @private
+    ###
+    generateControl: (name, value) ->
+      param.required name
+      param.required value
+      param.required value.type
+
+      return unless @["renderControl_#{value.type}"]
+
+      @["renderControl_#{value.type}"] @prepareNameForDisplay(name), value
+
+    ###
+    # Capitalize first letter of name
+    #
+    # @param [String] name
+    # @return [String] displayName
+    ###
+    prepareNameForDisplay: (name) ->
+      name.charAt(0).toUpperCase() + name.substring 1
+
+    renderControl_composite: (displayName, value) ->
+      param.required value.components
+
+      # TODO: Document/rename/refactor this method call
+      value.getValue()
+
+      label = """
+        <h1 data-name="#{displayName.toLowerCase()}">#{displayName}</h1>
+        <div>
+      """
+
+      # Build the control by recursing and concating the result
+      label + _.pairs(value.components).map (component) =>
+        return "" unless @["renderControl_#{component[1].type}"]
+
+        # Note that we handle the "Basic" composite differently here
+        componentCount = _.keys(value.components).length
+        if componentCount <= 3 and displayName.toLowerCase() != "basic"
+          width = "#{100 / _.keys(value.components).length}%"
+        else
+          width = "100%"
+
+        name = @prepareNameForDisplay component[0]
+        type = component[1].type
+
+        unless displayName.toLowerCase() == "basic"
+          parent = displayName.toLowerCase()
+        else
+          parent = ""
+
+        @["renderControl_#{type}"] name, component[1], width, parent
+
+      .join("") + "</div>"
+
+    renderControl_number: (displayName, value, width, parent) ->
+      width = param.optional width, "100%"
+      parent = param.optional parent, false
+
+      value.max = param.optional value.max, Infinity
+      value.min = param.optional value.min, -Infinity
+      value.default = param.optional value.default, ""
+      value.float = param.optional value.float, false
+
+      NumericControlTemplate
+        name: displayName.toLowerCase()
+        max: value.max
+        min: value.min
+        float: value.float
+        placeholder: value.default
+        value: value.getValue()
+        width: width
+        parent: parent
+
+    renderControl_bool: (displayName, value, width, parent) ->
+      width = param.optional width, "100%"
+      parent = param.optional parent, false
+
+      BooleanControlTemplate
+        name: displayName.toLowerCase()
+        value: value.getValue()
+        width: width
+        parent: parent
+
+    renderControl_text: (displayName, value, width, parent) ->
+      width = param.optional width, "100%"
+      value.default = param.optional value.default, ""
+      parent = param.optional parent, false
+
+      TextControlTemplate
+        name: displayName.toLowerCase()
+        placeholder: value.default
+        value: value.getValue()
+        parent: parent
+
+    ###
+    # Refresh widget data using a manipulatable, not that this function is
+    # not where injection occurs! We request a refresh from our parent for that
+    #
+    # @param [Handle] obj
+    ###
+    refresh: (obj) ->
+      @targetActor = param.required obj
+
+      properties = _.pairs obj.getProperties()
+
+      # Bring together all non-composites and render them under the "Basic"
+      # label
+      nonComposites = _.filter properties, (p) -> p[1].type != "composite"
+      composites = _.filter properties, (p) -> p[1].type == "composite"
+
+      if nonComposites.length > 0
+        fakeControl =
+          type: "composite"
+          components: _.object nonComposites
+          getValue: ->
+            c.getValue() for c in @components
+
+        nonCompositeHTML = @generateControl "basic", fakeControl
+      else
+        nonCompositeHTML = ""
+
+      compositeHTML = composites.map (p) =>
+        @generateControl p[0], p[1]
+      .join ""
+
+      @_builtHMTL = nonCompositeHTML + compositeHTML
+
+      @getSidebar().render()
+
+    ###
+    # Clear the property widget
+    ###
+    clear: ->
+      @_builtHMTL = ""
+      @targetActor = null
+      @_parent.render()
+
+    ###
+    # Return internally pre-rendered HTML. We need to pre-render since we rely
+    # upon object data to be meaningful (note comment in the constructor)
+    #
+    # @return [String] html
+    ###
+    render: -> @_builtHMTL
 
     ###
     # @param [BaseActor] actor
     ###
-    setActor: (@_actor) ->
+    updateActor: (actor) ->
+      @targetActor = param.optional actor, @targetActor
+      return unless @targetActor
 
-    ###
-    # Creates a default properties object and returns it
-    # @return [Object] properties a stubbed properties object
-    # @private
-    ###
-    _genProperties: ->
-      {
-        basic:
-          width: aformat.px()
-          height: aformat.px()
-          opacity: aformat.num(null, 2)
-          rotation: aformat.degree(null, 2)
-        position:
-          x: aformat.num(null)
-          y: aformat.num(null)
-        color:
-          r: aformat.num(null, 2)
-          g: aformat.num(null, 2)
-          b: aformat.num(null, 2)
-        physics:
-          mass: aformat.num()
-          elasticity: aformat.num(null, 2)
-          friction: aformat.num(null, 2)
-      }
+      return @refresh @targetActor unless @_builtHMTL
 
-    ###
-    # @return [String]
-    ###
-    render: ->
-      ObjectPropertiesTemplate @_genProperties()
+      for property, value of @targetActor.getProperties()
+        value.getValue()
+
+        if value.components
+          parent = "h1[data-name=#{property}]"
+        else
+          parent = "h1[data-name=basic]"
+
+        if value.components
+          for component, value of value.components
+
+            input = $("#{@_sel} #{parent} + div > dl input[name=#{component}]")
+            $(input).val value.getValue()
+
+        else
+          input = $("#{@_sel} #{parent} + div > dl input[name=#{property}]")
+          $(input).val value.getValue()
 
     ###
     #
     ###
-    update: ->
-      properties = @_genProperties()
-
-      if @_actor
-        properties.basic.width = aformat.px @_actor.getWidth()
-        properties.basic.height = aformat.px @_actor.getHeight()
-        properties.basic.opacity = aformat.num @_actor.getOpacity(), 2
-        properties.basic.rotation = aformat.degree @_actor.getRotation(), 2
-
-        pos = @_actor.getPosition()
-        properties.position.x = aformat.num pos.x
-        properties.position.y = aformat.num pos.y
-
-        color = @_actor.getColor(true)
-        properties.color.r = aformat.num color.r, 2
-        properties.color.g = aformat.num color.g, 2
-        properties.color.b = aformat.num color.b, 2
-
-        physics = @_actor.getPsyX()
-        if physics.enabled
-          properties.physics.mass = aformat.num physics.mass
-          properties.physics.elasticity = aformat.num physics.elasticity, 2
-          properties.physics.friction = aformat.num physics.friction, 2
-
-      @getElement("#basic #width").text properties.basic.width
-      @getElement("#basic #height").text properties.basic.height
-      @getElement("#basic #opacity").text properties.basic.opacity
-      @getElement("#basic #rotation").text properties.basic.rotation
-
-      @getElement("#position #x").text properties.position.x
-      @getElement("#position #y").text properties.position.y
-
-      @getElement("#color #r").text properties.color.r
-      @getElement("#color #g").text properties.color.g
-      @getElement("#color #b").text properties.color.b
-
-      @getElement("#physics #mass").text properties.physics.mass
-      @getElement("#physics #elasticity").text properties.physics.elasticity
-      @getElement("#physics #friction").text properties.physics.friction
+    clearActor: (actor) ->
+      if actor && @targetActor
+        if actor.getActorId() == @targetActor.getActorId()
+          @clear()
 
     ###
     # @param [String] type
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      if type == "selected.actor"
-        @setActor params.actor
-        @update()
+      switch type
+        when "selected.actor", "timeline.selected.actor", "workspace.add.actor"
+          @updateActor params.actor
+        when "workspace.remove.actor"
+          @clearActor params.actor
+        when "selected.actor.changed"
+          @updateActor()

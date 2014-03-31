@@ -546,7 +546,7 @@ define (require) ->
 
       _animations = actor.getAnimations()
       for time, anim of _animations
-        offset = spaceW * ((Number(time) - a.lifetimeStart) / @_duration)
+        offset = spaceW * ((Number(time) - actor.lifetimeStart) / @_duration)
 
         if anim.opacity
           keyframes["opacity"].push

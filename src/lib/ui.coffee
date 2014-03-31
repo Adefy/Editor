@@ -9,7 +9,7 @@ define (requre) ->
   Sidebar = require "widgets/sidebar/sidebar"
   SidebarPanel = require "widgets/sidebar/sidebar_panel"
 
-  PropertiesTab = require "widgets/sidebar/sidebar_properties"
+  PropertiesTab = require "widgets/tabs/tab_properties"
   TabAssets = require "widgets/tabs/tab_assets"
 
   class UIManager
