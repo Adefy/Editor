@@ -952,7 +952,6 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      console.log "event: #{type}"
       switch type
         when "workspace.add.actor"
           @registerActor params.actor
