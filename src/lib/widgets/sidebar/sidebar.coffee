@@ -223,5 +223,8 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
+      if type == "timeline.show" || type == "timeline.hide"
+        @onResize()
+
       for item in @_items
         item.respondToEvent(type, params) if item.respondToEvent

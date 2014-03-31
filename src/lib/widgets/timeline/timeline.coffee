@@ -812,9 +812,11 @@ define (require) ->
       AUtilLog.info "Showing Timeline"
 
       if animate
-        @getElement().animate height: @_height, 300
+        @getElement().animate height: @_height, 300, "swing", =>
+          @ui.pushEvent "timeline.show"
       else
         @getElement().height @_height
+        @ui.pushEvent "timeline.show"
 
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
@@ -842,9 +844,11 @@ define (require) ->
       AUtilLog.info "Hiding Timeline"
 
       if animate
-        @getElement().animate height: @_hiddenHeight, 300
+        @getElement().animate height: @_hiddenHeight, 300, "swing", =>
+          @ui.pushEvent "timeline.hide"
       else
         @getElement().height @_hiddenHeight
+        @ui.pushEvent "timeline.hide"
 
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
@@ -854,6 +858,7 @@ define (require) ->
 
       Storage.set "timeline.visible", false
       @_visible = false
+
 
     ###
     # @param [String] type
