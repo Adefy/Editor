@@ -76,47 +76,86 @@ define (requre) ->
       edUI = "window.editor.ui"
 
       # File menu options
-      fileMenu.createChild "New Ad...", null, "#{ed}.newAd()"
-      fileMenu.createChild "New From Template...", null, null, true
+      fileMenu.createChild
+        label: "New Ad..."
+        click: "#{ed}.newAd()"
 
-      fileMenu.createChild "Save", null, "#{ed}.save()"
-      fileMenu.createChild "Save As..."
-      fileMenu.createChild "Export...", null, "#{ed}.export()", true
+      fileMenu.createChild
+        label: "New From Template..."
+        sectionEnd: true
 
-      fileMenu.createChild "Quit"
+      fileMenu.createChild
+        label: "Save"
+        click: "#{ed}.save()"
+
+      fileMenu.createChild
+        label: "Save As..."
+
+      fileMenu.createChild
+        label: "Export..."
+        click: "#{ed}.export()"
+        sectionEnd: true
+
+      fileMenu.createChild
+        label: "Quit"
 
       # View menu options
-      viewMenu.createChild "Toggle Sidebar", null, \
-        "#{edUI}.sidebar.toggle()"
+      viewMenu.createChild
+        label: "Toggle Sidebar"
+        click: "#{edUI}.sidebar.toggle()"
 
-      viewMenu.createChild "Fullscreen"
+      viewMenu.createChild
+        label: "Fullscreen"
 
       # Timeline menu options
-      timelineMenu.createChild "Set preview framerate...", null, \
-        "#{edUI}.timeline.showSetPreviewRate()"
+      timelineMenu.createChild
+        label: "Set preview framerate..."
+        click: "#{edUI}.timeline.showSetPreviewRate()"
 
       # Canvas menu options
-      canvasMenu.createChild "Set screen properties...", null, \
-        "#{edUI}.workspace.showSetScreenProperties()"
+      canvasMenu.createChild
+        label: "Set screen properties..."
+        click: "#{edUI}.workspace.showSetScreenProperties()"
 
-      canvasMenu.createChild "Set background color...", null, \
-        "#{edUI}.workspace.showSetBackgroundColor()"
+      canvasMenu.createChild
+        label: "Set background color..."
+        click: "#{edUI}.workspace.showSetBackgroundColor()"
 
       # Tools menu options
-      toolsMenu.createChild "Preview..."
-      toolsMenu.createChild "Calculate device support..."
-      toolsMenu.createChild "Set export framerate..."
-      toolsMenu.createChild "Upload textures...", null, \
-        "#{edUI}.workspace.showAddTextures()"
+      toolsMenu.createChild
+        label: "Preview..."
+
+      toolsMenu.createChild
+        label: "Calculate device support..."
+
+      toolsMenu.createChild
+        label: "Set export framerate..."
+
+      toolsMenu.createChild
+        label: "Upload textures..."
+        click: "#{edUI}.workspace.showAddTextures()"
 
       # Help menu options
-      helpMenu.createChild "About Editor"
-      helpMenu.createChild "Changelog", null, null, true
+      helpMenu.createChild
+        label: "About Editor"
+        click: "#{edUI}.modals.showAbout()"
 
-      helpMenu.createChild "Take a Guided Tour"
-      helpMenu.createChild "Quick Start"
-      helpMenu.createChild "Tutorials"
-      helpMenu.createChild "Documentation"
+      helpMenu.createChild
+        label: "Changelog"
+        click: "#{edUI}.modals.showChangeLog()"
+        sectionEnd: true
+
+      helpMenu.createChild
+        label: "Take a Guided Tour"
+
+      helpMenu.createChild
+        label: "Quick Start"
+
+      helpMenu.createChild
+        label: "Tutorials"
+
+      helpMenu.createChild
+        label: "Documentation"
 
       @menu
 

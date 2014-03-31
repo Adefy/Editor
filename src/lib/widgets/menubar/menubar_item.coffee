@@ -59,17 +59,19 @@ define (require) ->
     # Create a child item if possible. A unique id and correct tree-level is
     # ensured
     #
-    # @param [String] label text to appear as the item
-    # @param [String] href url the item points to
-    # @param [Method] click click handler, optional
-    # @param [Boolean] sectionEnd if true, child marks the end of a section
+    # @param [Object] options
+    #   @option [String] label text to appear as the item
+    #   @option [String] href url the item points to
+    #   @option [Method] click click handler, optional
+    #   @option [Boolean] sectionEnd if true, child marks the end of a section
     # @return [MenubarItem] item null if the item could not be created
     ###
-    createChild: (label, href, click, sectionEnd) ->
-      sectionEnd = param.optional sectionEnd, false
-      label = param.optional label, ""
-      click = param.optional click, null
-      href = param.optional href, "javascript:void(0)", [], false
+    createChild: (options) ->
+      param.required options
+      sectionEnd = param.optional options.sectionEnd, false
+      label = param.optional options.label, ""
+      click = param.optional options.click, null
+      href = param.optional options.href, "javascript:void(0)", [], false
 
       role = "secondary"
 
