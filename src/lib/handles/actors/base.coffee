@@ -568,7 +568,7 @@ define (require) ->
       # Save state
       @_lastTemporalState = Number Math.floor(cursor)
 
-      @ui.pushEvent "update.actor", actor: @
+      @ui.pushEvent "actor.update.intime", actor: @
 
     ###
     # Generates a new snapshot from our current properties

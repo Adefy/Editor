@@ -92,7 +92,7 @@ define (require) ->
         # if no animations after current position, go to the end of the timeline
         if _newPosition != null
           if @timeline._playbackID != null and @timeline._playbackID != undefined
-            @timeline._pausePlayback()
+            @_pausePlayback()
           @timeline.setCursorTime _newPosition
         else
           # If we move cursor to duration, it is not on the screen anymore
@@ -126,7 +126,7 @@ define (require) ->
         # if no animtaions before this one we go to the beginning of the timeline
         if _newPosition != null
           if @timeline._playbackID != null and @timeline._playbackID != undefined
-            @timeline._pausePlayback()
+            @_pausePlayback()
           @timeline.setCursorTime _newPosition
         else
           @timeline.setCursorTime 0

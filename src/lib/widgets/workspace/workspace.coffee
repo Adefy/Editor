@@ -137,9 +137,6 @@ define (require) ->
     ###
     setSelectedActor: (actor) ->
       Workspace._selectedActor = actor.getId()
-      @ui.pushEvent "selected.actor",
-        actorId: @_selectedActor
-        actor: actor
 
     ###
     # Bind a contextmenu listener
@@ -238,7 +235,11 @@ define (require) ->
           actor = @getActorFromPick r, g, b
           if actor
             @setSelectedActor actor
-            actor.onClick()
+            @ui.pushEvent "workspace.selected.actor",
+              actorId: @_selectedActor
+              actor: actor
+
+            #actor.onClick()
 
         setTimeout (=> @_drag.dragging = false), 0
 
@@ -268,7 +269,6 @@ define (require) ->
           @_drag.handle.setPosition newX, newY
 
           @ui.pushEvent "selected.actor.changed"
-          @ui.pushEvent "update.actor", actor: @_drag.handle
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
@@ -284,7 +284,10 @@ define (require) ->
           actor = @getActorFromPick r, g, b
           if actor
             @setSelectedActor actor
-            actor.onClick()
+            @ui.pushEvent "workspace.selected.actor",
+              actorId: @_selectedActor
+              actor: actor
+            #actor.onClick()
 
     initializeDraggingData: ->
       @_drag =

@@ -532,22 +532,22 @@ define (require) ->
 
         if anim.opacity
           keyframes["opacity"].push
-            id: "opacity-#{actorId}-key-#{keyframes["opacity"].length}"
+            id: "key-#{keyframes["opacity"].length}"
             left: offset
 
         if anim.position
           keyframes["position"].push
-            id: "position-#{actorId}-key-#{keyframes["position"].length}"
+            id: "key-#{keyframes["position"].length}"
             left: offset
 
         if anim.rotation
           keyframes["rotation"].push
-            id: "rotation-#{actorId}-key-#{keyframes["rotation"].length}"
+            id: "key-#{keyframes["rotation"].length}"
             left: offset
 
         if anim.color
           keyframes["color"].push
-            id: "color-#{actorId}-key-#{keyframes["color"].length}"
+            id: "key-#{keyframes["color"].length}"
             left: offset
 
         #if anim.components.physics
@@ -758,10 +758,32 @@ define (require) ->
         .toggleClass("active", @controlState.fast_forward)
 
     ###
+    # Update the state of the actor body
+    # @return [Void]
+    ###
+    updateActorBody: (actor) ->
+      actor = param.optional actor, @_lastSelectedActor
+      return unless actor
+
+      pos = actor.getPosition()
+      color = actor.getColor()
+      rotation = actor.getRotation()
+      opacity = actor.getOpacity()
+
+      bodySelector = @_actorBodySelector actor
+      selector = "#{bodySelector} .property"
+
+      $("#{selector}#opacity .value").text aformat.num opacity, 2
+      $("#{selector}#position .value").text aformat.pos pos, 0
+      $("#{selector}#rotation .value").text aformat.degree rotation, 2
+      $("#{selector}#color .value").text aformat.color color, 2
+
+    ###
     # Update the state of the actor timebar
     # @return [Void]
     ###
     updateActorTime: (actor) ->
+      actor = param.optional actor, @_lastSelectedActor
       return unless actor
 
       timeSelector = @_actorTimeSelector actor
@@ -822,21 +844,10 @@ define (require) ->
     # @private
     ###
     updateActor: (actor) ->
+      actor = param.optional actor, @_lastSelectedActor
       return unless actor
 
-      pos = actor.getPosition()
-      color = actor.getColor()
-      rotation = actor.getRotation()
-      opacity = actor.getOpacity()
-
-      bodySelector = @_actorBodySelector actor
-      selector = "#{bodySelector} .property"
-
-      $("#{selector}#opacity .value").text aformat.num opacity, 2
-      $("#{selector}#position .value").text aformat.pos pos, 0
-      $("#{selector}#rotation .value").text aformat.degree rotation, 2
-      $("#{selector}#color .value").text aformat.color color, 2
-
+      @updateActorBody actor
       @updateActorTime actor
 
     ###
@@ -958,8 +969,12 @@ define (require) ->
           @registerActor params.actor
         when "workspace.remove.actor"
           @removeActor params.actor
-        when "selected.actor"
+        when "workspace.selected.actor"
           @switchSelectedActor params.actor
           @updateActor params.actor
-        when "update.actor"
+        when "tab.properties.update.actor"
           @updateActor params.actor
+        when "selected.actor.changed"
+          @updateActor()
+        when "actor.update.intime"
+          @updateActorBody params.actor

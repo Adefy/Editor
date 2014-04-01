@@ -77,7 +77,7 @@ define (require) ->
       # Start of dragging
       $(document).on "input", "dl > dd > input", (e) =>
         @saveControl e.target
-        @ui.pushEvent "update.actor", actor: @targetActor
+        @ui.pushEvent "tab.properties.update.actor", actor: @targetActor
 
       $(document).on "mousedown", "input[type=number]", (e) ->
 
@@ -370,7 +370,7 @@ define (require) ->
     ###
     respondToEvent: (type, params) ->
       switch type
-        when "selected.actor", "timeline.selected.actor", "workspace.add.actor"
+        when "workspace.selected.actor", "timeline.selected.actor", "workspace.add.actor"
           @updateActor params.actor
         when "workspace.remove.actor"
           @clearActor params.actor

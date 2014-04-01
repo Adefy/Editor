@@ -72,8 +72,8 @@ define (requre) ->
       toolsMenu = @menu.addItem "Tools"
       helpMenu = @menu.addItem "Help"
 
-      ed = "window.editor"
-      edUI = "window.editor.ui"
+      ed = "window.AdefyEditor"
+      edUI = "#{ed}.ui"
 
       # File menu options
       fileMenu.createChild
@@ -162,10 +162,35 @@ define (requre) ->
     ## UES - UI Event System
 
     ###
+    # Adds a new event
     # @param [String] type
     # @param [Object] params
     ###
     pushEvent: (type, params) ->
+      unless @_ignoreEventList == null || @_ignoreEventList == undefined
+        return if _.include @_ignoreEventList, type
+
+      console.log "event: #{type}"
       ## we should probably fine tune this later
       for widget in @widgets
         widget.respondToEvent type, params if widget.respondToEvent
+
+    ###
+    # Allows incoming event of (type)
+    # @param [String] type
+    ###
+    allowEvent: (type) ->
+      if @_ignoreEventList == null || @_ignoreEventList == undefined
+        return
+      index = @_ignoreEventList.indexOf(type)
+      @_ignoreEventList.splice index, 1
+
+    ###
+    # Blocks incoming event of (type)
+    # @param [String] type
+    ###
+    ignoreEvent: (type) ->
+      if @_ignoreEventList == null || @_ignoreEventList == undefined
+        @_ignoreEventList = []
+
+      @_ignoreEventList.push type
