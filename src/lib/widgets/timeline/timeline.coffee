@@ -156,16 +156,16 @@ define (require) ->
     ###
     _checkActorLifetime: (actor) ->
       # Sanity check, actor must die after it is created
-      if actor.lifetimeEnd < actor.lifetimeStart
+      if actor.lifetimeEnd_ms < actor.lifetimeStart_ms
         throw new Error "Actor lifetime end must come after lifetime start! " +\
-                        "start: #{actor.lifetimeStart}, " +\
-                        "end: #{actor.lifetimeEnd}"
+                        "start: #{actor.lifetimeStart_ms}, " +\
+                        "end: #{actor.lifetimeEnd_ms}"
 
       # Make sure actors' lifetime is contained in our duration!
       #
       # TODO: In the future, we can allow for actor deaths after our duration,
       #       to ease timeline resizing.
-      if actor.lifetimeStart < 0 or actor.lifetimeEnd > @_duration
+      if actor.lifetimeStart_ms < 0 or actor.lifetimeEnd_ms > @_duration
         throw new Error "Actor exists beyond our duration!"
 
       true
@@ -210,10 +210,10 @@ define (require) ->
       for a in @_actors
 
         # Check if actor needs to die
-        if (t < a.lifetimeStart or t > a.lifetimeEnd) and a.isAlive()
+        if (t < a.lifetimeStart_ms or t > a.lifetimeEnd_ms) and a.isAlive()
           a.timelineDeath()
 
-        else if a.isAlive() or (t >= a.lifetimeStart and t <= a.lifetimeEnd)
+        else if a.isAlive() or (t >= a.lifetimeStart_ms and t <= a.lifetimeEnd_ms)
           a.updateInTime()
 
     ###
@@ -500,8 +500,8 @@ define (require) ->
       spaceW = $(@_spaceSelector()).width()
       {
         spaceW: spaceW
-        start: spaceW * (actor.lifetimeStart / @_duration)
-        length: spaceW * ((actor.lifetimeEnd - actor.lifetimeStart) / @_duration)
+        start: spaceW * (actor.lifetimeStart_ms / @_duration)
+        length: spaceW * ((actor.lifetimeEnd_ms - actor.lifetimeStart_ms) / @_duration)
       }
 
     ###
@@ -527,7 +527,7 @@ define (require) ->
       _animations = actor.getAnimations()
       for time, anim of _animations
         offset = timebarData.spaceW *
-                 ((Number(time) - actor.lifetimeStart) / @_duration)
+                 ((Number(time) - actor.lifetimeStart_ms) / @_duration)
 
         if anim.opacity
           keyframes["opacity"].push

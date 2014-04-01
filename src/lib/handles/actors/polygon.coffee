@@ -34,7 +34,7 @@ define (require) ->
 
       # Take advantage of generic actor properties
       super @ui, birth, death
-      @name = "Polygon #{@_id.replace("ahandle-", "")}"
+      @name = "Polygon"
 
       @_properties["position"].components["x"]._value = x
       @_properties["position"].components["y"]._value = y
@@ -58,7 +58,7 @@ define (require) ->
         update: (v) ->
           @_value = param.required v
 
-          if me._actor != null then me._actor.setSegments Number(v)
+          if me._AJSActor != null then me._AJSActor.setSegments Number(v)
 
         genAnimationOpts: (anim, opts) ->
           opts.startVal = anim._start.y
@@ -77,7 +77,7 @@ define (require) ->
         update: (v) ->
           @_value = param.required v
 
-          if me._actor != null then me._actor.setRadius Number(v)
+          if me._AJSActor != null then me._AJSActor.setRadius Number(v)
 
         genAnimationOpts: (anim, opts) ->
           opts.startVal = anim._start.y
@@ -114,7 +114,7 @@ define (require) ->
       _g = @_properties["color"].components["g"]._value
       _b = @_properties["color"].components["b"]._value
 
-      @_actor = new AJSPolygon
+      @_AJSActor = new AJSPolygon
         physics: _physics
         mass: _mass
         friction: _friction

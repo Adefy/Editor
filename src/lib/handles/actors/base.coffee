@@ -14,61 +14,49 @@ define (require) ->
     # This serves as the base for the other actor classes
     #
     # @param [UIManager] ui
-    # @param [Number] lifetimeStart time at which we are created, in ms
-    # @param [Number] lifetimeEnd time we are destroyed, defaults to end of ad
-    constructor: (@ui, lifetimestart, lifetimeEnd) ->
+    # @param [Number] lifetimeStart_ms time at which we are created, in ms
+    # @param [Number] lifetimeEnd_ms time we are destroyed, defaults to end of ad
+    constructor: (@ui, lifetimeStart, lifetimeEnd) ->
       param.required @ui
 
-      # Set up properties object (global defaults set)
       super()
 
-      # Note that we don't create an actual actor!
-      @_actor = null
-
-      # Our name as it appears in the timeline actor list and properties panel
-      @name = "Base Actor #{@_id.replace("ahandle-", "")}"
-
-      # Lifetime properties, defines how we appear in the timeline and how we are
-      # handled by the engine according to the current cursor position
-      #
-      # These are ms values, with -1 symbolizing the end of the scene
-      @lifetimeStart = param.required lifetimestart
-
-      # By default, we die at the end of the ad
-      @lifetimeEnd = @ui.timeline.getDuration()
-      @lifetimeEnd = param.optional lifetimeEnd, @lifetimeEnd
-
-      # Tracks if we exist or not. Triggers AJS instantiation and such
+      @_AJSActor = null
+      @name = "Base Actor"
       @_alive = false
+      @_initialized = false # True after postInit() is called
 
+      @lifetimeStart_ms = param.required lifetimeStart
+      @lifetimeEnd_ms = param.optional lifetimeEnd, @ui.timeline.getDuration()
+
+      ###
       # Property buffer, holds values at different points in time. Current
       # property values are calculated based on the current cursor position,
       # nearest two values and the described bezier representing the transition
       #
       # NOTE: This gets relatively large for complex actor lifetimes
+      ###
       @_propBuffer = {}
 
-      # After a cursor time is selected current values are calculated from the
-      # prop buffer. Live edits at the current cursor location are stored in
-      # our properties object, while the state of our properties at the current
-      # cursor time pre-modification is stored in _propSnapshot
-      #
-      # tl;dr this is where the current buffer snapshot is stored
+      ###
+      # This saves the state of our actor at the current cursor time, before
+      # any modifications are made. Changes are calculated as the difference
+      # between this snapshot, and our properties object.
+      ###
       @_propSnapshot = null
 
-      # True after postInit() is called
-      @_initialized = false
-
-      # Holds information on the bezier function to use for value changes between
-      # states. If none is specified for a specific value change, the value is
-      # assumed to change instantaneously upon leaving the start state!
+      ###
+      # Holds information on the bezier function to use for value changes
+      # between states. If none is specified for a specific value change, the
+      # value is assumed to change instantaneously upon leaving the start state
       #
-      # Keys are of the name "end" where 'end' is the state where animation ends
-      # Values contain an array of individual animation objects, each containing
-      # an Bezier instance for each property changed between the start and
-      # end states
+      # Keys are named by the point in time where the associated animation ends
+      # in ms. Values contain an array of individual animation objects, each
+      # containing an Bezier instance for each property changed between the
+      # start and end states
       #
       # If no control points are specified, linear interpolation is assumed
+      ###
       @_animations = {}
 
       # Set to true if the cursor is to the right of our last prop buffer, and
@@ -77,9 +65,8 @@ define (require) ->
 
       # Time of the last update, used to save our properties when the cursor is
       # moved. Note that this starts at our birth!
-      @_lastTemporalState = Math.floor @lifetimeStart
+      @_lastTemporalState = Math.floor @lifetimeStart_ms
 
-      me = @
       # Properties are interesting, and complex enough to warrant a description
       #
       # Currently, there are 3 basic types avaliable.
@@ -117,6 +104,8 @@ define (require) ->
       # the same keys as the composite has components. i.e. position takes (x, y)
       # and color takes (r, g, b)
 
+      me = @
+
       # Default actor properties, common to all actors
       @_properties["position"] =
         type: "composite"
@@ -136,8 +125,8 @@ define (require) ->
         # Fetch actor position
         getValue: ->
 
-          if me._actor != null
-            pos = me._actor.getPosition()
+          if me._AJSActor != null
+            pos = me._AJSActor.getPosition()
 
             @components.x._value = pos.x
             @components.y._value = pos.y
@@ -152,8 +141,8 @@ define (require) ->
           @components.x._value = v.x
           @components.y._value = v.y
 
-          if me._actor != null
-            me._actor.setPosition new AJSVector2(v.x, v.y)
+          if me._AJSActor != null
+            me._AJSActor.setPosition new AJSVector2(v.x, v.y)
 
       @_properties["rotation"] =
         type: "number"
@@ -164,13 +153,13 @@ define (require) ->
         placeholder: 0
 
         # Fetch our angle from our actor
-        getValue: -> @_value = me._actor.getRotation()
+        getValue: -> @_value = me._AJSActor.getRotation()
 
         # Val simply contains our new angle in degrees
         update: (v) ->
           @_value = param.required v
 
-          if me._actor != null then me._actor.setRotation v
+          if me._AJSActor != null then me._AJSActor.setRotation v
 
       @_properties["color"] =
         type: "composite"
@@ -205,8 +194,8 @@ define (require) ->
         # values accordingly
         getValue: ->
 
-          if me._actor != null
-            col = me._actor.getColor()
+          if me._AJSActor != null
+            col = me._AJSActor.getColor()
 
             @components.r._value = col.getR()
             @components.g._value = col.getG()
@@ -226,8 +215,8 @@ define (require) ->
           @components.g._value = v.g
           @components.b._value = v.b
 
-          if me._actor != null
-            me._actor.setColor new AJSColor3 v.r, v.g, v.b
+          if me._AJSActor != null
+            me._AJSActor.setColor new AJSColor3 v.r, v.g, v.b
 
       @_properties["physics"] =
         type: "composite"
@@ -280,14 +269,14 @@ define (require) ->
           @components.elasticity._value = param.required v.elasticity
           @components.friction._value = param.required v.friction
 
-          if me._actor != null
+          if me._AJSActor != null
 
             # Note that we re-create the physics body every time!
             # TODO: Optimize this
-            me._actor.disablePsyx()
+            me._AJSActor.disablePsyx()
 
             if v.enabled
-              me._actor.enablePsyx v.mass, v.friction, v.elasticity
+              me._AJSActor.enablePsyx v.mass, v.friction, v.elasticity
 
 
     ###
@@ -296,25 +285,26 @@ define (require) ->
     # @return [Number] id
     ###
     getActorId: ->
-      return @_actor.getId() if @_actor
-      AUtilLog.warn "No actor, can't get id!"
+      if @_AJSActor
+        @_AJSActor.getId()
+      else
+        null
 
     ###
     # Get our internal actor
     #
     # @param [AJSBaseActor] actor
     ###
-    getActor: -> @_actor
+    getActor: -> @_AJSActor
 
     ###
     # @param [Booleab] _visible
     ###
     getVisible: ->
-      if @_actor != null
-        #@_actor.setVisible _visible
-        @_actor.visible
+      if @_AJSActor
+        @_AJSActor.visible
       else
-        AUtilLog.warn "No actor, can't get visibility!"
+        false
 
     ###
     # Return actor opacity
@@ -329,11 +319,10 @@ define (require) ->
     # @return [Object] position
     ###
     getPosition: ->
-      if @_actor
-        _pos = @_actor.getPosition()
-        { x: _pos.x, y: _pos.y }
+      if @_AJSActor
+        @_AJSActor.getPosition()
       else
-        AUtilLog.warn "No actor, can't get position!"
+        null
 
     ###
     # Get actor rotation
@@ -341,10 +330,10 @@ define (require) ->
     # @return [Number] angle in degrees
     ###
     getRotation: ->
-      if @_actor
+      if @_AJSActor
         @_properties["rotation"].getValue()
       else
-        AUtilLog.warn "No actor, can't get rotation!"
+        null
 
     ###
     # Return actor color as (r,g,b)
@@ -355,11 +344,16 @@ define (require) ->
     getColor: (float) ->
       float = param.optional float, false
 
-      if @_actor
-        _col = @_actor.getColor()
-        { r: _col.getR(float), g: _col.getG(float), b: _col.getB(float) }
+      if @_AJSActor
+        _col = @_AJSActor.getColor()
+
+        {
+          r: _col.getR(float)
+          g: _col.getG(float)
+          b: _col.getB(float)
+        }
       else
-        AUtilLog.warn "No actor, can't get color!"
+        null
 
     ###
     # Return actor physics
@@ -367,8 +361,9 @@ define (require) ->
     # @return [Object] physics properties
     ###
     getPsyX: ->
-      if @_actor
+      if @_AJSActor
         _physics = @_properties["physics"].components
+
         {
           enabled: _physics.enabled.getValue()
           mass: _physics.mass.getValue()
@@ -376,34 +371,28 @@ define (require) ->
           friction: _physics.friction.getValue()
         }
       else
-        AUtilLog.warn "No actor, can't get physics!"
+        null
 
     ###
     # Get buffer entry
     #
-    # @param [Number] _time
+    # @param [Number] time
     # @return [Object] entry prop buffer entry, may be undefined
     ###
-    getBufferEntry: (_time) -> @_propBuffer["#{Math.floor _time}"]
+    getBufferEntry: (time) -> @_propBuffer["#{Math.floor time}"]
 
     ###
-    # @param [Booleab] _visible
+    # @param [Boolean] visible
     ###
-    setVisible: (_visible) ->
-      if @_actor != null
-        @_actor.setVisible _visible
-      else
-        AUtilLog.warn "No actor, can't set visibility!"
+    setVisible: (visible) ->
+      @_AJSActor.setVisible visible if @_AJSActor
 
     ###
-    # @param [Number] _opacity
+    # @param [Number] opacity
     ###
-    setOpacity: (_opacity) ->
-      if @_actor != null
-        AUtilLog.warn "AJS does not support actor with an opacity, yet."
-        #@_actor.setOpacity _opacity
-      else
-        AUtilLog.warn "No actor, can't set opacity!"
+    setOpacity: (opacity) ->
+      AUtilLog.warn "AJS does not support actor with an opacity, yet."
+      # @_AJSActor.setOpacity opacity if @_AJSActor
 
     ###
     # Set actor position, relative to the GL world!
@@ -412,21 +401,15 @@ define (require) ->
     # @param [Number] y y coordinate
     ###
     setPosition: (x, y) ->
-      if @_actor != null
-        @_actor.setPosition new AJSVector2(x, y)
-      else
-        AUtilLog.warn "No actor, can't set position!"
+      @_AJSActor.setPosition new AJSVector2(x, y) if @_AJSActor
 
     ###
     # Set actor rotation
     #
-    # @param [Number] _angle
+    # @param [Number] angle
     ###
-    setRotation: (_angle) ->
-      if @_actor != null
-        @_actor.setRotation _angle
-      else
-        AUtilLog.warn "No actor, can't set rotation!"
+    setRotation: (angle) ->
+      @_AJSActor.setRotation angle if @_AJSActor
 
     ###
     # Set actor color with composite values, 0-255
@@ -440,12 +423,12 @@ define (require) ->
       param.required g
       param.required b
 
-      @_properties["color"].update { r: r, g: g, b: b}
+      @_properties["color"].update r: r, g: g, b: b
 
     ###
     # @param [Texture] texture
     ###
-    setTexture: (texture) -> @_actor.setTexture(texture)
+    setTexture: (texture) -> @_AJSActor.setTexture texture
 
     ###
     # Used when exporting, executes the corresponding property genAnimationOpts
@@ -464,26 +447,27 @@ define (require) ->
       param.required opts
       component = param.optional component, ""
 
-      if @_properties[property] == undefined then return null
-      else prop = @_properties[property]
+      prop = @_properties[property]
 
-      if prop.components != undefined
-        if prop.components[component].genAnimationOpts == undefined
-          return null
-        else return prop.components[component].genAnimationOpts anim, opts
+      return null unless prop
+
+      if prop.components
+        return null unless prop.components[component].genAnimationOpts
+        prop.components[component].genAnimationOpts anim, opts
       else
-        if prop.genAnimationOpts == undefined then return null
-        else return prop.genAnimationOpts anim, opts
+        return null unless prop.genAnimationOpts == undefined
+        prop.genAnimationOpts anim, opts
 
     ###
     # Called when the cursor leaves our lifetime on the timeline. We delete
     # our AJS actor if not already dead
     ###
     timelineDeath: ->
-      if not @_alive then return else @_alive = false
+      return unless @_alive
+      @_alive = false
 
-      @_actor.destroy()
-      @_actor = null
+      @_AJSActor.destroy()
+      @_AJSActor = null
 
     ###
     # Virtual method that our children need to implement, called when our AJS
@@ -504,21 +488,14 @@ define (require) ->
     # our property buffer for proper use
     ###
     postInit: ->
-      if @_initialized
-        AUtilLog.warn "postInit already called, bailing"
-        return
-
-      # Prevent future calls
+      return if @_initialized
       @_initialized = true
 
-      # Birth!
       @_birth()
 
       # Set up properties by grabbing initial values
-      for p of @_properties
-        @_properties[p].getValue()
+      @_properties[p].getValue() for p of @_properties
 
-      # Update prop buffer, injects our current values as our birth state
       @updateInTime()
 
     ###
@@ -532,12 +509,10 @@ define (require) ->
     # @param [Method] cb callback to call with every property
     ###
     perProp: (obj, cb) ->
-
-      # Iterate over properties
       for p of obj
 
         # Composite iterate over components
-        if obj[p].type == "composite" and obj[p].components != undefined
+        if obj[p].type == "composite" and obj[p].components
           for c of obj[p].components
             cb obj[p].components[c], true
 
@@ -551,14 +526,11 @@ define (require) ->
     # state
     ###
     updateInTime: ->
-
-      # Birth if required
-      if not @_alive then @_birth()
+      @_birth() unless @_alive
 
       cursor = @ui.timeline.getCursorTime()
 
-      # Bail if nothing has changed
-      return if Number(Math.floor cursor) == @_lastTemporalState
+      return if Number(Math.floor(cursor)) == @_lastTemporalState
 
       @_updatePropBuffer()
       @_updateActorState()
@@ -582,8 +554,9 @@ define (require) ->
         _Sp = {}
         _p = @_properties[p]
 
-        if _p.type == "composite" and _p.components != undefined
+        if _p.type == "composite" and _p.components
           _Sp.components = {}
+
           for c of _p.components
             _Sp.components[c] = {}
             _Sp.components[c].value = _p.components[c]._value
@@ -601,51 +574,57 @@ define (require) ->
     # @private
     ###
     _applyKnownState: (state) ->
-      param.required state
+      state = Number param.required state
 
-      if Number(state) == @_lastTemporalState then return
+      return if state == @_lastTemporalState
 
       # Apply saved state. Find all stored states between our previous state
       # and the current one. Then sort, and finally apply in order.
       #
       # NOTE: The order of application varies depending on the direction in
       #       time in which we moved!
-      if Number(state) > @_lastTemporalState then right = true else right = false
+      if state > @_lastTemporalState
+        right = true
+      else
+        right = false
 
       # Figure out intermediary states
       intermStates = []
       next = @_lastTemporalState
+
       while next != state and next != -1
         next = @_findNearestState next, right
 
-        if Number(next) != Math.floor(@lifetimeStart) and next != -1
+        if next != Math.floor(@lifetimeStart_ms) and next != -1
 
           # Ensure next hasn't overshot us
-          if right and Number(next) < Number(state) then intermStates.push next
-          if !right and Number(next) > Number(state) then intermStates.push next
+          if (right and next < state) or (!right and next > state)
+            intermStates.push next
 
       # Now sort accordingly
       intermStates.sort (a, b) ->
 
         # We moved back in time, lastTemporalState is in front of the state
         if right == false
-          if Number(a) > Number(b)
-            return -1
-          else if Number(a) < Number(b)
-            return 1
-          else return 0
+          if a > b
+            -1
+          else if a < b
+            1
+          else
+            0
 
         # We moved forwards in time, lastTemporalState is behind our state
         else
-          if Number(a) > Number(b)
-            return 1
-          else if Number(a) < Number(b)
-            return -1
-          else return 0
+          if a > b
+            1
+          else if a < b
+            -1
+          else
+            0
 
       # Now apply our states in the order presented
       for s in intermStates
-        @_applyPropBuffer @_propBuffer[s]
+        @_applyPropBuffer @_propBuffer["#{s}"]
 
     ###
     # Applies data in prop buffer entry
@@ -653,26 +632,19 @@ define (require) ->
     # @param [Object] buffer
     # @private
     ###
-    _applyPropBuffer: (b) ->
-      param.required b
+    _applyPropBuffer: (buffer) ->
+      param.required buffer
 
-      # Go through and update values
-      for p of b
+      for name, property of buffer
 
-        _prop = b[p]
+        if property.components
+          update = {}
+          update[c] = property.components[c].value for c of property.components
 
-        if _prop.components != undefined
+          @_properties[p].update update
 
-          # Update component-wise
-          _update = {}
-          for c of _prop.components
-            _update[c] = _prop.components[c].value
-
-          @_properties[p].update _update
-
-        # No components, update directly
         else
-          @_properties[p].update _prop.value
+          @_properties[p].update property.value
 
     ###
     # Updates our state according to the current cursor position. Goes through
@@ -704,6 +676,8 @@ define (require) ->
     # with a name consisting of "end" where 'end' is the buffer entry for the
     # end state
     #
+    # THIS IS SPARTAAAAAAA
+    #
     # @private
     ###
     _updateActorState: ->
@@ -711,14 +685,13 @@ define (require) ->
       ##
       ## First, apply intermediary states
       ##
-
       cursor = Math.floor @ui.timeline.getCursorTime()
 
       # If we haven't moved, drop out early
-      if cursor == @_lastTemporalState then return
+      return if cursor == @_lastTemporalState
 
       # Ensure cursor is within our lifetime
-      if cursor < @lifetimeStart or cursor > @lifetimeEnd then return
+      return if cursor < @lifetimeStart_ms or cursor > @lifetimeEnd_ms
 
       # If we don't have a saved state at the current cursor position, find the
       # nearest and calculate our time offset. Worst case, the closest state
@@ -731,19 +704,13 @@ define (require) ->
       @_applyKnownState nearest
 
       # Return if we have nothing else to do (cursor is at a known state)
-      if nearest == cursor then return
+      return if nearest == cursor
 
-      ##
-      ## Next, bail if there are no states to the right of ourselves
-      ##
+      # Next, bail if there are no states to the right of ourselves
       if @_findNearestState(cursor, true) == -1
-        @_capState()
-        return
+        return @_capState()
 
       @_capped = false
-
-      # Reset the cursor value
-      cursor = Math.floor @ui.timeline.getCursorTime()
 
       ##
       ## Now the fun part; find all values defined to the right of us
@@ -754,15 +721,17 @@ define (require) ->
       # Helper
       _pushUnique = (p) ->
         unique = true
+
         for v in varying
           if v == p.name
             unique = false
             break
-        if unique then varying.push p
 
-      from = String(cursor)
+        varying.push p if unique
+
+      from = cursor
       while (from = @_findNearestState(from, true)) != -1
-        for p of @_propBuffer[from]
+        for p of @_propBuffer[String from]
           _pushUnique { name: p, end: from }
 
       ##
@@ -775,6 +744,7 @@ define (require) ->
         _prop = @_properties[v.name]
 
         # Sanity checks
+        # TODO: Refactor these into log messages + returns
         if _prop == undefined
           throw new Error "We don't have the property #{v.name}!"
 
@@ -821,18 +791,15 @@ define (require) ->
     # @private
     ###
     _capState: ->
-      if @_capped then return else @_capped = true
+      return if @_capped
+      @_capped = true
 
       # Sort prop buffer entries
-      _buff = []
-      for b of @_propBuffer
-        _buff.push Number(b)
-
+      _buff = _.keys(@_propBuffer).map (b) -> Number b
       _buff.sort (a, b) -> a - b
 
       # Apply buffers in order
-      for b in _buff
-        @_applyPropBuffer @_propBuffer[String(b)]
+      @_applyPropBuffer @_propBuffer["#{b}"] for b in _buff
 
     ###
     # Returns an array containing the names of properties that have been
@@ -847,24 +814,24 @@ define (require) ->
       # NOTE: We expect the prop snapshot to be valid, and contain the
       #       structure required by each property in it!
       delta = []
-      for p, _Sp of @_propSnapshot
+      for name, snapshot of @_propSnapshot
         modified = false
 
-        _p = @_properties[p]
+        prop = @_properties[name]
 
-        # Compare snapshot with live property ()
-        if _p.type == "composite" and _p.components != undefined
+        # Compare snapshot with live property
+        if prop.type == "composite" and prop.components
 
           # Iterate over components to detect modification
-          for c of _p.components
-            if _Sp.components[c].value != _p.components[c]._value
+          for c of prop.components
+            if snapshot.components[c].value != prop.components[c]._value
               modified = true
 
-        else if _Sp.value != _p._value
+        else if snapshot.value != prop._value
           modified = true
 
         # Differs, ship to delta
-        if modified then delta.push p
+        delta.push name if modified
 
       delta
 
@@ -880,16 +847,16 @@ define (require) ->
     _splitAnimation: (time, p, left) ->
       param.required time
       param.required p
-      left = param.optional left, null
 
-      if left == null then left = @_findNearestState time, false, p
+      unless left
+        left = @_findNearestState time, false, p
 
       # Check if we are in the middle of an animation ourselves. If so,
       # split it
       animCheck = @_findNearestState time, true, p
 
-      _startP = @_propBuffer[String(left)][p]
-      _endP = @_propBuffer[String(time)][p]
+      _startP = @_propBuffer["#{left}"][p]
+      _endP = @_propBuffer["#{time}"][p]
 
       if animCheck != -1
 
@@ -897,8 +864,9 @@ define (require) ->
         # split.
         anim = @_animations[animCheck]
 
-        if anim[p].components != undefined
+        if anim[p].components
           for c of anim[p].components
+
             if anim[p].components[c]._start.x != Number left
               throw new Error "Existing animation invalid!"
 
@@ -947,7 +915,7 @@ define (require) ->
         @_propBuffer[@_lastTemporalState] = _serialized
 
         # Ensure we are not at birth!
-        if @_lastTemporalState == Math.floor @lifetimeStart then return
+        return if @_lastTemporalState == Math.floor @lifetimeStart_ms
 
         # Define our animation
         # Note that an animation is an object with a bezier function for
@@ -974,20 +942,20 @@ define (require) ->
           # Split animation if necessary
           @_splitAnimation @_lastTemporalState, p, trueStart
 
-          _startP = @_propBuffer[String(trueStart)][p]
-          _endP = @_propBuffer[String(@_lastTemporalState)][p]
+          _startP = @_propBuffer["#{trueStart}"][p]
+          _endP = @_propBuffer["#{@_lastTemporalState}"][p]
 
           # Create multiple beziers if so required
-          if _endP.components != undefined
-            @_animations["#{@_lastTemporalState}"][p] = { components: {} }
+          if _endP.components
+            @_animations["#{@_lastTemporalState}"][p] = components: {}
             for c of _endP.components
 
               _start =
-                x: Number trueStart
+                x: trueStart
                 y: _startP.components[c].value
 
               _end =
-                x: Number @_lastTemporalState
+                x: @_lastTemporalState
                 y: _endP.components[c].value
 
               # We no longer enable buffering, since saving our state creates an
@@ -996,11 +964,11 @@ define (require) ->
               @_animations["#{@_lastTemporalState}"][p].components[c] = bezzie
           else
             _start =
-              x: Number trueStart
+              x: trueStart
               y: _startP.value
 
             _end =
-              x: Number @_lastTemporalState
+              x: @_lastTemporalState
               y: _endP.value
 
             # We no longer enable buffering, since saving our state creates an
@@ -1023,34 +991,26 @@ define (require) ->
     # @param [String] start prop buffer entry name to start from
     # @param [Boolean] right search to the right, defaults to false
     # @param [String] prop property name
-    # @return [String] nearest key into @_propBuffer, or -1 if not found
+    # @return [Number] nearest key into @_propBuffer, or -1 if not found
     # @private
     ###
     _findNearestState: (start, right, prop) ->
-      start = Number(param.required start)
+      start = Number param.required start
       right = param.optional right, false
       prop = param.optional prop, null
 
       nearest = -1
 
-      for p of @_propBuffer
-        if @_propBuffer[p] != undefined
-          _p = Number(p)
-          if right
-            if _p > start and (_p < nearest or nearest == -1)
-              if prop == null then nearest = _p
-              else if @_propBuffer[p][prop] != undefined then nearest = _p
-          else
-            if _p < start and _p > nearest
-              if prop == null then nearest = _p
-              else if @_propBuffer[p][prop] != undefined then nearest = _p
+      for time, buffer of @_propBuffer
+        time = Number time
 
-      if nearest == -1
-        _b = []
-        for b of @_propBuffer
-          _b.push b
+        if buffer
+          if right and (time > start) and (time < nearest or nearest == -1)
+            nearest = time if prop == null or buffer[prop]
+          else if !right and (time < start) and (time > nearest)
+            nearest = time if prop == null or buffer[prop]
 
-      if nearest == -1 then return -1 else return String nearest
+      nearest
 
     ###
     # Prepares our properties object for injection into the buffer. In essence,
@@ -1069,29 +1029,29 @@ define (require) ->
       # Go through and build an object for our buffer, simple
       props = {}
 
-      for p of @_properties
-
-        # Check if we are meant to serialize this property
+      for name, value of @_properties
         needsSerialization = false
-        if delta.length == 0 then needsSerialization = true
+
+        if delta.length == 0
+          needsSerialization = true
         else
           for d in delta
-            if p == d
+            if name == d
               needsSerialization = true
               break
 
         if needsSerialization
+          props[name] = {}
 
-          _prop = @_properties[p]
-          props[p] = {}
+          if value.type == "composite" and value.components
+            props[name].components = {}
 
-          if _prop.type == "composite" and _prop.components != undefined
-            props[p].components = {}
-            for c of _prop.components
-              props[p].components[c] = {}
-              props[p].components[c].value = _prop.components[c]._value
+            for c of value.components
+              props[name].components[c] = {}
+              props[name].components[c].value = value.components[c]._value
+
           else
-            props[p].value = _prop._value
+            props[name].value = value._value
 
       props
 
@@ -1104,18 +1064,13 @@ define (require) ->
     # @private
     ###
     _deserializeProperties: (time) ->
-
-      # Should never happen as we are only used internally
-      if @_propBuffer[time] == undefined
-        throw new Error "Can't deserialize, invalid time provided! #{time}"
-
       props = @_propBuffer[time]
 
       # Manually set property values
       for p of props
 
         # Set values component-wise if required, otherwise direct
-        if props[p].components != undefined
+        if props[p].components
           for c of props[p].components
             @_properties[p].components[c]._value = props[p].components[c].value
         else
@@ -1126,14 +1081,13 @@ define (require) ->
     # panel if it is targetting us, and destroy our actor.
     ###
     delete: ->
-
-      if @_actor != null
+      if @_AJSActor != null
 
         # Notify the workspace
         @ui.workspace.notifyDemise @
 
         # Go through and remove ourselves from
-        @_actor.destroy()
-        @_actor = null
+        @_AJSActor.destroy()
+        @_AJSActor = null
 
       super()

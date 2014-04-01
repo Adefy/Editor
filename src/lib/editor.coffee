@@ -97,8 +97,8 @@ define (require) ->
 
           # Saved elements are self-explanatory
           _actor.name = a.name
-          _actor.lifetimeStart = a.lifetimeStart
-          _actor.lifetimeEnd = a.lifetimeEnd
+          _actor.lifetimeStart_ms = a.lifetimeStart_ms
+          _actor.lifetimeEnd_ms = a.lifetimeEnd_ms
           _actor.propBuffer = a._propBuffer
           _actor.lastTemporalState = a._lastTemporalState
           _actor.x = a.getPosition().x
@@ -216,8 +216,8 @@ define (require) ->
         valid = a.type != undefined
         valid = valid && (a.name != undefined)
         valid = valid && (a.timebarColor != undefined)
-        valid = valid && (a.lifetimeStart != undefined)
-        valid = valid && (a.lifetimeEnd != undefined)
+        valid = valid && (a.lifetimeStart_ms != undefined)
+        valid = valid && (a.lifetimeEnd_ms != undefined)
         valid = valid && (a.propBuffer != undefined)
         valid = valid && (a.lastTemporalState != undefined)
         valid = valid && (a.animations != undefined)
@@ -234,14 +234,14 @@ define (require) ->
         if not valid then throw new Error "Data invalid: #{JSON.stringify a}"
 
         if a.type == "TriangleActor"
-          handle = new TriangleActor a.lifetimeStart, a.base, a.height, a.x, a.y\
-                                  , a.r, a.lifetimeEnd, true
+          handle = new TriangleActor a.lifetimeStart_ms, a.base, a.height, a.x, a.y\
+                                  , a.r, a.lifetimeEnd_ms, true
         else if a.type == "RectangleActor"
-          handle = new RectangleActor a.lifetimeStart, a.width, a.height, a.x, a.y\
-                                   , a.r, a.lifetimeEnd, true
+          handle = new RectangleActor a.lifetimeStart_ms, a.width, a.height, a.x, a.y\
+                                   , a.r, a.lifetimeEnd_ms, true
         else if a.type == "PolygonActor"
-          handle = new PolygonActor  a.lifetimeStart, a.sides, a.radius, a.x, a.y\
-                                  , a.r, a.lifetimeEnd, true
+          handle = new PolygonActor  a.lifetimeStart_ms, a.sides, a.radius, a.x, a.y\
+                                  , a.r, a.lifetimeEnd_ms, true
         else throw new Error "Invalid actor type, can't instantiate!"
 
         handle._propBuffer = a.propBuffer
@@ -384,7 +384,7 @@ define (require) ->
 
         # We need to grab properties from birth, so grab the appropriate prop
         # buffer entry
-        buff = a.getBufferEntry a.lifetimeStart
+        buff = a.getBufferEntry a.lifetimeStart_ms
 
         pos = buff.position.components
         col = buff.color.components

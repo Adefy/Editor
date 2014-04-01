@@ -31,7 +31,7 @@ define (require) ->
       # Set up generic actor properties
       super @ui, birth, death
 
-      @name = "Rectangle #{@_id.replace("ahandle-", "")}"
+      @name = "Rectangle"
 
       @_properties["position"].components["x"]._value = x
       @_properties["position"].components["y"]._value = y
@@ -47,13 +47,13 @@ define (require) ->
         float: true
         live: true
         _value: w
-        getValue: -> @_value = me._actor.getWidth()
+        getValue: -> @_value = me._AJSActor.getWidth()
 
         # Update width, rebuild
         update: (v) ->
           @_value = param.required v
 
-          if me._actor != null then me._actor.setWidth Number(v)
+          if me._AJSActor != null then me._AJSActor.setWidth Number(v)
 
         genAnimationOpts: (anim, opts) ->
           opts.startVal = anim._start.y
@@ -66,13 +66,13 @@ define (require) ->
         float: true
         live: true
         _value: h
-        getValue: -> @_value = me._actor.getHeight()
+        getValue: -> @_value = me._AJSActor.getHeight()
 
         # Update height, rebuild
         update: (v) ->
           @_value = param.required v
 
-          if me._actor != null then me._actor.setHeight Number(v)
+          if me._AJSActor != null then me._AJSActor.setHeight Number(v)
 
         genAnimationOpts: (anim, opts) ->
           opts.startVal = anim._start.y
@@ -109,7 +109,7 @@ define (require) ->
       _g = @_properties["color"].components["g"]._value
       _b = @_properties["color"].components["b"]._value
 
-      @_actor = new AJSRectangle
+      @_AJSActor = new AJSRectangle
         physics: _physics
         mass: _mass
         friction: _friction
