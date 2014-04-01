@@ -19,8 +19,8 @@ define ->
     # @return [String]
     ###
     @num: (n, precision) ->
-      if n != null && n != undefined
-        "#{n.toFixed(precision||0)}"
+      unless isNaN n
+        "#{Number(n).toFixed(precision||0)}"
       else
         s = "-"
         if precision && precision > 0 # "-.-"

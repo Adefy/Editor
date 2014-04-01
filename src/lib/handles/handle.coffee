@@ -87,7 +87,7 @@ define (require) ->
           lookup = val.parent.toLowerCase()
           payload[updateName.toLowerCase()] = val.value
         else
-          payload= val.value
+          payload = val.value
 
         if @_properties[lookup] != undefined
           if typeof @_properties[lookup].update == "function"

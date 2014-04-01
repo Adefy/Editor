@@ -10,6 +10,11 @@ define (require) ->
   # Base manipulateable class for actors
   class BaseActor extends Handle
 
+    ###
+    # @property [Number] accuracy the number of digits we round animations to
+    ###
+    ACCURACY: 4
+
     # Defines a raw actor, with no shape information or any other presets.
     # This serves as the base for the other actor classes
     #
@@ -128,8 +133,8 @@ define (require) ->
           if me._AJSActor != null
             pos = me._AJSActor.getPosition()
 
-            @components.x._value = pos.x
-            @components.y._value = pos.y
+            @components.x._value = Number pos.x.toFixed me.ACCURACY
+            @components.y._value = Number pos.y.toFixed me.ACCURACY
 
         # Position update, we expect val to be a composite
         update: (v) ->
@@ -153,13 +158,13 @@ define (require) ->
         placeholder: 0
 
         # Fetch our angle from our actor
-        getValue: -> @_value = me._AJSActor.getRotation()
+        getValue: ->
+          @_value = Number me._AJSActor.getRotation().toFixed me.ACCURACY
 
         # Val simply contains our new angle in degrees
         update: (v) ->
           @_value = param.required v
-
-          if me._AJSActor != null then me._AJSActor.setRotation v
+          me._AJSActor.setRotation v if me._AJSActor != null
 
       @_properties["color"] =
         type: "composite"
@@ -197,9 +202,9 @@ define (require) ->
           if me._AJSActor != null
             col = me._AJSActor.getColor()
 
-            @components.r._value = col.getR()
-            @components.g._value = col.getG()
-            @components.b._value = col.getB()
+            @components.r._value = Number col.getR().toFixed me.ACCURACY
+            @components.g._value = Number col.getG().toFixed me.ACCURACY
+            @components.b._value = Number col.getB().toFixed me.ACCURACY
 
           null
 
@@ -392,6 +397,8 @@ define (require) ->
     # @param [Number] opacity
     ###
     setOpacity: (opacity) ->
+      opacity = Number (param.required opacity).toFixed(@ACCURACY)
+
       AUtilLog.warn "AJS does not support actor with an opacity, yet."
       # @_AJSActor.setOpacity opacity if @_AJSActor
       @updateInTime()
@@ -403,7 +410,10 @@ define (require) ->
     # @param [Number] y y coordinate
     ###
     setPosition: (x, y) ->
-      @_AJSActor.setPosition new AJSVector2(x, y) if @_AJSActor
+      x = Number (param.required x).toFixed(@ACCURACY)
+      y = Number (param.required y).toFixed(@ACCURACY)
+
+      @_properties["position"].update x: x, y: y
       @updateInTime()
 
     ###
@@ -412,7 +422,10 @@ define (require) ->
     # @param [Number] angle
     ###
     setRotation: (angle) ->
-      @_AJSActor.setRotation angle if @_AJSActor
+      angle = Number (param.required angle).toFixed(@ACCURACY)
+
+      @_properties["rotation"].update angle
+      @updateInTime()
 
     ###
     # Set actor color with composite values, 0-255
@@ -422,9 +435,9 @@ define (require) ->
     # @param [Number] b
     ###
     setColor: (r, g, b) ->
-      param.required r
-      param.required g
-      param.required b
+      r = Number (param.required r).toFixed(@ACCURACY)
+      g = Number (param.required g).toFixed(@ACCURACY)
+      b = Number (param.required b).toFixed(@ACCURACY)
 
       @_properties["color"].update r: r, g: g, b: b
       @updateInTime()
@@ -527,6 +540,16 @@ define (require) ->
           cb obj[p], false
 
     ###
+    # Calls the default handle updateProperties() method, then updates us in
+    # time
+    #
+    # @param [Object] updates object containing property:value pairs
+    ###
+    updateProperties: (updates) ->
+      super updates
+      @updateInTime()
+
+    ###
     # Materialize the actor from various stored value deltas (woah, that sounds
     # epic). Essentially, update our prop buffer, and then the actors' current
     # state
@@ -569,6 +592,9 @@ define (require) ->
 
         else
           _Sp.value = _p._value
+
+        unless isNaN _Sp.value
+          _Sp.value = Number _Sp.value.toFixed @ACCURACY
 
         @_propSnapshot[p] = _Sp
 
@@ -857,9 +883,14 @@ define (require) ->
       unless left
         left = @_findNearestState time, false, p
 
+      left = 0 if left = -1
+
       # Check if we are in the middle of an animation ourselves. If so,
       # split it
       animCheck = @_findNearestState time, true, p
+
+      # If we are on the tip of an animation, then bail
+      return if @_animations["#{time}"]
 
       _startP = @_propBuffer["#{left}"][p]
       _endP = @_propBuffer["#{time}"][p]
@@ -994,7 +1025,7 @@ define (require) ->
     # @param [String] start prop buffer entry name to start from
     # @param [Boolean] right search to the right, defaults to false
     # @param [String] prop property name
-    # @return [Number] nearest key into @_propBuffer, or -1 if not found
+    # @return [Number] nearest key into @_propBuffer
     # @private
     ###
     _findNearestState: (start, right, prop) ->

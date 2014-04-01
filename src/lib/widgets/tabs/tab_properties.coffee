@@ -222,13 +222,18 @@ define (require) ->
       value.default = param.optional value.default, ""
       value.float = param.optional value.float, false
 
+      if value.float
+        precision = 2
+      else
+        precision = 0
+
       NumericControlTemplate
         name: displayName.toLowerCase()
         max: value.max
         min: value.min
         float: value.float
         placeholder: value.default
-        value: value.getValue()
+        value: Number (value.getValue()).toFixed(precision)
         width: width
         parent: parent
 
@@ -325,11 +330,31 @@ define (require) ->
           for component, value of value.components
 
             input = $("#{@_sel} #{parent} + div > dl input[name=#{component}]")
-            $(input).val value.getValue()
+            value = value.getValue()
+
+            if $(input).attr("type") == "number"
+              value = Number value
+
+              if $(input).attr("data-float") == "true"
+                value = value.toFixed 2
+              else
+                value = value.toFixed 0
+
+            $(input).val value
 
         else
           input = $("#{@_sel} #{parent} + div > dl input[name=#{property}]")
-          $(input).val value.getValue()
+          value = value.getValue()
+
+          if $(input).attr("type") == "number"
+            value = Number value
+
+            if $(input).attr("data-float") == "true"
+              value = value.toFixed 2
+            else
+              value = value.toFixed 0
+
+          $(input).val value
 
     ###
     #
