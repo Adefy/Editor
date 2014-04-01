@@ -386,6 +386,7 @@ define (require) ->
     ###
     setVisible: (visible) ->
       @_AJSActor.setVisible visible if @_AJSActor
+      @updateInTime()
 
     ###
     # @param [Number] opacity
@@ -393,6 +394,7 @@ define (require) ->
     setOpacity: (opacity) ->
       AUtilLog.warn "AJS does not support actor with an opacity, yet."
       # @_AJSActor.setOpacity opacity if @_AJSActor
+      @updateInTime()
 
     ###
     # Set actor position, relative to the GL world!
@@ -402,6 +404,7 @@ define (require) ->
     ###
     setPosition: (x, y) ->
       @_AJSActor.setPosition new AJSVector2(x, y) if @_AJSActor
+      @updateInTime()
 
     ###
     # Set actor rotation
@@ -424,11 +427,14 @@ define (require) ->
       param.required b
 
       @_properties["color"].update r: r, g: g, b: b
+      @updateInTime()
 
     ###
     # @param [Texture] texture
     ###
-    setTexture: (texture) -> @_AJSActor.setTexture texture
+    setTexture: (texture) ->
+      @_AJSActor.setTexture texture
+      @updateInTime()
 
     ###
     # Used when exporting, executes the corresponding property genAnimationOpts
@@ -530,7 +536,7 @@ define (require) ->
 
       cursor = @ui.timeline.getCursorTime()
 
-      return if Number(Math.floor(cursor)) == @_lastTemporalState
+      # return if Number(Math.floor(cursor)) == @_lastTemporalState
 
       @_updatePropBuffer()
       @_updateActorState()
@@ -641,10 +647,10 @@ define (require) ->
           update = {}
           update[c] = property.components[c].value for c of property.components
 
-          @_properties[p].update update
+          @_properties[name].update update
 
         else
-          @_properties[p].update property.value
+          @_properties[name].update property.value
 
     ###
     # Updates our state according to the current cursor position. Goes through
@@ -866,9 +872,6 @@ define (require) ->
 
         if anim[p].components
           for c of anim[p].components
-
-            if anim[p].components[c]._start.x != Number left
-              throw new Error "Existing animation invalid!"
 
             # Rebase animation by calculating new start value
             _newX = time

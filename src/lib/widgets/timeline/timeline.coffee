@@ -298,10 +298,11 @@ define (require) ->
         drag: (e, ui) =>
 
           # Cancel the drag if we are currently in the middle of playback
-          if @_playbackID != undefined and @_playbackID != null
-            return false
+          return false if @_playbackID != undefined and @_playbackID != null
 
           @_onCursorDrag e, ui
+
+        stop: (e, ui) =>
           @_onCursorDragStop e, ui
 
     ###
