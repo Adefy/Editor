@@ -298,10 +298,11 @@ define (require) ->
         drag: (e, ui) =>
 
           # Cancel the drag if we are currently in the middle of playback
-          if @_playbackID != undefined and @_playbackID != null
-            return false
+          return false if @_playbackID != undefined and @_playbackID != null
 
           @_onCursorDrag e, ui
+
+        stop: (e, ui) =>
           @_onCursorDragStop e, ui
 
     ###
@@ -385,7 +386,7 @@ define (require) ->
       bodySelector = @_actorBodySelector(actor)
       iconSelector = "#{bodySelector} .visibility i"
 
-      if forceState != null || forceState != undefined
+      if forceState != null and forceState != undefined
         actor.setVisible forceState
       else
         actor.setVisible !actor.getVisible()
