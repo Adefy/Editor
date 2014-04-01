@@ -386,7 +386,7 @@ define (require) ->
       bodySelector = @_actorBodySelector(actor)
       iconSelector = "#{bodySelector} .visibility i"
 
-      if forceState != null || forceState != undefined
+      if forceState != null and forceState != undefined
         actor.setVisible forceState
       else
         actor.setVisible !actor.getVisible()
