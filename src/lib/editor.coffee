@@ -486,7 +486,7 @@ define (require) ->
         if p instanceof Array then _pName = p[0] else _pName = p
 
         # Use the ARE animation iface map to figure out options
-        animName = window.AdefyGLI.Animations().getAnimationName _pName
+        animName = window.AdefyRE.Animations().getAnimationName _pName
 
         opts.endVal = anim._end.y
         opts.controlPoints = anim._control
