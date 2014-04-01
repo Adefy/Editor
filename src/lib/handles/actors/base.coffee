@@ -307,7 +307,7 @@ define (require) ->
     ###
     getVisible: ->
       if @_AJSActor
-        @_AJSActor.visible
+        @_AJSActor.getVisible()
       else
         false
 
