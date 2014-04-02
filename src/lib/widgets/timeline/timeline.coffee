@@ -104,20 +104,19 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     _actorBodySelector: (actor) ->
-      "#actor-body-#{actor.getId()}.actor"
+      "#{@_bodySelector()} #actor-body-#{actor.getId()}.actor"
 
     ###
     # @param [BaseActor] actor
     ###
     _actorTimeSelector: (actor) ->
-      "#actor-time-#{actor.getId()}.actor"
+      "#{@_spaceSelector()} #actor-time-#{actor.getId()}.actor"
 
     ###
     # returns the scrollbar selector
     # @return [String]
     ###
-    _scrollbarSelector: ->
-      "#{@_sel} .content"
+    _scrollbarSelector: -> "#{@_sel} .content"
 
     ###
     # Returns the scrollbar element
@@ -125,6 +124,8 @@ define (require) ->
     ###
     _scrollbarElement: ->
       $(@_scrollbarSelector())
+
+    ## ATTRIBUTES
 
     ###
     # Get current timeline duration
@@ -150,6 +151,19 @@ define (require) ->
                     $(@_spaceSelector()).width())
 
     ###
+    # Set an arbitrary cursor time
+    #
+    # @param [Number] time cursor time in ms
+    ###
+    setCursorTime: (time) ->
+      param.required time
+
+      $("#timeline-cursor").css "left", $(@_spaceSelector()).width() * (time / @_duration)
+
+      @_onCursorDrag()
+      @_onCursorDragStop()
+
+    ###
     # Validates an actor's lifetime
     # @param [BaseActor] actor
     # @private
@@ -170,9 +184,11 @@ define (require) ->
 
       true
 
+    ## UI-TRIGGERS
+
     ###
     # When an actor expand button is pressed this function is called
-    # @param [HTMLElement] element
+    # @param [jQuery] element
     # @private
     ###
     _onActorToggleExpand: (element) ->
@@ -181,12 +197,28 @@ define (require) ->
 
     ###
     # When an actor visibility button is pressed this function is called
-    # @param [HTMLElement] element
+    # @param [jQuery] element
     # @private
     ###
     _onActorToggleVisible: (element) ->
       index = $(element).attr "data-index"
       @toggleActorVisibilityByIndex index
+
+    ###
+    # When an actor live button is toggled
+    # @param [jQuery] actorElement
+    # @private
+    ###
+    _onActorToggleLive: (actorElement, propertyElement) ->
+      #
+
+    ###
+    # When an actor graph button is toggled
+    # @param [jQuery] actorElement
+    # @private
+    ###
+    _onActorToggleGraph: (actorElement, propertyElement) ->
+      #
 
     ###
     # Cursor drag event
@@ -217,7 +249,7 @@ define (require) ->
           a.updateInTime()
 
     ###
-    # @param [HTMLElement] element
+    # @param [jQuery] element
     # @private
     ###
     _onOuterClicked: (element) ->
@@ -229,26 +261,6 @@ define (require) ->
       @ui.pushEvent "timeline.selected.actor", actor: @_actors[index]
 
     ###
-    # Update the size and position of the scrollbar
-    # @return [Void]
-    ###
-    _updateScrollbar: ->
-      @_scrollbarElement().perfectScrollbar "update"
-
-    ###
-    # Update displayed cursor time
-    # @private
-    ###
-    _updateCursorTime: ->
-      ms = @getCursorTime()
-
-      seconds = ms / 1000.0
-      minutes = seconds / 60.0
-      timeText = "#{(minutes % 60).toFixed()}:#{(seconds % 60).toFixed(2)}"
-
-      $("#timeline-cursor-time").text timeText
-
-    ###
     # Registers event listeners
     # @private
     ###
@@ -257,11 +269,19 @@ define (require) ->
       $(document).on "click", ".timeline .button.toggle", (e) =>
         @toggle()
 
-      $(document).on "click", ".actor .expand", (e) =>
+      $(document).on "click", ".timeline .list .actor .expand", (e) =>
         @_onActorToggleExpand $(e.target).closest ".actor"
 
-      $(document).on "click", ".actor .visibility", (e) =>
+      $(document).on "click", ".timeline .list .actor .visibility", (e) =>
         @_onActorToggleVisible $(e.target).closest ".actor"
+
+      $(document).on "click", ".timeline .list .actor .live", (e) =>
+        @_onActorToggleLive $(e.target).closest(".actor"),
+          $(e.target).closest(".property")
+
+      $(document).on "click", ".timeline .list .actor .graph", (e) =>
+        @_onActorToggleGraph $(e.target).closest(".actor"),
+          $(e.target).closest(".property")
 
       ##
       ## TODO: Move all of the control listeners into the timeline_control class
@@ -405,41 +425,7 @@ define (require) ->
       actorIndex = _.findIndex @_actors, (a) -> a.getActorId() == id
       @toggleActorExpandByIndex actorIndex , forceState
 
-    ###
-    # Show dialog box for setting the preview framerate
-    # @return [Modal]
-    ###
-    showSetPreviewRate: ->
-
-      # Randomized input name
-      name = ID.prefId "_tPreviewRate"
-
-      _html = ModalSetPreviewFPSTemplate
-        previewFPS: @getPreviewFPS()
-        name: name
-
-      new Modal
-        title: "Set Preview Framerate"
-        content: _html
-        modal: false
-        cb: (data) => @_previewFPS = data[name]
-        validation: (data) ->
-          return "Framerate must be a number" if isNaN data[name]
-          return "Framerate must be > 0" if data[name] <= 0
-          true
-
-    ###
-    # Set an arbitrary cursor time
-    #
-    # @param [Number] time cursor time in ms
-    ###
-    setCursorTime: (time) ->
-      param.required time
-
-      $("#timeline-cursor").css "left", $(@_spaceSelector()).width() * (time / @_duration)
-
-      @_onCursorDrag()
-      @_onCursorDragStop()
+    ## ACTION
 
     ###
     # Register actor, causes it to appear on the timeline starting from the
@@ -483,10 +469,114 @@ define (require) ->
       true
 
     ###
-    # Refresh spacer length and actor color in the actor list
-    # @private
+    # Sets the actor as the currently selected and highlights it
+    # @param [BaseActor] actor
     ###
-    _refreshActorRows: ->
+    selectActor: (actor) ->
+      @_lastSelectedActor = param.required actor
+      $("#{@_actorBodySelector(actor)} .actor-info").addClass("selected")
+
+    ###
+    # Clears the actor selection
+    # @param [BaseActor] actor
+    ###
+    deselectActor: (actor) ->
+      param.required actor
+      $("#{@_actorBodySelector(actor)} .actor-info").removeClass("selected")
+
+    ###
+    # @param [BaseActor] actor
+    ###
+    switchSelectedActor: (actor) ->
+      param.required actor
+
+      @deselectActor @_lastSelectedActor if @_lastSelectedActor
+      @selectActor actor
+
+    ###
+    # @param [Number] index
+    ###
+    switchSelectedActorByIndex: (index) -> @switchSelectedActor @_actors[index]
+
+    ###
+    # Toggle visibility of the sidebar with an optional animation
+    #
+    # @param [Method] cb callback
+    # @param [Boolean] animate defaults to false
+    ###
+    toggle: (cb, animate) ->
+      animate = param.optional animate, true
+
+      if @_visible
+        @hide cb, animate
+      else
+        @show cb, animate
+
+    ###
+    # Show the sidebar with an optional animation
+    #
+    # @param [Method] cb callback
+    # @param [Boolean] animate defaults to true
+    ###
+    show: (cb, animate) ->
+      animate = param.optional animate, true
+
+      if @_visible
+        AUtilLog.warn "Timeline was already visible"
+        cb() if cb
+        return
+
+      AUtilLog.info "Showing Timeline"
+
+      if animate
+        @getElement().animate height: @_height, 300, "swing", =>
+          @ui.pushEvent "timeline.show"
+      else
+        @getElement().height @_height
+        @ui.pushEvent "timeline.show"
+
+      ##
+      # I'm sure jQuery's toggle class can do this, but I still haven't
+      # figured it out properly
+      @getElement(".button.toggle i").removeClass("fa-arrow-up")
+      @getElement(".button.toggle i").addClass("fa-arrow-down")
+
+      Storage.set "timeline.visible", true
+      @_visible = true
+
+    ###
+    # Hide the sidebar with an optional animation
+    #
+    # @param [Method] cb callback
+    # @param [Boolean] animate defaults to true
+    ###
+    hide: (cb, animate) ->
+      animate = param.optional animate, true
+
+      unless @_visible
+        AUtilLog.warn "Timeline was already hidden"
+        cb() if cb
+        return
+
+      AUtilLog.info "Hiding Timeline"
+
+      if animate
+        @getElement().animate height: @_hiddenHeight, 300, "swing", =>
+          @ui.pushEvent "timeline.hide"
+      else
+        @getElement().height @_hiddenHeight
+        @ui.pushEvent "timeline.hide"
+
+      ##
+      # I'm sure jQuery's toggle class can do this, but I still haven't
+      # figured it out properly
+      @getElement(".button.toggle i").removeClass("fa-arrow-down")
+      @getElement(".button.toggle i").addClass("fa-arrow-up")
+
+      Storage.set "timeline.visible", false
+      @_visible = false
+
+    ## CALC
 
     ###
     # @param [BaseActor]
@@ -613,6 +703,8 @@ define (require) ->
 
       properties
 
+    ## RENDER
+
     ###
     # Appends a single actor to the actor list, used after registering an actor
     # and rendering their timebar
@@ -650,7 +742,7 @@ define (require) ->
 
       if apply
         $(@_bodySelector()).append html
-        @_refreshActorRows()
+        @updateActorBody(actor)
       else
         html
 
@@ -663,7 +755,6 @@ define (require) ->
       entriesHTML = @_actors.map (actor) => @_renderActorListEntry actor, false
 
       $(@_bodySelector()).html entriesHTML.join ""
-      @_refreshActorRows()
 
     ###
     # Renders an individual actor timebar, used when registering new actors,
@@ -741,6 +832,28 @@ define (require) ->
       @_renderSpace()
       @_setupScrollbar()
 
+    ## UPDATE
+
+    ###
+    # Update the size and position of the scrollbar
+    # @return [Void]
+    ###
+    _updateScrollbar: ->
+      @_scrollbarElement().perfectScrollbar "update"
+
+    ###
+    # Update displayed cursor time
+    # @private
+    ###
+    _updateCursorTime: ->
+      ms = @getCursorTime()
+
+      seconds = ms / 1000.0
+      minutes = seconds / 60.0
+      timeText = "#{(minutes % 60).toFixed()}:#{(seconds % 60).toFixed(2)}"
+
+      $("#timeline-cursor-time").text timeText
+
     ###
     # Update the state of the controls bar
     # @return [Void]
@@ -771,12 +884,24 @@ define (require) ->
       opacity = actor.getOpacity()
 
       bodySelector = @_actorBodySelector actor
-      selector = "#{bodySelector} .property"
+      bodyElement = $(bodySelector)
 
-      $("#{selector}#opacity .value").text aformat.num opacity, 2
-      $("#{selector}#position .value").text aformat.pos pos, 0
-      $("#{selector}#rotation .value").text aformat.degree rotation, 2
-      $("#{selector}#color .value").text aformat.color color, 2
+      opacityElement = bodyElement.find(".property#opacity")
+      positionElement = bodyElement.find(".property#position")
+      rotationElement = bodyElement.find(".property#rotation")
+      colorElement = bodyElement.find(".property#color")
+
+      opacityElement.find(".value").text aformat.num opacity, 2
+      positionElement.find(".value").text aformat.pos pos, 0
+      rotationElement.find(".value").text aformat.degree rotation, 2
+      colorElement.find(".value").text aformat.color color, 2
+
+      ##
+      # Live buttons - always active
+      opacityElement.find(".live .button").toggleClass "active", true
+      positionElement.find(".live .button").toggleClass "active", true
+      rotationElement.find(".live .button").toggleClass "active", true
+      colorElement.find(".live .button").toggleClass "active", true
 
     ###
     # Update the state of the actor timebar
@@ -851,113 +976,13 @@ define (require) ->
       @updateActorTime actor
 
     ###
-    # Sets the actor as the currently selected and highlights it
-    # @param [BaseActor] actor
+    # Updates all actors in the timeline
     ###
-    selectActor: (actor) ->
-      @_lastSelectedActor = param.required actor
-      $("#{@_actorBodySelector(actor)} .actor-info").addClass("selected")
+    _updateAll: ->
+      for actor in @_actors
+        @updateActor actor
 
-    ###
-    # Clears the actor selection
-    # @param [BaseActor] actor
-    ###
-    deselectActor: (actor) ->
-      param.required actor
-      $("#{@_actorBodySelector(actor)} .actor-info").removeClass("selected")
-
-    ###
-    # @param [BaseActor] actor
-    ###
-    switchSelectedActor: (actor) ->
-      param.required actor
-
-      @deselectActor @_lastSelectedActor if @_lastSelectedActor
-      @selectActor actor
-
-    ###
-    # @param [Number] index
-    ###
-    switchSelectedActorByIndex: (index) -> @switchSelectedActor @_actors[index]
-
-    ###
-    # Toggle visibility of the sidebar with an optional animation
-    #
-    # @param [Method] cb callback
-    # @param [Boolean] animate defaults to false
-    ###
-    toggle: (cb, animate) ->
-      animate = param.optional animate, true
-
-      if @_visible
-        @hide cb, animate
-      else
-        @show cb, animate
-
-    ###
-    # Show the sidebar with an optional animation
-    #
-    # @param [Method] cb callback
-    # @param [Boolean] animate defaults to true
-    ###
-    show: (cb, animate) ->
-      animate = param.optional animate, true
-
-      if @_visible
-        AUtilLog.warn "Timeline was already visible"
-        cb() if cb
-        return
-
-      AUtilLog.info "Showing Timeline"
-
-      if animate
-        @getElement().animate height: @_height, 300, "swing", =>
-          @ui.pushEvent "timeline.show"
-      else
-        @getElement().height @_height
-        @ui.pushEvent "timeline.show"
-
-      ##
-      # I'm sure jQuery's toggle class can do this, but I still haven't
-      # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-arrow-up")
-      @getElement(".button.toggle i").addClass("fa-arrow-down")
-
-      Storage.set "timeline.visible", true
-      @_visible = true
-
-    ###
-    # Hide the sidebar with an optional animation
-    #
-    # @param [Method] cb callback
-    # @param [Boolean] animate defaults to true
-    ###
-    hide: (cb, animate) ->
-      animate = param.optional animate, true
-
-      unless @_visible
-        AUtilLog.warn "Timeline was already hidden"
-        cb() if cb
-        return
-
-      AUtilLog.info "Hiding Timeline"
-
-      if animate
-        @getElement().animate height: @_hiddenHeight, 300, "swing", =>
-          @ui.pushEvent "timeline.hide"
-      else
-        @getElement().height @_hiddenHeight
-        @ui.pushEvent "timeline.hide"
-
-      ##
-      # I'm sure jQuery's toggle class can do this, but I still haven't
-      # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-arrow-down")
-      @getElement(".button.toggle i").addClass("fa-arrow-up")
-
-      Storage.set "timeline.visible", false
-      @_visible = false
-
+    ## EVENTS
 
     ###
     # @param [String] type
@@ -978,3 +1003,28 @@ define (require) ->
           @updateActor()
         when "actor.update.intime"
           @updateActorBody params.actor
+
+    ## MODALS
+
+    ###
+    # Show dialog box for setting the preview framerate
+    # @return [Modal]
+    ###
+    showSetPreviewRate: ->
+
+      # Randomized input name
+      name = ID.prefId "_tPreviewRate"
+
+      _html = ModalSetPreviewFPSTemplate
+        previewFPS: @getPreviewFPS()
+        name: name
+
+      new Modal
+        title: "Set Preview Framerate"
+        content: _html
+        modal: false
+        cb: (data) => @_previewFPS = data[name]
+        validation: (data) ->
+          return "Framerate must be a number" if isNaN data[name]
+          return "Framerate must be > 0" if data[name] <= 0
+          true
