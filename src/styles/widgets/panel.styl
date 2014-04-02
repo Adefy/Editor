@@ -1,0 +1,145 @@
+#editor
+  .panel
+    width 100%
+    height 100%
+    background-color #1e1e1e
+    border-right 1px solid rgba(0,0,0,0.35)
+    box-shadow inset -1px 0 rgba(255,255,255,.05)
+    overflow hidden
+    //position relative
+
+    .tabs
+      background linear-gradient(bottom, #272727, #313131)
+      box-shadow 0 1px rgba(0,0,0,.1)
+      border-top 1px solid #313131
+
+      .tab
+        padding 2px 10px
+        border 1px solid rgba(0,0,0,0.0)
+        border-bottom none
+
+        display inline-block
+        cursor pointer
+        //cursor default
+
+        font-size 13px
+        text-align center
+        color #999
+        text-shadow 0 1px 2px rgba(0,0,0,.35)
+
+      .tab.selected, .tab:hover
+        background-color #1e1e1e
+        background linear-gradient(bottom, #1e1e1e, #232323)
+        border 1px solid rgba(0,0,0,.1)
+        border-top 1px solid rgba(0,0,0,.05)
+        border-bottom none
+        box-shadow 0 1px rgba(255,255,255,.02) // negate the .tabs box shadow
+        // , inset 0 1px rgba(255,255,255,.05)
+
+    .content
+      overflow hidden
+      position relative
+      height: 100%
+      //height: calc(100% - 8px)
+
+      padding 0 20px 10px
+      padding-bottom: 24px
+
+      h1
+        color #ccc
+        border-bottom 1px solid rgba(0,0,0,.35)
+        box-shadow 0 1px rgba(255,255,255,.05)
+        margin .35em -20px .5em
+
+        &:first-of-type
+          margin-top 0
+          padding-top 5px
+        padding 4px 20px 4px
+
+        text-transform uppercase
+        font-weight 600
+        font-size 14px
+
+        i
+          margin-right .5em
+
+    .tab-properties
+      dl
+        display inline-block
+        vertical-align top
+
+        dt
+          float left
+          vertical-align top
+
+        dd
+          text-align left
+          float right
+          vertical-align top
+          color #666
+          margin 5px 0 0 0
+
+          > *
+            max-width 90%
+            float right
+
+            font-weight 600
+            font-size 14px
+            line-height 1.2
+
+          > input
+            padding 0
+            margin 0
+            box-shadow none
+            background-color transparent
+
+      dt, dd
+        display inline-block
+        padding 0 6px
+        margin 2px 0
+      dt
+        width 30%
+        color #999
+
+        text-align right
+      dd
+        width 70%
+        color #666
+        text-align center
+        cursor ew-resize
+
+    // files panel
+    .files
+      padding 0 !important
+      display block
+      height 100%
+      dl
+        display table
+        width 100%
+        line-height 1.6
+        padding-left 8px
+        font-size 14px
+        font-weight 600
+
+        dt, dd
+          cursor pointer
+          display table-cell
+          text-align left
+          padding 0
+        dt
+          width 1%
+          margin-right 4px
+          color #999
+        dd
+          width 70%
+          color #666
+        i
+          margin-right 4px
+      dl dl
+        padding-left 0
+
+
+  .canvas
+    margin-left 310px
+    height 100%
+    background-color #1a1a1a

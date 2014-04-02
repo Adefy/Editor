@@ -23,3 +23,11 @@ The general way of things
 * Specify all colors in `colors.styl`, and define actual color codes seperate from their useages
 * For widgets with at least one related/child widget class, put all files pertaining to it in their own folder
 * All widgets are bound as data on the body element, under a key matching their selector
+
+
+Saving animation:
+  .save(display: none) --> no changes
+  .save --> unsaved changes
+  .save.in-progress --> saving right now... (should be left on the screen for at least 250ms)
+  .save.done --> save successful! (should be left on the screen for at least 250ms, then back to .save(display: none))
+  .save.error --> something was wrong

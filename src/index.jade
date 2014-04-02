@@ -1,0 +1,48 @@
+doctype 5
+html(lang="en")
+  head
+
+    meta(charset="utf-8")
+    title Adefy Editor
+
+    //- PaceJS
+    script(src="components/pace/pace.min.js")
+    link(rel="stylesheet" href="components/pace/themes/pace-theme-center-atom.css")    
+
+    | <!--[if IE]>
+    link(rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon")
+    | <![endif]-->
+
+    link(rel="icon" href="/img/favicon.png" type="image/png")
+
+    link(rel="stylesheet" href="styles/style.css")
+    link(rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,300,700,500")
+    link(rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css")
+
+  body.tk-proxima-nova
+    #editor
+      header
+      section#main
+      footer
+
+    //- Vendor libs
+    script(src="components/jquery/dist/jquery.min.js")
+    script(src="components/jquery-ui/ui/minified/jquery-ui.min.js")
+    script(src="components/jquery.mousewheel/jquery.mousewheel.js")
+    script(src="components/perfect-scrollbar/min/perfect-scrollbar-0.4.8.min.js")
+    script(src="components/handlebars/handlebars.min.js")
+
+    //- Adefy libraries
+    script(src="//cdn.adefy.com/are/are-full.js")
+    script(src="//cdn.adefy.com/ajs/ajs.js")
+
+    //- Load lodash after ARE to override underscore
+    script(src="components/lodash/dist/lodash.min.js")
+
+    //- Load us up!
+    script(src="components/requirejs/require.js" data-main="lib/main.js")
+
+    //- Type Kit
+    script(src="//use.typekit.net/udl8vci.js")
+    script.
+      try{Typekit.load();}catch(e){}

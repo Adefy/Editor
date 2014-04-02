@@ -1,0 +1,29 @@
+{
+  "name": "AdefyEditor",
+  "version": "0.1.0",
+  "authors": [
+    "Cris Mihalache <cris@adefy.com>",
+    "Blaž Hrastnik <blaz@adefy.com>",
+    "Corey Powell <corey@adefy.com>"
+  ],
+  "license": "Closed",
+  "homepage": "https://app.adefy.com",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "requirejs": "~2.1.11",
+    "underscore.string": "~2.3.3",
+    "handlebars": "~1.3.0",
+    "jquery": "~2.1.0",
+    "jquery-ui": "~1.10.4",
+    "jquery.mousewheel": "*",
+    "perfect-scrollbar": "~0.4.8",
+    "pace": "~0.5.1",
+    "lodash": "~2.4.1"
+  }
+}

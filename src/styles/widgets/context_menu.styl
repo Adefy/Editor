@@ -1,0 +1,29 @@
+//
+// Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
+//
+
+// Context menu that appears when right-clicking a manipulatable
+#editor
+  .context-menu
+    position absolute
+    font-size 12px
+    min-width 96px
+
+    display none
+    line-height 1.5
+
+    background-color rgba(35, 35, 35, .8)
+    border 1px solid rgba(0,0,0,.15)
+    box-shadow 0 2px 3px rgba(0,0,0,.25), inset 0 0 1px rgba(255,255,255,.15)
+
+    li
+      width 130px
+      padding 5px 10px
+      color #aaa
+
+      &:hover
+        cursor hand
+        cursor pointer
+
+        color #ddd
+        background-color $col_mainbar_secondary_hover_bg
