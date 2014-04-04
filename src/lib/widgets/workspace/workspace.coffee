@@ -580,6 +580,8 @@ define (require) ->
     # http://learningwebgl.com/blog/?p=1786
     ###
     _buildPickBuffer: ->
+      unless @_are.isWGLRendererActive
+        return false
 
       gl = @_are.getGL()
 
