@@ -22,7 +22,7 @@
     "jquery": "~2.1.0",
     "jquery-ui": "~1.10.4",
     "jquery.mousewheel": "*",
-    "perfect-scrollbar": "~0.4.8",
+    "perfect-scrollbar": "~0.4.9",
     "pace": "~0.5.1",
     "lodash": "~2.4.1"
   }
