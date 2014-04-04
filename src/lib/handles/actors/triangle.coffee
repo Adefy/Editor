@@ -3,6 +3,8 @@ define (require) ->
   param = require "util/param"
   BaseActor = require "handles/actors/base"
 
+  NumericProperty = require "handles/properties/numeric"
+
   # Trianglular actor
   class TriangleActor extends BaseActor
 
@@ -28,94 +30,79 @@ define (require) ->
 
       if b <= 0 or h <= 0 then throw new Error "Base/Height must be >0!"
 
-      # Set up generic actor properties
       super @ui, birth, death
-
       @name = "Triangle"
 
-      @_properties["position"].components["x"]._value = x
-      @_properties["position"].components["y"]._value = y
-      @_properties["rotation"].update rotation
+      @_properties.position.setValue x: x, y: y
+      @_properties.rotation.setValue rotation
 
       me = @
 
-      # Add our base and height as editable properties
-      @_properties["base"] =
-        type: "number"
-        min: 0
-        placeholder: 30
-        live: true
-        float: true
-        _value: b
-        getValue: -> @_value = me._AJSActor.getBase()
+      @_properties.base = new NumericProperty()
+      @_properties.base.setMin 0
+      @_properties.base.setPlaceholder 30
+      @_properties.base.setValue b
+      @_properties.base.requestUpdate = ->
+        @setValue me._AJSActor.getBase() if me._AJSActor
 
-        # Update base, rebuild
-        update: (v) ->
-          @_value = param.required v
+      @_properties.base.onUpdate = (base) =>
+        @_AJSActor.setBase base if @_AJSActor
 
-          if me._AJSActor != null then me._AJSActor.setBase Number(v)
+      @_properties.base.genAnimationOpts = (animation, options) ->
+        options.startVal = animation._start.y
+        options
 
-        genAnimationOpts: (anim, opts) ->
-          opts.startVal = anim._start.y
-          opts
 
-      @_properties["height"] =
-        type: "number"
-        min: 0
-        placeholder: 60
-        live: true
-        float: true
-        _value: h
-        getValue: -> @_value = me._AJSActor.getHeight()
+      @_properties.height = new NumericProperty()
+      @_properties.height.setMin 0
+      @_properties.height.setPlaceholder 60
+      @_properties.height.setValue h
+      @_properties.height.requestUpdate = ->
+        @setValue me._AJSActor.getWidth() if me._AJSActor
 
-        # Update height, rebuild
-        update: (v) ->
-          @_value = param.required v
+      @_properties.height.onUpdate = (height) =>
+        @_AJSActor.setHeight height if @_AJSActor
 
-          if me._AJSActor != null then me._AJSActor.setHeight Number(v)
+      @_properties.height.genAnimationOpts = (animation, options) ->
+        options.startVal = animation._start.y
+        options
 
-        genAnimationOpts: (anim, opts) ->
-          opts.startVal = anim._start.y
-          opts
-
-      # Finish our initialization
-      if not manualInit then @postInit()
+      @postInit() unless manualInit
 
     # Get triangle base value
     #
     # @return [Number] base
-    getBase: -> @_properties["base"]._value
+    getBase: -> @_properties.base.getValue()
 
     # Get triangle height value
     #
     # @return [Number] height
-    getHeight: -> @_properties["height"]._value
+    getHeight: -> @_properties.height.getValue()
 
     # Instantiate our AJS actor
     # @private
     _birth: ->
       if @_alive then return else @_alive = true
 
-      _physics = @_properties["physics"].components["enabled"]._value
-      _mass = @_properties["physics"].components["mass"]._value
-      _friction = @_properties["physics"].components["friction"]._value
-      _elasticity = @_properties["physics"].components["elasticity"]._value
-      _base = @_properties["base"]._value
-      _height = @_properties["height"]._value
-      _x = @_properties["position"].components["x"]._value
-      _y = @_properties["position"].components["y"]._value
-      _rotation = @_properties["rotation"]._value
-      _r = @_properties["color"].components["r"]._value
-      _g = @_properties["color"].components["g"]._value
-      _b = @_properties["color"].components["b"]._value
+      physicsEnabled = @_properties.physics.getProperty("enabled").getValue()
+      mass = @_properties.physics.getProperty("mass").getValue()
+      friction = @_properties.physics.getProperty("friction").getValue()
+      elasticity = @_properties.physics.getProperty("elasticity").getValue()
+
+      x = @_properties.position.getProperty("x").getValue
+      y = @_properties.position.getProperty("y").getValue
+
+      r = @_properties.color.getProperty("r").getValue()
+      g = @_properties.color.getProperty("g").getValue()
+      b = @_properties.color.getProperty("b").getValue()
 
       @_AJSActor = new AJSTriangle
-        physics: _physics
-        mass: _mass
-        friction: _friction
-        elasticity: _elasticity
-        base: _base
-        height: _height
-        position: new AJSVector2 _x, _y
-        color: new AJSColor3 _r, _g, _b
-        rotation: _rotation
+        physics: physicsEnabled
+        mass: mass
+        friction: friction
+        elasticity: elasticity
+        base: @_properties.base.getValue()
+        height: @_properties.height.getValue()
+        position: new AJSVector2 x, y
+        color: new AJSColor3 r, g, b
+        rotation: @_properties.rotation.getValue()

@@ -72,6 +72,13 @@ define (require) ->
       , 4, "aw-canvas-container"
 
     ###
+    # Internal list of workspace actor objects (Handles)
+    #
+    # @return [Array<Handle>] actors
+    ###
+    getActors: -> @actorObjects
+
+    ###
     # Checks if a workspace has already been created, and returns false if one
     # has. Otherwise, sets a flag preventing future calls from returning true
     ###
