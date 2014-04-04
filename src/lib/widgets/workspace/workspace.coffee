@@ -654,26 +654,44 @@ define (require) ->
       @_pickInProgress = true
 
       # Request a pick render from ARE, continue once we get it
-      @_are.requestPickingRender @_pickBuffer, =>
+      switch @_are.getActiveRendererMode()
+        when ARERenderer.RENDERER_MODE_NULL
+          AUtilLog.warn "You can't perform a pick with a null renderer"
+        when ARERenderer.RENDERER_MODE_CANVAS
+          @_are.requestPickingRenderCanvas
+            x: pos.x
+            y: pos.y
+            width: 1
+            height: 1
+          , (imageBuffer) =>
+            pixels = imageBuffer.data
+            color = pixels
 
-        pick = new Uint8Array 4
+            cb color[0], color[1], color[2]
 
-        gl = @_are.getGL()
-        gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
-        gl.readPixels pos.x, pos.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pick
-        gl.bindFramebuffer gl.FRAMEBUFFER, null
+            @_pickInProgress = false
 
-        cb pick[0], pick[1], pick[2]
+        when ARERenderer.RENDERER_MODE_WGL
+          @_are.requestPickingRenderWGL @_pickBuffer, =>
 
-        @_pickInProgress = false
+            pick = new Uint8Array 4
 
-        # Start the next pick if one is queued (after a timeout)
-        if @_pickQueue.length > 0
-          setTimeout =>
-            obj = @_pickQueue[0]
-            @_pickQueue.splice 0, 1
-            @performPick obj.pos, obj.cb if obj
-          , 0
+            gl = @_are.getGL()
+            gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
+            gl.readPixels pos.x, pos.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pick
+            gl.bindFramebuffer gl.FRAMEBUFFER, null
+
+            cb pick[0], pick[1], pick[2]
+
+            @_pickInProgress = false
+
+      # Start the next pick if one is queued (after a timeout)
+      if @_pickQueue.length > 0
+        setTimeout =>
+          obj = @_pickQueue[0]
+          @_pickQueue.splice 0, 1
+          @performPick obj.pos, obj.cb if obj
+        , 0
 
     ###
     # Converts document-relative coordinates to ARE coordinates
