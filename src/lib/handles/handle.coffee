@@ -104,3 +104,32 @@ define (require) ->
     # applied by ancestors
     ###
     getContextFunctions: -> @_ctx
+
+    ###
+    # Dump actor into JSON representation
+    #
+    # @return [String] actorJSON
+    ###
+    serialize: ->
+      data = type: "#{@.constructor}", properties: {}
+
+      for name, property in @_properties
+        data.properties[name] = property.serialize()
+
+    ###
+    # Set properties from serialized state
+    #
+    # @param [String] data
+    ###
+    cloneFromData: (data) ->
+      data = JSON.parse data
+
+      @setPosition data.position
+
+    ###
+    # Load and initialize actor from JSON serialization (this will return the
+    # correct actor type)
+    #
+    # @return [Handle, BaseActor, PolygonActor, RectangleActor, TriangleActor]
+    ###
+    @load: (data) ->
