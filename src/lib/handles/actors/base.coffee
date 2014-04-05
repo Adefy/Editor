@@ -579,13 +579,13 @@ define (require) ->
 
       for name, property of buffer
 
-        if property.type == "composite"
+        if property.components
           update = {}
 
           for cName, cValue of property.components
-            update[c] = cValue.value
+            update[cName] = cValue.value
 
-          @_properties[name].update update
+          @_properties[name].setValue update
 
         else
           @_properties[name].setValue property.value
@@ -713,8 +713,8 @@ define (require) ->
 
               val[c] = (anim[v.name].components[c].eval t).y
 
-              # Store new value
-              @_properties[v.name].update val
+          # Store new value
+          @_properties[v.name].setValue val
 
         else
           _start = anim[v.name]._start.x
@@ -725,7 +725,7 @@ define (require) ->
             val = (anim[v.name].eval t).y
 
             # Store new value
-            @_properties[v.name].update val
+            @_properties[v.name].setValue val
 
     ###
     # This gets called if the cursor is to the right of us, and it has not yet
@@ -766,7 +766,7 @@ define (require) ->
 
           # Iterate over components to detect modification
           for cName, cValue of @_properties[name].getProperties()
-            if snapshot.components[c].value != cValue.getValue()
+            if snapshot.components[cName].value != cValue.getValue()
               modified = true
 
         else if snapshot.value != @_properties[name].getValue()
@@ -810,6 +810,10 @@ define (require) ->
         # An animation overlaps us. Perform an integrity check on it, then
         # split.
         anim = @_animations[animCheck]
+
+        console.log 1
+        console.log anim
+        console.log @_animations
 
         if anim[p].components
           for c of anim[p].components
@@ -979,7 +983,7 @@ define (require) ->
         if delta.length == 0
           needsSerialization = true
         else
-          needsSerialization = !! _.find(delta, (d) -> d == name).length
+          needsSerialization = _.find(delta, (d) -> d == name) != undefined
 
         if needsSerialization
           props[name] = {}

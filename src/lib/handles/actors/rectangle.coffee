@@ -85,8 +85,6 @@ define (require) ->
       return if @_alive
       @_alive = true
 
-      window.a = @_properties.physics
-
       physicsEnabled = @_properties.physics.getProperty("enabled").getValue()
       mass = @_properties.physics.getProperty("mass").getValue()
       friction = @_properties.physics.getProperty("friction").getValue()
@@ -109,3 +107,6 @@ define (require) ->
         position: new AJSVector2 x, y
         color: new AJSColor3 r, g, b
         rotation: @_properties.rotation.getValue()
+
+      console.log @_AJSActor.setMass
+      window.h = @_AJSActor

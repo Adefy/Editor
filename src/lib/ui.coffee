@@ -170,7 +170,6 @@ define (requre) ->
       unless @_ignoreEventList == null || @_ignoreEventList == undefined
         return if _.include @_ignoreEventList, type
 
-      console.log "event: #{type}"
       ## we should probably fine tune this later
       for widget in @widgets
         widget.respondToEvent type, params if widget.respondToEvent
