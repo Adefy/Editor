@@ -18,6 +18,7 @@ define (require) ->
       @data_float = true
       @data_precision = 2
       @data_placeholder = 0
+      @data_value = 0
 
     setValue: (value) ->
       return unless @validateValue value
@@ -51,3 +52,11 @@ define (require) ->
     getFloat: (float) -> @data_float
     getPrecision: (precision) -> @data_precision
     getPlaceholder: (placeholder) -> @data_placeholder
+
+    ###
+    # Returns formatted value (enforcing precision)
+    #
+    # @return [Object] value
+    ###
+    getValue: ->
+      Number super().toFixed @data_precision

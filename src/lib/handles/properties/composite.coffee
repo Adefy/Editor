@@ -18,7 +18,10 @@ define (require) ->
       BooleanProperty
     ]
 
+    @type: "composite"
+
     constructor: ->
+      super CompositeProperty.type
       @_properties = {}
 
     addProperty: (id, property) ->
@@ -29,6 +32,9 @@ define (require) ->
 
     getProperties: ->
       @_properties
+
+    setProperties: (properties) ->
+      @_properties = properties
 
     ###
     # Our serialization is a bit different, since we need to serialize each

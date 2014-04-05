@@ -14,6 +14,7 @@ define (require) ->
       super BooleanProperty.type
 
       @data_placeholder = true
+      @data_value = false
 
     setValue: (value) ->
       return unless @validateValue value

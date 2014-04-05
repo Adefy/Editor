@@ -92,8 +92,8 @@ define (require) ->
       friction = @_properties.physics.getProperty("friction").getValue()
       elasticity = @_properties.physics.getProperty("elasticity").getValue()
 
-      x = @_properties.position.getProperty("x").getValue
-      y = @_properties.position.getProperty("y").getValue
+      x = @_properties.position.getProperty("x").getValue()
+      y = @_properties.position.getProperty("y").getValue()
 
       r = @_properties.color.getProperty("r").getValue()
       g = @_properties.color.getProperty("g").getValue()

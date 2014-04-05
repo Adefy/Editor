@@ -640,11 +640,6 @@ define (require) ->
             id: "key-#{keyframes["color"].length}"
             left: offset
 
-        #if anim.components.physics
-        #  keyframes["physics"].push
-        #    id: "physics-#{actorId}-key-#{keyframes["physics"].length}"
-        #    left: offset
-
       keyframes
 
     ###
