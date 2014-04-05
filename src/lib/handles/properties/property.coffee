@@ -77,7 +77,7 @@ define (require) ->
         splitKey = key.split("get")
 
         if splitKey.length == 2
-          data[splitKey[1].trim().toLowerCase()] = @[key]
+          data[splitKey[1].trim().toLowerCase()] = @[key]()
 
       JSON.stringify data
 

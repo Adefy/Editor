@@ -111,10 +111,12 @@ define (require) ->
     # @return [String] actorJSON
     ###
     serialize: ->
-      data = type: "#{@.constructor}", properties: {}
+      data = type: "#{@.constructor.name}", properties: {}
 
-      for name, property in @_properties
+      for name, property of @_properties
         data.properties[name] = property.serialize()
+
+      data
 
     ###
     # Set properties from serialized state

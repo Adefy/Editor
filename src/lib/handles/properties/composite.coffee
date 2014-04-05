@@ -45,8 +45,8 @@ define (require) ->
     serialize: ->
       data = {}
 
-      for id, property of @_properties
-        data[id] = property.serialize()
+      for id of @_properties
+        data[id] = @_properties[id].serialize()
 
       JSON.stringify data
 
