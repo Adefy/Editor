@@ -9,6 +9,8 @@ define (require) ->
   BooleanControlTemplate = require "templates/sidebar/controls/boolean"
   TextControlTemplate = require "templates/sidebar/controls/text"
 
+  CompositeProperty = require "handles/properties/composite"
+
   ###
   # Properties widget, dynamically refreshable
   ###
@@ -164,11 +166,11 @@ define (require) ->
     generateControl: (name, value) ->
       param.required name
       param.required value
-      param.required value.type
+      param.required value.getType(), ["composite"]
 
-      return unless @["renderControl_#{value.type}"]
+      return unless @["renderControl_#{value.getType()}"]
 
-      @["renderControl_#{value.type}"] @prepareNameForDisplay(name), value
+      @["renderControl_#{value.getType()}"] @prepareNameForDisplay(name), value
 
     ###
     # Capitalize first letter of name
@@ -180,10 +182,7 @@ define (require) ->
       name.charAt(0).toUpperCase() + name.substring 1
 
     renderControl_composite: (displayName, value) ->
-      param.required value.components
-
-      # TODO: Document/rename/refactor this method call
-      value.getValue()
+      param.required value.getType(), ["composite"]
 
       label = """
         <h1 data-name="#{displayName.toLowerCase()}">#{displayName}</h1>
@@ -191,18 +190,18 @@ define (require) ->
       """
 
       # Build the control by recursing and concating the result
-      label + _.pairs(value.components).map (component) =>
-        return "" unless @["renderControl_#{component[1].type}"]
+      label + _.pairs(value.getProperties()).map (component) =>
+        return "" unless @["renderControl_#{component[1].getType()}"]
 
         # Note that we handle the "Basic" composite differently here
-        componentCount = _.keys(value.components).length
+        componentCount = _.keys(value.getProperties()).length
         if componentCount <= 3 and displayName.toLowerCase() != "basic"
-          width = "#{100 / _.keys(value.components).length}%"
+          width = "#{100 / _.keys(value.getProperties()).length}%"
         else
           width = "100%"
 
         name = @prepareNameForDisplay component[0]
-        type = component[1].type
+        type = component[1].getType()
 
         unless displayName.toLowerCase() == "basic"
           parent = displayName.toLowerCase()
@@ -217,23 +216,13 @@ define (require) ->
       width = param.optional width, "100%"
       parent = param.optional parent, false
 
-      value.max = param.optional value.max, Infinity
-      value.min = param.optional value.min, -Infinity
-      value.default = param.optional value.default, ""
-      value.float = param.optional value.float, false
-
-      if value.float
-        precision = 2
-      else
-        precision = 0
-
       NumericControlTemplate
         name: displayName.toLowerCase()
-        max: value.max
-        min: value.min
-        float: value.float
-        placeholder: value.default
-        value: Number (value.getValue()).toFixed(precision)
+        max: value.getMax()
+        min: value.getMin()
+        float: value.getFloat()
+        placeholder: value.getPlaceholder()
+        value: value.getValue()
         width: width
         parent: parent
 
@@ -249,12 +238,11 @@ define (require) ->
 
     renderControl_text: (displayName, value, width, parent) ->
       width = param.optional width, "100%"
-      value.default = param.optional value.default, ""
       parent = param.optional parent, false
 
       TextControlTemplate
         name: displayName.toLowerCase()
-        placeholder: value.default
+        placeholder: value.getPlaceholder()
         value: value.getValue()
         parent: parent
 
@@ -271,15 +259,12 @@ define (require) ->
 
       # Bring together all non-composites and render them under the "Basic"
       # label
-      nonComposites = _.filter properties, (p) -> p[1].type != "composite"
-      composites = _.filter properties, (p) -> p[1].type == "composite"
+      nonComposites = _.filter properties, (p) -> p[1].getType() != "composite"
+      composites = _.filter properties, (p) -> p[1].getType() == "composite"
 
       if nonComposites.length > 0
-        fakeControl =
-          type: "composite"
-          components: _.object nonComposites
-          getValue: ->
-            c.getValue() for c in @components
+        fakeControl = new CompositeProperty()
+        fakeControl.setProperties _.object nonComposites
 
         nonCompositeHTML = @generateControl "basic", fakeControl
       else
@@ -319,18 +304,17 @@ define (require) ->
       return @refresh @targetActor unless @_builtHMTL
 
       for property, value of @targetActor.getProperties()
-        value.getValue()
 
-        if value.components
+        if value.getType() == "composite"
           parent = "h1[data-name=#{property}]"
         else
           parent = "h1[data-name=basic]"
 
-        if value.components
-          for component, value of value.components
+        if value.getType() == "composite"
+          for cName, cValue of value.getProperties()
 
-            input = $("#{@_sel} #{parent} + div > dl input[name=#{component}]")
-            value = value.getValue()
+            input = $("#{@_sel} #{parent} + div > dl input[name=#{cName}]")
+            value = cValue.getValue()
 
             if $(input).attr("type") == "number"
               value = Number value

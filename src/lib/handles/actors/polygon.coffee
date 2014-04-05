@@ -3,6 +3,8 @@ define (require) ->
   param = require "util/param"
   BaseActor = require "handles/actors/base"
 
+  NumericProperty = require "handles/properties/numeric"
+
   # N-sided actor
   class PolygonActor extends BaseActor
 
@@ -20,107 +22,80 @@ define (require) ->
     constructor: (@ui, birth, sides, radius, x, y, rotation, death, manualInit) ->
       param.required @ui
       param.required sides
-      param.required radius
+      radius = Math.abs param.required radius
       param.required x
       param.required y
       manualInit = param.optional manualInit, false
       rotation = param.optional rotation, 0
 
-      if sides < 3
-        throw new Error "Can't create an ngon with less than 3 sides"
+      throw new Error "Can't create an ngon with less than 3 sides" if sides < 3
 
-      # Negate negative radius
-      if radius < 0 then radius *= -1
-
-      # Take advantage of generic actor properties
       super @ui, birth, death
       @name = "Polygon"
 
-      @_properties["position"].components["x"]._value = x
-      @_properties["position"].components["y"]._value = y
-      @_properties["rotation"].update rotation
+      @_properties.position.setValue x: x, y: y
+      @_properties.rotation.setValue rotation
 
-      me = @
+      @_properties.sides = new NumericProperty()
+      @_properties.sides.setMin 3
+      @_properties.sides.setPlaceholder 5
+      @_properties.sides.setFloat false
+      @_properties.sides.setValue sides
+      @_properties.sides.onUpdate = (sides) =>
+        @_AJSActor.setSegments sides if @_AJSActor
 
-      # Add our side count, at the very least we are a triangle, no shame in that
-      #
-      # Sides and radius are cached locally
-      @_properties["sides"] =
-        type: "number"
-        min: 3
-        placeholder: 5
-        float: false
-        _value: sides
-        live: true
-        getValue: -> @_value
+      @_properties.sides.genAnimationOpts = (animation, options) ->
+        options.startVal = animation._start.y
+        options
 
-        # Side count updated! Rebuild, muahahaha
-        update: (v) ->
-          @_value = param.required v
+      @_properties.radius = new NumericProperty()
+      @_properties.radius.setMin 0
+      @_properties.radius.setPlaceholder 50
+      @_properties.radius.setValue radius
+      @_properties.radius.onUpdate = (radius) =>
+        @_AJSActor.setRadius radius if @_AJSActor
 
-          if me._AJSActor != null then me._AJSActor.setSegments Number(v)
+      @_properties.sides.genAnimationOpts = (animation, options) ->
+        options.startVal = animation._start.y
+        options
 
-        genAnimationOpts: (anim, opts) ->
-          opts.startVal = anim._start.y
-          opts
-
-      @_properties["radius"] =
-        type: "number"
-        min: 0
-        default: 50
-        float: true
-        live: true
-        _value: radius
-        getValue: -> @_value
-
-        # Radius updated, rebuild
-        update: (v) ->
-          @_value = param.required v
-
-          if me._AJSActor != null then me._AJSActor.setRadius Number(v)
-
-        genAnimationOpts: (anim, opts) ->
-          opts.startVal = anim._start.y
-          opts
-
-      # Finish our initialization
-      if not manualInit then @postInit()
+      @postInit() unless manualInit
 
     # Get polygon side count
     #
     # @return [Number] sides
-    getSides: -> @_properties["sides"]._value
+    getSides: -> @_properties.sides.getValue()
 
     # Get rectangle radius value
     #
     # @return [Number] radius
-    getRadius: -> @_properties["radius"]._value
+    getRadius: -> @_properties.radius.getValue()
 
     # Instantiate our AJS actor
     # @private
     _birth: ->
-      if @_alive then return else @_alive = true
+      return if @_alive
+      @_alive = true
 
-      _physics = @_properties["physics"].components["enabled"]._value
-      _mass = @_properties["physics"].components["mass"]._value
-      _friction = @_properties["physics"].components["friction"]._value
-      _elasticity = @_properties["physics"].components["elasticity"]._value
-      _radius = @_properties["radius"]._value
-      _segments = @_properties["sides"]._value
-      _x = @_properties["position"].components["x"]._value
-      _y = @_properties["position"].components["y"]._value
-      _rotation = @_properties["rotation"]._value
-      _r = @_properties["color"].components["r"]._value
-      _g = @_properties["color"].components["g"]._value
-      _b = @_properties["color"].components["b"]._value
+      physicsEnabled = @_properties.physics.getProperty("enabled").getValue()
+      mass = @_properties.physics.getProperty("mass").getValue()
+      friction = @_properties.physics.getProperty("friction").getValue()
+      elasticity = @_properties.physics.getProperty("elasticity").getValue()
+
+      x = @_properties.position.getProperty("x").getValue()
+      y = @_properties.position.getProperty("y").getValue()
+
+      r = @_properties.color.getProperty("r").getValue()
+      g = @_properties.color.getProperty("g").getValue()
+      b = @_properties.color.getProperty("b").getValue()
 
       @_AJSActor = new AJSPolygon
-        physics: _physics
-        mass: _mass
-        friction: _friction
-        elasticity: _elasticity
-        radius: _radius
-        segments: _segments
-        position: new AJSVector2 _x, _y
-        color: new AJSColor3 _r, _g, _b
-        rotation: _rotation
+        physics: physicsEnabled
+        mass: mass
+        friction: friction
+        elasticity: elasticity
+        radius: @_properties.radius.getValue()
+        segments: @_properties.sides.getValue()
+        position: new AJSVector2 x, y
+        color: new AJSColor3 r, g, b
+        rotation: @_properties.rotation.getValue()

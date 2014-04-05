@@ -7,6 +7,10 @@ define (require) ->
 
   Timeline = require "widgets/timeline/timeline"
 
+  CompositeProperty = require "handles/properties/composite"
+  NumericProperty = require "handles/properties/numeric"
+  BooleanProperty = require "handles/properties/boolean"
+
   # Base manipulateable class for actors
   class BaseActor extends Handle
 
@@ -72,217 +76,133 @@ define (require) ->
       # moved. Note that this starts at our birth!
       @_lastTemporalState = Math.floor @lifetimeStart_ms
 
-      # Properties are interesting, and complex enough to warrant a description
-      #
-      # Currently, there are 3 basic types avaliable.
-      #
-      #   'number' - appears as a numeric input field
-      #     'max'         - the number can have an optional enforced maximum
-      #     'min'         - the number can have an optional enformed minimum
-      #     'float'       - if false, input is enforced as integer-only
-      #     'placeholder' - optional placeholder to display on the input
-      #
-      #   'text' - appears as a standard text input field
-      #   'bool' - appears as a checkbox
-      #
-      # There is a 4th complex type named 'composite', which has a property
-      # named 'components', full of other basic types. Composite nesting has
-      # not been tested as of 9/5/2013, but in theory should be possible.
-      #
-      # Each type needs to have a getValue() method, an optional genAnimationOpts
-      # method, and an update() method. Components of composites shouldn't
-      # provide an update() method, as the parent composite takes care of
-      # updating all components.
-      #
-      # The genAnimationOpts method needs to return an animations object suitable
-      # for export, that can be passed to AJS.animate when animating the property
-      # using the provided animation object.
-      #
-      # The genAnimationOpts method is only required if the property is not
-      # natively supported by the engine.
-      #
-      # All top-level properties should fetch up-to-date information in their
-      # getValue() methods, and save it locally as _value. Composites doing this
-      # must perform the saving for their children.
-      #
-      # Note that we expect composite update methods to take an object containing
-      # the same keys as the composite has components. i.e. position takes (x, y)
-      # and color takes (r, g, b)
-
       me = @
 
-      # Default actor properties, common to all actors
-      @_properties["position"] =
-        type: "composite"
-        live: true
-        components:
-          x:
-            type: "number"
-            float: true
-            placeholder: 0
-            getValue: -> @_value
-          y:
-            type: "number"
-            float: true
-            placeholder: 0
-            getValue: -> @_value
+      @_properties.position = new CompositeProperty()
+      @_properties.position.x = new NumericProperty()
+      @_properties.position.y = new NumericProperty()
 
-        # Fetch actor position
-        getValue: ->
+      @_properties.position.x.onUpdate = (value) =>
+        return unless @_AJSActor
+        position = @_AJSActor.getPosition()
+        position.x = value
+        @_AJSActor.setPosition position
 
-          if me._AJSActor != null
-            pos = me._AJSActor.getPosition()
+      @_properties.position.y.onUpdate = (value) =>
+        return unless @_AJSActor
+        position = @_AJSActor.getPosition()
+        position.y = value
+        @_AJSActor.setPosition position
 
-            @components.x._value = Number pos.x.toFixed me.ACCURACY
-            @components.y._value = Number pos.y.toFixed me.ACCURACY
+      @_properties.position.x.requestUpdate = ->
+        @setValue me._AJSActor.getPosition().x if me._AJSActor
 
-        # Position update, we expect val to be a composite
-        update: (v) ->
-          param.required v
+      @_properties.position.y.requestUpdate = ->
+        @setValue me._AJSActor.getPosition().y if me._AJSActor
 
-          v.x = param.optional v.x, @components.x._value
-          v.y = param.optional v.y, @components.y._value
+      @_properties.position.addProperty "x", @_properties.position.x
+      @_properties.position.addProperty "y", @_properties.position.y
 
-          @components.x._value = v.x
-          @components.y._value = v.y
 
-          if me._AJSActor != null
-            me._AJSActor.setPosition new AJSVector2(v.x, v.y)
+      @_properties.rotation = new NumericProperty()
+      @_properties.rotation.setMin 0
+      @_properties.rotation.setMax 260
+      @_properties.rotation.onUpdate (rotation) =>
+        @_AJSActor.setRotation rotation if @_AJSActor
+      @_properties.rotation.requestUpdate ->
+        @setValue me._AJSActor.getRotation() if me._AJSActor
 
-      @_properties["rotation"] =
-        type: "number"
-        live: true
-        min: 0
-        max: 360
-        float: true
-        placeholder: 0
 
-        # Fetch our angle from our actor
-        getValue: ->
-          @_value = Number me._AJSActor.getRotation().toFixed me.ACCURACY
+      @_properties.color = new CompositeProperty()
+      @_properties.color.r = new NumericProperty()
+      @_properties.color.r.setMin 0
+      @_properties.color.r.setMax 255
+      @_properties.color.r.setFloat false
+      @_properties.color.r.setPlaceholder 255
+      @_properties.color.r.setValue 0
 
-        # Val simply contains our new angle in degrees
-        update: (v) ->
-          @_value = param.required v
-          me._AJSActor.setRotation v if me._AJSActor != null
+      @_properties.color.g = new NumericProperty()
+      @_properties.color.b = new NumericProperty()
+      @_properties.color.g.clone @_properties.color.r
+      @_properties.color.b.clone @_properties.color.r
 
-      @_properties["color"] =
-        type: "composite"
-        live: true
-        components:
-          r:
-            type: "number"
-            min: 0
-            max: 255
-            float: false
-            placeholder: 255
-            _value: 0
-            getValue: -> @_value
-          g:
-            type: "number"
-            min: 0
-            max: 255
-            float: false
-            placeholder: 255
-            _value: 0
-            getValue: -> @_value
-          b:
-            type: "number"
-            min: 0
-            max: 255
-            float: false
-            placeholder: 255
-            _value: 0
-            getValue: -> @_value
+      @_properties.color.r.onUpdate = (value) =>
+        return unless @_AJSActor
+        color = @_AJSActor.getColor()
+        color.setR value
+        @_AJSActor.setColor color
 
-        # We fetch color information from our actor, and set composite
-        # values accordingly
-        getValue: ->
+      @_properties.color.g.onUpdate = (value) =>
+        return unless @_AJSActor
+        color = @_AJSActor.getColor()
+        color.setG value
+        @_AJSActor.setColor color
 
-          if me._AJSActor != null
-            col = me._AJSActor.getColor()
+      @_properties.color.b.onUpdate = (value) =>
+        return unless @_AJSActor
+        color = @_AJSActor.getColor()
+        color.setB value
+        @_AJSActor.setColor color
 
-            @components.r._value = Number col.getR().toFixed me.ACCURACY
-            @components.g._value = Number col.getG().toFixed me.ACCURACY
-            @components.b._value = Number col.getB().toFixed me.ACCURACY
+      @_properties.color.r.requestUpdate = ->
+        @setValue me._AJSActor.getColor().getR() if me._AJSActor
 
-          null
+      @_properties.color.g.requestUpdate = ->
+        @setValue me._AJSActor.getColor().getG() if me._AJSActor
 
-        # Color update, expect val to be composite
-        update: (v) ->
-          param.required v
+      @_properties.color.b.requestUpdate = ->
+        @setValue me._AJSActor.getColor().getB() if me._AJSActor
 
-          v.r = param.optional v.r, @components.r._value
-          v.g = param.optional v.g, @components.g._value
-          v.b = param.optional v.b, @components.b._value
+      @_properties.color.addProperty "r", @_properties.color.r
+      @_properties.color.addProperty "g", @_properties.color.g
+      @_properties.color.addProperty "b", @_properties.color.b
 
-          @components.r._value = v.r
-          @components.g._value = v.g
-          @components.b._value = v.b
 
-          if me._AJSActor != null
-            me._AJSActor.setColor new AJSColor3 v.r, v.g, v.b
+      @_properties.physics = new CompositeProperty()
+      @_properties.physics.mass = new NumericProperty()
+      @_properties.physics.mass.setMin 0
+      @_properties.physics.mass.setPlaceholder 50
+      @_properties.physics.mass.setValue 50
 
-      @_properties["physics"] =
-        type: "composite"
-        live: false
+      @_properties.physics.mass.onUpdate = (mass) =>
+        @_AJSActor.setMass mass if @_AJSActor
 
-        # We cache component values locally, and just pass those through
-        components:
-          enabled:
-            type: "bool"
-            _value: false
-            getValue: -> @_value
-          mass:
-            type: "number"
-            min: 0
-            float: true
-            placeholder: 50
-            _value: 50
-            getValue: -> @_value
-          elasticity:
-            type: "number"
-            min: 0
-            max: 1
-            float: true
-            placeholder: 0.3
-            _value: 0.3
-            getValue: -> @_value
-          friction:
-            type: "number"
-            min: 0
-            max: 1
-            float: true
-            placeholder: 0.2
-            _value: 0.2
-            getValue: -> @_value
+      @_properties.physics.elasticity = new NumericProperty()
+      @_properties.physics.elasticity.setMin 0
+      @_properties.physics.elasticity.setMax 1
+      @_properties.physics.elasticity.setPrecision 6
+      @_properties.physics.elasticity.setPlaceholder 0.3
+      @_properties.physics.elasticity.setValue 0.3
 
-        # Physics values are stored locally, and only changed when we change them
-        # As such, we cache everything internally and just pass that to our
-        # properties panel. Because of this, our outer composite getValue()
-        # does nothing
-        getValue: -> # dud
+      @_properties.physics.elasticity.onUpdate = (elasticity) =>
+        @_AJSActor.setElasticity elasticity if @_AJSActor
 
-        # Physics update! Composite and fanciness, live is disabled so all
-        # values are updated at once (yay!)
-        update: (v) ->
-          param.required v
+      @_properties.physics.friction = new NumericProperty()
+      @_properties.physics.friction.setMin 0
+      @_properties.physics.friction.setMax 1
+      @_properties.physics.friction.setPrecision 6
+      @_properties.physics.friction.setPlaceholder 0.2
+      @_properties.physics.friction.setValue 0.2
 
-          # Save values internally
-          @components.enabled._value = param.required v.enabled
-          @components.mass._value = param.required v.mass
-          @components.elasticity._value = param.required v.elasticity
-          @components.friction._value = param.required v.friction
+      @_properties.physics.friction.onUpdate = (friction) =>
+        @_AJSActor.setFriction friction if @_AJSActor
 
-          if me._AJSActor != null
 
-            # Note that we re-create the physics body every time!
-            # TODO: Optimize this
-            me._AJSActor.disablePsyx()
+      @_properties.physics.enabled = new BooleanProperty()
+      @_properties.physics.enabled.setValue false
 
-            if v.enabled
-              me._AJSActor.enablePsyx v.mass, v.friction, v.elasticity
+      @_properties.physics.enabled.onUpdate = (enabled) =>
+        return unless @_AJSActor
 
+        if enabled
+          @_AJSActor.enablePsyx()
+        else
+          @_AJSActor.disablePsyx()
+
+      @_properties.physics.addProperty "mass", @_properties.physics.mass
+      @_properties.physics.addProperty "elasticity", @_properties.physics.elasticity
+      @_properties.physics.addProperty "friction", @_properties.physics.friction
+      @_properties.physics.addProperty "enabled", @_properties.physics.enabled
 
     ###
     # Get internal actors' id. Note that the actor must exist for this!
@@ -336,7 +256,7 @@ define (require) ->
     ###
     getRotation: ->
       if @_AJSActor
-        @_properties["rotation"].getValue()
+        @_properties.rotation.getValue()
       else
         null
 
@@ -349,16 +269,14 @@ define (require) ->
     getColor: (float) ->
       float = param.optional float, false
 
-      if @_AJSActor
-        _col = @_AJSActor.getColor()
+      colorRaw = @_properties.color.getValue()
+      color = new AJSColor3 colorRaw.r, colorRaw.g, colorRaw.b
 
-        {
-          r: _col.getR(float)
-          g: _col.getG(float)
-          b: _col.getB(float)
-        }
-      else
-        null
+      {
+        r: color.getR(float)
+        g: color.getG(float)
+        b: color.getB(float)
+      }
 
     ###
     # Return actor physics
@@ -366,17 +284,13 @@ define (require) ->
     # @return [Object] physics properties
     ###
     getPsyX: ->
-      if @_AJSActor
-        _physics = @_properties["physics"].components
 
-        {
-          enabled: _physics.enabled.getValue()
-          mass: _physics.mass.getValue()
-          elasticity: _physics.elasticity.getValue()
-          friction: _physics.friction.getValue()
-        }
-      else
-        null
+      {
+        enabled: @_properties.physics.getProperty("enabled").getValue()
+        mass: @_properties.physics.getProperty("mass").getValue()
+        elasticity: @_properties.physics.getProperty("elasticity").getValue()
+        friction: @_properties.physics.getProperty("friction").getValue()
+      }
 
     ###
     # Get buffer entry
@@ -413,7 +327,7 @@ define (require) ->
       x = Number (param.required x).toFixed(@ACCURACY)
       y = Number (param.required y).toFixed(@ACCURACY)
 
-      @_properties["position"].update x: x, y: y
+      @_properties.position.setValue x: x, y: y
       @updateInTime()
 
     ###
@@ -424,7 +338,7 @@ define (require) ->
     setRotation: (angle) ->
       angle = Number (param.required angle).toFixed(@ACCURACY)
 
-      @_properties["rotation"].update angle
+      @_properties.rotation.setValue angle
       @updateInTime()
 
     ###
@@ -439,7 +353,7 @@ define (require) ->
       g = Number (param.required g).toFixed(@ACCURACY)
       b = Number (param.required b).toFixed(@ACCURACY)
 
-      @_properties["color"].update r: r, g: g, b: b
+      @_properties.color.setValue r: r, g: g, b: b
       @updateInTime()
 
     ###
@@ -466,16 +380,14 @@ define (require) ->
       param.required opts
       component = param.optional component, ""
 
-      prop = @_properties[property]
+      property = @_properties[property]
+      return unless property
 
-      return null unless prop
-
-      if prop.components
-        return null unless prop.components[component].genAnimationOpts
-        prop.components[component].genAnimationOpts anim, opts
+      if property.getType() == "composite"
+        return unless property.getProperty(component).genAnimationOpts
+        property.getProperty(component).genAnimationOpts anim, opts
       else
-        return null unless prop.genAnimationOpts == undefined
-        prop.genAnimationOpts anim, opts
+        property.genAnimationOpts anim, opts if property.genAnimationOpts
 
     ###
     # Called when the cursor leaves our lifetime on the timeline. We delete
@@ -524,20 +436,20 @@ define (require) ->
     # Callback is called in the form cb(property, composite) where property is
     # the full property object, and composite is boolean
     #
-    # @param [Object] obj properties object to parse
+    # @param [Object] properties properties object to parse
     # @param [Method] cb callback to call with every property
     ###
-    perProp: (obj, cb) ->
-      for p of obj
+    perProp: (properties, cb) ->
+      for name, property of properties
 
         # Composite iterate over components
-        if obj[p].type == "composite" and obj[p].components
-          for c of obj[p].components
-            cb obj[p].components[c], true
+        if property.getType() == "composite"
+          for name, component of property.getProperties()
+            cb component, true
 
         # Call cb with property (non-composite)
         else
-          cb obj[p], false
+          cb property, false
 
     ###
     # Calls the default handle updateProperties() method, then updates us in
@@ -578,25 +490,23 @@ define (require) ->
 
       @_propSnapshot = {}
 
-      for p of @_properties
+      for pName, property of @_properties
 
-        _Sp = {}
-        _p = @_properties[p]
+        snapshot = {}
 
-        if _p.type == "composite" and _p.components
-          _Sp.components = {}
+        if property.getType() == "composite"
+          snapshot.components = {}
 
-          for c of _p.components
-            _Sp.components[c] = {}
-            _Sp.components[c].value = _p.components[c]._value
+          for cName, cValue of property.getProperties()
+            snapshot.components[cName] = value: cValue.getValue()
 
         else
-          _Sp.value = _p._value
+          snapshot.value = property.getValue()
 
-        unless isNaN _Sp.value
-          _Sp.value = Number _Sp.value.toFixed @ACCURACY
+        unless isNaN snapshot.value
+          snapshot.value = Number snapshot.value.toFixed @ACCURACY
 
-        @_propSnapshot[p] = _Sp
+        @_propSnapshot[pName] = snapshot
 
     ###
     # Finds states between our last temporal state, and the supplied state, and
@@ -671,12 +581,14 @@ define (require) ->
 
         if property.components
           update = {}
-          update[c] = property.components[c].value for c of property.components
 
-          @_properties[name].update update
+          for cName, cValue of property.components
+            update[cName] = cValue.value
+
+          @_properties[name].setValue update
 
         else
-          @_properties[name].update property.value
+          @_properties[name].setValue property.value
 
     ###
     # Updates our state according to the current cursor position. Goes through
@@ -788,11 +700,11 @@ define (require) ->
 
         # The property to be animated is composite. Apply the state change
         # to each component individually.
-        if _prop.type == "composite" and _prop.components != undefined
+        if _prop.getType() == "composite"
 
           val = {}
 
-          for c of _prop.components
+          for c of _prop.getProperties()
             _start = anim[v.name].components[c]._start.x
 
             # Ensure animation starts before us
@@ -801,8 +713,8 @@ define (require) ->
 
               val[c] = (anim[v.name].components[c].eval t).y
 
-              # Store new value
-              @_properties[v.name].update val
+          # Store new value
+          @_properties[v.name].setValue val
 
         else
           _start = anim[v.name]._start.x
@@ -813,7 +725,7 @@ define (require) ->
             val = (anim[v.name].eval t).y
 
             # Store new value
-            @_properties[v.name].update val
+            @_properties[v.name].setValue val
 
     ###
     # This gets called if the cursor is to the right of us, and it has not yet
@@ -849,17 +761,15 @@ define (require) ->
       for name, snapshot of @_propSnapshot
         modified = false
 
-        prop = @_properties[name]
-
         # Compare snapshot with live property
-        if prop.type == "composite" and prop.components
+        if @_properties[name].getType() == "composite"
 
           # Iterate over components to detect modification
-          for c of prop.components
-            if snapshot.components[c].value != prop.components[c]._value
+          for cName, cValue of @_properties[name].getProperties()
+            if snapshot.components[cName].value != cValue.getValue()
               modified = true
 
-        else if snapshot.value != prop._value
+        else if snapshot.value != @_properties[name].getValue()
           modified = true
 
         # Differs, ship to delta
@@ -888,9 +798,6 @@ define (require) ->
       # Check if we are in the middle of an animation ourselves. If so,
       # split it
       animCheck = @_findNearestState time, true, p
-
-      # If we are on the tip of an animation, then bail
-      return if @_animations["#{time}"]
 
       _startP = @_propBuffer["#{left}"][p]
       _endP = @_propBuffer["#{time}"][p]
@@ -1069,23 +976,19 @@ define (require) ->
         if delta.length == 0
           needsSerialization = true
         else
-          for d in delta
-            if name == d
-              needsSerialization = true
-              break
+          needsSerialization = _.find(delta, (d) -> d == name) != undefined
 
         if needsSerialization
           props[name] = {}
 
-          if value.type == "composite" and value.components
+          if value.getType() == "composite"
             props[name].components = {}
 
-            for c of value.components
-              props[name].components[c] = {}
-              props[name].components[c].value = value.components[c]._value
+            for cName, cValue of value.getProperties()
+              props[name].components[cName] = value: cValue.getValue()
 
           else
-            props[name].value = value._value
+            props[name].value = value.getValue()
 
       props
 

@@ -72,6 +72,13 @@ define (require) ->
       , 4, "aw-canvas-container"
 
     ###
+    # Internal list of workspace actor objects (Handles)
+    #
+    # @return [Array<Handle>] actors
+    ###
+    getActors: -> @actorObjects
+
+    ###
     # Checks if a workspace has already been created, and returns false if one
     # has. Otherwise, sets a flag preventing future calls from returning true
     ###
@@ -580,7 +587,7 @@ define (require) ->
     # http://learningwebgl.com/blog/?p=1786
     ###
     _buildPickBuffer: ->
-      unless @_are.isWGLRendererActive
+      unless @_are.getActiveRendererMode() == ARERenderer.RENDERER_MODE_WGL
         return false
 
       gl = @_are.getGL()
@@ -650,8 +657,7 @@ define (require) ->
 
       # We can only perform one pick at a time, so queue 'er up if needed
       if @_pickInProgress
-        @_pickQueue.push pos: pos, cb: cb
-        return
+        return @_pickQueue.push pos: pos, cb: cb
 
       @_pickInProgress = true
 
