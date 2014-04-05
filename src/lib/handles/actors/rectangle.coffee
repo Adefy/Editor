@@ -107,6 +107,3 @@ define (require) ->
         position: new AJSVector2 x, y
         color: new AJSColor3 r, g, b
         rotation: @_properties.rotation.getValue()
-
-      console.log @_AJSActor.setMass
-      window.h = @_AJSActor

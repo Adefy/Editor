@@ -799,9 +799,6 @@ define (require) ->
       # split it
       animCheck = @_findNearestState time, true, p
 
-      # If we are on the tip of an animation, then bail
-      return if @_animations["#{time}"]
-
       _startP = @_propBuffer["#{left}"][p]
       _endP = @_propBuffer["#{time}"][p]
 
@@ -810,10 +807,6 @@ define (require) ->
         # An animation overlaps us. Perform an integrity check on it, then
         # split.
         anim = @_animations[animCheck]
-
-        console.log 1
-        console.log anim
-        console.log @_animations
 
         if anim[p].components
           for c of anim[p].components
