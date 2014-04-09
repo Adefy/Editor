@@ -7,7 +7,7 @@ define ->
   # @property [HTML] content
   ###
   Handlebars.compile """
-    <dl class="asset directory">
+    <dl id="{{directory.id}}" class="asset directory">
       <dt class="toggle-directory">
         <i class="fa fa-fw {{directoryStateIcon}}"></i>
       </dt>

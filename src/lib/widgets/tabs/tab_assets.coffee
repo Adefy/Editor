@@ -2,6 +2,7 @@ define (require) ->
 
   ID = require "util/id"
   Tab = require "widgets/tabs/tab"
+  Asset = require "handles/asset"
   AssetDirectoryTemplate = require "templates/asset_directory"
   AssetFileTemplate = require "templates/asset_file"
   ContextMenu = require "widgets/context_menu"
@@ -19,34 +20,24 @@ define (require) ->
         classes: ["tab-assets"]
 
       @_assets = [
-        id: ID.prefId("asset-directory")
-        directory:
+        new Asset
+          isDirectory: true,
           name: "I'm a directory"
-          assets: [
-            id: ID.prefId("asset-file")
-            file:
+          entries: [
+            new Asset
               name: "A"
           ,
-            id: ID.prefId("asset-file")
-            file:
+            new Asset
               name: "B"
           ]
       ,
-        id: ID.prefId("asset-file")
-        file:
-          name: "A"
+        new Asset name: "A"
       ,
-        id: ID.prefId("asset-file")
-        file:
-          name: "B"
+        new Asset name: "B"
       ,
-        id: ID.prefId("asset-file")
-        file:
-          name: "C"
+        new Asset name: "C"
       ,
-        id: ID.prefId("asset-file")
-        file:
-          name: "D"
+        new Asset name: "D"
       ]
 
       @_regListeners()
@@ -97,18 +88,16 @@ define (require) ->
     # @private
     ###
     _renderAssets: (assets) ->
-      assets.map (asset) =>
-        return AssetFileTemplate file: asset.file unless asset.directory
+      assets.map (org_asset) =>
+        asset = org_asset.toRenderParams()
+        return AssetFileTemplate file: asset unless org_asset.isDirectory()
 
         directoryStateIcon = "fa-caret-right"
-        content = @_renderAssets asset.directory.assets
-
-        if asset.directory.unfolded
-          directoryStateIcon = "fa-caret-down"
+        content = @_renderAssets org_asset.getEntries()
 
         AssetDirectoryTemplate
           directoryStateIcon: directoryStateIcon
-          directory: asset.directory
+          directory: asset
           content: content
 
       .join ""
