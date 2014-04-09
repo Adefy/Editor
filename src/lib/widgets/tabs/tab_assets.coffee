@@ -56,11 +56,10 @@ define (require) ->
         return AssetFileTemplate file: asset.file unless asset.directory
 
         directoryStateIcon = "fa-caret-right"
-        content = ""
+        content = @_renderAssets asset.directory.assets
 
         if asset.directory.unfolded
           directoryStateIcon = "fa-caret-down"
-          content = @_renderAssets asset.directory.assets
 
         AssetDirectoryTemplate
           directoryStateIcon: directoryStateIcon
