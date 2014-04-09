@@ -28,6 +28,12 @@ define (require) ->
       #
 
     ###
+    # @return [Void]
+    ###
+    postRender: ->
+      #
+
+    ###
     # Iterate through our parents untill we reach our parent sidebar
     ###
     getSidebar: ->

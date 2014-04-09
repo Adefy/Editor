@@ -134,6 +134,9 @@ define (require) ->
     ###
     postRender: ->
       @_setupScrollbar()
+      for tab in @_tabs
+        if tab.content && tab.content.postRender
+          tab.content.postRender()
 
     ###
     # When a child element changes size, position, this function is called

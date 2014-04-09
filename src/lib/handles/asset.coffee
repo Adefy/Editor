@@ -24,6 +24,7 @@ define (require) ->
       @_isDirectory = param.optional options.isDirectory, false
 
       if @_isDirectory
+        @_expanded = param.optional options.expanded, false
         @_entries = param.optional options.entries, []
         for entry in @_entries
           entry._parent = @

@@ -60,21 +60,31 @@ define (require) ->
       @_searchAssetsById @_assets, id
 
     ###
+    # @param [Asset] asset
+    ###
+    refreshAssetState: (asset) ->
+      elementId = "##{asset.getId()}"
+
+      expanded = asset.getExpanded()
+
+      $(elementId).toggleClass("expanded", expanded)
+
+      icon = $(elementId).find(".toggle-directory i")
+      icon.toggleClass("fa-caret-right", !expanded)
+      icon.toggleClass("fa-caret-down",  expanded)
+
+    ###
     # Callback for directory visiblity content toggle
     # @param [HTMLElement] element
     ###
     _onToggleDirectory: (element) ->
-
-      $(element).toggleClass("expanded")
-
-      icon = $(element).find(".toggle-directory i")
-
-      if $(element).hasClass("expanded")
-        icon.removeClass("fa-caret-right")
-        icon.addClass("fa-caret-down")
+      assetElementId = element[0].id
+      asset = @findAssetById(assetElementId)
+      if asset
+        asset.setExpanded !asset.getExpanded()
+        @refreshAssetState asset
       else
-        icon.removeClass("fa-caret-down")
-        icon.addClass("fa-caret-right")
+        throw new Error "could not find asset(id: #{assetElementId})"
 
       @_parent.onChildUpdate(@) if @_parent.onChildUpdate
 
@@ -116,11 +126,18 @@ define (require) ->
         asset = org_asset.toRenderParams()
         return AssetFileTemplate file: asset unless org_asset.isDirectory()
 
-        directoryStateIcon = "fa-caret-right"
         content = @_renderAssets org_asset.getEntries()
+
+        expanded = ""
+        directoryStateIcon = "fa-caret-right"
+
+        if org_asset.getExpanded()
+          expanded = "expanded"
+          directoryStateIcon = "fa-caret-down"
 
         AssetDirectoryTemplate
           directoryStateIcon: directoryStateIcon
+          expanded: expanded
           directory: asset
           content: content
 
@@ -131,7 +148,6 @@ define (require) ->
     ###
     render: ->
       @_renderAssets @_assets
-
 
     ###
     # ContextMenu functions
