@@ -58,7 +58,7 @@ define (require) ->
       @_properties.height.setPlaceholder 100
       @_properties.height.setValue h
       @_properties.height.requestUpdate = ->
-        @setValue me._AJSActor.getWidth() if me._AJSActor
+        @setValue me._AJSActor.getHeight() if me._AJSActor
 
       @_properties.height.onUpdate = (height) =>
         @_AJSActor.setHeight height if @_AJSActor

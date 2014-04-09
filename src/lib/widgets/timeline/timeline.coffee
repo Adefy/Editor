@@ -637,6 +637,8 @@ define (require) ->
         #physics: []
 
       _animations = actor.getAnimations()
+      console.log _animations
+
       for time, anim of _animations
         offset = timebarData.spaceW *
                  ((Number(time) - actor.lifetimeStart_ms) / @_duration)
@@ -1018,7 +1020,7 @@ define (require) ->
         when "selected.actor.changed"
           @updateActor()
         when "actor.update.intime"
-          @updateActorBody params.actor
+          @updateActor params.actor
 
     ## MODALS
 

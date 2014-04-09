@@ -62,24 +62,13 @@ define (require) ->
     # properties, so we just call their update() methods as needed, after
     # validation
     #
-    # @param [Object] updates object containing property:value pairs
-    updateProperties: (updates) ->
-      param.required updates
+    # @param [Object] updatePacket object containing property:value pairs
+    updateProperties: (updatePacket) ->
+      param.required updatePacket
 
-      for updateName, val of updates
-        lookup = updateName.toLowerCase()
-        payload = {}
-
-        # Apply parent if there is one (means control was a composite)
-        if val.parent
-          lookup = val.parent.toLowerCase()
-          payload[updateName.toLowerCase()] = val.value
-        else
-          payload = val.value
-
-        if @_properties[lookup] != undefined
-          if typeof @_properties[lookup].update == "function"
-            @_properties[lookup].update payload
+      for property, value of updatePacket
+        if @_properties[property]
+          @_properties[property].setValue value
 
     ###
     # Set property in key, value form. Note that new properties can not be

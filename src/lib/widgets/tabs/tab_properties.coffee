@@ -138,22 +138,28 @@ define (require) ->
       propType = $(control).attr "type"
       propName = $(control).attr "name"
 
-      parsedProperties = {}
-      parsedProperties[propName] =
-        parent: $(control).attr "data-parent"
-        value: null
+      value = null
+      parent = $(control).attr "data-parent"
 
       if propType == "number"
-        parsedProperties[propName].value = Number $(control).val()
+        value = Number $(control).val()
       else if propType == "text"
-        parsedProperties[propName].value  = $(control).val()
+        value  = $(control).val()
       else if propType == "checkbox"
-        parsedProperties[propName].value = $(control).is ":checked"
+        value = $(control).is ":checked"
+
+      updatePacket = {}
+
+      if $(control).attr "data-parent"
+        updatePacket[parent] = {}
+        updatePacket[parent][propName] = value
+      else
+        updatePacket[propName] = value
 
       unless apply
-        parsedProperties
+        updatePacket
       else
-        @targetActor.updateProperties parsedProperties
+        @targetActor.updateProperties updatePacket
 
     ###
     # Generates a mini HTML control widget for the property in question
