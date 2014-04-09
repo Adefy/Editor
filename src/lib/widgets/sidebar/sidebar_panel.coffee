@@ -136,6 +136,13 @@ define (require) ->
       @_setupScrollbar()
 
     ###
+    # When a child element changes size, position, this function is called
+    # @param [Widget] child
+    ###
+    onChildUpdate: (child) ->
+      @_updateScrollbar()
+
+    ###
     # @param [String] type
     # @param [Object] params
     ###
