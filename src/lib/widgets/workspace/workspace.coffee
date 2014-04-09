@@ -11,6 +11,8 @@ define (require) ->
   WorkspaceScreenSizeTemplate = require "templates/workspace/screen_size"
   WorkspaceCanvasContainerTemplate = require "templates/workspace/canvas_container"
 
+  Dragger = require "util/dragger"
+
   # Workspace widget
   class Workspace extends Widget
 
@@ -150,14 +152,15 @@ define (require) ->
     ###
     bindContextClick: ->
       $(document).on "contextmenu", ".workspace canvas", (e) =>
+        return if @dragger.isDragging()
+
         @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
           return unless @isValidPick r, g, b
 
           actor = @getActorFromPick r, g, b
           if actor
-            @stopDragging()
-
             unless _.isEmpty actor.getContextFunctions()
+              @dragger.forceDragEnd()
               new ContextMenu e.pageX, e.pageY, actor
 
         e.preventDefault()
@@ -209,75 +212,52 @@ define (require) ->
     # Initializes dragging settings and attaches listeners
     ###
     setupActorDragging: ->
-      @initializeDraggingData()
+      @dragger = new Dragger ".workspace canvas"
 
-      # On mousedown, we need to setup pre-dragging state, perform a pick,
-      # and wait for movement
-      $(".workspace canvas").mousedown (e) =>
-        @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
-          return unless @isValidPick r, g, b
+      @dragger.setOnDragStart (d) =>
+        @performPick @domToGL(d.getStart().x, d.getStart().y), (r, g, b) =>
 
-          @_drag.handle = @getActorFromPick r, g, b
-          if @_drag.handle
+          return d.forceDragEnd() unless @isValidPick r, g, b
 
-            @_drag.updateProperties = true
+          handle = @getActorFromPick r, g, b
 
-            @_drag.start = x: e.pageX, y: e.pageY
-            @_drag.orig = @_drag.handle.getPosition()
+          return d.forceDragEnd() unless handle
 
-            @_drag.active = true
-            document.body.style.cursor = "pointer"
+          d.setTarget handle
+          d.setUserData
+            updateProperties: true
+            original: handle.getPosition()
 
-      # Reset state after 1ms post-drag, leaving time to prevent the click
-      # handler from taking effect
-      $(".workspace canvas").mouseup (e) =>
-        @stopDragging()
+          if handle.getActor().hasPsyx()
+            handle.getActor().disablePsyx()
+            d.setUserDataValue "hasPhysics", true
+          else
+            d.setUserDataValue "hasPhysics", false
 
-        @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
-          unless @isValidPick r, g, b
-            data = $("body").data("default-properties")
-            data.clear() if data
-            return
+          document.body.style.cursor = "pointer"
 
-          actor = @getActorFromPick r, g, b
-          if actor
-            @setSelectedActor actor
-            @ui.pushEvent "workspace.selected.actor",
-              actorId: @_selectedActor
-              actor: actor
+      @dragger.setOnDragEnd (d) =>
+        document.body.style.cursor = "auto"
 
-        setTimeout (=> @_drag.dragging = false), 0
+        if d.getUserData()
+          handle = d.getTarget()
+          handle.getActor().enablePsyx() if d.getUserData().hasPhysics
 
-      # On-drag logic, at this point a click has already fired
-      $(".workspace canvas").mousemove (e) =>
-        return unless @_drag.active
+      @dragger.setOnDrag (d, deltaX, deltaY) =>
 
-        # Perform an initial check, destroy the physics body if there is one
-        unless @_drag.dragging
-          @_drag.dragging = true
+        # Delay the drag untill we finish our pick
+        if d.getUserData() and d.getUserData().original
 
-          if @_drag.handle.getActor().hasPsyx()
-            @_drag.handle.getActor().disablePsyx()
-            @_drag.hasPhysics = true
+          newX = d.getUserData().original.x + deltaX
+          newY = d.getUserData().original.y - deltaY
 
-        dx = Math.pow(e.pageX - @_drag.start.x, 2)
-        dy = Math.pow(e.pageY - @_drag.start.y, 2)
-
-        if Math.sqrt(dx + dy) > @_drag.tolerance
-
-          # Calc new coords (orig + offset)
-          newX = Number(@_drag.orig.x + (e.pageX - @_drag.start.x))
-
-          # Note we need to invert the vertical offset
-          newY = Number(@_drag.orig.y + ((e.pageY - @_drag.start.y) * -1))
-
-          @_drag.handle.setPosition newX, newY
+          d.getTarget().setPosition newX, newY
           @ui.pushEvent "selected.actor.changed"
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
       $(".workspace canvas").click (e) =>
-        return if @_drag.dragging
+        return if @dragger.isDragging()
 
         @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
           unless @isValidPick r, g, b
@@ -291,33 +271,6 @@ define (require) ->
             @ui.pushEvent "workspace.selected.actor",
               actorId: @_selectedActor
               actor: actor
-
-    initializeDraggingData: ->
-      @_drag =
-        active: false       # Enables logic in mousemove()
-        dragging: false     # Disables the normal click listener.
-
-        start: x: 0, y: 0
-        orig: x: 0, y: 0
-
-        handle: null
-        tolerance: 5
-
-        updateProperties: false
-        hasPhysics: false
-
-    ###
-    # Resets our dragging data structure
-    ###
-    stopDragging: ->
-      @_drag.handle.getActor().enablePsyx() if @_drag.hasPhysics
-
-      @_drag.active = false
-      @_drag.handle = null
-      @_drag.updateProperties = false
-      @_drag.hasPhysics = false
-
-      document.body.style.cursor = "auto"
 
     ###
     # @private
