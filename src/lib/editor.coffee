@@ -13,6 +13,7 @@ define (require) ->
   Modal = require "widgets/modal"
 
   Bezier = require "widgets/timeline/bezier"
+  EditorStateSave = require "save"
 
   class Editor
 
@@ -30,6 +31,9 @@ define (require) ->
       @ui = new UIManager
 
       AUtilLog.info "Adefy Editor created id(#{config.selector})"
+
+      @state = new EditorStateSave @ui
+      @state.loadState() if @state.saveExists()
 
     ###
     # We can't run properly in Opera, as it does not let us override the
@@ -49,251 +53,18 @@ define (require) ->
         """
 
     ###
+    # Update state snapshot and save it in storage
+    ###
+    save: ->
+      @state.saveState()
+
+    ###
     # Clears the workspace, creating a new ad
     ###
     newAd: ->
 
       # Trigger a workspace reset
       @ui.workspace.reset()
-
-    ###
-    # Serialize all ad data in the workspace to send to the server
-    #
-    # @return [String] data
-    # @private
-    ###
-    _serialize: ->
-
-      data = {}
-
-      # Cursor position
-      data.cursorPosition = @ui.timeline.getCursorTime()
-
-      # Actors!
-      data.actors = []
-
-      # Add the data we need to fully re-build each actor
-      for a in @ui.workspace.actorObjects
-        _actor = {}
-
-        # Figure out type, save relevant information
-        if a instanceof TriangleActor
-          _actor.type = "TriangleActor"
-          _actor.base = a.getBase()
-          _actor.height = a.getHeight()
-        else if a instanceof RectangleActor
-          _actor.type = "RectangleActor"
-          _actor.width = a.getWidth()
-          _actor.height = a.getHeight()
-        else if a instanceof PolygonActor
-          _actor.type = "PolygonActor"
-          _actor.radius = a.getRadius()
-          _actor.sides = a.getSides()
-        else
-          AUtilLog.warn "Actor of unknown type, not saving: #{a.name}"
-
-        # Continue saving
-        if _actor.type != undefined
-
-          # Saved elements are self-explanatory
-          _actor.name = a.name
-          _actor.lifetimeStart_ms = a.lifetimeStart_ms
-          _actor.lifetimeEnd_ms = a.lifetimeEnd_ms
-          _actor.propBuffer = a._propBuffer
-          _actor.lastTemporalState = a._lastTemporalState
-          _actor.x = a.getPosition().x
-          _actor.y = a.getPosition().y
-          _actor.r = a.getRotation()
-          _actor.color = a.getColor()
-
-          # Save the information we need to re-create all animations
-          _actor.animations = {}
-
-          for anim, anim_val of a._animations
-            _actor.animations[anim] = {}
-
-            for prop, prop_val of anim_val
-
-              _anim = {}
-
-              # Check for components
-              if prop_val.components != undefined
-                _anim.components = {}
-                for c, c_val of prop_val.components
-                  _anim.components[c] = @_serializeAnimation c_val
-              else _anim = @_serializeAnimation prop_val
-
-              _actor.animations[anim][prop] = _anim
-
-          data.actors.push _actor
-
-      JSON.stringify data
-
-    ###
-    # Serialize an animation (expects an existing bezier func)
-    #
-    # @param [Bezier] anim
-    # @return [Object] serialized
-    # @private
-    ###
-    _serializeAnimation: (anim) ->
-
-      ret = {}
-      ret.x1 = anim._start.x
-      ret.y1 = anim._start.y
-      ret.x2 = anim._end.x
-      ret.y2 = anim._end.y
-
-      if anim._control[0] != undefined
-        ret.cp1x = anim._control[0].x
-        ret.cp1y = anim._control[0].y
-
-      if anim._control[1] != undefined
-        ret.cp2x = anim._control[1].x
-        ret.cp2y = anim._control[1].y
-
-      ret
-
-    ###
-    # Deserialize an animation that's been serialized by _serializeAnimation.
-    # Returns a built bezier function
-    #
-    # @param [Object] anim
-    # @return [Bezier] bezier
-    # @private
-    ###
-    _deserializeAnimation: (anim) ->
-
-      _start =
-        x: anim.x1
-        y: anim.y1
-
-      _end =
-        x: anim.x2
-        y: anim.y2
-
-      _degree = 0
-
-      if anim.cp1x != undefined and anim.cp1y != undefined
-        _control = []
-        _control.push
-          x: anim.cp1x
-          y: anim.cp1y
-        _degree = 1
-
-      if anim.cp2x != undefined and anim.cp2y != undefined
-        _control.push
-          x: anim.cp2x
-          y: anim.cp2y
-        _degree = 2
-
-      new Bezier _start, _end, _degree, _control, false
-
-    ###
-    # Take JSON from the server, de-serialize and apply it.
-    #
-    # @param [String] data
-    # @private
-    ###
-    _deserialize: (data) ->
-      param.required data
-
-      # Ad data is empty if it has just been created
-      if data.length == 0 then return
-
-      # Parse and validate structure
-      data = JSON.parse data
-      param.required data.cursorPosition
-      param.required data.actors
-
-      # Note that we clear the current state!
-      @ui.workspace.reset()
-
-      # Set up actors
-      for a in data.actors
-
-        # Validate
-        valid = a.type != undefined
-        valid = valid && (a.name != undefined)
-        valid = valid && (a.timebarColor != undefined)
-        valid = valid && (a.lifetimeStart_ms != undefined)
-        valid = valid && (a.lifetimeEnd_ms != undefined)
-        valid = valid && (a.propBuffer != undefined)
-        valid = valid && (a.lastTemporalState != undefined)
-        valid = valid && (a.animations != undefined)
-        valid = valid && (a.x != undefined)
-        valid = valid && (a.y != undefined)
-        valid = valid && (a.r != undefined)
-        valid = valid && (a.color != undefined)
-
-        # Apply the cursor position
-        @ui.timeline.setCursorTime data.cursorPosition
-
-        # Throw an error, since this should never happen if the data is from a
-        # valid source. Failing quietly is just saddening.
-        if not valid then throw new Error "Data invalid: #{JSON.stringify a}"
-
-        if a.type == "TriangleActor"
-          handle = new TriangleActor a.lifetimeStart_ms, a.base, a.height, a.x, a.y\
-                                  , a.r, a.lifetimeEnd_ms, true
-        else if a.type == "RectangleActor"
-          handle = new RectangleActor a.lifetimeStart_ms, a.width, a.height, a.x, a.y\
-                                   , a.r, a.lifetimeEnd_ms, true
-        else if a.type == "PolygonActor"
-          handle = new PolygonActor  a.lifetimeStart_ms, a.sides, a.radius, a.x, a.y\
-                                  , a.r, a.lifetimeEnd_ms, true
-        else throw new Error "Invalid actor type, can't instantiate!"
-
-        handle._propBuffer = a.propBuffer
-        handle.setColor a.color.r, a.color.g, a.color.b
-
-        # Set up animations
-        for a, anim of a.animations
-          handle._animations[a] = {}
-          for p, prop of anim
-            handle._animations[a][p] = {}
-
-            if prop.components != undefined
-              handle._animations[a][p].components = {}
-
-              for c, comp of prop.components
-                handle._animations[a][p].components[c] = \
-                @_deserializeAnimation comp
-
-            else handle._animations[a][p] = @_deserializeAnimation prop
-
-        # Init, register, and update
-        handle.postInit()
-        @ui.workspace.registerActor handle
-
-      null
-
-    ###
-    # Saves us to the server
-    ###
-    save: ->
-      data = @_serialize()
-
-      $.post "/api/v1/editor/save?id=#{window.ad}&data=#{data}", (result) =>
-        if result.error != undefined
-          new Notification "Error saving: #{result.error}", "red"
-        else
-          new Notification "Saved", "green", 1000
-
-    ###
-    # Loads data from our backend, de-serializes it and applies state
-    #
-    # @param [String] id Server-recognizable ad id
-    ###
-    load: (id) ->
-      param.required id
-
-      $.post "/api/v1/editor/load?id=#{id}", (result) =>
-        if result.error != undefined
-          new Notification "Error loading: #{result.error}", "red"
-          return
-
-        @_deserialize result.ad
 
     ###
     # I really thought this would be sexier, expecting that we could simply

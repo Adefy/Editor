@@ -12,7 +12,7 @@ define (require) ->
   BooleanProperty = require "handles/properties/boolean"
 
   # Base manipulateable class for actors
-  class BaseActor extends Handle
+  window.BaseActor = class BaseActor extends Handle
 
     ###
     # @property [Number] accuracy the number of digits we round animations to
@@ -1012,6 +1012,71 @@ define (require) ->
             @_properties[p].components[c]._value = props[p].components[c].value
         else
           @_properties[p]._value = props[p].value
+
+    ###
+    # Dump actor into JSON representation
+    #
+    # @return [String] actorJSON
+    ###
+    serialize: ->
+      data = super()
+
+      data.propBuffer = @_propBuffer
+      data.birth = @lifetimeStart_ms
+      data.death = @lifetimeEnd_ms
+      data.animations = {}
+
+      for time, properties of @_animations
+        animationSet = {}
+
+        for property, propAnimation of properties
+
+          if propAnimation.components
+            animationData = components: {}
+
+            for component, animation of propAnimation.components
+              animationData.components[component] = animation.serialize()
+
+          else
+            animationData = propAnimation.serialize()
+
+          animationSet[property] = animationData
+
+        data.animations[time] = animationSet
+
+      data
+
+    ###
+    # Loads properties, animations, and a prop buffer from a saved state
+    #
+    # @param [Object] state saved state object
+    ###
+    deserialize: (state) ->
+
+      # Load basic properties
+      super state
+
+      # Load everything else
+      @_propBuffer = state.propBuffer
+
+      @_animations = {}
+      for time, properties of state.animations
+        animationSet = {}
+
+        for property, propAnimation of properties
+
+          if propAnimation.components
+            animationData = components: {}
+
+            for component, animation of propAnimation.components
+              animationData.components[component] = Bezier.deserialize animation
+
+          else
+            animationData = Bezier.deserialize propAnimation
+
+          animationSet[property] = animationData
+
+        @_animations[time] = animationSet
 
     ###
     # Deletes us, muahahahaha. We notify the workspace, clear the properties

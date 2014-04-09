@@ -131,3 +131,15 @@ define (require) ->
     disableBuffer: ->
       @_buffer = false
       @_bufferData = {}
+
+    serialize: ->
+      {
+        start: @_start
+        end: @_end
+        control: @_control
+        degree: @_degree
+        buffer: @_buffer
+      }
+
+    @deserialize: (data) ->
+      new Bezier data.start, data.end, data.degree, data.control, data.buffer

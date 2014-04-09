@@ -4,7 +4,7 @@ define (require) ->
   ID = require "util/id"
 
   # Base class for all elements that can be manipulated by the editor
-  class Handle
+  window.Handle = class Handle
 
     ###
     #
@@ -106,12 +106,14 @@ define (require) ->
     getContextFunctions: -> @_ctx
 
     ###
-    # Dump actor into JSON representation
+    # Dump handle into JSON representation
     #
     # @return [String] actorJSON
     ###
     serialize: ->
-      data = type: "#{@.constructor.name}", properties: {}
+      data =
+        type: "#{@.constructor.name}"
+        properties: {}
 
       for name, property of @_properties
         data.properties[name] = property.serialize()
@@ -129,9 +131,11 @@ define (require) ->
       @setPosition data.position
 
     ###
-    # Load and initialize actor from JSON serialization (this will return the
-    # correct actor type)
+    # Deserialize properties
     #
-    # @return [Handle, BaseActor, PolygonActor, RectangleActor, TriangleActor]
+    # @param [Object] state saved state with properties object
     ###
-    @load: (data) ->
+    deserialize: (state) ->
+      for name, property of state.properties
+        if @_properties[name]
+          @_properties[name].deserialize property

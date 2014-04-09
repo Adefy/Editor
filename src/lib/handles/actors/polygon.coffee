@@ -6,7 +6,7 @@ define (require) ->
   NumericProperty = require "handles/properties/numeric"
 
   # N-sided actor
-  class PolygonActor extends BaseActor
+  window.PolygonActor = class PolygonActor extends BaseActor
 
     # Defines a variable-sided actor, psicktually
     #
@@ -99,3 +99,26 @@ define (require) ->
         position: new AJSVector2 x, y
         color: new AJSColor3 r, g, b
         rotation: @_properties.rotation.getValue()
+
+    ###
+    # Initializes a new PolygonActor using serialized data
+    #
+    # @param [UIManager] ui
+    # @param [Object] data
+    ###
+    @load: (ui, data) ->
+
+      birth = data.birth
+      death = data.death
+
+      position = JSON.parse data.properties.position
+
+      sides = JSON.parse(data.properties.sides).value
+      radius = JSON.parse(data.properties.radius).value
+      x = JSON.parse(position.x).value
+      y = JSON.parse(position.y).value
+      rotation = JSON.parse(data.properties.rotation).value
+
+      actor = new PolygonActor ui, birth, sides, radius, x, y, rotation, death
+      actor.deserialize data
+      actor

@@ -6,7 +6,7 @@ define (require) ->
   NumericProperty = require "handles/properties/numeric"
 
   # Trianglular actor
-  class TriangleActor extends BaseActor
+  window.TriangleActor = class TriangleActor extends BaseActor
 
     # Creates an AJSTriangle and keeps track of it
     #
@@ -106,3 +106,26 @@ define (require) ->
         position: new AJSVector2 x, y
         color: new AJSColor3 r, g, b
         rotation: @_properties.rotation.getValue()
+
+    ###
+    # Initializes a new TriangleActor using serialized data
+    #
+    # @param [UIManager] ui
+    # @param [Object] data
+    ###
+    @load: (ui, data) ->
+
+      birth = data.birth
+      death = data.death
+
+      position = JSON.parse data.properties.position
+
+      b = JSON.parse(data.properties.base).value
+      h = JSON.parse(data.properties.height).value
+      x = JSON.parse(position.x).value
+      y = JSON.parse(position.y).value
+      rotation = JSON.parse(data.properties.rotation).value
+
+      actor = new TriangleActor ui, birth, b, h, x, y, rotation, death
+      actor.deserialize data
+      actor
