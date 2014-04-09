@@ -143,6 +143,7 @@ define (require) ->
     contextFuncAddDirectory: (asset, name) ->
       asset.pushEntry new Asset(@, name: name, isDirectory: true)
       @refresh()
+      @
 
     ###
     # Add File
@@ -153,6 +154,7 @@ define (require) ->
     contextFuncAddFile: (asset, name) ->
       asset.pushEntry new Asset(@, name: name)
       @refresh()
+      @
 
     ###
     # Remove
@@ -165,9 +167,13 @@ define (require) ->
       else
         @_assets = _.without @_assets, asset
 
+      @refresh()
+      @
+
     ###
     # Rename
     # @param [Asset] asset
     ###
     contextFuncRenameAsset: (asset) ->
       # TODO
+      @

@@ -36,16 +36,18 @@ define (require) ->
     # @return [Object]
     ###
     getContextFunctions: ->
-      {
-        "Add Directory": =>
-          if @isDirectory
-            @_parentElement.contextFuncAddDirectory(@, "New Folder")
-        "Add File":      =>
-          if @isDirectory
-            @_parentElement.contextFuncAddFile(@, "New File")
-        "Delete":        => @_parentElement.contextFuncRemoveAsset(@)
-        "Rename":        => @_parentElement.contextFuncRenameAsset(@)
-      }
+      context = {}
+
+      if @_isDirectory
+        context["Add Directory"] = =>
+          @_parentElement.contextFuncAddDirectory(@, "New Folder")
+        context["Add File"] = =>
+          @_parentElement.contextFuncAddFile(@, "New File")
+
+      context["Delete"] = => @_parentElement.contextFuncRemoveAsset(@)
+      context["Rename"] = => @_parentElement.contextFuncRenameAsset(@)
+
+      context
 
     ###
     # Ensures that this Asset is a directory
