@@ -1,0 +1,16 @@
+!!!
+html
+  head
+    link(rel="stylesheet", href="/css/reset.css")
+    link(rel="stylesheet", href="/css/main.css")
+
+    //-link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Oleo+Script|Source+Sans+Pro:200,300,400,600,700,900')
+    //-link(rel='stylesheet', href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css")
+
+    script(src="http://code.jquery.com/jquery-2.0.3.js")
+    script(src="/js/paperjs-0.9.18/dist/paper-full.js")
+    script(src="/js/aed-graph-editor.js")
+
+  body
+    #content
+      != yield
