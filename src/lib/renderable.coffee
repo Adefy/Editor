@@ -28,28 +28,3 @@ define (requre) ->
           #{cb()}
         </#{type}>
       """
-
-    ###
-    # Convenience method for creating buttons with icons in them
-    # @param [String] iconName
-    # @param [Object] options
-    #   @option [Boolean] fixedWidth
-    #   @option [Object] buttonAttrs
-    #   @option [Object] iconAttrs
-    # @return [String] html
-    ###
-    genButtonIcon: (iconName, options) ->
-      options = param.optional options, {}
-      buttonAttrs = param.optional options.buttonAttrs, {}
-      iconAttrs = param.optional options.iconAttrs, {}
-
-      if options.fixedWidth
-        iconKlass = "fa fa-fw fa-#{iconName}"
-      else
-        iconKlass = "fa fa-#{iconName}"
-
-      iconAttrs["class"] = "" unless iconAttrs["class"]
-      iconAttrs["class"] += iconKlass
-
-      @genElement "button", buttonAttrs, =>
-        @genElement "i", iconAttrs
