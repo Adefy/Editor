@@ -125,6 +125,12 @@ define (require) ->
         item.postRender() if item.postRender
 
     ###
+    # Render the HTML content and replace it
+    ###
+    refresh: ->
+      @render()
+
+    ###
     # Take the navbar into account, and always position ourselves below it
     ###
     onResize: ->

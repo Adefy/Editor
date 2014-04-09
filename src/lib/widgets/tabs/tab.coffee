@@ -37,3 +37,9 @@ define (require) ->
         sidebar = sidebar.getSidebar()
 
       sidebar
+
+    ###
+    # Tabs do not refresh themselves sadly, so ask the parents to refresh them
+    ###
+    refresh: ->
+      @_parent.refresh() if @_parent.refresh

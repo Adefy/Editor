@@ -8,7 +8,11 @@ define (require) ->
     ###
     # @param [Hash] options
     ###
-    constructor: (options) ->
+    constructor: (parent, options) ->
+
+      @_parent = null
+
+      @_parentElement = parent
 
       options = param.optional options, {}
 
@@ -21,9 +25,27 @@ define (require) ->
 
       if @_isDirectory
         @_entries = param.optional options.entries, []
+        for entry in @_entries
+          entry._parent = @
+
         @_fileType = "directory"
       else
         @_fileType = param.optional options.fileType, "file"
+
+    ###
+    # @return [Object]
+    ###
+    getContextFunctions: ->
+      {
+        "Add Directory": =>
+          if @isDirectory
+            @_parentElement.contextFuncAddDirectory(@, "New Folder")
+        "Add File":      =>
+          if @isDirectory
+            @_parentElement.contextFuncAddFile(@, "New File")
+        "Delete":        => @_parentElement.contextFuncRemoveAsset(@)
+        "Rename":        => @_parentElement.contextFuncRenameAsset(@)
+      }
 
     ###
     # Ensures that this Asset is a directory
@@ -47,7 +69,15 @@ define (require) ->
     ###
     pushEntry: (asset) ->
       @_checkIsDirectory()
+      asset._parent = @
       @_entries.push asset
+
+    ###
+    # Remove the asset from the list
+    # @param [Asset] asset
+    ###
+    removeEntry: (asset) ->
+      @_entries = _.without @_entries, asset
 
     ###
     # Is this Asset a file?

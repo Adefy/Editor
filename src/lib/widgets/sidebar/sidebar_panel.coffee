@@ -150,3 +150,9 @@ define (require) ->
       for tab in @_tabs
         if tab.content
           tab.content.respondToEvent type, params if tab.content.respondToEvent
+
+    ###
+    # Panels don't refresh themselves
+    ###
+    refresh: ->
+      @_parent.refresh() if @_parent.refresh
