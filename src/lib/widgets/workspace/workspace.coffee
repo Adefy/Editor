@@ -249,7 +249,7 @@ define (require) ->
         if d.getUserData() and d.getUserData().original
 
           newX = d.getUserData().original.x + deltaX
-          newY = d.getUserData().original.y - deltaY
+          newY = d.getUserData().original.y + deltaY
 
           d.getTarget().setPosition newX, newY
           @ui.pushEvent "selected.actor.changed"
@@ -633,6 +633,8 @@ define (require) ->
 
             pick = new Uint8Array 4
 
+            pos.y = @_are.getHeight() - pos.y
+
             gl = @_are.getGL()
             gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
             gl.readPixels pos.x, pos.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pick
@@ -669,9 +671,10 @@ define (require) ->
 
       # TODO: Take into account camera coords
 
-      ret =
+      {
         x: x - canvasLeft
-        y: @_are.getHeight() - (y - canvasTop)
+        y: y - canvasTop
+      }
 
     ###
     # Resizes the display outline
