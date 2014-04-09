@@ -114,12 +114,18 @@
       display block
       height 100%
       dl
-        display table
+        display block
         width 100%
+        height 24px
+        overflow hidden
         line-height 1.6
         padding-left 8px
         font-size 14px
         font-weight 600
+
+        &.expanded
+          display block
+          height auto
 
         dt, dd
           cursor pointer

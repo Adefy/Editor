@@ -41,6 +41,28 @@ define (require) ->
           name: "D"
       ]
 
+      @_regListeners()
+
+    _onToggleDirectory: (element) ->
+      $(element).toggleClass("expanded")
+
+      icon = $(element).find(".toggle-directory i")
+
+      if $(element).hasClass("expanded")
+        icon.removeClass("fa-caret-right")
+        icon.addClass("fa-caret-down")
+      else
+        icon.removeClass("fa-caret-down")
+        icon.addClass("fa-caret-right")
+
+    ###
+    # @private
+    ###
+    _regListeners: ->
+
+      $(document).on "click", ".files .toggle-directory", (e) =>
+        @_onToggleDirectory $(e.target).closest(".asset-directory")
+
     ###
     # @return [String]
     ###
