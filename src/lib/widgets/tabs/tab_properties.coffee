@@ -50,7 +50,7 @@ define (require) ->
 
       @targetActor = null
 
-      # @_regListeners()
+      @registerInputListener()
       @setupDragger()
 
     ###
@@ -66,6 +66,7 @@ define (require) ->
 
     ###
     # Initialize our input dragging functionality
+    # @private
     ###
     setupDragger: ->
       @dragger = new Dragger "#{@_sel} input[type=number]"
@@ -84,7 +85,7 @@ define (require) ->
     ###
     # @private
     ###
-    _regListeners: ->
+    registerInputListener: ->
 
       $(document).on "input", "dl > dd > input", (e) =>
         @saveControl e.target
