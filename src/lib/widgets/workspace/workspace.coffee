@@ -246,8 +246,6 @@ define (require) ->
               actorId: @_selectedActor
               actor: actor
 
-            #actor.onClick()
-
         setTimeout (=> @_drag.dragging = false), 0
 
       # On-drag logic, at this point a click has already fired
@@ -274,7 +272,6 @@ define (require) ->
           newY = Number(@_drag.orig.y + ((e.pageY - @_drag.start.y) * -1))
 
           @_drag.handle.setPosition newX, newY
-
           @ui.pushEvent "selected.actor.changed"
 
       # Actor picking!
@@ -294,7 +291,6 @@ define (require) ->
             @ui.pushEvent "workspace.selected.actor",
               actorId: @_selectedActor
               actor: actor
-            #actor.onClick()
 
     initializeDraggingData: ->
       @_drag =

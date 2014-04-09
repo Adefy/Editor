@@ -42,6 +42,10 @@ define (require) ->
         classes: ["timeline"]
 
       @_duration = Number param.optional(duration, 5000)
+
+      unless @_duration > 0
+        return AUtilLog.error "Invalid duration: #{@_duration}"
+
       @_control = new TimelineControl @
 
       @_previewFPS = 30
@@ -128,11 +132,25 @@ define (require) ->
     ## ATTRIBUTES
 
     ###
-    # Get current timeline duration
+    # Get timeline duration
     #
     # @return [Number] duration
     ###
     getDuration: -> @_duration
+
+    ###
+    # Update timeline duration
+    #
+    # @param [Number] duration
+    ###
+    setDuration: (duration) ->
+      param.required duration
+
+      unless duration > 0
+        return AUtilLog.error "Invalid duration: #{duration}"
+
+      @_duration = duration
+      @render()
 
     ###
     # Get current preview FPS
@@ -237,6 +255,9 @@ define (require) ->
     # @private
     ###
     _onCursorDragStop: (e, ui) ->
+      @updateAllActorsInTime()
+
+    updateAllActorsInTime: ->
       t = @getCursorTime()
 
       for a in @_actors
@@ -616,6 +637,8 @@ define (require) ->
         #physics: []
 
       _animations = actor.getAnimations()
+      console.log _animations
+
       for time, anim of _animations
         offset = timebarData.spaceW *
                  ((Number(time) - actor.lifetimeStart_ms) / @_duration)
@@ -997,7 +1020,7 @@ define (require) ->
         when "selected.actor.changed"
           @updateActor()
         when "actor.update.intime"
-          @updateActorBody params.actor
+          @updateActor params.actor
 
     ## MODALS
 

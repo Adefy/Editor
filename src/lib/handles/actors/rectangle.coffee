@@ -6,7 +6,7 @@ define (require) ->
   NumericProperty = require "handles/properties/numeric"
 
   # Rectangular actor
-  class RectangleActor extends BaseActor
+  window.RectangleActor = class RectangleActor extends BaseActor
 
     # Instantiates an AJSRectangle and keeps track of it
     #
@@ -58,7 +58,7 @@ define (require) ->
       @_properties.height.setPlaceholder 100
       @_properties.height.setValue h
       @_properties.height.requestUpdate = ->
-        @setValue me._AJSActor.getWidth() if me._AJSActor
+        @setValue me._AJSActor.getHeight() if me._AJSActor
 
       @_properties.height.onUpdate = (height) =>
         @_AJSActor.setHeight height if @_AJSActor
@@ -107,3 +107,26 @@ define (require) ->
         position: new AJSVector2 x, y
         color: new AJSColor3 r, g, b
         rotation: @_properties.rotation.getValue()
+
+    ###
+    # Initializes a new RectangleActor using serialized data
+    #
+    # @param [UIManager] ui
+    # @param [Object] data
+    ###
+    @load: (ui, data) ->
+
+      birth = data.birth
+      death = data.death
+
+      position = JSON.parse data.properties.position
+
+      w = JSON.parse(data.properties.width).value
+      h = JSON.parse(data.properties.height).value
+      x = JSON.parse(position.x).value
+      y = JSON.parse(position.y).value
+      rotation = JSON.parse(data.properties.rotation).value
+
+      actor = new RectangleActor ui, birth, w, h, x, y, rotation, death
+      actor.deserialize data
+      actor

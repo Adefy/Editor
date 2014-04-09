@@ -77,9 +77,22 @@ define (require) ->
         splitKey = key.split("get")
 
         if splitKey.length == 2
-          data[splitKey[1].trim().toLowerCase()] = @[key]
+          data[splitKey[1].trim().toLowerCase()] = @[key]()
 
       JSON.stringify data
+
+    ###
+    # Deserialization depends on us having a properly named setter for each
+    # serialized value
+    #
+    # @param [String] raw
+    ###
+    deserialize: (raw) ->
+      raw = JSON.parse raw
+
+      for key, value of raw
+        setter = "set#{@capitalize key}"
+        @[setter] value if @[setter]
 
     ###
     # Ensure that the provided value is valid for useage
@@ -96,19 +109,6 @@ define (require) ->
     # @return [Object] processed
     ###
     processValue: (value) -> value
-
-    ###
-    # Deserialization depends on us having a properly named setter for each
-    # serialized value
-    #
-    # @param [String] raw
-    ###
-    deserialize: (raw) ->
-      raw = JSON.parse raw
-
-      for key, value of raw
-        setter = "set#{@capitalize key}"
-        @[setter] value if @[setter]
 
     ###
     # Capitalize the first letter of a string, and make the rest lowercase

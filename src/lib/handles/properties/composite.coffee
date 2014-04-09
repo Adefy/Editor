@@ -13,10 +13,9 @@ define (require) ->
   ###
   class CompositeProperty extends HandleProperty
 
-    @PropertyTypes: [
-      NumericProperty
-      BooleanProperty
-    ]
+    @PropertyTypes:
+      number: NumericProperty
+      boolean: BooleanProperty
 
     @type: "composite"
 
@@ -45,8 +44,8 @@ define (require) ->
     serialize: ->
       data = {}
 
-      for id, property of @_properties
-        data[id] = property.serialize()
+      for id of @_properties
+        data[id] = @_properties[id].serialize()
 
       JSON.stringify data
 
@@ -57,21 +56,21 @@ define (require) ->
     # @param [String] raw
     ###
     deserialize: (raw) ->
-      @_properties = {}
       raw = JSON.parse raw
 
       for id, propertyJSON of raw
-        property = JSON.parse propertyJSON
 
-        type = _.find CompositeProperty.PropertyTypes, (p) ->
-          p.type == property.type
-
-        unless type
-          AUtilLog.error "Unknown property type, deserialize: #{property.type}"
+        if @_properties[id]
+          @_properties[id].deserialize propertyJSON
         else
-          newProperty = new type
-          newProperty.deserialize propertyJSON
-          @addProperty id, newProperty
+          property = JSON.parse propertyJSON
+
+          unless CompositeProperty.PropertyTypes[property.type]
+            AUtilLog.error "Unknown property type: #{property.type}"
+          else
+            newProperty = new CompositeProperty.PropertyTypes[property.type]
+            newProperty.deserialize propertyJSON
+            @addProperty id, newProperty
 
     ###
     # Requests an update for each child property

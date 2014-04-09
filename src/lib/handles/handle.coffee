@@ -4,7 +4,7 @@ define (require) ->
   ID = require "util/id"
 
   # Base class for all elements that can be manipulated by the editor
-  class Handle
+  window.Handle = class Handle
 
     ###
     #
@@ -62,24 +62,13 @@ define (require) ->
     # properties, so we just call their update() methods as needed, after
     # validation
     #
-    # @param [Object] updates object containing property:value pairs
-    updateProperties: (updates) ->
-      param.required updates
+    # @param [Object] updatePacket object containing property:value pairs
+    updateProperties: (updatePacket) ->
+      param.required updatePacket
 
-      for updateName, val of updates
-        lookup = updateName.toLowerCase()
-        payload = {}
-
-        # Apply parent if there is one (means control was a composite)
-        if val.parent
-          lookup = val.parent.toLowerCase()
-          payload[updateName.toLowerCase()] = val.value
-        else
-          payload = val.value
-
-        if @_properties[lookup] != undefined
-          if typeof @_properties[lookup].update == "function"
-            @_properties[lookup].update payload
+      for property, value of updatePacket
+        if @_properties[property]
+          @_properties[property].setValue value
 
     ###
     # Set property in key, value form. Note that new properties can not be
@@ -104,3 +93,38 @@ define (require) ->
     # applied by ancestors
     ###
     getContextFunctions: -> @_ctx
+
+    ###
+    # Dump handle into JSON representation
+    #
+    # @return [String] actorJSON
+    ###
+    serialize: ->
+      data =
+        type: "#{@.constructor.name}"
+        properties: {}
+
+      for name, property of @_properties
+        data.properties[name] = property.serialize()
+
+      data
+
+    ###
+    # Set properties from serialized state
+    #
+    # @param [String] data
+    ###
+    cloneFromData: (data) ->
+      data = JSON.parse data
+
+      @setPosition data.position
+
+    ###
+    # Deserialize properties
+    #
+    # @param [Object] state saved state with properties object
+    ###
+    deserialize: (state) ->
+      for name, property of state.properties
+        if @_properties[name]
+          @_properties[name].deserialize property

@@ -41,8 +41,18 @@ define (require) ->
 
       value
 
-    setMin: (min) -> @data_min = min
-    setMax: (max) -> @data_max = max
+    setMin: (min) ->
+      if min == null
+        @data_min = -Infinity
+      else
+        @data_min = min
+
+    setMax: (max) ->
+      if max == null
+        @data_max = Infinity
+      else
+        @data_max = max
+
     setFloat: (float) -> @data_float = float
     setPrecision: (precision) -> @data_precision = precision
     setPlaceholder: (placeholder) -> @data_placeholder = placeholder
