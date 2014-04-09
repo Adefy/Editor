@@ -637,7 +637,6 @@ define (require) ->
         #physics: []
 
       _animations = actor.getAnimations()
-      console.log _animations
 
       for time, anim of _animations
         offset = timebarData.spaceW *

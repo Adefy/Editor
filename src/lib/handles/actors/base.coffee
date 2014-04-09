@@ -105,8 +105,6 @@ define (require) ->
 
 
       @_properties.rotation = new NumericProperty()
-      @_properties.rotation.setMin 0
-      @_properties.rotation.setMax 260
       @_properties.rotation.onUpdate = (rotation) =>
         @_AJSActor.setRotation rotation if @_AJSActor
       @_properties.rotation.requestUpdate = ->
