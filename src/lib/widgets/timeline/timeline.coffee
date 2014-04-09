@@ -963,7 +963,7 @@ define (require) ->
           #  e.css left: keyframe.left
 
         else
-          $("#{timeSelector} ##{property.id}").css
+          $("#{timeSelector} ##{property.id} .bar").css
             left: "#{property.left}px"
             width: "#{property.width}px"
 
