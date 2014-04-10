@@ -19,7 +19,9 @@ define (require) ->
         parent: parent
         classes: ["tab-assets"]
 
-      @_assets = [
+      @_assets = []
+      ###
+      [
         new Asset @,
           isDirectory: true,
           name: "I'm a directory"
@@ -37,8 +39,17 @@ define (require) ->
       ,
         new Asset @, name: "D"
       ]
+      ###
 
       @_regListeners()
+
+    ###
+    # And an asset to the assets list
+    # @param [Asset] asset
+    ###
+    pushEntry: (asset) ->
+      asset._parent = null
+      @_assets.push asset
 
     ###
     # @param [Array<Asset>] assets
@@ -93,11 +104,16 @@ define (require) ->
     ###
     _bindContextClick: ->
       $(document).on "contextmenu", ".files .asset", (e) =>
-        console.log e
-
         assetElement = $(e.target).closest(".asset")
         if asset = @findAssetById(assetElement[0].id)
           new ContextMenu e.pageX, e.pageY, asset
+        e.preventDefault()
+        false
+
+      $(document).on "contextmenu", ".files", (e) =>
+        console.log e
+
+        new ContextMenu e.pageX, e.pageY, @
         e.preventDefault()
         false
 
@@ -148,6 +164,15 @@ define (require) ->
     ###
     render: ->
       @_renderAssets @_assets
+
+    ###
+    # @return [Object]
+    ###
+    getContextFunctions: ->
+      {
+        "Add Directory": => @contextFuncAddDirectory @, "New Folder"
+        "Add File": => @contextFuncAddFile @, "New File"
+      }
 
     ###
     # ContextMenu functions

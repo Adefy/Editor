@@ -41,12 +41,12 @@ define (require) ->
 
       if @_isDirectory
         context["Add Directory"] = =>
-          @_parentElement.contextFuncAddDirectory(@, "New Folder")
+          @_parentElement.contextFuncAddDirectory @, "New Folder"
         context["Add File"] = =>
-          @_parentElement.contextFuncAddFile(@, "New File")
+          @_parentElement.contextFuncAddFile @, "New File"
 
-      context["Delete"] = => @_parentElement.contextFuncRemoveAsset(@)
-      context["Rename"] = => @_parentElement.contextFuncRenameAsset(@)
+      context["Delete"] = => @_parentElement.contextFuncRemoveAsset @
+      context["Rename"] = => @_parentElement.contextFuncRenameAsset @
 
       context
 

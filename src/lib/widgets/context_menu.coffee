@@ -4,6 +4,7 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
   Widget = require "widgets/widget"
+  TemplateContextMenu = require "templates/context_menu"
 
   # Context menu widget, created when a handle is right-clicked and
   # supports actions
@@ -89,22 +90,24 @@ define (require) ->
             @remove()
             @functions[f]()
 
-        __html = ""
-        for f of @functions
 
+        entries = []
+
+        for f of @functions
           # If f already has an identifier set, unbind any existing listeners
           if @functions[f]._ident != undefined
             @_unbindListener @functions[f]._ident
-
           # We set a unique identifier for the element to use, and bind listeners
           @functions[f]._ident = @_convertToIdent(f) + ID.nextId()
 
-          _attrs = {}
-          _attrs["data-id"] = @functions[f]._ident
+          entries.push
+            name: f
+            dataId: @functions[f]._ident
 
-          __html += @genElement "li", _attrs, => f
+        __html = TemplateContextMenu entries: entries
 
-          # Bind listener
+        # Bind listeners
+        for f of @functions
           __bindListener f
 
         if !ContextMenu._registeredMouseup
