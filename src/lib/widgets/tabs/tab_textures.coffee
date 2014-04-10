@@ -2,7 +2,7 @@ define (require) ->
 
   ID = require "util/id"
   Tab = require "widgets/tabs/tab"
-  TemplateTabTextures = require "templates/tabs/textures"
+  TemplateTabThumb = require "templates/tabs/thumb"
   TemplateTabTexturesFooter = require "templates/tabs/textures_footer"
 
   class TexturesTab extends Tab
@@ -12,6 +12,8 @@ define (require) ->
     # @param [SidebarPanel] parent
     ###
     constructor: (@ui, parent) ->
+      @_viewMode = "list"
+
       super
         id: ID.prefId("tab-textures")
         parent: parent
@@ -30,27 +32,43 @@ define (require) ->
     # @return [String]
     ###
     cssAppendParentClass: ->
-      "textures thumbs"
+      "textures #{@_viewMode}"
+
+    _onToggleViewMode: (mode) ->
+      @_viewMode = mode
+      @refresh()
 
     ###
     # @private
     ###
     _regListeners: ->
+      $(document).on "click", ".panel .footer .toggle-list", (e) =>
+        console.log e
+        @_onToggleViewMode "list"
 
-      #@_bindContextClick()
-
-      #$(document).on "click", ".files .toggle-directory", (e) =>
-      #  @_onToggleDirectory $(e.target).closest(".asset.directory")
+      $(document).on "click", ".panel .footer .toggle-thumbs", (e) =>
+        console.log e
+        @_onToggleViewMode "thumbs"
 
     ###
     # @return [String]
     ###
     render: ->
-      TemplateTabTextures()
+      TemplateTabThumb
+        src: "http://www.sacher.com/assets/Uploads/_resampled/croppedimage1220870-0Start.jpg"
+        name: "Cake.jpg"
 
     ###
     # The footer has to be rendered seperately
     # @return [Void]
     ###
     renderFooter: ->
-      TemplateTabTexturesFooter()
+      listActive = ""
+      thumbsActive = ""
+
+      listActive = "active" if @_viewMode == "list"
+      thumbsActive = "active" if @_viewMode == "thumbs"
+
+      TemplateTabTexturesFooter
+        listActive: listActive
+        thumbsActive: thumbsActive
