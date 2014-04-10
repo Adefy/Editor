@@ -203,6 +203,12 @@ define (require) ->
       @_properties.physics.addProperty "enabled", @_properties.physics.enabled
 
     ###
+    # Get the actor's name
+    # @return [String] name
+    ###
+    getName: -> @name
+
+    ###
     # Get internal actors' id. Note that the actor must exist for this!
     #
     # @return [Number] id
@@ -297,6 +303,12 @@ define (require) ->
     # @return [Object] entry prop buffer entry, may be undefined
     ###
     getBufferEntry: (time) -> @_propBuffer["#{Math.floor time}"]
+
+    ###
+    # Set the actor's name
+    # @param [String] name
+    ###
+    setName: (_name) -> @name = _name
 
     ###
     # @param [Boolean] visible
