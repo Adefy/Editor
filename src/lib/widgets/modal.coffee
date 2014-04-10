@@ -3,7 +3,7 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
   Widget = require "widgets/widget"
-  ModalTemplate = require "templates/modal"
+  TemplateModal = require "templates/modal"
 
   # Bootstrap-like modal (except not!)
   class Modal extends Widget
@@ -120,7 +120,7 @@ define (require) ->
       if not @dead then return else @dead = false
 
       # Build!
-      @getElement().html ModalTemplate title: @title, content: @content, cb: !!@cb
+      @getElement().html TemplateModal title: @title, content: @content, cb: !!@cb
 
       # Register us for later
       $("body").data "activeModal", @

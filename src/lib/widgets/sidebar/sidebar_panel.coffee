@@ -2,7 +2,7 @@ define (require) ->
 
   AUtilLog = require "util/log"
   SidebarItem = require "widgets/sidebar/sidebar_item"
-  SidebarPanelTemplate = require "templates/sidebar_panel"
+  TemplateSidebarPanel = require "templates/sidebar_panel"
 
   class SidebarPanel extends SidebarItem
 
@@ -113,7 +113,7 @@ define (require) ->
           contentKlass = tab.content.cssAppendParentClass()
           contentId = tab.content.appendParentId()
 
-      SidebarPanelTemplate
+      TemplateSidebarPanel
         id: @_id
         sidebarId: @_parent.getId()
         tabs: @_tabs

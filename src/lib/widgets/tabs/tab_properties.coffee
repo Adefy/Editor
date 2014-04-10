@@ -5,9 +5,9 @@ define (require) ->
   ID = require "util/id"
   Tab = require "widgets/tabs/tab"
 
-  NumericControlTemplate = require "templates/sidebar/controls/numeric"
-  BooleanControlTemplate = require "templates/sidebar/controls/boolean"
-  TextControlTemplate = require "templates/sidebar/controls/text"
+  TemplateNumericControl = require "templates/sidebar/controls/numeric"
+  TemplateBooleanControl = require "templates/sidebar/controls/boolean"
+  TemplateTextControl = require "templates/sidebar/controls/text"
 
   CompositeProperty = require "handles/properties/composite"
 
@@ -194,7 +194,7 @@ define (require) ->
       width = param.optional width, "100%"
       parent = param.optional parent, false
 
-      NumericControlTemplate
+      TemplateNumericControl
         name: displayName.toLowerCase()
         max: value.getMax()
         min: value.getMin()
@@ -208,7 +208,7 @@ define (require) ->
       width = param.optional width, "100%"
       parent = param.optional parent, false
 
-      BooleanControlTemplate
+      TemplateBooleanControl
         name: displayName.toLowerCase()
         value: value.getValue()
         width: width
@@ -218,7 +218,7 @@ define (require) ->
       width = param.optional width, "100%"
       parent = param.optional parent, false
 
-      TextControlTemplate
+      TemplateTextControl
         name: displayName.toLowerCase()
         placeholder: value.getPlaceholder()
         value: value.getValue()

@@ -8,11 +8,11 @@ define (require) ->
   Modal = require "widgets/modal"
   TimelineControl = require "widgets/timeline/timeline_control"
   Workspace = require "widgets/workspace/workspace"
-  TimelineBaseTemplate = require "templates/timeline/base"
-  TimelineActorTemplate = require "templates/timeline/actor"
-  TimelineActorTimeTemplate = require "templates/timeline/actor_time"
-  TimelineKeyframeTemplate = require "templates/timeline/keyframe"
-  ModalSetPreviewFPSTemplate = require "templates/modal/set_preview_fps"
+  TemplateTimelineBase = require "templates/timeline/base"
+  TemplateTimelineActor = require "templates/timeline/actor"
+  TemplateTimelineActorTime = require "templates/timeline/actor_time"
+  TemplateTimelineKeyframe = require "templates/timeline/keyframe"
+  TemplateModalSetPreviewFPS = require "templates/modal/set_preview_fps"
 
   Storage = require "storage"
 
@@ -734,7 +734,7 @@ define (require) ->
       param.required actor
       apply = param.optional apply, true
 
-      html = TimelineActorTemplate
+      html = TemplateTimelineActor
         id: "actor-body-#{actor.getId()}"
         actorId: actor.getId()
         index: _.findIndex @_actors, (a) -> a.getId() == actor.getId()
@@ -798,7 +798,7 @@ define (require) ->
       ## TODO: Check that something has actually changed before sending the HTML
       ##
 
-      html = TimelineActorTimeTemplate
+      html = TemplateTimelineActorTime
         id: "actor-time-#{actorId}"
         actorid: actorId
         index: index
@@ -835,7 +835,7 @@ define (require) ->
         timelineId: @getId()
         currentTime: "0:00.00"
 
-      @getElement().html TimelineBaseTemplate options
+      @getElement().html TemplateTimelineBase options
 
     ###
     # Proper render function, fills in timeline internals. Since we have two
@@ -939,7 +939,7 @@ define (require) ->
           elem = $("#{timeSelector} ##{property.id}")
           elem.empty()
           for keyframe in keyframes
-            elem.append TimelineKeyframeTemplate
+            elem.append TemplateTimelineKeyframe
               id: keyframe.id
               left: keyframe.left
 
@@ -953,7 +953,7 @@ define (require) ->
           #else if keyframes.length > elems.length
           #  diff = keyframes.length - elems.length
           #  for i in [0...diff]
-          #    elems.append TimelineKeyframeTemplate
+          #    elems.append TemplateTimelineKeyframe
           #      id: "placeholder"
           #      left: 0
           #$("#{timeSelector} ##{property.id} keyframe").each (index, e) ->
@@ -1032,7 +1032,7 @@ define (require) ->
       # Randomized input name
       name = ID.prefId "_tPreviewRate"
 
-      _html = ModalSetPreviewFPSTemplate
+      _html = TemplateModalSetPreviewFPS
         previewFPS: @getPreviewFPS()
         name: name
 

@@ -3,8 +3,8 @@ define (require) ->
   ID = require "util/id"
   Tab = require "widgets/tabs/tab"
   Asset = require "handles/asset"
-  AssetDirectoryTemplate = require "templates/asset_directory"
-  AssetFileTemplate = require "templates/asset_file"
+  TemplateAssetDirectory = require "templates/asset_directory"
+  TemplateAssetFile = require "templates/asset_file"
   ContextMenu = require "widgets/context_menu"
 
   class AssetsTab extends Tab
@@ -140,7 +140,7 @@ define (require) ->
     _renderAssets: (assets) ->
       assets.map (org_asset) =>
         asset = org_asset.toRenderParams()
-        return AssetFileTemplate file: asset unless org_asset.isDirectory()
+        return TemplateAssetFile file: asset unless org_asset.isDirectory()
 
         content = @_renderAssets org_asset.getEntries()
 
@@ -151,7 +151,7 @@ define (require) ->
           expanded = "expanded"
           directoryStateIcon = "fa-caret-down"
 
-        AssetDirectoryTemplate
+        TemplateAssetDirectory
           directoryStateIcon: directoryStateIcon
           expanded: expanded
           directory: asset
