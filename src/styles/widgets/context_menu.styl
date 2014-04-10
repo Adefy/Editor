@@ -3,37 +3,36 @@
 //
 
 // Context menu that appears when right-clicking a manipulatable
-#editor
-  .context-menu
-    position absolute
-    font-size 12px
-    min-width 96px
+.context-menu
+  position absolute
+  font-size 12px
+  min-width 96px
 
-    display none
-    line-height 1.5
+  display none
+  line-height 1.5
 
-    background-color rgba(35, 35, 35, .8)
-    border 1px solid rgba(0,0,0,.15)
-    box-shadow 0 2px 3px rgba(0,0,0,.25), inset 0 0 1px rgba(255,255,255,.15)
+  background-color rgba(35, 35, 35, .8)
+  border 1px solid rgba(0,0,0,.15)
+  box-shadow 0 2px 3px rgba(0,0,0,.25), inset 0 0 1px rgba(255,255,255,.15)
 
-    .label
-      color #fff
-      background-color $col_cm_bg_highlight_label
-      font-size 10px
-      padding 3px 6px
-      line-height 1.0
+  .label
+    color #fff
+    background-color $col_cm_bg_highlight_label
+    font-size 10px
+    padding 3px 6px
+    line-height 1.0
 
-    li
-      width 130px
-      padding 5px 10px
-      color #aaa
+  li
+    width 130px
+    padding 5px 10px
+    color #aaa
 
-      transition $time_short padding, $time_short background-color
+    transition $time_short padding, $time_short background-color
 
-      &:hover
-        cursor hand
-        cursor pointer
+    &:hover
+      cursor hand
+      cursor pointer
 
-        color #ddd
-        background-color $col_cm_bg_highlight
-        padding 5px 16px
+      color #ddd
+      background-color $col_cm_bg_highlight
+      padding 5px 16px

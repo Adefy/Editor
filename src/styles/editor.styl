@@ -21,130 +21,129 @@ body
   cursor hand
   cursor pointer
 
-#editor
+border none
+padding 0
+margin 0
+
+color #333
+
+//font-weight 300
+//text-rendering optimizeLegibility
+
+line-height 1.6
+
+-webkit-user-select none
+user-select none
+
+.cf:after
+  clear both
+  content "."
+  display block
+  font-size 0
+  height 0px
+  line-height 0
+  visibility hidden
+
+.cf
+  zoom 1
+
+hr
   border none
-  padding 0
-  margin 0
+  margin 0 !important
+  padding 0 !important
+  border-top 1px solid rgba(0,0,0,.15)
+  border-bottom 1px solid rgba(255,255,255,.1)
 
-  color #333
+a
+  color hsl(196, 77%, 55%)
+  text-decoration none
 
-  //font-weight 300
-  //text-rendering optimizeLegibility
-
-  line-height 1.6
-
-  -webkit-user-select none
-  user-select none
-
-  .cf:after
-    clear both
-    content "."
-    display block
-    font-size 0
-    height 0px
-    line-height 0
-    visibility hidden
-
-  .cf
-    zoom 1
-
-  hr
-    border none
-    margin 0 !important
-    padding 0 !important
-    border-top 1px solid rgba(0,0,0,.15)
-    border-bottom 1px solid rgba(255,255,255,.1)
-
-  a
-    color hsl(196, 77%, 55%)
-    text-decoration none
-
-    &:hover
-      color #DDD
-
-  button, input[type="button"], select
-    display inline-block
-    vertical-align baseline
-    background linear-gradient(top, #292929, #222)
-    padding 5px 9px
-    border-radius 5px
-    border 1px solid #111
-    box-shadow inset 0 1px 0px rgba(255,255,255, .05)
-    outline none
-
+  &:hover
     color #DDD
-    font-weight 600
-    line-height 1
-    text-shadow 0 1px rgba(0,0,0,.1)
 
-    &:focus
-      box-shadow inset 0 1px 0px rgba(255,255,255, .05), 0 0 0 1px #0099cc
+button, input[type="button"], select
+  display inline-block
+  vertical-align baseline
+  background linear-gradient(top, #292929, #222)
+  padding 5px 9px
+  border-radius 5px
+  border 1px solid #111
+  box-shadow inset 0 1px 0px rgba(255,255,255, .05)
+  outline none
 
-    &:active
-      background #222
+  color #DDD
+  font-weight 600
+  line-height 1
+  text-shadow 0 1px rgba(0,0,0,.1)
 
-  select
-    padding 3px 5px
+  &:focus
+    box-shadow inset 0 1px 0px rgba(255,255,255, .05), 0 0 0 1px #0099cc
 
-  input[type="text"], input[type="number"]
-    font-size 14px
-    font-family proxima-nova, sans-serif
-    background-color #212121
-    padding 5px
-    color #ccc
-    border-radius 2px
-    box-shadow inset 0 0 3px #000, 0 1px rgba(255,255,255,.1)
-    border none
-    outline none
+  &:active
+    background #222
 
-    &:focus
-      box-shadow inset 0 1px 0px rgba(255,255,255, .05), 0 0 0 1px #0099cc
+select
+  padding 3px 5px
 
-  //input[type="radio"]
-  //  width auto
-  //  padding 2px
-  //  border-radius 2px
-  //  border none
-  //  outline none
-  //  box-shadow inset 0 0 3px #000, 0 1px rgba(255,255,255,.1)
-  //  background-color #212121
-  //  &:focus
-  //    box-shadow inset 0 1px 0px rgba(255,255,255, .05), 0 0 0 1px #0099cc
+input[type="text"], input[type="number"]
+  font-size 14px
+  font-family proxima-nova, sans-serif
+  background-color #212121
+  padding 5px
+  color #ccc
+  border-radius 2px
+  box-shadow inset 0 0 3px #000, 0 1px rgba(255,255,255,.1)
+  border none
+  outline none
 
-  .tcenter
-    text-align center
+  &:focus
+    box-shadow inset 0 1px 0px rgba(255,255,255, .05), 0 0 0 1px #0099cc
 
-  .button
-    display: inline-block
-    border-radius: 5px
-    border: 1px solid transparent
-    color: #666
+//input[type="radio"]
+//  width auto
+//  padding 2px
+//  border-radius 2px
+//  border none
+//  outline none
+//  box-shadow inset 0 0 3px #000, 0 1px rgba(255,255,255,.1)
+//  background-color #212121
+//  &:focus
+//    box-shadow inset 0 1px 0px rgba(255,255,255, .05), 0 0 0 1px #0099cc
 
-    text-align: center
+.tcenter
+  text-align center
 
-    &:hover
-      border-color: rgba(0,0,0,.2)
-      box-shadow: inset 0 0 1px rgba(255,255,255,.2)
-      color: #999
+.button
+  display: inline-block
+  border-radius: 5px
+  border: 1px solid transparent
+  color: #666
 
-    &.active, &:hover.active, &:active
-      //border-color: transparent
-      box-shadow: inset 0 0 1px rgba(0,0,0,.1)
-      background: linear-gradient(bottom, #343434, #272727)
+  text-align: center
 
-    &.active, &:hover.active
-      color: hsl(196, 47%, 55%)
+  &:hover
+    border-color: rgba(0,0,0,.2)
+    box-shadow: inset 0 0 1px rgba(255,255,255,.2)
+    color: #999
 
-  .button.toggle
-    display inline-block
-    width 24px
-    height 24px
-    margin-right 8px
-    text-align center
-    float right
-    color #999
+  &.active, &:hover.active, &:active
+    //border-color: transparent
+    box-shadow: inset 0 0 1px rgba(0,0,0,.1)
+    background: linear-gradient(bottom, #343434, #272727)
 
-    transition $time_short color
+  &.active, &:hover.active
+    color: hsl(196, 47%, 55%)
 
-    &:hover
-      color $lblue
+.button.toggle
+  display inline-block
+  width 24px
+  height 24px
+  margin-right 8px
+  text-align center
+  float right
+  color #999
+
+  transition $time_short color
+
+  &:hover
+    color $lblue
