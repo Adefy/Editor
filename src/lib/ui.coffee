@@ -126,6 +126,10 @@ define (requre) ->
         click: "#{edUI}.sidebar.toggle()"
 
       viewMenu.createChild
+        label: "Toggle Timeline"
+        click: "#{edUI}.timeline.toggle()"
+
+      viewMenu.createChild
         label: "Fullscreen"
         click: "#{edUI}.toggleFullScreen()"
 

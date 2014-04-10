@@ -6,10 +6,10 @@ define (require) ->
   Widget = require "widgets/widget"
   Modal = require "widgets/modal"
   ContextMenu = require "widgets/context_menu"
-  AddTexturesTemplate = require "templates/workspace/add_textures"
-  BackgroundColorTemplate = require "templates/workspace/background_color"
-  WorkspaceScreenSizeTemplate = require "templates/workspace/screen_size"
-  WorkspaceCanvasContainerTemplate = require "templates/workspace/canvas_container"
+  TemplateModalAddTextures = require "templates/modal/add_textures"
+  TemplateModalBackgroundColor = require "templates/modal/background_color"
+  TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
+  TemplateWorkspaceCanvasContainer = require "templates/workspace/canvas_container"
 
   Dragger = require "util/dragger"
 
@@ -64,7 +64,7 @@ define (require) ->
       # Inject our canvas container, along with its status bar
       # Although we currently don't add anything else to the container besides
       # the canvas itself, it might prove useful in the future.
-      @getElement().html WorkspaceCanvasContainerTemplate()
+      @getElement().html TemplateWorkspaceCanvasContainer()
 
       # Create an ARE instance on ourselves
       AUtilLog.info "Creating ARE instance..."
@@ -307,7 +307,7 @@ define (require) ->
       if @_pOrientation == "land" then chL = "checked=\"checked\""
       else chP = "checked=\"checked\""
 
-      _html = WorkspaceScreenSizeTemplate
+      _html = TemplateModalWorkspaceScreenSize
         cSize: cSize
         pSize: pSize
         pOrie: pOrie
@@ -369,7 +369,7 @@ define (require) ->
 
       pInitial = "background-color: rgb(#{_colR}, #{_colG}, #{_colB});"
 
-      _html = BackgroundColorTemplate
+      _html = TemplateModalBackgroundColor
         hex: hex
         hexstr: valHex
         r: r
@@ -448,9 +448,9 @@ define (require) ->
     ###
     showAddTextures: ->
       textnameID = ID.prefId "_wtexture"
-      textpathID = ID.prefId "_wtextpath"
+      textpathID = ID.prefId "_wtext"
 
-      _html = AddTexturesTemplate
+      _html = TemplateModalAddTexturesTemplate
         textnameID: textnameID
         textpathID: textpathID
         textname: ""
