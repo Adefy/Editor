@@ -5,8 +5,9 @@ define (require) ->
   ID = require "util/id"
   Tab = require "widgets/tabs/tab"
 
-  TemplateNumericControl = require "templates/sidebar/controls/numeric"
   TemplateBooleanControl = require "templates/sidebar/controls/boolean"
+  TemplateCompositeControl = require "templates/sidebar/controls/composite"
+  TemplateNumericControl = require "templates/sidebar/controls/numeric"
   TemplateTextControl = require "templates/sidebar/controls/text"
 
   CompositeProperty = require "handles/properties/composite"
@@ -141,14 +142,20 @@ define (require) ->
     # @return [String] html rendered widget
     # @private
     ###
-    generateControl: (name, value) ->
-      param.required name
+    generateControl: (data, value) ->
+      param.required data
+      param.required data.name
+      param.optional data.icon, "fa-cog"
       param.required value
       param.required value.getType(), ["composite"]
 
       return unless @["renderControl_#{value.getType()}"]
 
-      @["renderControl_#{value.getType()}"] @prepareNameForDisplay(name), value
+      ndata =
+        name: @prepareNameForDisplay(data.name)
+        icon: data.icon
+
+      @["renderControl_#{value.getType()}"] ndata, value
 
     ###
     # Capitalize first letter of name
@@ -159,16 +166,18 @@ define (require) ->
     prepareNameForDisplay: (name) ->
       name.charAt(0).toUpperCase() + name.substring 1
 
-    renderControl_composite: (displayName, value) ->
+    renderControl_composite: (data, value) ->
+      param.required data
+      param.required data.name
+      param.optional data.icon, "fa-cog"
+
+      displayName = data.name
+      displayIcon = data.icon
+
       param.required value.getType(), ["composite"]
 
-      label = """
-        <h1 data-name="#{displayName.toLowerCase()}">#{displayName}</h1>
-        <div>
-      """
-
       # Build the control by recursing and concating the result
-      label + _.pairs(value.getProperties()).map (component) =>
+      contents = _.pairs(value.getProperties()).map (component) =>
         return "" unless @["renderControl_#{component[1].getType()}"]
 
         # Note that we handle the "Basic" composite differently here
@@ -188,7 +197,13 @@ define (require) ->
 
         @["renderControl_#{type}"] name, component[1], width, parent
 
-      .join("") + "</div>"
+      .join("")
+
+      TemplateCompositeControl
+        icon: displayIcon
+        name: displayName
+        dataName: displayName.toLowerCase()
+        contents: contents
 
     renderControl_number: (displayName, value, width, parent) ->
       width = param.optional width, "100%"
@@ -244,12 +259,21 @@ define (require) ->
         fakeControl = new CompositeProperty()
         fakeControl.setProperties _.object nonComposites
 
-        nonCompositeHTML = @generateControl "basic", fakeControl
+        nonCompositeHTML = @generateControl { name: "basic", icon: "fa-cog"}, fakeControl
       else
         nonCompositeHTML = ""
 
       compositeHTML = composites.map (p) =>
-        @generateControl p[0], p[1]
+        icn = "fa-cog"
+        name = p[0]
+        # wtf hax
+        switch name
+          when "basic"    then icn = "fa-cog"
+          when "color"    then icn = "fa-adjust"
+          when "physics"  then icn = "fa-anchor"
+          when "position" then icn = "fa-arrows"
+
+        @generateControl { name: name, icon: icn }, p[1]
       .join ""
 
       @_builtHMTL = nonCompositeHTML + compositeHTML
