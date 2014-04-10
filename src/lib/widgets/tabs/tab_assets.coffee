@@ -3,8 +3,10 @@ define (require) ->
   ID = require "util/id"
   Tab = require "widgets/tabs/tab"
   Asset = require "handles/asset"
+  Modal = require "widgets/modal"
   TemplateAssetDirectory = require "templates/asset_directory"
   TemplateAssetFile = require "templates/asset_file"
+  TemplateModalRename = require "templates/modal/rename"
   ContextMenu = require "widgets/context_menu"
 
   class AssetsTab extends Tab
@@ -71,20 +73,6 @@ define (require) ->
       @_searchAssetsById @_assets, id
 
     ###
-    # @param [Asset] asset
-    ###
-    refreshAssetState: (asset) ->
-      elementId = "##{asset.getId()}"
-
-      expanded = asset.getExpanded()
-
-      $(elementId).toggleClass("expanded", expanded)
-
-      icon = $(elementId).find(".toggle-directory i")
-      icon.toggleClass("fa-caret-right", !expanded)
-      icon.toggleClass("fa-caret-down",  expanded)
-
-    ###
     # Callback for directory visiblity content toggle
     # @param [HTMLElement] element
     ###
@@ -111,8 +99,6 @@ define (require) ->
         false
 
       $(document).on "contextmenu", ".files", (e) =>
-        console.log e
-
         new ContextMenu e.pageX, e.pageY, @
         e.preventDefault()
         false
@@ -166,6 +152,57 @@ define (require) ->
       @_renderAssets @_assets
 
     ###
+    # @param [Asset] asset
+    ###
+    refreshAssetState: (asset) ->
+      elementId = asset.getSelector()
+
+      expanded = asset.getExpanded()
+
+      $(elementId).toggleClass("expanded", expanded)
+
+      icon = $(elementId).find(".toggle-directory i")
+      icon.toggleClass("fa-caret-right", !expanded)
+      icon.toggleClass("fa-caret-down",  expanded)
+
+    ###
+    # @param [Asset] asset
+    ###
+    refreshAsset: (asset) ->
+      elementId = asset.getSelector()
+      $(elementId).find(".name").html asset.getName()
+
+    ###
+    # @return [Modal]
+    ###
+    showModalRename: (asset) ->
+      nameId = ID.prefId "fileName"
+
+      _html = TemplateModalRename
+        nameId: nameId
+        name: asset.getName()
+
+      new Modal
+        title: "Rename",
+        mini: true,
+        content: _html,
+        modal: false,
+        cb: (data) =>
+          # Submission
+          name = data[nameId]
+          asset.setName name
+          @refreshAsset asset
+
+        validation: (data) =>
+          # Validation
+          name = data[nameId]
+          unless name.length > 0 then return "Name must be longer than 0"
+          true
+
+        change: (deltaName, deltaVal, data) =>
+          #$("input[name=\"#{nameId}\"]").val deltaVal
+
+    ###
     # @return [Object]
     ###
     getContextFunctions: ->
@@ -217,4 +254,5 @@ define (require) ->
     ###
     contextFuncRenameAsset: (asset) ->
       # TODO
+      @showModalRename asset
       @

@@ -101,6 +101,12 @@ define (require) ->
     getId: -> @_id
 
     ###
+    # Get this Asset's selector
+    # @return [String] CSSSelector
+    ###
+    getSelector: -> "##{@_id}"
+
+    ###
     # Returns the Asset's directory entries
     # @return [Array<Asset>] entries
     ###

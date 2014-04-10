@@ -195,7 +195,7 @@ define (require) ->
       parent = param.optional parent, false
 
       TemplateNumericControl
-        name: displayName.toLowerCase()
+        name: displayName#.toLowerCase()
         max: value.getMax()
         min: value.getMin()
         float: value.getFloat()
