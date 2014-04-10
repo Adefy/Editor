@@ -3,6 +3,7 @@ define (require) ->
   AUtilLog = require "util/log"
   param = require "util/param"
   ID = require "util/id"
+  Project = require "project"
   Widget = require "widgets/widget"
   Modal = require "widgets/modal"
   ContextMenu = require "widgets/context_menu"
@@ -41,6 +42,8 @@ define (require) ->
         parent: "section#main"
         classes: ["workspace"]
         prepend: true
+
+      @project = new Project()
 
       # Keep track of spawned handle actor objects
       @actorObjects = []

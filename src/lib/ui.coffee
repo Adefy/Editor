@@ -12,6 +12,8 @@ define (requre) ->
   PropertiesTab = require "widgets/tabs/tab_properties"
   AssetsTab = require "widgets/tabs/tab_assets"
 
+  ModalManager = require "modal_manager"
+
   class UIManager
 
     constructor: ->
@@ -28,6 +30,8 @@ define (requre) ->
       @widgets.push @initializeWorkspace()
       @widgets.push @initializeStatusbar()
       @widgets.push @initializeSidebar()
+
+      @modals = new ModalManager @
 
       @renderAll()
 

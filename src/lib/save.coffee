@@ -13,11 +13,6 @@ define (require) ->
     constructor: (@ui) ->
       @updateState()
 
-    updateState: ->
-      @data =
-        time: @dumpTimeInformation()
-        actors: @dumpActorStates()
-
     dumpActorStates: ->
       @ui.workspace.getActors().map (actor) -> actor.serialize()
 
@@ -27,8 +22,17 @@ define (require) ->
         current: @ui.timeline.getCursorTime()
       }
 
+    dumpProject: ->
+      @ui.workspace.project.dump()
+
     dumpState: ->
       JSON.stringify @data
+
+    updateState: ->
+      @data =
+        time: @dumpTimeInformation()
+        actors: @dumpActorStates()
+        project: @dumpProject()
 
     saveState: ->
       @updateState()
