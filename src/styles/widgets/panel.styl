@@ -39,8 +39,7 @@
     .content
       overflow hidden
       position relative
-      height: 100%
-      //height: calc(100% - 8px)
+      height calc(100% - 24px)
 
       padding 0 20px 10px
       padding-bottom: 24px
@@ -112,7 +111,8 @@
     .files
       padding 0 !important
       display block
-      height 100%
+      height calc(100% - 24px)
+      margin-bottom 24px
       dl
         display block
         width 100%
@@ -126,6 +126,7 @@
         &.expanded
           display block
           height auto
+          border-bottom 2px solid rgba(0, 0, 0, 0.1)
 
         dt, dd
           cursor pointer
