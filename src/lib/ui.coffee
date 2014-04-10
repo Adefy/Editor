@@ -11,6 +11,7 @@ define (requre) ->
 
   PropertiesTab = require "widgets/tabs/tab_properties"
   AssetsTab = require "widgets/tabs/tab_assets"
+  TexturesTab = require "widgets/tabs/tab_textures"
 
   ModalManager = require "modal_manager"
 
@@ -79,8 +80,11 @@ define (requre) ->
       propertiesPanel.newTab "Properties", (tab) =>
         new PropertiesTab @, propertiesPanel
 
-      propertiesPanel.newTab "Textures", (tab) =>
+      propertiesPanel.newTab "Assets", (tab) =>
         new AssetsTab @, propertiesPanel
+
+      propertiesPanel.newTab "Textures", (tab) =>
+        new TexturesTab @, propertiesPanel
 
       propertiesPanel.selectTab 0
 

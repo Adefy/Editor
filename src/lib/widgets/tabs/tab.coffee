@@ -8,6 +8,16 @@ define (require) ->
     #  super id, parent, klasses, prepend
 
     ###
+    # @return [Boolean] needPanelFooter do we need a panel footer?
+    ###
+    needPanelFooter: -> false
+
+    ###
+    # @return [HTML]
+    ###
+    renderFooter: -> ""
+
+    ###
     # What css class should be appended to the parent element?
     # @return [String]
     ###

@@ -11,7 +11,11 @@ define ->
   # @property [HTML] content
   ###
   Handlebars.compile """
+    {{#if usesFooter}}
+    <div id="{{ id }}" class="panel with-footer">
+    {{else}}
     <div id="{{ id }}" class="panel">
+    {{/if}}
       <div class="tabs">
         {{#each tabs}}
 
@@ -29,6 +33,8 @@ define ->
       </div>
       <div id="{{contentId}}" class="content {{contentKlass}}">
         {{{ content }}}
+      </div>
+      <div class="footer cf">
       </div>
     </div>
   """

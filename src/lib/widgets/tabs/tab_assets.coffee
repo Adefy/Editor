@@ -4,8 +4,8 @@ define (require) ->
   Tab = require "widgets/tabs/tab"
   Asset = require "handles/asset"
   Modal = require "widgets/modal"
-  TemplateAssetDirectory = require "templates/asset_directory"
-  TemplateAssetFile = require "templates/asset_file"
+  TemplateAssetDirectory = require "templates/tabs/asset_directory"
+  TemplateAssetFile = require "templates/tabs/asset_file"
   ContextMenu = require "widgets/context_menu"
 
   class AssetsTab extends Tab
@@ -21,6 +21,12 @@ define (require) ->
         classes: ["tab-assets"]
 
       @_regListeners()
+
+    ###
+    # @return [String]
+    ###
+    cssAppendParentClass: ->
+      "files"
 
     ###
     # Callback for directory visiblity content toggle
@@ -62,12 +68,6 @@ define (require) ->
 
       $(document).on "click", ".files .toggle-directory", (e) =>
         @_onToggleDirectory $(e.target).closest(".asset.directory")
-
-    ###
-    # @return [String]
-    ###
-    cssAppendParentClass: ->
-      "files"
 
     ###
     # @param [Array<Object>] assets

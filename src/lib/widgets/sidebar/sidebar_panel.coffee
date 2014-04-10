@@ -12,10 +12,12 @@ define (require) ->
     ###
     constructor: (parent, opts) ->
       @_tabs = []
+      @_footerActive = false
 
       super parent, [ "panel" ]
 
       @_parent.addItem @
+
       @registerEvents()
 
     ###
@@ -101,6 +103,7 @@ define (require) ->
       content = ""
       contentKlass = ""
       contentId = ""
+      usesFooter = false
 
       tab = _.find @_tabs, (t) -> t.selected
 
@@ -109,9 +112,13 @@ define (require) ->
           content = tab.content
 
         else # probably is a Object
-          content = tab.content.render()
-          contentKlass = tab.content.cssAppendParentClass()
-          contentId = tab.content.appendParentId()
+          tcontent = tab.content
+          content = tcontent.render()
+          contentKlass = tcontent.cssAppendParentClass()
+          contentId = tcontent.appendParentId()
+          usesFooter = tcontent.needPanelFooter()
+
+      @_footerActive = usesFooter
 
       TemplateSidebarPanel
         id: @_id
@@ -120,6 +127,7 @@ define (require) ->
         content: content
         contentId: contentId
         contentKlass: contentKlass
+        usesFooter: @_footerActive
 
     ###
     # @return [Void]
@@ -135,8 +143,11 @@ define (require) ->
     postRender: ->
       @_setupScrollbar()
       for tab in @_tabs
-        if tab.content && tab.content.postRender
-          tab.content.postRender()
+        if content = tab.content
+          if content.postRender
+            content.postRender()
+          if @_footerActive && content.renderFooter
+            @getElement(".footer").html content.renderFooter()
 
     ###
     # When a child element changes size, position, this function is called
