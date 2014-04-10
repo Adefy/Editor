@@ -34,6 +34,27 @@ define (requre) ->
       @onResize()
       window.onresize = @onResize
 
+    ###
+    # swiped from:
+    # http://xparkmedia.com/blog/enter-fullscreen-mode-javascript/
+    ###
+    toggleFullScreen: ->
+      if (document.fullScreenElement && document.fullScreenElement != null) || \
+       (!document.mozFullScreen && !document.webkitIsFullScreen)
+        if document.documentElement.requestFullScreen
+          document.documentElement.requestFullScreen()
+        else if document.documentElement.mozRequestFullScreen
+          document.documentElement.mozRequestFullScreen()
+        else if document.documentElement.webkitRequestFullScreen
+          document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT)
+      else
+        if document.cancelFullScreen
+          document.cancelFullScreen()
+        else if document.mozCancelFullScreen
+          document.mozCancelFullScreen()
+        else if document.webkitCancelFullScreen
+          document.webkitCancelFullScreen()
+
     onResize: =>
       for widget in @widgets
         widget.onResize() if widget.onResize
@@ -106,6 +127,7 @@ define (requre) ->
 
       viewMenu.createChild
         label: "Fullscreen"
+        click: "#{edUI}.toggleFullScreen()"
 
       # Timeline menu options
       timelineMenu.createChild
