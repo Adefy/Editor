@@ -161,7 +161,7 @@ define (require) ->
 
       $("#{elementId}.asset").toggleClass("expanded", expanded)
 
-      icon = $("#{elementId} > .toggle-directory i")
+      icon = $("#{elementId}.asset > .toggle-directory i")
       icon.toggleClass("fa-caret-right", !expanded)
       icon.toggleClass("fa-caret-down",  expanded)
 
