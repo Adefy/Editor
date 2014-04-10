@@ -140,16 +140,16 @@ define (requre) ->
       # Timeline menu options
       timelineMenu.createChild
         label: "Set preview framerate..."
-        click: "#{edUI}.timeline.showSetPreviewRate()"
+        click: "#{edUI}.modals.showSetPreviewRate()"
 
       # Canvas menu options
       canvasMenu.createChild
         label: "Set screen properties..."
-        click: "#{edUI}.workspace.showSetScreenProperties()"
+        click: "#{edUI}.modals.showSetScreenProperties()"
 
       canvasMenu.createChild
         label: "Set background color..."
-        click: "#{edUI}.workspace.showSetBackgroundColor()"
+        click: "#{edUI}.modals.showSetBackgroundColor()"
 
       # Tools menu options
       toolsMenu.createChild
@@ -163,7 +163,7 @@ define (requre) ->
 
       toolsMenu.createChild
         label: "Upload textures..."
-        click: "#{edUI}.workspace.showAddTextures()"
+        click: "#{edUI}.modals.showAddTextures()"
 
       # Help menu options
       helpMenu.createChild

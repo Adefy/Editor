@@ -6,7 +6,6 @@ define (require) ->
   Modal = require "widgets/modal"
   TemplateAssetDirectory = require "templates/asset_directory"
   TemplateAssetFile = require "templates/asset_file"
-  TemplateModalRename = require "templates/modal/rename"
   ContextMenu = require "widgets/context_menu"
 
   class AssetsTab extends Tab
@@ -121,7 +120,7 @@ define (require) ->
     ###
     refreshAsset: (asset) ->
       elementId = asset.getSelector()
-      $(elementId).find(".name").html asset.getName()
+      $("#{elementId}.asset > dd > label.name").text asset.getName()
 
     ###
     # @param [String] type
@@ -129,7 +128,7 @@ define (require) ->
     ###
     respondToEvent: (type, params) ->
       switch type
-        when "update.asset"
+        when "update.asset", "renamed.asset"
           @refreshAsset params.asset
         when "add.asset"
           @refresh()

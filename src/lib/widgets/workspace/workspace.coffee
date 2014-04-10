@@ -5,11 +5,7 @@ define (require) ->
   ID = require "util/id"
   Project = require "project"
   Widget = require "widgets/widget"
-  Modal = require "widgets/modal"
   ContextMenu = require "widgets/context_menu"
-  TemplateModalAddTextures = require "templates/modal/add_textures"
-  TemplateModalBackgroundColor = require "templates/modal/background_color"
-  TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
   TemplateWorkspaceCanvasContainer = require "templates/workspace/canvas_container"
 
   Dragger = require "util/dragger"
@@ -162,7 +158,7 @@ define (require) ->
 
           actor = @getActorFromPick r, g, b
           if actor
-            unless _.isEmpty actor.getContextFunctions()
+            unless _.isEmpty actor.getContextProperties()
               @dragger.forceDragEnd()
               new ContextMenu e.pageX, e.pageY, actor
 
@@ -291,190 +287,6 @@ define (require) ->
 
       # Start rendering
       @_are.startRendering()
-
-    ###
-    # Shows a modal allowing the user to set screen properties. Sizes are picked
-    # from device templates, rotation and scale are also available
-    ###
-    showSetScreenProperties: ->
-
-      curScale = ID.prefId "_wspscale"
-      cSize = ID.prefId "_wspcsize"
-      pSize = ID.prefId "_wsppsize"
-      pOrie = ID.prefId "_wsporientation"
-
-      curSize = "#{@_pWidth}x#{@_pHeight}"
-      chL = ""
-      chP = ""
-
-      if @_pOrientation == "land" then chL = "checked=\"checked\""
-      else chP = "checked=\"checked\""
-
-      _html = TemplateModalWorkspaceScreenSize
-        cSize: cSize
-        pSize: pSize
-        pOrie: pOrie
-        chL: chL
-        chP: chP
-        curScale: curScale
-        pScale: @_pScale
-        currentSize: curSize
-
-      new Modal
-        title: "Set Screen Properties",
-        content: _html,
-        modal: false,
-        cb: (data) =>
-          # Submission
-          size = data[cSize].split "x"
-
-          @_pHeight = Number size[1]
-          @_pWidth = Number size[0]
-          @_pScale = Number data[curScale]
-          @_pOrientation = data[pOrie]
-          @updateOutline()
-
-        validation: (data) =>
-          # Validation
-          size = data[cSize].split "x"
-
-          if size.length != 2 then return "Size is of the format WidthxHeight"
-          else if isNaN(size[0]) or isNaN(size[1])
-            return "Dimensions must be numbers"
-          else if isNaN(data[curScale]) then return "Scale must be a number"
-
-          true
-        change: (deltaName, deltaVal, data) =>
-
-          if deltaName == pSize
-            $("input[name=\"#{cSize}\"]").val deltaVal.split("_").join "x"
-
-    ###
-    # Creates and shows the "Set Background Color" modal
-    # @return [Modal]
-    ###
-    showSetBackgroundColor: ->
-
-      col = @_are.getClearColor()
-
-      _colR = col.getR()
-      _colG = col.getG()
-      _colB = col.getB()
-
-      valHex = _colB | (_colG << 8) | (_colR << 16)
-      valHex = (0x1000000 | valHex).toString(16).substring 1
-
-      preview = ID.prefId "_wbgPreview"
-      hex = ID.prefId "_wbgHex"
-      r = ID.prefId "_wbgR"
-      g = ID.prefId "_wbgG"
-      b = ID.prefId "_wbgB"
-
-      pInitial = "background-color: rgb(#{_colR}, #{_colG}, #{_colB});"
-
-      _html = TemplateModalBackgroundColor
-        hex: hex
-        hexstr: valHex
-        r: r
-        g: g
-        b: b
-        colorRed: _colR
-        colorGreen: _colG
-        colorBlue: _colB
-        preview: preview
-        pInitial: pInitial
-
-      new Modal
-        title: "Set Background Color",
-        content: _html,
-        modal: false,
-        cb: (data) =>
-          # Submission
-          @_are.setClearColor data[r], data[g], data[b]
-
-        validation: (data) =>
-          # Validation
-          vR = data[r]
-          vG = data[g]
-          vB = data[b]
-
-          if isNaN(vR) or isNaN(vG) or isNaN(vB)
-            return "Components must be numbers"
-          else if vR < 0 or vG < 0 or vB < 0 or vR > 255 or vG > 255 or vB > 255
-            return "Components must be between 0 and 255"
-
-          true
-        change: (deltaName, deltaVal, data) =>
-
-          cH = data[hex]
-          cR = data[r]
-          cG = data[g]
-          cB = data[b]
-
-          delta = {}
-
-          # On change
-          if deltaName == hex
-
-            # Recover rgb from hex
-            cH = cH.substring 1
-            _r = cH.substring 0, 2
-            _g = cH.substring 2, 4
-            _b = cH.substring 4, 6
-
-            delta[hex] = cH
-            delta[r] = parseInt _r, 16
-            delta[g] = parseInt _g, 16
-            delta[b] = parseInt _b, 16
-
-          else
-
-            # Build hex from rgba
-            newHex = cB | (cG << 8) | (cR << 16)
-            newHex = (0x1000000 | newHex).toString(16).substring 1
-
-            delta[hex] = "##{newHex}"
-            delta[r] = data[r]
-            delta[g] = data[g]
-            delta[b] = data[b]
-
-          # Apply bg color to preview
-          rgbCol = "rgb(#{delta[r]}, #{delta[g]}, #{delta[b]})"
-          $("##{preview}").css "background-color", rgbCol
-
-          # Return updates
-          delta
-
-    ###
-    # Creates and shows the "Add Textures" modal
-    # @return [Modal]
-    ###
-    showAddTextures: ->
-      textnameID = ID.prefId "_wtexture"
-      textpathID = ID.prefId "_wtext"
-
-      _html = TemplateModalAddTexturesTemplate
-        textnameID: textnameID
-        textpathID: textpathID
-        textname: ""
-        textpath: ""
-
-      new Modal
-        title: "Add textures ..."
-        content: _html
-        modal: false
-        cb: (data) =>
-          #Submission
-          @_uploadTextures data[textnameID], data[textpathID]
-
-        validation: =>
-          if data[textnameID] == ""
-            return "Texture must have a name"
-
-          if data[textpathID] == null or data[textpathID] == ""
-            return "You must select a texture"
-
-          true
 
     ###
     # Upload the textures to the cloud for processing and usage

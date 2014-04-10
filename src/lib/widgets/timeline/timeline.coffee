@@ -5,14 +5,13 @@ define (require) ->
   ID = require "util/id"
   aformat = require "util/format"
   Widget = require "widgets/widget"
-  Modal = require "widgets/modal"
+  ContextMenu = require "widgets/context_menu"
   TimelineControl = require "widgets/timeline/timeline_control"
   Workspace = require "widgets/workspace/workspace"
   TemplateTimelineBase = require "templates/timeline/base"
   TemplateTimelineActor = require "templates/timeline/actor"
   TemplateTimelineActorTime = require "templates/timeline/actor_time"
   TemplateTimelineKeyframe = require "templates/timeline/keyframe"
-  TemplateModalSetPreviewFPS = require "templates/modal/set_preview_fps"
 
   Storage = require "storage"
 
@@ -282,10 +281,23 @@ define (require) ->
       @ui.pushEvent "timeline.selected.actor", actor: @_actors[index]
 
     ###
+    # @private
+    ###
+    _bindContextClick: ->
+      $(document).on "contextmenu", ".timeline .actor .title", (e) =>
+        actorElement = $(e.target).closest ".actor"
+        index = $(actorElement).attr "data-index"
+        new ContextMenu e.pageX, e.pageY, @_actors[index]
+        e.preventDefault()
+        false
+
+    ###
     # Registers event listeners
     # @private
     ###
     _regListeners: ->
+
+      @_bindContextClick()
 
       $(document).on "click", ".timeline .button.toggle", (e) =>
         @toggle()
@@ -738,7 +750,7 @@ define (require) ->
         id: "actor-body-#{actor.getId()}"
         actorId: actor.getId()
         index: _.findIndex @_actors, (a) -> a.getId() == actor.getId()
-        title: actor.name
+        title: actor.getName()
         properties: [
           id: "opacity"
           title: "Opacity"
@@ -903,11 +915,13 @@ define (require) ->
       bodySelector = @_actorBodySelector actor
       bodyElement = $(bodySelector)
 
+      titleElement = bodyElement.find(".actor-info > .title")
       opacityElement = bodyElement.find(".property#opacity")
       positionElement = bodyElement.find(".property#position")
       rotationElement = bodyElement.find(".property#rotation")
       colorElement = bodyElement.find(".property#color")
 
+      titleElement.text actor.getName()
       opacityElement.find(".value").text aformat.num opacity, 2
       positionElement.find(".value").text aformat.pos pos, 0
       rotationElement.find(".value").text aformat.degree rotation, 2
@@ -1016,32 +1030,9 @@ define (require) ->
           @updateActor params.actor
         when "tab.properties.update.actor"
           @updateActor params.actor
-        when "selected.actor.changed"
-          @updateActor()
         when "actor.update.intime"
           @updateActor params.actor
-
-    ## MODALS
-
-    ###
-    # Show dialog box for setting the preview framerate
-    # @return [Modal]
-    ###
-    showSetPreviewRate: ->
-
-      # Randomized input name
-      name = ID.prefId "_tPreviewRate"
-
-      _html = TemplateModalSetPreviewFPS
-        previewFPS: @getPreviewFPS()
-        name: name
-
-      new Modal
-        title: "Set Preview Framerate"
-        content: _html
-        modal: false
-        cb: (data) => @_previewFPS = data[name]
-        validation: (data) ->
-          return "Framerate must be a number" if isNaN data[name]
-          return "Framerate must be > 0" if data[name] <= 0
-          true
+        when "renamed.actor"
+          @updateActor params.actor
+        when "selected.actor.changed"
+          @updateActor()
