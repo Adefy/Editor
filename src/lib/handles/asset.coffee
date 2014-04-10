@@ -219,22 +219,25 @@ define (require) ->
     ###
     # @return [Object]
     ###
-    getContextFunctions: ->
-      context = {}
+    getContextProperties: ->
+      functions = {}
 
       if @_isDirectory
-        context["Add Directory"] = =>
+        functions["Add Directory"] = =>
           @contextFuncAddDirectory @, "New Folder"
-        context["Add File"] = =>
+        functions["Add File"] = =>
           @contextFuncAddFile @, "New File"
 
       unless _.contains @_disabled, "delete"
-        context["Delete"] = => @contextFuncRemoveAsset @
+        functions["Delete"] = => @contextFuncRemoveAsset @
 
       unless _.contains @_disabled, "rename"
-        context["Rename"] = => @contextFuncRenameAsset @
+        functions["Rename"] = => @contextFuncRenameAsset @
 
-      context
+      {
+        name: @getName()
+        functions: functions
+      }
 
     ###
     # @return [Object] renderParams

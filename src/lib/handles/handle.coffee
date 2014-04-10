@@ -4,7 +4,7 @@ define (require) ->
   ID = require "util/id"
 
   # Base class for all elements that can be manipulated by the editor
-  window.Handle = class Handle
+  Handle = class Handle
 
     ###
     #
@@ -25,6 +25,7 @@ define (require) ->
 
       # Basic right-click menu functions
       @_ctx =
+        "Rename": => window.AdefyEditor.ui.modals.showRename @
         "Delete": => @delete()
 
       # Give ourselves a unique id so we can be discovered on the body
@@ -92,7 +93,11 @@ define (require) ->
     # cliecked on. Again, just like the properties, global properties may be
     # applied by ancestors
     ###
-    getContextFunctions: -> @_ctx
+    getContextProperties: ->
+      {
+        name: @_id
+        functions: @_ctx
+      }
 
     ###
     # Dump handle into JSON representation

@@ -6,7 +6,12 @@ define ->
   #   @property [String] dataId
   ###
   Handlebars.compile """
-    {{#each entries}}
-      <li data-id="{{dataId}}">{{name}}</li>
-    {{/each}}
+    {{#if name}}
+      <dl class="label">{{name}}</dl>
+    {{/if}}
+    <ul>
+      {{#each entries}}
+        <li data-id="{{dataId}}">{{name}}</li>
+      {{/each}}
+    </ul>
   """

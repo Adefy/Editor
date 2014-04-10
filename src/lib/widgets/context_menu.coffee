@@ -41,11 +41,14 @@ define (require) ->
       param.required handle
 
       # Sanity check
-      if handle.getContextFunctions == undefined
-        AUtilLog.warn "Object has no getContextFunctions, can't create context-menu"
+      if handle.getContextProperties == undefined
+        AUtilLog.warn "Object has no getContextProperties, can't create context-menu"
         return
 
-      @functions = handle.getContextFunctions() # Grab functions
+      @properties = handle.getContextProperties() # Grab functions
+      @name = @properties.name
+      @functions = @properties.functions
+
       @alive = true # Set to false upon removal
 
       # Silently drop out, empty ctx menu is allowed, we just do nothing
@@ -78,58 +81,57 @@ define (require) ->
     # @private
     ###
     _buildHTML: ->
-      @genElement "ul", {}, =>
 
-        __bindListener = (f) =>
-          # Insane in da membrane
-          if typeof @functions[f] != "function"
-            AUtilLog.error "Only methods can be bound to context menu items"
-            return
+      bindListener = (f) =>
+        # Insane in da membrane
+        if typeof @functions[f] != "function"
+          AUtilLog.error "Only methods can be bound to context menu items"
+          return
 
-          $(document).on "click", "[data-id=\"#{@functions[f]._ident}\"]", =>
-            @remove()
-            @functions[f]()
+        $(document).on "click", "[data-id=\"#{@functions[f]._ident}\"]", =>
+          @remove()
+          @functions[f]()
 
 
-        entries = []
+      entries = []
 
-        for f of @functions
-          # If f already has an identifier set, unbind any existing listeners
-          if @functions[f]._ident != undefined
-            @_unbindListener @functions[f]._ident
-          # We set a unique identifier for the element to use, and bind listeners
-          @functions[f]._ident = @_convertToIdent(f) + ID.nextId()
+      for f of @functions
+        # If f already has an identifier set, unbind any existing listeners
+        if @functions[f]._ident != undefined
+          @_unbindListener @functions[f]._ident
+        # We set a unique identifier for the element to use, and bind listeners
+        @functions[f]._ident = @_convertToIdent(f) + ID.nextId()
 
-          entries.push
-            name: f
-            dataId: @functions[f]._ident
+        entries.push
+          name: f
+          dataId: @functions[f]._ident
 
-        __html = TemplateContextMenu entries: entries
+      html = TemplateContextMenu name: @name, entries: entries
 
-        # Bind listeners
-        for f of @functions
-          __bindListener f
+      # Bind listeners
+      for f of @functions
+        bindListener f
 
-        if !ContextMenu._registeredMouseup
+      if !ContextMenu._registeredMouseup
 
-          # Mouseup listener to close menu when clicked outside
-          $(document).mouseup (e) ->
+        # Mouseup listener to close menu when clicked outside
+        $(document).mouseup (e) ->
 
-            # Grab both the menu object, and our own instance from the body
-            menu = $(".context-menu")
-            ins = $("body").data $(menu).attr "id"
+          # Grab both the menu object, and our own instance from the body
+          menu = $(".context-menu")
+          ins = $("body").data $(menu).attr "id"
 
-            if menu != undefined and ins != undefined
-              if !menu.is(e.target) && menu.has(e.target).length == 0
-                if ContextMenu.animate
-                  $(ins._sel).slideUp ContextMenu.animateSpeed, ->
-                    $(ins._sel).remove()
-                else
+          if menu != undefined and ins != undefined
+            if !menu.is(e.target) && menu.has(e.target).length == 0
+              if ContextMenu.animate
+                $(ins._sel).slideUp ContextMenu.animateSpeed, ->
                   $(ins._sel).remove()
+              else
+                $(ins._sel).remove()
 
-          ContextMenu._registeredMouseup = true
+        ContextMenu._registeredMouseup = true
 
-        __html
+      html
 
     ###
     # Shorthand, used in @_buildHTML and @remove
