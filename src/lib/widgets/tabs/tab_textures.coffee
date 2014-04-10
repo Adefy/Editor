@@ -34,9 +34,18 @@ define (require) ->
     cssAppendParentClass: ->
       "textures #{@_viewMode}"
 
+    ###
+    # @return [Void]
+    ###
     _onToggleViewMode: (mode) ->
       @_viewMode = mode
       @refresh()
+
+    ###
+    # @return [Void]
+    ###
+    _onClickUpload: ->
+      console.log "Better luck next time"
 
     ###
     # @private
@@ -50,14 +59,30 @@ define (require) ->
         console.log e
         @_onToggleViewMode "thumbs"
 
+      $(document).on "click", ".panel .footer .upload", (e) =>
+        @_onClickUpload()
+
     ###
     # @return [String]
     ###
     render: ->
-      TemplateTabThumb
+      html = TemplateTabThumb
         src: "http://www.sacher.com/assets/Uploads/_resampled/croppedimage1220870-0Start.jpg"
         name: "Cake.jpg"
+      html += TemplateTabThumb
+        src: "http://www.colourbox.com/preview/8468585-163424-hipster-geometric-background-made-of-cubes-retro-hipster-color-mosaic-background-square-composition-with-geometric-shapes-geometric-hipster-retro-background-with-place-for-your-text-retro-background.jpg"
+        name: "Retro.jpg"
+      html += TemplateTabThumb
+        src: "http://placekitten.com/200/200"
+        name: "Cat1.jpg"
+      html += TemplateTabThumb
+        src: "http://placekitten.com/200/300"
+        name: "Cat2.jpg"
+      html += TemplateTabThumb
+        src: "http://placekitten.com/300/300"
+        name: "Cat3.jpg"
 
+      html
     ###
     # The footer has to be rendered seperately
     # @return [Void]
