@@ -1,0 +1,285 @@
+!!!
+html
+  head
+    link(rel="stylesheet", href="/css/reset.css")
+    link(rel="stylesheet", href="/css/main.css")
+
+    link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Oleo+Script|Source+Sans+Pro:200,300,400,600,700,900')
+    link(rel='stylesheet', href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css")
+    link(rel='stylesheet', href="/css/perfect-scrollbar.css")
+
+    script(src="http://code.jquery.com/jquery-2.0.3.js")
+    script(src="/js/jquery.mousewheel.js")
+    script(src="/js/perfect-scrollbar.js")
+  body.tk-proxima-nova
+    .dialog-wrap
+      .dialog
+        .header
+          .title Settings
+          .close: button: i.fa.fa-times
+        .content
+          dl
+            dt Dimensions
+            dd: input(type="text")
+            dt
+            dd: button Save
+
+    .dialog-wrap
+      .dialog(style="top: 32px; left: 420px")
+        .header
+          .title Properties
+          .close: button: i.fa.fa-times
+        .content
+          dl
+            dt Dimensions
+            dd: input(type="text")
+            dt
+            dd: button Save
+
+    header
+      ul.toolbar
+        li: a(href="#") File
+        li: a(href="#") Edit
+        li: a(href="#") View
+        li: a(href="#") Timeline
+        li: a(href="#") Canvas
+        li
+          a(href="#") Tools
+          .menu
+              a(href="#") Preview
+              a(href="#") Preview
+              hr
+              a(href="#") Preview
+              a(href="#") Preview
+
+        li: a(href="#") Help
+
+
+      .menubar
+        a.button.active(href="#"): i.fa.fa-fw.fa-square
+        a.button(href="#"): i.fa.fa-fw.fa-circle
+        a.button(href="#"): i.fa.fa-fw.fa-square
+
+
+    .main
+      .sidebar
+        .panel.with-footer
+          .tabs
+            .tab.selected Assets
+            .tab Tab 2
+            .tab Tab 3
+          .content.files.thumbs
+            .thumb
+              .img: img(src="http://www.sacher.com/assets/Uploads/_resampled/croppedimage1220870-0Start.jpg")
+              .name Cake.jpg
+            .thumb
+              .img: img(src="http://www.colourbox.com/preview/8468585-163424-hipster-geometric-background-made-of-cubes-retro-hipster-color-mosaic-background-square-composition-with-geometric-shapes-geometric-hipster-retro-background-with-place-for-your-text-retro-background.jpg")
+              .name Retro.jpg
+            .thumb
+              .img: img(src="http://www.sacher.com/assets/Uploads/_resampled/croppedimage1220870-0Start.jpg")
+              .name Cake.jpg
+
+          .footer.cf
+            i.left.fa.fa-fw.fa-th-large
+            i.left.fa.fa-fw.fa-th-list.active
+
+            i.right.fa.fa-fw.fa-upload
+
+
+        .panel
+          .tabs
+            .tab Tab 2
+            .tab.selected Object Properties
+          .content
+            h1
+              i.fa.fa-fw.fa-cog
+              | Basic
+            dl
+              dt Width
+              dd 100px
+            dl
+              dt Height
+              dd 100px
+            dl
+              dt Opacity
+              dd 1.0
+            dl
+              dt Rotation
+              dd 0.0°
+
+            h1
+              i.fa.fa-fw.fa-arrows
+              | Position
+            dl.half
+              dt X
+              dd 1.0
+            dl.half
+              dt Y
+              dd 1.0
+
+            h1
+              i.fa.fa-fw.fa-adjust
+              | Color
+            dl.third
+              dt R
+              dd 1.0
+            dl.third
+              dt G
+              dd 1.0
+            dl.third
+              dt B
+              dd 1.0
+
+            h1
+              i.fa.fa-fw.fa-anchor
+              | Physics
+            dl
+              dt Mass
+              dd 50
+            dl
+              dt Elasticity
+              dd 0.3
+            dl
+              dt Friction
+              dd 0.1
+      .canvas
+    .timeline
+      .header
+        .current_time 6:43.12
+        a(href="#"): i.fa.fa-fw.fa-fast-backward
+        a(href="#"): i.fa.fa-fw.fa-backward
+        a(href="#"): i.fa.fa-fw.fa-play
+        a(href="#"): i.fa.fa-fw.fa-forward
+        a(href="#"): i.fa.fa-fw.fa-fast-forward
+      .content
+        .list
+          .actor.expanded
+            .row.selected
+              .visibility: i.fa.fa-fw.fa-eye
+              .expand: i.fa.fa-fw.fa-caret-down
+              .title Object A
+            .row.property
+              .live: .button.active: i.fa.fa-fw.fa-clock-o
+              .graph: .button.active: i.fa.fa-fw.fa-cog
+              .title Opacity
+              .value 1.0
+            .row.property
+              .live:  .button: i.fa.fa-fw.fa-clock-o
+              .graph: .button: i.fa.fa-fw.fa-cog
+              .title Position
+              .value 20.0, 11.0
+
+          .actor
+            .row
+              .visibility: // i.fa.fa-fw.fa-eye
+              .expand: i.fa.fa-fw.fa-caret-right
+              .title Object B
+            .row.property
+              .live: .button.active: i.fa.fa-fw.fa-clock-o
+              .graph: .button: i.fa.fa-fw.fa-cog
+              .title Opacity
+              .value 1.0
+            .row.property
+              .live: .button: i.fa.fa-fw.fa-clock-o
+              .graph: .button: i.fa.fa-fw.fa-cog
+              .title Position
+              .value 20.0, 11.0
+
+          .actor.expanded
+            .row
+              .visibility: i.fa.fa-fw.fa-eye
+              .expand: i.fa.fa-fw.fa-caret-down
+              .title Object C
+            .row.property
+              .live: .button.active: i.fa.fa-fw.fa-clock-o
+              .graph: .button.active: i.fa.fa-fw.fa-cog
+              .title Opacity
+              .value 1.0
+            .row.property
+              .live:  .button: i.fa.fa-fw.fa-clock-o
+              .graph: .button: i.fa.fa-fw.fa-cog
+              .title Position
+              .value 20.0, 11.0
+
+          .actor.expanded
+            .row
+              .visibility: i.fa.fa-fw.fa-eye
+              .expand: i.fa.fa-fw.fa-caret-down
+              .title Object D
+            .row.property
+              .live: .button.active: i.fa.fa-fw.fa-clock-o
+              .graph: .button.active: i.fa.fa-fw.fa-cog
+              .title Opacity
+              .value 1.0
+            .row.property
+              .live:  .button: i.fa.fa-fw.fa-clock-o
+              .graph: .button: i.fa.fa-fw.fa-cog
+              .title Position
+              .value 20.0, 11.0
+          .actor.expanded
+            .row.selected
+              .visibility: i.fa.fa-fw.fa-eye
+              .expand: i.fa.fa-fw.fa-caret-down
+              .title Object E
+            .row.property
+              .live: .button.active: i.fa.fa-fw.fa-clock-o
+              .graph: .button.active: i.fa.fa-fw.fa-cog
+              .title Opacity
+              .value 1.0
+            .row.property
+              .live:  .button: i.fa.fa-fw.fa-clock-o
+              .graph: .button: i.fa.fa-fw.fa-cog
+              .title Position
+              .value 20.0, 11.0
+        .time
+          .cursor(style="left: 64px")
+          .actor.expanded
+            .row: .bar(style="position: absolute; left:0px")
+            .row.property
+              .keyframe(style="left: 50px")
+              .keyframe(style="left: 120px")
+            .row.property
+
+          .actor
+            .row: .bar(style="position: absolute; left:60px")
+            .row.property
+            .row.property
+
+          .actor.expanded
+            .row: .bar(style="position: absolute; left:0px")
+            .row.property
+              .keyframe(style="left: 50px")
+              .keyframe(style="left: 120px")
+            .row.property
+          .actor.expanded
+            .row: .bar(style="position: absolute; left:0px")
+            .row.property
+              .keyframe(style="left: 50px")
+              .keyframe(style="left: 120px")
+            .row.property
+          .actor.expanded
+            .row: .bar(style="position: absolute; left:0px")
+            .row.property
+              .keyframe(style="left: 50px")
+              .keyframe(style="left: 120px")
+            .row.property
+
+      .footer
+        | Version 0.0.1&#945;
+        .save.done: i.fa.fa-fw.fa-circle
+
+    != yield
+
+  script.
+    $('.main').height( $(window).height() - ($('.timeline').height() + $('header').height()) );
+    $('.panel .content').perfectScrollbar({suppressScrollX: true});
+    $('.timeline .content').perfectScrollbar();
+
+    $( window ).resize(function() {
+      $('.main').height( $(window).height() - ($('.timeline').height() + $('header').height()) );
+      $('.panel .content').perfectScrollbar('update');
+      $('.timeline .content').perfectScrollbar('update');
+    });
+  script(src="//use.typekit.net/udl8vci.js")
+  script.
+    try{Typekit.load();}catch(e){}
