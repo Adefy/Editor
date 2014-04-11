@@ -202,7 +202,7 @@ define (require) ->
 
       TemplateCompositeControl
         icon: displayIcon
-        name: displayName
+        displayName: displayName
         dataName: displayName.toLowerCase()
         contents: contents
 
