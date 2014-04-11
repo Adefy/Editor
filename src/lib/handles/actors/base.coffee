@@ -104,6 +104,12 @@ define (require) ->
       @_properties.position.addProperty "y", @_properties.position.y
 
 
+      @_properties.opacity = new NumericProperty()
+      @_properties.opacity.onUpdate = (opacity) =>
+        @_AJSActor.setOpacity opacity if @_AJSActor
+      @_properties.opacity.requestUpdate = ->
+        @setValue me._AJSActor.getOpacity() if me._AJSActor
+
       @_properties.rotation = new NumericProperty()
       @_properties.rotation.onUpdate = (rotation) =>
         @_AJSActor.setRotation rotation if @_AJSActor
