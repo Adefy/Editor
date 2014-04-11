@@ -140,6 +140,12 @@ define (require) ->
       @ui.pushEvent "workspace.add.actor", actor: actor
 
     ###
+    # Returns the currently selected actor's id
+    # @return [Id] actorId
+    ###
+    getSelectedActor: -> Workspace._selectedActor
+
+    ###
     # Sets the selectedActor instance
     # @param [Id] actorId
     ###
@@ -266,10 +272,15 @@ define (require) ->
 
           actor = @getActorFromPick r, g, b
           if actor
+            oldActor = @getSelectedActor()
             @setSelectedActor actor
-            @ui.pushEvent "workspace.selected.actor",
-              actorId: @_selectedActor
-              actor: actor
+
+            # The selected actor has changed, push an event stating
+            # that the actor has changed aka selected.
+            if oldActor != @getSelectedActor()
+              @ui.pushEvent "workspace.selected.actor",
+                actorId: @_selectedActor
+                actor: actor
 
     ###
     # @private
