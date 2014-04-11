@@ -257,7 +257,7 @@ define (require) ->
           newY = d.getUserData().original.y + deltaY
 
           d.getTarget().setPosition newX, newY
-          @ui.pushEvent "selected.actor.changed"
+          @ui.pushEvent "selected.actor.update", actor: d.getTarget()
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!

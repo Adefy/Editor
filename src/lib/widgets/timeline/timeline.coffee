@@ -1034,5 +1034,5 @@ define (require) ->
           @updateActor params.actor
         when "renamed.actor"
           @updateActor params.actor
-        when "selected.actor.changed"
-          @updateActor()
+        when "selected.actor.update"
+          @updateActor params.actor
