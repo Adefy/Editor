@@ -1,6 +1,7 @@
 define (require) ->
 
   AUtilLog = require "util/log"
+  AUtilEventLog = require "util/event_log"
   param = require "util/param"
 
   ID = require "util/id"
@@ -130,7 +131,7 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      AUtilLog.debug "[tab.assets] GOT event(type: \"#{type}\")"
+      AUtilEventLog.egot "tab.assets", type
       switch type
         when "update.asset", "renamed.asset"
           @refreshAsset params.asset

@@ -1,6 +1,7 @@
 define (requre) ->
 
   AUtilLog = require "util/log"
+  AUtilEventLog = require "util/event_log"
   param = require "util/param"
 
   Toolbar = require "widgets/toolbar/toolbar"
@@ -206,13 +207,20 @@ define (requre) ->
     pushEvent: (type, params) ->
       unless @_ignoreEventList == null || @_ignoreEventList == undefined
         if _.include @_ignoreEventList, type
-          return AUtilLog.debug "IGNORE event(type: \"#{type}\")"
+          return AUtilEventLog.ignore "ui", type
 
-      AUtilLog.debug "[ui] PUSH event(type: \"#{type}\")"
+      AUtilEventLog.epush "ui", type
 
       ## we should probably fine tune this later
       for widget in @widgets
         widget.respondToEvent type, params if widget.respondToEvent
+
+      ##
+      # more debugging stuff
+      @_eventStats ||= {}
+      if @_eventStats[type] == null || @_eventStats[type] == undefined
+        @_eventStats[type] = 0
+      @_eventStats[type]++
 
     ###
     # Allows incoming event of (type)

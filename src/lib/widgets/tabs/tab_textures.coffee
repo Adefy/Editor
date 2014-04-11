@@ -1,6 +1,7 @@
 define (require) ->
 
   AUtilLog = require "util/log"
+  AUtilEventLog = require "util/event_log"
   param = require "util/param"
 
   ID = require "util/id"
@@ -100,4 +101,4 @@ define (require) ->
         thumbsActive: thumbsActive
 
     respondToEvent: (type, params) ->
-      AUtilLog.debug "[tab.textures] GOT event(type: \"#{type}\")"
+      AUtilEventLog.egot "tab.textures", type
