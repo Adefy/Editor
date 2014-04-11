@@ -1,5 +1,8 @@
 define (require) ->
 
+  AUtilLog = require "util/log"
+  param = require "util/param"
+
   ID = require "util/id"
   Tab = require "widgets/tabs/tab"
   Asset = require "handles/asset"
@@ -127,6 +130,7 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
+      AUtilLog.debug "[tab.assets] GOT event(type: \"#{type}\")"
       switch type
         when "update.asset", "renamed.asset"
           @refreshAsset params.asset

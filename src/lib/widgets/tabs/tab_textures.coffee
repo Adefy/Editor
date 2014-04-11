@@ -1,5 +1,8 @@
 define (require) ->
 
+  AUtilLog = require "util/log"
+  param = require "util/param"
+
   ID = require "util/id"
   Tab = require "widgets/tabs/tab"
   TemplateTabThumb = require "templates/tabs/thumb"
@@ -52,11 +55,9 @@ define (require) ->
     ###
     _regListeners: ->
       $(document).on "click", ".panel .footer .toggle-list", (e) =>
-        console.log e
         @_onToggleViewMode "list"
 
       $(document).on "click", ".panel .footer .toggle-thumbs", (e) =>
-        console.log e
         @_onToggleViewMode "thumbs"
 
       $(document).on "click", ".panel .footer .upload", (e) =>
@@ -97,3 +98,6 @@ define (require) ->
       TemplateTabTexturesFooter
         listActive: listActive
         thumbsActive: thumbsActive
+
+    respondToEvent: (type, params) ->
+      AUtilLog.debug "[tab.textures] GOT event(type: \"#{type}\")"

@@ -1,5 +1,6 @@
 define (requre) ->
 
+  #AUtilLog = require "util/log"
   config = require "config"
   param = require "util/param"
   Renderable = require "renderable"

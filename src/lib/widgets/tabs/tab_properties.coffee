@@ -355,6 +355,7 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
+      AUtilLog.debug "[tab.properties] GOT event(type: \"#{type}\")"
       switch type
         when "workspace.selected.actor", "timeline.selected.actor", "workspace.add.actor"
           @updateActor params.actor

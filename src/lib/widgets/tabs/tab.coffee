@@ -1,5 +1,8 @@
 define (require) ->
 
+  AUtilLog = require "util/log"
+  param = require "util/param"
+
   Widget = require "widgets/widget"
 
   class Tab extends Widget
