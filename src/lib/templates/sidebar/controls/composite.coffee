@@ -7,7 +7,9 @@ define ->
   Handlebars.compile """
     <h1 data-name="{{dataName}}">
       <i class="fa fa-fw {{icon}}"></i>
-      <label>{{name}}</label>
+      <label>{{displayName}}</label>
     </h1>
-    {{{contents}}}
+    <div>
+      {{{contents}}}
+    </div>
   """.split("\n").join " "

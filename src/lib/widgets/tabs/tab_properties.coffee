@@ -211,7 +211,8 @@ define (require) ->
       parent = param.optional parent, false
 
       TemplateNumericControl
-        name: displayName#.toLowerCase()
+        displayName: displayName
+        name: displayName.toLowerCase()
         max: value.getMax()
         min: value.getMin()
         float: value.getFloat()
@@ -225,6 +226,7 @@ define (require) ->
       parent = param.optional parent, false
 
       TemplateBooleanControl
+        displayName: displayName
         name: displayName.toLowerCase()
         value: value.getValue()
         width: width
@@ -235,6 +237,7 @@ define (require) ->
       parent = param.optional parent, false
 
       TemplateTextControl
+        displayName: displayName
         name: displayName.toLowerCase()
         placeholder: value.getPlaceholder()
         value: value.getValue()
@@ -301,10 +304,13 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     updateActor: (actor) ->
+      oldActor = @targetActor
       @targetActor = param.optional actor, @targetActor
       return unless @targetActor
 
-      return @refresh @targetActor unless @_builtHMTL
+      if !@_builtHMTL || (@targetActor != oldActor)
+        AUtilLog.info "refreshing actor!"
+        return @refresh @targetActor
 
       for property, value of @targetActor.getProperties()
 
