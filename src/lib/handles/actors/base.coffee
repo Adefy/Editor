@@ -103,8 +103,13 @@ define (require) ->
       @_properties.position.addProperty "x", @_properties.position.x
       @_properties.position.addProperty "y", @_properties.position.y
 
-
       @_properties.opacity = new NumericProperty()
+      @_properties.opacity.setMin 0.0
+      @_properties.opacity.setMax 1.0
+      @_properties.opacity.setValue 1.0
+      @_properties.opacity.setPlaceholder 1.0
+      @_properties.opacity.setFloat true
+      @_properties.opacity.setPrecision 6
       @_properties.opacity.onUpdate = (opacity) =>
         @_AJSActor.setOpacity opacity if @_AJSActor
       @_properties.opacity.requestUpdate = ->

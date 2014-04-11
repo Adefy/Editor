@@ -26,7 +26,7 @@
     "pace": "~0.5.1",
     "lodash": "~2.4.1",
 
-    "adefyjs": "git@github.com:Adefy/AdefyJS.git#v1.0.1",
+    "adefyjs": "git@github.com:Adefy/AdefyJS.git#v1.0.2",
     "adefyre": "git@github.com:Adefy/AdefyRE.git#v1.0.3"
   }
 }
