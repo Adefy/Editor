@@ -309,7 +309,6 @@ define (require) ->
       return unless @targetActor
 
       if !@_builtHMTL || (@targetActor != oldActor)
-        AUtilLog.info "refreshing actor!"
         return @refresh @targetActor
 
       for property, value of @targetActor.getProperties()
