@@ -18,15 +18,18 @@ define (require) ->
     ###
     constructor: (@ui) ->
       @items = [
-        icon: "fa-square"
+        name: "Square"
+        # icon: "fa-square"
         spawn: (x, y) =>
           new RectangleActor @ui, @ui.timeline.getCursorTime(), 100, 100, x, y
       ,
-        icon: "fa-circle"
+        name: "Polygon"
+        # icon: "fa-circle"
         spawn: (x, y) =>
           new PolygonActor @ui, @ui.timeline.getCursorTime(), 5, 100, x, y
       ,
-        icon: "fa-gavel"
+        name: "Triangle"
+        # icon: "fa-gavel"
         spawn: (x, y) =>
           new TriangleActor @ui, @ui.timeline.getCursorTime(), 20, 30, x, y
       ]
@@ -49,7 +52,8 @@ define (require) ->
           "data-id": item.id
 
         @getElement().append @genElement "a", attributes, =>
-          @genElement "i", class: "fa fa-fw #{item.icon}"
+          item.name
+          # @genElement "i", class: "fa fa-fw #{item.icon}"
 
       @setupDraggables()
 
