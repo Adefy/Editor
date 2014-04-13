@@ -53,21 +53,22 @@
       padding: 0 3px
       font-size: 14px
 
+      transition $time_short color
+
       &:hover
-        color: #aaa
-        background-color: #fff
+        color: #fff
         border-color: #ccc
 
   .timeline-control-bar
     .control
-      &:hover
-        color: #999
+      height 24px
 
-      &:active
-        color: #FFF
-
-      &.active
+      &:active, &.active
+        background: linear-gradient(bottom, #343434, #272727)
         color: $lblue
+
+      &:hover
+        color: #FFF
 
   .list
     float: left
