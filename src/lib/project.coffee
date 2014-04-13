@@ -79,6 +79,8 @@ define (require) ->
       # so its best to tag the project version from early in production
       projver = data.version
 
+      AUtilLog.info "Loading a v#{projver} Project dump"
+
       ##
       # assets have remained the same thus far
       @assets = Asset.load data.assets
