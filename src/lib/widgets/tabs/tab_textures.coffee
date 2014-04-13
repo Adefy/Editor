@@ -49,7 +49,12 @@ define (require) ->
     # @return [Void]
     ###
     _onClickUpload: ->
-      console.log "Better luck next time"
+      filepicker.pickAndStore
+        mimetype: "image/*"
+      ,
+        location: "S3"
+        path: "/ads/assets/"
+      , (blob) ->
 
     ###
     # @private
