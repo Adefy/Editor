@@ -23,7 +23,15 @@ define (require) ->
         parent: parent
         classes: ["tab-textures"]
 
-      @_regListeners()
+      @_registerFooterListeners()
+      @_setupDragging()
+
+    ###
+    # Setup drag event listeners
+    ###
+    _setupDragging: ->
+      $(document).on "dragstart", "#{@_sel} .thumb .img img", (e) ->
+        e.originalEvent.dataTransfer.setData "image/texture", $(e.target).attr "src"
 
     ###
     # Does this tab require a Panel footer?
@@ -60,7 +68,7 @@ define (require) ->
     ###
     # @private
     ###
-    _regListeners: ->
+    _registerFooterListeners: ->
       $(document).on "click", ".panel .footer .toggle-list", (e) =>
         @_onToggleViewMode "list"
 
@@ -91,6 +99,7 @@ define (require) ->
         name: "Cat3.jpg"
 
       html
+
     ###
     # The footer has to be rendered seperately
     # @return [Void]
