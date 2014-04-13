@@ -105,6 +105,8 @@ define (require) ->
       # Vertical component is ignored
       @keyframeDragger.setOnDrag (d, deltaX, deltaY) =>
 
+        id = $(d.getTarget()).attr "id"
+
         keyframeTime = d.getUserDataValue "startTime"
         property = $(d.getTarget()).parent().attr("data-property").split("-")[3]
 
@@ -138,15 +140,19 @@ define (require) ->
 
         source = d.getUserDataValue("lastUpdate") or keyframeTime
 
+        window.a = actor
+
         actor.transplantKeyframe property, source, targetTime
+        actor.updateInTime()
 
         d.setUserDataValue "lastUpdate", Math.floor targetTime
+
+        # Update target
+        d.setTarget $("##{id}")
 
         # Update keyframe
         $(d.getTarget()).attr "data-time", Math.floor targetTime
         $(d.getTarget()).css "left", "#{@getOffsetForTime targetTime}px"
-
-        actor.updateInTime()
 
     ###
     # Returns the time space css selector
@@ -1032,6 +1038,7 @@ define (require) ->
           ## hard refresh
           elem = $("#{timeSelector} ##{property.id}")
           elem.empty()
+
           for keyframe in keyframes
             elem.append TemplateTimelineKeyframe
               id: keyframe.id

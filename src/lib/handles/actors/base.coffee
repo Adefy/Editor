@@ -1048,7 +1048,7 @@ define (require) ->
       # Update any animation to the right of us
       succeedingAnim = @findSucceedingAnimation source
 
-      if succeedingAnim != null
+      if succeedingAnim != null and @_animations[succeedingAnim][property]
         @mutatePropertyAnimation @_animations[succeedingAnim][property], (a) ->
           a.setStartTime destination
 
