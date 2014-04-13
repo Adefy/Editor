@@ -287,7 +287,7 @@ define (require) ->
       $(document).on "contextmenu", ".timeline .actor .title", (e) =>
         actorElement = $(e.target).closest ".actor"
         index = $(actorElement).attr "data-index"
-        new ContextMenu e.pageX, e.pageY, @_actors[index]
+        new ContextMenu e.pageX, e.pageY, @_actors[index].getContextProperties()
         e.preventDefault()
         false
 

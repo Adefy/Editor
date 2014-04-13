@@ -54,12 +54,12 @@ define (require) ->
       $(document).on "contextmenu", ".files .asset", (e) =>
         assetElement = $(e.target).closest(".asset")
         if asset = @ui.workspace.project.assets.findById(assetElement[0].id)
-          new ContextMenu e.pageX, e.pageY, asset
+          new ContextMenu e.pageX, e.pageY, asset.getContextProperties()
         e.preventDefault()
         false
 
       $(document).on "contextmenu", ".files", (e) =>
-        new ContextMenu e.pageX, e.pageY, @ui.workspace.project.assets
+        new ContextMenu e.pageX, e.pageY, @ui.workspace.project.assets.getContextProperties()
         e.preventDefault()
         false
 

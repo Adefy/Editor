@@ -33,19 +33,13 @@ define (require) ->
     #
     # @param [Number] x x coordinate to spawn at
     # @param [Number] y y coordinate to spawn at
-    # @param [Handle] handle object to create menu for
+    # @param [Handle] properties context menu property definitions
     ###
-    constructor: (x, y, handle) ->
+    constructor: (x, y, @properties) ->
       param.required x
       param.required y
-      param.required handle
+      param.required @properties
 
-      # Sanity check
-      if handle.getContextProperties == undefined
-        AUtilLog.warn "Object has no getContextProperties, can't create context-menu"
-        return
-
-      @properties = handle.getContextProperties() # Grab functions
       @name = @properties.name
       @functions = @properties.functions
 
