@@ -6,5 +6,5 @@ define ->
   # @property [Number] left
   ###
   Handlebars.compile """
-    <div id="{{ id }}" style="left: {{ left }}px" class="keyframe"></div>
+    <div data-time="{{ time }}" style="left: {{ left }}px" class="keyframe"></div>
   """
