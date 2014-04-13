@@ -215,6 +215,33 @@ define (require) ->
         false
 
     ###
+    # Register listeners
+    ###
+    _regListeners: ->
+      @bindContextClick()
+
+      $(document).mousemove (e) =>
+        return unless @_startWorkspaceDrag
+        x = @_startWorkspaceDrag.x
+        y = @_startWorkspaceDrag.y
+        ARERenderer.camPos.x += x - e.pageX
+        ARERenderer.camPos.y += y - e.pageY
+        @_startWorkspaceDrag =
+          x: e.pageX
+          y: e.pageY
+
+      $(document).mouseup (e) =>
+        return unless @_startWorkspaceDrag
+        @_startWorkspaceDrag = null
+
+      $(document).on "mousedown", ".workspace canvas", (e) =>
+        console.log e
+        if e.shiftKey && !@_startWorkspaceDrag
+          @_startWorkspaceDrag =
+            x: e.pageX
+            y: e.pageY
+
+    ###
     # Translate the pick values into an ID and fetch the associated actor
     #
     # @param [Number] r
@@ -309,7 +336,8 @@ define (require) ->
 
       @_are.setClearColor 240, 240, 240
 
-      @bindContextClick()
+      @_regListeners()
+
       @setupActorDragging()
 
       # Start rendering
