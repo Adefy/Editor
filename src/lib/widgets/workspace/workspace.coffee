@@ -192,7 +192,7 @@ define (require) ->
     ###
     # Bind a contextmenu listener
     ###
-    bindContextClick: ->
+    _bindContextClick: ->
       $(document).on "contextmenu", ".workspace canvas", (e) =>
         return if @dragger.isDragging()
 
@@ -218,25 +218,25 @@ define (require) ->
     # Register listeners
     ###
     _regListeners: ->
-      @bindContextClick()
+      @_bindContextClick()
 
       $(document).mousemove (e) =>
-        return unless @_startWorkspaceDrag
-        x = @_startWorkspaceDrag.x
-        y = @_startWorkspaceDrag.y
+        return unless @_workspaceDrag
+        x = @_workspaceDrag.x
+        y = @_workspaceDrag.y
         ARERenderer.camPos.x += x - e.pageX
         ARERenderer.camPos.y += y - e.pageY
-        @_startWorkspaceDrag =
+        @_workspaceDrag =
           x: e.pageX
           y: e.pageY
 
       $(document).mouseup (e) =>
-        return unless @_startWorkspaceDrag
-        @_startWorkspaceDrag = null
+        return unless @_workspaceDrag
+        @_workspaceDrag = null
 
       $(document).on "mousedown", ".workspace canvas", (e) =>
-        if e.shiftKey && !@_startWorkspaceDrag
-          @_startWorkspaceDrag =
+        if e.shiftKey && !@_workspaceDrag
+          @_workspaceDrag =
             x: e.pageX
             y: e.pageY
 
