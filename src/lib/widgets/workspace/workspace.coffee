@@ -235,7 +235,6 @@ define (require) ->
         @_startWorkspaceDrag = null
 
       $(document).on "mousedown", ".workspace canvas", (e) =>
-        console.log e
         if e.shiftKey && !@_startWorkspaceDrag
           @_startWorkspaceDrag =
             x: e.pageX
