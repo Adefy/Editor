@@ -28,7 +28,7 @@ define ->
         {{/each}}
 
         <div data-sidebarid="{{sidebarId}}" class="button toggle">
-          <i class="fa fa-fw fa-arrow-left"></i>
+          <i class="fa fa-fw fa-toggle-left"></i>
         </div>
       </div>
       <div id="{{contentId}}" class="content {{contentKlass}}">

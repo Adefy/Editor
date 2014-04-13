@@ -14,7 +14,6 @@ define (require) ->
     # @param [UI] ui
     ###
     constructor: (@ui) ->
-
       super
         id: ID.prefId("toolbar")
         classes: ["toolbar"]

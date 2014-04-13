@@ -27,7 +27,7 @@ define ->
         <i class="fa fa-fw fa-fast-forward"></i>
       </a>
       <div timelineid="{{timelineId}}" class="button toggle">
-        <i class="fa fa-fw fa-arrow-down"></i>
+        <i class="fa fa-fw fa-toggle-down"></i>
       </div>
     </div>
     <div class="content">
