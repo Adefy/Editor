@@ -170,8 +170,8 @@ define (require) ->
       # TODO: Take into account camera coords
 
       {
-        x: x - canvasLeft + ARERenderer.camPos.x
-        y: y - canvasTop + ARERenderer.camPos.y
+        x: x - canvasLeft
+        y: y - canvasTop
       }
 
     ###
@@ -200,6 +200,8 @@ define (require) ->
     getNewActorCtxMenu: (x, y) ->
       time = @ui.timeline.getCursorTime()
       pos = @domToGL(x, y)
+      pos.x += ARERenderer.camPos.x
+      pos.y += ARERenderer.camPos.y
 
       {
         name: "New Actor"
