@@ -139,13 +139,14 @@ define (require) ->
         source = d.getUserDataValue("lastUpdate") or keyframeTime
 
         actor.transplantKeyframe property, source, targetTime
-        actor.updateInTime()
 
         d.setUserDataValue "lastUpdate", Math.floor targetTime
 
         # Update keyframe
         $(d.getTarget()).attr "data-time", Math.floor targetTime
         $(d.getTarget()).css "left", "#{@getOffsetForTime targetTime}px"
+
+        actor.updateInTime()
 
     ###
     # Returns the time space css selector

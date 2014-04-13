@@ -652,9 +652,6 @@ define (require) ->
       ##
       cursor = Math.floor @ui.timeline.getCursorTime()
 
-      # If we haven't moved, drop out early
-      return if cursor == @_lastTemporalState
-
       # Ensure cursor is within our lifetime
       return if cursor < @lifetimeStart_ms or cursor > @lifetimeEnd_ms
 
