@@ -184,9 +184,9 @@ define (require) ->
           "Rectangle Actor": =>
             @addActor new RectangleActor @ui, time, 100, 100, x, y
           "Polygon Actor": =>
-            @addActor new PolygonActor @ui, time, 5, 100, x, y
+            @addActor new PolygonActor @ui, time, 5, 60, x, y
           "Triangle Actor": =>
-            @addActor new TriangleActor @ui, time, 20, 30, x, y
+            @addActor new TriangleActor @ui, time, 100, 100, x, y
       }
 
     ###
