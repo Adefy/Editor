@@ -318,12 +318,6 @@ define (require) ->
     getBufferEntry: (time) -> @_propBuffer["#{Math.floor time}"]
 
     ###
-    # Set the actor's name
-    # @param [String] name
-    ###
-    setName: (_name) -> @name = _name
-
-    ###
     # @param [Boolean] visible
     ###
     setVisible: (visible) ->
