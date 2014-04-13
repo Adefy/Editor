@@ -102,7 +102,7 @@ define (requre) ->
     #
     # @return [String] id
     ###
-    getId: -> "#{@_id}"
+    getID: -> "#{@_id}"
 
     ###
     # Called when the item is dropped on a receiving droppable. Most often,

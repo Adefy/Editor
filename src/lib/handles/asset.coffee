@@ -11,6 +11,7 @@ define (require) ->
     @include Dumpable
 
     ###
+    # @param [Asset, null] parent
     # @param [Hash] options
     ###
     constructor: (parent, options) ->
@@ -61,11 +62,11 @@ define (require) ->
     ###
     # @param [Id] id
     ###
-    findById: (id) ->
+    findByID: (id) ->
       for asset in @_entries
-        return asset if asset.getId() == id
+        return asset if asset.getID() == id
         if asset.isDirectory()
-          if found = asset.findById(id)
+          if found = asset.findByID(id)
             return found
 
       return null
@@ -102,7 +103,7 @@ define (require) ->
     # Get this Asset's id
     # @return [Id] id
     ###
-    getId: -> @_id
+    getID: -> @_id
 
     ###
     # Get this Asset's selector
@@ -212,6 +213,7 @@ define (require) ->
     contextFuncRemoveAsset: (asset) ->
       if parent = asset._parent
         parent.removeAsset asset
+
         window.AdefyEditor.ui.pushEvent "remove.asset",
           parent: parent,
           child: asset
@@ -255,14 +257,14 @@ define (require) ->
     toRenderParams: ->
       if @isDirectory()
         {
-          id: @getId()
+          id: @getID()
           name: @getName()
           entries: @_entries.map (e) -> e.toRenderParams()
           expanded: @getExpanded()
         }
       else
         {
-          id: @getId()
+          id: @getID()
           name: @getName()
           fileType: @getFileType()
         }

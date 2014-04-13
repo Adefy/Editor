@@ -93,7 +93,7 @@ define (require) ->
     # @param [String] id child id
     ###
     removeChild: (id) ->
-      @_children = _.filter @_children, (i) -> i.getId() != id
+      @_children = _.filter @_children, (i) -> i.getID() != id
       @
 
     ###
@@ -101,4 +101,4 @@ define (require) ->
     #
     # @return [Number] id
     ###
-    getId: -> @_id
+    getID: -> @_id

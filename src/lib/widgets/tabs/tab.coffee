@@ -32,7 +32,7 @@ define (require) ->
     # @return [String]
     ###
     appendParentId: ->
-      @getId()
+      @getID()
 
     ###
     # @return [String]

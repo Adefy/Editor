@@ -54,7 +54,7 @@ define (require) ->
         classes: [ "context-menu" ]
 
       # Add a handle to our instance on the body
-      $("body").data @getId(), @
+      $("body").data @getID(), @
 
       # Position and inject ourselves
       @getElement().css
@@ -160,6 +160,6 @@ define (require) ->
         # Remove ourselves
         $(@getSel()).remove()
 
-        $("body").removeData @getId()
+        $("body").removeData @getID()
 
         @alive = false

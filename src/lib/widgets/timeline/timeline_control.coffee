@@ -80,7 +80,7 @@ define (require) ->
       # only enter checks if an actor is actually selected
       if index != null and index != undefined
         for actor, i in @timeline._actors
-          if actor.getId() == index then index = i
+          if actor.getID() == index then index = i
 
         _animations = @timeline._actors[index].getAnimations()
         for anim of _animations
@@ -114,7 +114,7 @@ define (require) ->
       # only enter checks if an actor is actually selected
       if index != null and index != undefined
         for actor, i in @_actors
-          if actor.getId() == index then index = i
+          if actor.getID() == index then index = i
 
         _animations = @timeline._actors[index].getAnimations()
         for anim of _animations

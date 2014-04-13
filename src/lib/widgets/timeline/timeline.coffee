@@ -115,7 +115,7 @@ define (require) ->
         # Cache the actor to speed things up
         unless d.getUserDataValue "actor"
           actorId = $(d.getTarget()).closest(".actor").attr "data-actorid"
-          actor = _.find @_actors, (a) -> a.getId() == actorId
+          actor = _.find @_actors, (a) -> a.getID() == actorId
 
           return AUtilLog.error "Invalid actor: #{actorId}" unless actor
 
@@ -172,13 +172,13 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     _actorBodySelector: (actor) ->
-      "#{@_bodySelector()} #actor-body-#{actor.getId()}.actor"
+      "#{@_bodySelector()} #actor-body-#{actor.getID()}.actor"
 
     ###
     # @param [BaseActor] actor
     ###
     _actorTimeSelector: (actor) ->
-      "#{@_spaceSelector()} #actor-time-#{actor.getId()}.actor"
+      "#{@_spaceSelector()} #actor-time-#{actor.getID()}.actor"
 
     ###
     # returns the scrollbar selector
@@ -721,7 +721,7 @@ define (require) ->
       param.required actor
       param.required timebarData
 
-      actorId = actor.getId()
+      actorId = actor.getID()
 
       keyframes =
         opacity: []
@@ -779,7 +779,7 @@ define (require) ->
     _calcActorTimeProperties: (actor) ->
       param.required actor
 
-      actorId = actor.getId()
+      actorId = actor.getID()
       timebarData = @_calcActorTimebar actor
       keyframes = @_calcActorKeyframes actor, timebarData
 
@@ -833,9 +833,9 @@ define (require) ->
       apply = param.optional apply, true
 
       html = TemplateTimelineActor
-        id: "actor-body-#{actor.getId()}"
-        actorId: actor.getId()
-        index: _.findIndex @_actors, (a) -> a.getId() == actor.getId()
+        id: "actor-body-#{actor.getID()}"
+        actorId: actor.getID()
+        index: _.findIndex @_actors, (a) -> a.getID() == actor.getID()
         title: actor.getName()
         properties: [
           id: "opacity"
@@ -885,8 +885,8 @@ define (require) ->
       param.required actor
       apply = param.optional apply, true
 
-      actorId = actor.getId()
-      index = _.findIndex @_actors, (a) -> a.getId() == actorId
+      actorId = actor.getID()
+      index = _.findIndex @_actors, (a) -> a.getID() == actorId
 
       return false unless @_checkActorLifetime actor
 
@@ -930,7 +930,7 @@ define (require) ->
     _renderStructure: ->
       options =
         id: "timeline-header"
-        timelineId: @getId()
+        timelineId: @getID()
         currentTime: "0:00.00"
 
       @getElement().html TemplateTimelineBase options

@@ -71,7 +71,7 @@ define (require) ->
     # render function that returns HTML. Note that the function should not
     # inject it as it will be injected into the sidebar on render!
     #
-    # @param [Object] item item with render() and getId() methods
+    # @param [Object] item item with render() and getID() methods
     ###
     addItem: (item) ->
       param.required item
@@ -79,8 +79,8 @@ define (require) ->
       if item.render == undefined or item.render == null
         throw new Error "Item must have a render function!"
 
-      if item.getId == undefined or item.getId == null
-        throw new Error "Item must supply a getId() function!"
+      if item.getID == undefined or item.getID == null
+        throw new Error "Item must supply a getID() function!"
 
       # Test out the render function, ensure it returns a string
       test = item.render()
@@ -101,8 +101,8 @@ define (require) ->
       param.required id
 
       for i in [0...@_items.length]
-        if @_items[i].getId() == i
-          if typeof @_items[i].getId() == typeof i # Probably overkill
+        if @_items[i].getID() == i
+          if typeof @_items[i].getID() == typeof i # Probably overkill
             @_items.splice i, 1
             @render()
             return true

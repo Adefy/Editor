@@ -36,7 +36,7 @@ define (require) ->
       @name = "handle #{@_id_n}"
 
       # Attach ourselves to the body
-      $("body").data @getId(), @
+      $("body").data @getID(), @
 
     ###
     # Get our id. TODO: Consider giving us a base class, possible giving doing
@@ -44,7 +44,7 @@ define (require) ->
     #
     # @return [String] id
     ###
-    getId: -> @_id
+    getID: -> @_id
 
     ###
     # Return's the handle's name
@@ -66,7 +66,7 @@ define (require) ->
     delete: ->
 
       # Also remove ourselves from the body's object list
-      $("body").removeData @getId()
+      $("body").removeData @getID()
 
     ###
     # Returns an object representing the modifiable properties the object holds,

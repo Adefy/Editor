@@ -148,7 +148,7 @@ define (require) ->
     # @param [Id] actorId
     ###
     setSelectedActor: (actor) ->
-      Workspace._selectedActor = actor.getId()
+      Workspace._selectedActor = actor.getID()
 
     ###
     # Generate workspace right-click ctx data object
@@ -400,7 +400,7 @@ define (require) ->
       # We keep track of actors internally, splice them out of our array
       if obj.constructor.name.indexOf("Actor") != -1
         for o, i in @actorObjects
-          if o.getId() == obj.getId()
+          if o.getID() == obj.getID()
             @ui.pushEvent "workspace.remove.actor", actor: o
             @actorObjects.splice i, 1
             return

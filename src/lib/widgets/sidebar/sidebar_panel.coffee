@@ -122,7 +122,7 @@ define (require) ->
 
       TemplateSidebarPanel
         id: @_id
-        sidebarId: @_parent.getId()
+        sidebarId: @_parent.getID()
         tabs: @_tabs
         content: content
         contentId: contentId
