@@ -240,6 +240,18 @@ define (require) ->
             x: e.pageX
             y: e.pageY
 
+      # Setup texture drops
+      $(@_sel).on "dragover", (e) ->
+        if _.contains e.originalEvent.dataTransfer.types, "image/texture"
+          e.preventDefault()
+          false
+
+      $(@_sel).on "drop", (e) ->
+        alert e.originalEvent.dataTransfer.getData "image/texture"
+
+        e.preventDefault()
+        false
+
     ###
     # Translate the pick values into an ID and fetch the associated actor
     #
