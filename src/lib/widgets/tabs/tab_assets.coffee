@@ -38,7 +38,7 @@ define (require) ->
     ###
     _onToggleDirectory: (element) ->
       assetElementId = element[0].id
-      asset = @ui.workspace.project.assets.findById(assetElementId)
+      asset = @ui.editor.project.assets.findById(assetElementId)
       if asset
         asset.setExpanded !asset.getExpanded()
         @refreshAssetState asset
@@ -53,13 +53,13 @@ define (require) ->
     _bindContextClick: ->
       $(document).on "contextmenu", ".files .asset", (e) =>
         assetElement = $(e.target).closest(".asset")
-        if asset = @ui.workspace.project.assets.findById(assetElement[0].id)
+        if asset = @ui.editor.project.assets.findById(assetElement[0].id)
           new ContextMenu e.pageX, e.pageY, asset.getContextProperties()
         e.preventDefault()
         false
 
       $(document).on "contextmenu", ".files", (e) =>
-        new ContextMenu e.pageX, e.pageY, @ui.workspace.project.assets.getContextProperties()
+        new ContextMenu e.pageX, e.pageY, @ui.editor.project.assets.getContextProperties()
         e.preventDefault()
         false
 
@@ -103,7 +103,7 @@ define (require) ->
     # @return [String]
     ###
     render: ->
-      @_renderAssets @ui.workspace.project.assets.getEntries()
+      @_renderAssets @ui.editor.project.assets.getEntries()
 
     ###
     # @param [Asset] asset

@@ -29,7 +29,7 @@ define (require) ->
       @checkForLocalStorage()
 
       @widgets = []
-      @ui = new UIManager
+      @ui = new UIManager @
 
       AUtilLog.info "Adefy Editor created id(#{config.selector})"
 

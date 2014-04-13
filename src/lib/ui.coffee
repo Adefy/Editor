@@ -21,7 +21,8 @@ define (requre) ->
 
   class UIManager
 
-    constructor: ->
+    constructor: (@editor) ->
+
       if UIManager.instance
         throw new Error "UIManager already instantiated!"
       else
