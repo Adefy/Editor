@@ -274,7 +274,6 @@ define (require) ->
 
         # Delay the drag untill we finish our pick
         if d.getUserData() and d.getUserData().original
-
           newX = d.getUserData().original.x + deltaX
           newY = d.getUserData().original.y + deltaY
 
@@ -296,13 +295,9 @@ define (require) ->
           if actor
             oldActor = @getSelectedActor()
             @setSelectedActor actor
-
-            # The selected actor has changed, push an event stating
-            # that the actor has changed aka selected.
-            if oldActor != @getSelectedActor()
-              @ui.pushEvent "workspace.selected.actor",
-                actorId: @_selectedActor
-                actor: actor
+            @ui.pushEvent "workspace.selected.actor",
+              actorId: @_selectedActor
+              actor: actor
 
     ###
     # @private
