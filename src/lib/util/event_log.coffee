@@ -4,8 +4,11 @@ define ->
 
   class AUtilEventLog
 
+    @enabled: false
+
     @elog: (tag, meth, type) ->
-      AUtilLog.debug "[#{tag}] #{meth} event(type: \"#{type}\")"
+      if @enabled
+        AUtilLog.debug "[#{tag}] #{meth} event(type: \"#{type}\")"
 
     @epush: (tag, type) -> @elog tag, "PUSH", type
     @egot: (tag, type) -> @elog tag, "GOT", type

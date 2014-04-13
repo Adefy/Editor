@@ -188,8 +188,8 @@ define (require) ->
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
       # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-arrow-right")
-      @getElement(".button.toggle i").addClass("fa-arrow-left")
+      @getElement(".button.toggle i").removeClass("fa-toggle-right")
+      @getElement(".button.toggle i").addClass("fa-toggle-left")
 
       Storage.set "sidebar.visible", true
       @_visible = true
@@ -218,8 +218,8 @@ define (require) ->
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
       # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-arrow-left")
-      @getElement(".button.toggle i").addClass("fa-arrow-right")
+      @getElement(".button.toggle i").removeClass("fa-toggle-left")
+      @getElement(".button.toggle i").addClass("fa-toggle-right")
 
       Storage.set "sidebar.visible", false
       @_visible = false

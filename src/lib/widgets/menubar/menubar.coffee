@@ -142,7 +142,7 @@ define (require) ->
       @getElement().html ""
 
       # Render our decorator
-      _html = @genElement "div", id: "menubar-decorater"
+      _html = @genElement "div", class: "menubar-decorater"
 
       # Menu items
       _html += @genElement "ul", class: "bar", =>

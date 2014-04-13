@@ -35,7 +35,7 @@ header
   // Decorater, used to be a border on the mainbar, but moved into a seperate
   // element to not mess with the height of it. It turned out to mess with the
   // height anyways, but at this point, not going to move it again
-  #menubar-decorater
+  .menubar-decorater
     height 2px
     width 100%
     position absolute
@@ -82,7 +82,8 @@ header
     z-index $Z_amainbar_secondary
     position absolute
 
-    min-width 96px
+    min-width 120px
+
     display none
 
     line-height 1.5
@@ -93,12 +94,15 @@ header
 
     a
       display block
-      padding 5px 10px
+      padding 4px 10px
       color #AAA
+
+      transition $time_short padding, $time_short background-color
 
       &:hover
         color #DDD
         background-color $col_mainbar_secondary_hover_bg
+        padding 4px 16px
 
       //&:last-child
       //  margin-bottom 8px

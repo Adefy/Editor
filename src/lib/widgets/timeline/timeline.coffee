@@ -571,8 +571,8 @@ define (require) ->
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
       # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-arrow-up")
-      @getElement(".button.toggle i").addClass("fa-arrow-down")
+      @getElement(".button.toggle i").removeClass("fa-toggle-up")
+      @getElement(".button.toggle i").addClass("fa-toggle-down")
 
       Storage.set "timeline.visible", true
       @_visible = true
@@ -603,8 +603,8 @@ define (require) ->
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
       # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-arrow-down")
-      @getElement(".button.toggle i").addClass("fa-arrow-up")
+      @getElement(".button.toggle i").removeClass("fa-toggle-down")
+      @getElement(".button.toggle i").addClass("fa-toggle-up")
 
       Storage.set "timeline.visible", false
       @_visible = false
