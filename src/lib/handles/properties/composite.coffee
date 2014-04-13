@@ -60,6 +60,8 @@ define (require) ->
       Dumpable::load.call @, data
       #super data
       for id, property of data
+        continue if id == "dumpVersion" # we don't want the dump version
+        continue if id == "type" # we don't want the type
 
         if @_properties[id]
           @_properties[id].load property
