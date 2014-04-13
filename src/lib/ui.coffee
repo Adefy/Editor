@@ -30,7 +30,7 @@ define (requre) ->
       @widgets = []
 
       @widgets.push @initializeMenu()
-      # @widgets.push @initializeToolbar()
+      @widgets.push @initializeToolbar()
       @widgets.push @initializeTimeline()
       @widgets.push @initializeWorkspace()
       @widgets.push @initializeStatusbar()
