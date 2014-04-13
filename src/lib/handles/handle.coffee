@@ -86,12 +86,10 @@ define (require) ->
       if @_properties[key] != undefined then @_properties[key] = val
 
     ###
-    # Get an object containing key/value pairs of contextual functions, in the
-    # form name: cb
+    # Get an object describing the context menu shown when we are right-clicked
     #
-    # These will be displayed in the context menu when the object is right
-    # cliecked on. Again, just like the properties, global properties may be
-    # applied by ancestors
+    # The object should provide a "name" key, and a "functions" key. Functions
+    # should be a hash of names and methods.
     ###
     getContextProperties: ->
       {

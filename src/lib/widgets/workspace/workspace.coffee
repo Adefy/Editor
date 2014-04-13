@@ -153,44 +153,66 @@ define (require) ->
       Workspace._selectedActor = actor.getId()
 
     ###
+    # Generate workspace right-click ctx data object
+    #
+    # @param [Number] x x coordinate of click
+    # @param [Number] y y coordinate of click
+    # @return [Object] options
+    ###
+    getWorkspaceCtxMenu: (x, y) ->
+      {
+        name: "Workspace"
+        functions:
+          "New Actor": =>
+            new ContextMenu x, y, @getNewActorCtxMenu x, y
+      }
+
+    ###
+    # Generate the new actor menu options object, opened through the workspace
+    # context menu.
+    #
+    # @param [Number] x x coordinate of click
+    # @param [Number] y y coordinate of click
+    # @return [Object] options
+    ###
+    getNewActorCtxMenu: (x, y) ->
+      time = @ui.timeline.getCursorTime()
+
+      {
+        name: "New Actor"
+        functions:
+          "Rectangle Actor": =>
+            @addActor new RectangleActor @ui, time, 100, 100, x, y
+          "Polygon Actor": =>
+            @addActor new PolygonActor @ui, time, 5, 100, x, y
+          "Triangle Actor": =>
+            @addActor new TriangleActor @ui, time, 20, 30, x, y
+      }
+
+    ###
     # Bind a contextmenu listener
     ###
     bindContextClick: ->
       $(document).on "contextmenu", ".workspace canvas", (e) =>
         return if @dragger.isDragging()
 
-        @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
-          return unless @isValidPick r, g, b
+        x = e.pageX
+        y = e.pageY
 
-          actor = @getActorFromPick r, g, b
-          if actor
-            unless _.isEmpty actor.getContextProperties()
-              @dragger.forceDragEnd()
-              new ContextMenu e.pageX, e.pageY, actor
+        @performPick @domToGL(x, y), (r, g, b) =>
+          gotActor = @isValidPick r, g, b
+
+          if gotActor
+            actor = @getActorFromPick r, g, b
+            if actor
+              unless _.isEmpty actor.getContextProperties()
+                @dragger.forceDragEnd()
+                new ContextMenu x, y, actor.getContextProperties()
+          else
+            new ContextMenu x, y, @getWorkspaceCtxMenu x, y
 
         e.preventDefault()
         false
-
-    ###
-    # Set up our own capture of draggable objects
-    ###
-    setupDroppableCanvas: ->
-      $(".workspace canvas").droppable
-        accept: ".workspace-drag"
-        drop: (event, ui) =>
-
-          # Calculate workspace coordinates
-          position = @domToGL ui.position.left, ui.position.top
-
-          object = @ui.toolbar.getItemById $(ui.draggable).attr "data-id"
-
-          # TODO: Consider cleaning this up to just pass the domToGL result
-          handle = object.spawn position.x, position.y
-
-          # TODO: Provide some flexibility here, take different actions if
-          #       something besides an actor is dropped. For the time being,
-          #       that can't happen. Yay.
-          @addActor handle if handle.constructor.name.indexOf("Actor") != -1
 
     ###
     # Translate the pick values into an ID and fetch the associated actor
@@ -293,7 +315,6 @@ define (require) ->
       @_are.setClearColor 240, 240, 240
 
       @bindContextClick()
-      @setupDroppableCanvas()
       @setupActorDragging()
 
       # Start rendering
