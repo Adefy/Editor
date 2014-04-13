@@ -2,8 +2,10 @@ define (require) ->
 
   param = require "util/param"
 
+  Dumpable = require "mixin/dumpable"
+
   # Bezier curve implementation
-  class Bezier
+  class Bezier extends Dumpable
 
     ###
     # Instantiate with start, end, and control points. Values are expected to be
@@ -152,7 +154,7 @@ define (require) ->
       @_buffer = false
       @_bufferData = {}
 
-    serialize: ->
+    dump: ->
       {
         start: @_start
         end: @_end
@@ -161,5 +163,5 @@ define (require) ->
         buffer: @_buffer
       }
 
-    @deserialize: (data) ->
+    @load: (data) ->
       new Bezier data.start, data.end, data.degree, data.control, data.buffer
