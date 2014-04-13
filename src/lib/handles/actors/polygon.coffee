@@ -31,7 +31,7 @@ define (require) ->
       throw new Error "Can't create an ngon with less than 3 sides" if sides < 3
 
       super @ui, birth, death
-      @name = "Polygon"
+      @setName "Polygon #{@_id_n}"
 
       @_properties.position.setValue x: x, y: y
       @_properties.rotation.setValue rotation

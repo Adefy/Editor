@@ -15,4 +15,18 @@ define
   # @param [String] prefix
   # @return [String] id
   ###
-  prefId: (pref) -> "#{pref}-#{@__nextID++}"
+  prefId: (prefix) -> "#{prefix}-#{@__nextID++}"
+
+  ###
+  # Returns both a prefix id and Number
+  # @param [String] prefix
+  # @return [Object]
+  #   @property [Number] id
+  #   @property [String] prefix
+  ###
+  objId: (prefix) ->
+    id = @__nextID++
+    {
+      id: id
+      prefix: "#{prefix}-#{id}"
+    }

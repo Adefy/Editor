@@ -29,7 +29,11 @@ define (require) ->
         "Delete": => @delete()
 
       # Give ourselves a unique id so we can be discovered on the body
-      @_id = ID.prefId "handle"
+      ido = ID.objId "handle"
+      @_id_n = ido.id
+      @_id = ido.prefix
+
+      @name = "handle #{@_id_n}"
 
       # Attach ourselves to the body
       $("body").data @getId(), @
@@ -41,6 +45,19 @@ define (require) ->
     # @return [String] id
     ###
     getId: -> @_id
+
+    ###
+    # Return's the handle's name
+    # @return [String] name
+    ###
+    getName: -> @name
+
+    ###
+    # Set the handle's name
+    # @param [String] name
+    # @return [self]
+    ###
+    setName: (@name) -> @
 
     ###
     # Cleans us up. Any classes extending us should also extend this method, and
@@ -93,7 +110,7 @@ define (require) ->
     ###
     getContextProperties: ->
       {
-        name: @_id
+        name: @getName()
         functions: @_ctx
       }
 
@@ -104,8 +121,9 @@ define (require) ->
     ###
     dump: ->
       data = _.extend Dumpable::dump.call(@),
-        version: "1.0.0"
+        version: "1.0.1"
         type: "#{@.constructor.name}"
+        name: @name
         properties: {}
 
       for name, property of @_properties
@@ -120,6 +138,15 @@ define (require) ->
     ###
     load: (data) ->
       Dumpable::load.call @, data
+      @name = data.name || "handle #{@_id_n}"
       for name, property of data.properties
         if @_properties[name]
           @_properties[name].load property
+
+      @
+
+###
+  Changelog:
+    dump: "1.0.1"
+      Added name
+###

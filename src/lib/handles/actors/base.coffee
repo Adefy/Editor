@@ -31,7 +31,7 @@ define (require) ->
       super()
 
       @_AJSActor = null
-      @name = "Base Actor"
+      @setName "Base Actor #{@_id_n}"
       @_alive = false
       @_initialized = false # True after postInit() is called
 
