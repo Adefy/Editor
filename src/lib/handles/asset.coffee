@@ -244,7 +244,7 @@ define (require) ->
         functions["Delete"] = => @contextFuncRemoveAsset @
 
       unless _.contains @_disabled, "rename"
-        functions["Rename"] = => @contextFuncRenameAsset @
+        functions["Rename ..."] = => @contextFuncRenameAsset @
 
       {
         name: @getName()

@@ -185,7 +185,7 @@ define (require) ->
       {
         name: "Workspace"
         functions:
-          "New Actor": =>
+          "New Actor +": =>
             new ContextMenu x, y, @getNewActorCtxMenu x, y
       }
 

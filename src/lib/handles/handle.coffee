@@ -25,7 +25,7 @@ define (require) ->
 
       # Basic right-click menu functions
       @_ctx =
-        "Rename": => window.AdefyEditor.ui.modals.showRename @
+        "Rename ...": => window.AdefyEditor.ui.modals.showRename @
         "Delete": => @delete()
 
       # Give ourselves a unique id so we can be discovered on the body
