@@ -151,6 +151,30 @@ define (require) ->
       Workspace._selectedActor = actor.getID()
 
     ###
+    # Converts document-relative coordinates to ARE coordinates
+    # NOTE: This does not currently take into account any camera transformation!
+    #
+    # @param [Number] x x coordinate
+    # @param [Number] y y coordinate
+    ###
+    domToGL: (x, y) ->
+
+      # Bail
+      if @_are == undefined
+        AUtilLog.warn "Can't convert coords, are not up!"
+        return null
+
+      canvasTop = $("#{@getSel()} canvas").offset().top
+      canvasLeft = $("#{@getSel()} canvas").offset().left
+
+      # TODO: Take into account camera coords
+
+      {
+        x: x - canvasLeft + ARERenderer.camPos.x
+        y: y - canvasTop + ARERenderer.camPos.y
+      }
+
+    ###
     # Generate workspace right-click ctx data object
     #
     # @param [Number] x x coordinate of click
@@ -175,16 +199,17 @@ define (require) ->
     ###
     getNewActorCtxMenu: (x, y) ->
       time = @ui.timeline.getCursorTime()
+      pos = @domToGL(x, y)
 
       {
         name: "New Actor"
         functions:
           "Rectangle Actor": =>
-            @addActor new RectangleActor @ui, time, 100, 100, x, y
+            @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
           "Polygon Actor": =>
-            @addActor new PolygonActor @ui, time, 5, 60, x, y
+            @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
           "Triangle Actor": =>
-            @addActor new TriangleActor @ui, time, 100, 100, x, y
+            @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
       }
 
     ###
@@ -531,30 +556,6 @@ define (require) ->
         , 0
 
     ###
-    # Converts document-relative coordinates to ARE coordinates
-    # NOTE: This does not currently take into account any camera transformation!
-    #
-    # @param [Number] x x coordinate
-    # @param [Number] y y coordinate
-    ###
-    domToGL: (x, y) ->
-
-      # Bail
-      if @_are == undefined
-        AUtilLog.warn "Can't convert coords, are not up!"
-        return null
-
-      canvasTop = $("#{@getSel()} canvas").offset().top
-      canvasLeft = $("#{@getSel()} canvas").offset().left
-
-      # TODO: Take into account camera coords
-
-      {
-        x: x - canvasLeft
-        y: y - canvasTop
-      }
-
-    ###
     # Resizes the display outline
     ###
     updateOutline: ->
@@ -605,14 +606,28 @@ define (require) ->
       # Center phone outline
       # @updateOutline()
 
+    ###
+    # Dumps the current workspace state
+    # @return [Object] data
+    ###
     dump: ->
       _.extend super(),
-        version: "1.1.0"
+        version: "1.2.0"
+        camPos:
+          x: ARERenderer.camPos.x
+          y: ARERenderer.camPos.y
         actors: _.map @getActors(), (actor) -> actor.dump()
 
-    # beware, this is a instance state load
+    ###
+    # Loads the a workspace data state
+    # @param [Object] data
+    ###
     load: (data) ->
       super data
+      if data.version >= "1.2.0"
+        ARERenderer.camPos.x = data.camPos.x
+        ARERenderer.camPos.y = data.camPos.y
+
       #data.version == "1.1.0"
       for actor in data.actors
         newActor = window[actor.type].load @ui, actor
