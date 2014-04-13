@@ -1124,3 +1124,15 @@ define (require) ->
           @updateActor params.actor
         when "selected.actor.update"
           @updateActor params.actor
+
+    dump: ->
+      {
+        version: "1.0.0"
+        duration: @getDuration()
+        current: @getCursorTime()
+      }
+
+    load: (data) ->
+      # data.version == "1.0.0"
+      @setDuration data.duration
+      @setCursorTime data.current

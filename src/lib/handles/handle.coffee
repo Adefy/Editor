@@ -3,13 +3,13 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
 
-  # Base class for all elements that can be manipulated by the editor
-  Handle = class Handle
+  EditorObject = require "editor_object"
+  Dumpable = require "dumpable"
 
-    ###
-    #
-    ###
-    @_handle: null
+  # Base class for all elements that can be manipulated by the editor
+  window.Handle = class Handle extends EditorObject
+
+    @include Dumpable
 
     ###
     # Instantiates us, should never be called directly. We serve mearly
@@ -98,36 +98,28 @@ define (require) ->
       }
 
     ###
-    # Dump handle into JSON representation
+    # Dump handle into basic Object
     #
-    # @return [String] actorJSON
+    # @return [Object] data
     ###
-    serialize: ->
-      data =
+    dump: ->
+      data = _.extend Dumpable::dump.call(@),
+        version: "1.0.0"
         type: "#{@.constructor.name}"
         properties: {}
 
       for name, property of @_properties
-        data.properties[name] = property.serialize()
+        data.properties[name] = property.dump()
 
       data
 
     ###
-    # Set properties from serialized state
+    # Load properties
     #
-    # @param [String] data
+    # @param [Object] data
     ###
-    cloneFromData: (data) ->
-      data = JSON.parse data
-
-      @setPosition data.position
-
-    ###
-    # Deserialize properties
-    #
-    # @param [Object] state saved state with properties object
-    ###
-    deserialize: (state) ->
-      for name, property of state.properties
+    load: (data) ->
+      Dumpable::load.call @, data
+      for name, property of data.properties
         if @_properties[name]
-          @_properties[name].deserialize property
+          @_properties[name].load property

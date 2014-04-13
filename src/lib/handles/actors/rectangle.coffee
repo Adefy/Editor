@@ -119,14 +119,14 @@ define (require) ->
       birth = data.birth
       death = data.death
 
-      position = JSON.parse data.properties.position
+      position = data.properties.position
 
-      w = JSON.parse(data.properties.width).value
-      h = JSON.parse(data.properties.height).value
-      x = JSON.parse(position.x).value
-      y = JSON.parse(position.y).value
-      rotation = JSON.parse(data.properties.rotation).value
+      w = data.properties.width.value
+      h = data.properties.height.value
+      x = position.x.value
+      y = position.y.value
+      rotation = data.properties.rotation.value
 
       actor = new RectangleActor ui, birth, w, h, x, y, rotation, death
-      actor.deserialize data
+      actor.load data
       actor

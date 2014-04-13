@@ -3,7 +3,12 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
 
-  class Asset
+  EditorObject = require "editor_object"
+  Dumpable = require "dumpable"
+
+  class Asset extends EditorObject
+
+    @include Dumpable
 
     ###
     # @param [Hash] options
@@ -26,6 +31,11 @@ define (require) ->
         @_expanded = param.optional options.expanded, false
         @_entries = param.optional options.entries, []
         for entry in @_entries
+          # convert pure objects to Asset
+          unless entry instanceof Asset
+            oldEntry = entry
+            entry = new Asset oldEntry
+
           entry._parent = @
 
         @_fileType = "directory"
@@ -262,18 +272,32 @@ define (require) ->
     # @return [Object]
     ###
     dump: ->
-      basic = {
-        id: @_id
+      data = _.extend Dumpable::dump.call(@),
+        version: "1.0.0"
+        id: @_id # will be ignored on load though
         name: @_name
         isDirectory: @_isDirectory
         disabled: @_disabled
         fileType: @_fileType
-      }
 
       if @_isDirectory
-        basic = _.extend basic,
+        data = _.extend data,
           expanded: @_expanded
           entries: @_entries.map (asset) =>
             asset.dump()
 
-      basic
+      data
+
+    load: (data) ->
+      Dumpable::load.call @, data
+
+    @load: (data) ->
+
+      # data.version
+      # for now we don't have to handle different project versions
+      # since assets remain relatively the same
+      asset = new Asset null, data
+      # done to have Dumpable load properly
+      asset.load data
+      asset
+

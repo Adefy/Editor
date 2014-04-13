@@ -1136,11 +1136,11 @@ define (require) ->
           @_properties[p]._value = props[p].value
 
     ###
-    # Dump actor into JSON representation
+    # Dump actor into basic Object
     #
-    # @return [String] actorJSON
+    # @return [Object] actorJSON
     ###
-    serialize: ->
+    dump: ->
       data = super()
 
       data.propBuffer = @_propBuffer
@@ -1157,10 +1157,10 @@ define (require) ->
             animationData = components: {}
 
             for component, animation of propAnimation.components
-              animationData.components[component] = animation.serialize()
+              animationData.components[component] = animation.dump()
 
           else
-            animationData = propAnimation.serialize()
+            animationData = propAnimation.dump()
 
           animationSet[property] = animationData
 
@@ -1171,18 +1171,19 @@ define (require) ->
     ###
     # Loads properties, animations, and a prop buffer from a saved state
     #
-    # @param [Object] state saved state object
+    # @param [Object] data
+    # @return [self]
     ###
-    deserialize: (state) ->
+    load: (data) ->
 
       # Load basic properties
-      super state
+      super data
 
       # Load everything else
-      @_propBuffer = state.propBuffer
+      @_propBuffer = data.propBuffer
 
       @_animations = {}
-      for time, properties of state.animations
+      for time, properties of data.animations
         animationSet = {}
 
         for property, propAnimation of properties
@@ -1191,14 +1192,16 @@ define (require) ->
             animationData = components: {}
 
             for component, animation of propAnimation.components
-              animationData.components[component] = Bezier.deserialize animation
+              animationData.components[component] = Bezier.load animation
 
           else
-            animationData = Bezier.deserialize propAnimation
+            animationData = Bezier.load propAnimation
 
           animationSet[property] = animationData
 
         @_animations[time] = animationSet
+
+      @
 
     ###
     # Deletes us, muahahahaha. We notify the workspace, clear the properties

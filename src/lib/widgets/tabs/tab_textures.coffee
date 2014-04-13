@@ -55,6 +55,7 @@ define (require) ->
         location: "S3"
         path: "/ads/assets/"
       , (blob) ->
+        #$scope.$apply -> $scope.ad.native.iconURL = blob[0]
 
     ###
     # @private

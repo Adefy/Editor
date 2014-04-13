@@ -5,8 +5,14 @@ define (requre) ->
   param = require "util/param"
   Renderable = require "renderable"
 
+  Dumpable = require "dumpable"
+  EditorObject = require "editor_object"
+
   # Widgets are the building blocks of the editor's interface
-  class Widget extends Renderable
+  widget = class Widget extends EditorObject
+
+    @include Renderable
+    @include Dumpable
 
     ###
     # Optionally appends a new div to the body to be used as the container for

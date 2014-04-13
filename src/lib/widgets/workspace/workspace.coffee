@@ -3,12 +3,13 @@ define (require) ->
   AUtilLog = require "util/log"
   param = require "util/param"
   ID = require "util/id"
-  Project = require "project"
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
   TemplateWorkspaceCanvasContainer = require "templates/workspace/canvas_container"
 
   Dragger = require "util/dragger"
+
+  Dumpable = require "dumpable"
 
   # Workspace widget
   class Workspace extends Widget
@@ -38,8 +39,6 @@ define (require) ->
         parent: "section#main"
         classes: ["workspace"]
         prepend: true
-
-      @project = new Project()
 
       # Keep track of spawned handle actor objects
       @actorObjects = []
@@ -594,3 +593,19 @@ define (require) ->
 
       # Center phone outline
       # @updateOutline()
+
+    dump: ->
+      _.extend super(),
+        version: "1.1.0"
+        actors: _.map @getActors(), (actor) -> actor.dump()
+
+    # beware, this is a instance state load
+    load: (data) ->
+      super data
+      #data.version == "1.1.0"
+      for actor in data.actors
+        newActor = window[actor.type].load @ui, actor
+        @addActor newActor
+
+      @ui.timeline.updateAllActorsInTime()
+

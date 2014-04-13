@@ -6,6 +6,8 @@ define (require) ->
   BaseActor = require "handles/actors/base"
   Handle = require "handles/handle"
 
+  EditorObject = require "editor_object"
+
   Modal = require "widgets/modal"
   TemplateModalAddTextures = require "templates/modal/add_textures"
   TemplateModalBackgroundColor = require "templates/modal/background_color"
@@ -13,7 +15,7 @@ define (require) ->
   TemplateModalSetPreviewFPS = require "templates/modal/set_preview_fps"
   TemplateModalRename = require "templates/modal/rename"
 
-  class ModalManager
+  class ModalManager extends EditorObject
 
     constructor: (@ui) ->
       #

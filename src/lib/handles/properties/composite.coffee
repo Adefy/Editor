@@ -7,6 +7,8 @@ define (require) ->
   NumericProperty = require "handles/properties/numeric"
   BooleanProperty = require "handles/properties/boolean"
 
+  Dumpable = require "dumpable"
+
   ###
   # Composite property, keeps a list of child properties and handles graceful
   # serialization/deserialization
@@ -36,41 +38,40 @@ define (require) ->
       @_properties = properties
 
     ###
-    # Our serialization is a bit different, since we need to serialize each
-    # of our child properties
-    #
-    # @return [String] data
+    # Dumps as a basic Object
+    # @return [Object] data
     ###
-    serialize: ->
-      data = {}
+    dump: ->
+      #data = super()
+      data = _.extend Dumpable::dump.call(@),
+        type: "composite"
 
       for id of @_properties
-        data[id] = @_properties[id].serialize()
+        data[id] = @_properties[id].dump()
 
-      JSON.stringify data
+      data
 
     ###
-    # Clears our property array and fills it up using the supplied serialized
-    # data
-    #
-    # @param [String] raw
+    # Loads from a basic Object
+    # @params [Object] data
+    # @return [self]
     ###
-    deserialize: (raw) ->
-      raw = JSON.parse raw
-
-      for id, propertyJSON of raw
+    load: (data) ->
+      Dumpable::load.call @, data
+      #super data
+      for id, property of data
 
         if @_properties[id]
-          @_properties[id].deserialize propertyJSON
+          @_properties[id].load property
         else
-          property = JSON.parse propertyJSON
-
           unless CompositeProperty.PropertyTypes[property.type]
             AUtilLog.error "Unknown property type: #{property.type}"
           else
             newProperty = new CompositeProperty.PropertyTypes[property.type]
-            newProperty.deserialize propertyJSON
+            newProperty.load property
             @addProperty id, newProperty
+
+      @
 
     ###
     # Requests an update for each child property

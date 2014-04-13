@@ -111,14 +111,14 @@ define (require) ->
       birth = data.birth
       death = data.death
 
-      position = JSON.parse data.properties.position
+      position = data.properties.position
 
-      sides = JSON.parse(data.properties.sides).value
-      radius = JSON.parse(data.properties.radius).value
-      x = JSON.parse(position.x).value
-      y = JSON.parse(position.y).value
-      rotation = JSON.parse(data.properties.rotation).value
+      sides = data.properties.sides.value
+      radius = data.properties.radius.value
+      x = position.x.value
+      y = position.y.value
+      rotation = data.properties.rotation.value
 
       actor = new PolygonActor ui, birth, sides, radius, x, y, rotation, death
-      actor.deserialize data
+      actor.load data
       actor

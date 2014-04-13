@@ -14,7 +14,7 @@ define (require) ->
   Modal = require "widgets/modal"
 
   Bezier = require "widgets/timeline/bezier"
-  EditorStateSave = require "save"
+  Project = require "project"
 
   class Editor
 
@@ -33,8 +33,11 @@ define (require) ->
 
       AUtilLog.info "Adefy Editor created id(#{config.selector})"
 
-      @state = new EditorStateSave @ui
-      @state.loadState() if @state.saveExists()
+      Project.ui = @ui
+      if Project.quicksaveExists()
+        @project = Project.quickload()
+      else
+        @project = new Project @ui
 
     ###
     # We can't run properly in Opera, as it does not let us override the
@@ -57,7 +60,7 @@ define (require) ->
     # Update state snapshot and save it in storage
     ###
     save: ->
-      @state.saveState()
+      @project.save()
 
     ###
     # Clears the workspace, creating a new ad
