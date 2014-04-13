@@ -20,10 +20,25 @@ define (require) ->
 
       @__id = ID.objId "texture"
       @_id = @__id.prefix
+      @_uid = ID.uID()
       @_url = param.optional options.url, ""
       @_name = param.optional options.name, ""
 
+    ###
+    # This is the ID used by handles inside the editor
+    # NOTE* This ID can/will change everytime the editor is restarted
+    # @return [String]
+    ###
     getID: -> @_id
+
+    ###
+    # This ID is used to reference the texture in another object
+    # Such as an Actor, this ID will remain the same on reload unlike
+    # the _id
+    # @return [String]
+    ###
+    getUID: -> @_uid
+
     getName: -> @_name
     setName: (@_name) -> @
     getURL: -> @_url
@@ -78,13 +93,21 @@ define (require) ->
 
     dump: ->
       _.extend Dumpable::dump.call(@),
-        version: "1.0.0"
+        version: "1.1.0"
         id: @_id
+        uid: @_uid
         name: @_name
         url: @_url
 
     load: (data) ->
       Dumpable::load.call @, data
+
+      if data.version > "1.0.0"
+        @_uid = data.uid
+      # we are probably dealing with an old v1.0.0 texture, so we'll
+      # need to generate a uid for it
+      else
+        @_uid = ID.uID()
 
       @_name = data.name
       @_url = data.url
