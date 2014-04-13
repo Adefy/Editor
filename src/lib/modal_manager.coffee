@@ -21,9 +21,19 @@ define (require) ->
       #
 
     ###
+    # @param [Handle] handle
+    # @param [Object] options
+    #   @optional
+    #   @property [Array<String>] unique
+    #     @optional
+    #   @property [Function] cb
+    #     @optional
     # @return [Modal]
     ###
-    showRename: (handle) ->
+    showRename: (handle, options) ->
+
+      options = param.optional options, {}
+
       nameId = ID.prefId "fileName"
 
       _html = TemplateModalRename
@@ -39,19 +49,31 @@ define (require) ->
         cb: (data) =>
           # Submission
           name = data[nameId]
-          handle.setName name
-          if handle instanceof Asset
-            @ui.pushEvent "renamed.asset", asset: handle
-          else if handle instanceof BaseActor
-            @ui.pushEvent "renamed.actor", actor: handle
-          else if handle instanceof Handle
-            @ui.pushEvent "renamed.handle", handle: handle
+
+          if cb = options.cb
+            cb handle, name
+          else
+            handle.setName name
+            if handle instanceof Asset
+              @ui.pushEvent "renamed.asset", asset: handle
+            else if handle instanceof BaseActor
+              @ui.pushEvent "renamed.actor", actor: handle
+            else if handle instanceof Handle
+              @ui.pushEvent "renamed.handle", handle: handle
 
         validation: (data) =>
           # Validation
           name = data[nameId]
-          unless name.length > 0 then return "Name must be longer than 0"
-          true
+
+          if cb = options.validate
+            cb handle, name
+          else
+            if options.unique
+              isUnique = _.all options.unique, (n) -> n != name
+              return "Name must be unique!" unless isUnique
+
+            unless name.length > 0 then return "Name must be longer than 0"
+            true
 
         change: (deltaName, deltaVal, data) =>
           #$("input[name=\"#{nameId}\"]").val deltaVal

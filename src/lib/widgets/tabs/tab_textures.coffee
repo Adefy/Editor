@@ -5,6 +5,8 @@ define (require) ->
   AUtilEventLog = require "util/event_log"
   param = require "util/param"
 
+  ContextMenu = require "widgets/context_menu"
+
   Tab = require "widgets/tabs/tab"
   TemplateTabThumb = require "templates/tabs/thumb"
   TemplateTabTexturesFooter = require "templates/tabs/textures_footer"
@@ -62,13 +64,31 @@ define (require) ->
       ,
         location: "S3"
         path: "/ads/assets/"
-      , (blob) ->
-        #$scope.$apply -> $scope.ad.native.iconURL = blob[0]
+      , (blob) =>
+        for obj in blob
+          @ui.editor.project.textures.add new Texture
+            url: obj.url
+            name: obj.filename
+
+        @refresh()
 
     ###
     # @private
     ###
     _registerFooterListeners: ->
+
+      $(document).on "contextmenu", ".textures .thumb", (e) =>
+
+        project = @ui.editor.project
+        textureElement = $(e.target).closest(".thumb")
+        textureId = textureElement[0].id
+        texture = _.find project.textures, (t) -> t.getID() == textureId
+        if texture
+          new ContextMenu e.pageX, e.pageY, texture.getContextProperties()
+
+        e.preventDefault()
+        false
+
       $(document).on "click", ".panel .footer .toggle-list", (e) =>
         @_onToggleViewMode "list"
 
@@ -82,21 +102,13 @@ define (require) ->
     # @return [String]
     ###
     render: ->
-      html = TemplateTabThumb
-        src: "http://www.sacher.com/assets/Uploads/_resampled/croppedimage1220870-0Start.jpg"
-        name: "Cake.jpg"
-      html += TemplateTabThumb
-        src: "http://www.colourbox.com/preview/8468585-163424-hipster-geometric-background-made-of-cubes-retro-hipster-color-mosaic-background-square-composition-with-geometric-shapes-geometric-hipster-retro-background-with-place-for-your-text-retro-background.jpg"
-        name: "Retro.jpg"
-      html += TemplateTabThumb
-        src: "http://placekitten.com/200/200"
-        name: "Cat1.jpg"
-      html += TemplateTabThumb
-        src: "http://placekitten.com/200/300"
-        name: "Cat2.jpg"
-      html += TemplateTabThumb
-        src: "http://placekitten.com/300/300"
-        name: "Cat3.jpg"
+      html = ""
+
+      for texture in @ui.editor.project.textures
+        html += TemplateTabThumb
+          id: texture.getID()
+          src: texture.getURL()
+          name: texture.getName()
 
       html
 
@@ -117,3 +129,8 @@ define (require) ->
 
     respondToEvent: (type, params) ->
       AUtilEventLog.egot "tab.textures", type
+
+      switch type
+        when "rename.texture"
+          # params.texture
+          @refresh()

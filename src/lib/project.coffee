@@ -6,6 +6,7 @@ define (require) ->
   AUtilLog = require "util/log"
 
   Asset = require "handles/asset"
+  Texture = require "handles/texture"
   BaseActor = require "handles/actors/base"
 
   EditorObject = require "editor_object"
@@ -24,7 +25,7 @@ define (require) ->
     # changes, not the sub objects.
     # @type [String]
     ###
-    @PROJECT_VERSION: "0.1.0"
+    @PROJECT_VERSION: "0.2.0"
 
     ###
     # Current Editor.ui instance
@@ -60,7 +61,7 @@ define (require) ->
       # This is a v0.1.0 dump
       _.extend Dumpable::dump.call(@),
         version: @version
-        textures: @textures # maybe?
+        textures: _.map @textures, (texture) -> texture.dump()
         assets: @assets.dump()
         timeline: @ui.timeline.dump()
         workspace: @ui.workspace.dump()
@@ -76,23 +77,30 @@ define (require) ->
       # we may need to handle different project version in the future
       # for backward compatability.
       # so its best to tag the project version from early in production
-      projver = @version = data.version
+      projver = data.version
 
       ##
       # assets have remained the same thus far
       @assets = Asset.load data.assets
 
-      @textures = data.textures
-
       ##
       # now this is where stuff goes nutty
       # this is mostly an example of what should/could happen in the future
       switch projver
-        when "0.1.0" # we plan to move this away later
+        when "0.1.0", "0.2.0"
+
+          ##
+          # Luckily for us, textures are very similar when they where dumped
+          # back in 0.1.0
+          @textures = _.map data.textures, (data) -> Texture.load data
+          for texture in @textures
+            texture.project = @
+
           ##
           # We reload the workspace state BEFORE the timeline state
           # that way we update the timeline correctly.
           @ui.workspace.load data.workspace
+
           ##
           # This is a timeline load, on the instance level,
           # rather than the class level, I guess we could treat it as
@@ -152,3 +160,12 @@ define (require) ->
     ###
     @quicksaveExists: ->
       !!Storage.get("project.quicksave")
+
+###
+  Changelog
+    "0.1.0"
+      Array<Object> textures
+
+    "0.2.0"
+      texures is now an Array<Texture>
+###
