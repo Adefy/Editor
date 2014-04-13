@@ -4,7 +4,7 @@ define (require) ->
   ID = require "util/id"
 
   EditorObject = require "editor_object"
-  Dumpable = require "dumpable"
+  Dumpable = require "mixin/dumpable"
 
   # Base class for all elements that can be manipulated by the editor
   window.Handle = class Handle extends EditorObject

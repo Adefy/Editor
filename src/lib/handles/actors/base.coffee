@@ -5,8 +5,6 @@ define (require) ->
   Handle = require "handles/handle"
   Bezier = require "widgets/timeline/bezier"
 
-  Timeline = require "widgets/timeline/timeline"
-
   CompositeProperty = require "handles/properties/composite"
   NumericProperty = require "handles/properties/numeric"
   BooleanProperty = require "handles/properties/boolean"

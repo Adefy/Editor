@@ -3,9 +3,9 @@ define (requre) ->
   #AUtilLog = require "util/log"
   config = require "config"
   param = require "util/param"
-  Renderable = require "renderable"
+  Renderable = require "mixin/renderable"
+  Dumpable = require "mixin/dumpable"
 
-  Dumpable = require "dumpable"
   EditorObject = require "editor_object"
 
   # Widgets are the building blocks of the editor's interface

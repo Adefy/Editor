@@ -4,7 +4,7 @@ define (require) ->
   ID = require "util/id"
 
   EditorObject = require "editor_object"
-  Dumpable = require "dumpable"
+  Dumpable = require "mixin/dumpable"
 
   class Asset extends EditorObject
 

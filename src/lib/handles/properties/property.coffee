@@ -2,7 +2,7 @@ define (require) ->
 
   param = require "util/param"
 
-  Dumpable = require "dumpable"
+  Dumpable = require "mixin/dumpable"
 
   ###
   # Property wrapper, to facilitate HTML control generation and serialization

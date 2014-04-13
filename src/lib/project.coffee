@@ -1,5 +1,7 @@
 define (require) ->
 
+  ID = require "util/id"
+
   Storage = require "storage"
   AUtilLog = require "util/log"
 
@@ -7,7 +9,7 @@ define (require) ->
   BaseActor = require "handles/actors/base"
 
   EditorObject = require "editor_object"
-  Dumpable = require "dumpable"
+  Dumpable = require "mixin/dumpable"
 
   class Project extends EditorObject
 
@@ -31,6 +33,9 @@ define (require) ->
     @ui: null
 
     constructor: (@ui) ->
+
+      @__id = ID.objId "project"
+      @id = @__id.id
 
       @version = Project.PROJECT_VERSION
 

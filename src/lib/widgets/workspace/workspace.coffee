@@ -1,15 +1,14 @@
 define (require) ->
 
+  ID = require "util/id"
   AUtilLog = require "util/log"
   param = require "util/param"
-  ID = require "util/id"
+
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
   TemplateWorkspaceCanvasContainer = require "templates/workspace/canvas_container"
 
   Dragger = require "util/dragger"
-
-  Dumpable = require "dumpable"
 
   # Workspace widget
   class Workspace extends Widget

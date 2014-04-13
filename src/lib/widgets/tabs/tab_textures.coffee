@@ -1,10 +1,10 @@
 define (require) ->
 
+  ID = require "util/id"
   AUtilLog = require "util/log"
   AUtilEventLog = require "util/event_log"
   param = require "util/param"
 
-  ID = require "util/id"
   Tab = require "widgets/tabs/tab"
   TemplateTabThumb = require "templates/tabs/thumb"
   TemplateTabTexturesFooter = require "templates/tabs/textures_footer"

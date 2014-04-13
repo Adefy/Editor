@@ -7,7 +7,7 @@ define (require) ->
   NumericProperty = require "handles/properties/numeric"
   BooleanProperty = require "handles/properties/boolean"
 
-  Dumpable = require "dumpable"
+  Dumpable = require "mixin/dumpable"
 
   ###
   # Composite property, keeps a list of child properties and handles graceful

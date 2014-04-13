@@ -1,8 +1,9 @@
 define (require) ->
 
-  param = require "util/param"
   ID = require "util/id"
-  Renderable = require "renderable"
+  param = require "util/param"
+
+  Renderable = require "mixin/renderable"
 
   # Menubar item class
   #
