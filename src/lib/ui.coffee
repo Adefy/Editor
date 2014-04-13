@@ -85,8 +85,8 @@ define (requre) ->
       propertiesPanel.newTab "Properties", (tab) =>
         new PropertiesTab @, propertiesPanel
 
-      propertiesPanel.newTab "Assets", (tab) =>
-        new AssetsTab @, propertiesPanel
+      #propertiesPanel.newTab "Assets", (tab) =>
+      #  new AssetsTab @, propertiesPanel
 
       propertiesPanel.newTab "Textures", (tab) =>
         new TexturesTab @, propertiesPanel
