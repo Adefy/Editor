@@ -274,7 +274,6 @@ define (require) ->
           return d.forceDragEnd() unless @isValidPick r, g, b
 
           handle = @getActorFromPick r, g, b
-
           return d.forceDragEnd() unless handle
 
           d.setTarget handle

@@ -50,6 +50,26 @@ define (require) ->
           param.required @_control[1].x
           param.required @_control[1].y
 
+    ###
+    # @param [Number] time
+    ###
+    setStartTime: (time) -> @_start.x = time
+
+    ###
+    # @param [Number] time
+    ###
+    setEndTime: (time) -> @_end.x = time
+
+    ###
+    # @param [Number] value
+    ###
+    setStartValue: (value) -> @_start.y = value
+
+    ###
+    # @param [Number] value
+    ###
+    setEndValue: (value) -> @_end.y = value
+
     # Evaluate for a certain t, between 0 and 1. Returns a basic object
     # containing (x,y) keys.
     #

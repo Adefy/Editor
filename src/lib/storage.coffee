@@ -9,4 +9,7 @@ define
     window.localStorage.setItem key, JSON.stringify value
 
   get: (key) ->
-    JSON.parse window.localStorage.getItem(key)
+    try
+      JSON.parse window.localStorage.getItem(key)
+    catch e
+      return null

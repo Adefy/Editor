@@ -558,7 +558,7 @@ define (require) ->
       next = @_lastTemporalState
 
       while next != state and next != -1
-        next = @_findNearestState next, right
+        next = @findNearestState next, right
 
         if next != Math.floor(@lifetimeStart_ms) and next != -1
 
@@ -654,9 +654,6 @@ define (require) ->
       ##
       cursor = Math.floor @ui.timeline.getCursorTime()
 
-      # If we haven't moved, drop out early
-      return if cursor == @_lastTemporalState
-
       # Ensure cursor is within our lifetime
       return if cursor < @lifetimeStart_ms or cursor > @lifetimeEnd_ms
 
@@ -665,7 +662,7 @@ define (require) ->
       # is our birth
       nearest = cursor
       if @_propBuffer[String(cursor)] == undefined
-        nearest = @_findNearestState cursor
+        nearest = @findNearestState cursor
 
       # Apply intermediary states (up to ourselves if we have a state)
       @_applyKnownState nearest
@@ -674,7 +671,7 @@ define (require) ->
       return if nearest == cursor
 
       # Next, bail if there are no states to the right of ourselves
-      if @_findNearestState(cursor, true) == -1
+      if @findNearestState(cursor, true) == -1
         return @_capState()
 
       @_capped = false
@@ -697,7 +694,7 @@ define (require) ->
         varying.push p if unique
 
       from = cursor
-      while (from = @_findNearestState(from, true)) != -1
+      while (from = @findNearestState(from, true)) != -1
         for p of @_propBuffer[String from]
           _pushUnique { name: p, end: from }
 
@@ -814,13 +811,13 @@ define (require) ->
       param.required p
 
       unless left
-        left = @_findNearestState time, false, p
+        left = @findNearestState time, false, p
 
       left = 0 if left = -1
 
       # Check if we are in the middle of an animation ourselves. If so,
       # split it
-      animCheck = @_findNearestState time, true, p
+      animCheck = @findNearestState time, true, p
 
       _startP = @_propBuffer["#{left}"][p]
       _endP = @_propBuffer["#{time}"][p]
@@ -901,7 +898,7 @@ define (require) ->
           #
           # We find our start value by going back through our prop buffer and
           # finding the nearest reference to the property we now modify
-          trueStart = @_findNearestState @_lastTemporalState, false, p
+          trueStart = @findNearestState @_lastTemporalState, false, p
 
           # Split animation if necessary
           @_splitAnimation @_lastTemporalState, p, trueStart
@@ -948,6 +945,48 @@ define (require) ->
     getAnimations: -> @_animations
 
     ###
+    # Get animation by time
+    #
+    # @param [Number] time
+    # @return [Object] animation
+    ###
+    getAnimation: (time) -> @_animations[time]
+
+    ###
+    # Fetch time of preceding animation, null if there is none
+    #
+    # @param [Number] source search start time
+    # @return [Number] time
+    ###
+    findPrecedingAnimation: (source) ->
+      times = _.keys @_animations
+      times.sort (a, b) -> a - b
+
+      index = _.findIndex times, (t) -> Number(t) == source
+
+      if index > 0
+        times[index - 1]
+      else
+        null
+
+    ###
+    # Fetch time of preceding animation, null if there is none
+    #
+    # @param [Number] source search start time
+    # @return [Number] time
+    ###
+    findSucceedingAnimation: (source) ->
+      times = _.keys @_animations
+      times.sort (a, b) -> a - b
+
+      index = _.findIndex times, (t) -> Number(t) == source
+
+      if index > -1 and index < times.length - 1
+        times[index + 1]
+      else
+        null
+
+    ###
     # Find the nearest prop buffer entry to the left/right of the supplied state
     # An optional property can be passed in, adding its existence as a criteria
     # for the returned state. Validation of the property is also performed
@@ -958,7 +997,7 @@ define (require) ->
     # @return [Number] nearest key into @_propBuffer
     # @private
     ###
-    _findNearestState: (start, right, prop) ->
+    findNearestState: (start, right, prop) ->
       start = Number param.required start
       right = param.optional right, false
       prop = param.optional prop, null
@@ -975,6 +1014,66 @@ define (require) ->
             nearest = time if prop == null or buffer[prop]
 
       nearest
+
+    ###
+    # Move the keyframe at the specified time and of the specified property to
+    # the target time.
+    #
+    # NOTE: This does not check the validity of the transformation! Make SURE
+    #       the keyframe can be legally moved to the target time! It must not
+    #       cross over any other keyframes belonging to the same property.
+    #
+    # @param [String] property
+    # @param [Number] source source time
+    # @param [Number] destination target time
+    ###
+    transplantKeyframe: (property, source, destination) ->
+      source = Math.floor source
+      destination = Math.floor destination
+
+      return if source == destination
+
+      # Move prop buffer entry first
+      srcPBEntry = @_propBuffer[source][property]
+
+      @_propBuffer[destination] = {} unless @_propBuffer[destination]
+      @_propBuffer[destination][property] = srcPBEntry
+
+      delete @_propBuffer[source][property]
+
+      if _.keys(@_propBuffer[source]).length == 0
+        delete @_propBuffer[source]
+
+      # Now move animation, update affected surrounding animations
+      srcAnimation = @_animations[source]
+
+      # Update any animation to the right of us
+      succeedingAnim = @findSucceedingAnimation source
+
+      if succeedingAnim != null and @_animations[succeedingAnim][property]
+        @mutatePropertyAnimation @_animations[succeedingAnim][property], (a) ->
+          a.setStartTime destination
+
+      # Finally, update our own animation
+      @mutatePropertyAnimation @_animations[source][property], (a) ->
+        a.setEndTime destination
+
+      @_animations[destination] = @_animations[source]
+      delete @_animations[source]
+
+    ###
+    # Runs the callback for each animation object found on the property
+    # animation; runs it for each component for composites (useful). The
+    # callback is given each animation object (Bezier)
+    #
+    # @param [Object] animationSet animation property entry
+    # @param [Method] cb
+    ###
+    mutatePropertyAnimation: (animationSet, cb) ->
+      if animationSet.components
+        _.each _.values(animationSet.components), (animation) -> cb animation
+      else
+        cb animationSet
 
     ###
     # Prepares our properties object for injection into the buffer. In essence,
