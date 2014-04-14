@@ -59,20 +59,7 @@ define (require) ->
     # @return [Void]
     ###
     _onClickUpload: ->
-      filepicker.pickAndStore
-        mimetype: "image/*"
-      ,
-        location: "S3"
-        path: "/ads/assets/"
-      , (blob) =>
-        for obj in blob
-          texture = new Texture
-            url: obj.url
-            name: obj.filename
-
-          @ui.editor.project.textures.push texture
-          @ui.workspace.loadTexture(texture)
-
+      window.AdefyEditor.ui.modals.showUploadTextures cb: (blob) =>
         @refresh()
 
     ###
@@ -135,6 +122,6 @@ define (require) ->
       AUtilEventLog.egot "tab.textures", type
 
       switch type
-        when "rename.texture"
+        when "rename.texture", "upload.textures"
           # params.texture
           @refresh()

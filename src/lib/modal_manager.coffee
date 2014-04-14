@@ -2,7 +2,10 @@ define (require) ->
 
   param = require "util/param"
   ID = require "util/id"
+
   Asset = require "handles/asset"
+  Texture = require "handles/texture"
+
   BaseActor = require "handles/actors/base"
   Handle = require "handles/handle"
 
@@ -11,10 +14,14 @@ define (require) ->
   Modal = require "widgets/modal"
   TemplateModalAddTextures = require "templates/modal/add_textures"
   TemplateModalBackgroundColor = require "templates/modal/background_color"
+  TemplateModalHelpAbout = require "templates/modal/help_about"
+  TemplateModalHelpChangeLog = require "templates/modal/change_log"
   TemplateModalRename = require "templates/modal/rename"
   TemplateModalSetPreviewFPS = require "templates/modal/set_preview_fps"
   TemplateModalSetTexture = require "templates/modal/set_texture"
   TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
+
+  Version = require "version"
 
   class ModalManager extends EditorObject
 
@@ -318,3 +325,44 @@ define (require) ->
 
         validation: =>
           true
+
+    ###
+    # @return [Modal]
+    ###
+    showHelpAbout: ->
+
+      new Modal
+        title: "About"
+        content: TemplateModalHelpAbout
+          version: Version.STRING
+
+    showHelpChangeLog: ->
+
+      new Modal
+        title: "Change Log"
+        content: TemplateModalHelpChangeLog()
+
+    showUploadTextures: (options) ->
+      options = param.optional options, {}
+
+      filepicker.pickAndStore
+        mimetype: "image/*"
+      ,
+        location: "S3"
+        path: "/ads/assets/"
+      , (blob) =>
+        textures = []
+        for obj in blob
+          texture = new Texture
+            url: obj.url
+            name: obj.filename
+
+          @ui.editor.project.textures.push texture
+          textures.push texture
+
+        @ui.workspace.loadTextures(textures)
+
+        @ui.pushEvent "upload.textures"
+
+        if cb = options.cb
+          cb blob

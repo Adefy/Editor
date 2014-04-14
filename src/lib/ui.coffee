@@ -172,16 +172,17 @@ define (requre) ->
 
       toolsMenu.createChild
         label: "Upload textures..."
-        click: "#{edUI}.modals.showAddTextures()"
+        #click: "#{edUI}.modals.showAddTextures()"
+        click: "#{edUI}.modals.showUploadTextures()"
 
       # Help menu options
       helpMenu.createChild
         label: "About Editor"
-        click: "#{edUI}.modals.showAbout()"
+        click: "#{edUI}.modals.showHelpAbout()"
 
       helpMenu.createChild
         label: "Changelog"
-        click: "#{edUI}.modals.showChangeLog()"
+        click: "#{edUI}.modals.showHelpChangeLog()"
         sectionEnd: true
 
       helpMenu.createChild

@@ -66,7 +66,7 @@ define (require) ->
     # Clears the workspace, creating a new ad
     ###
     newAd: ->
-
+      @project = new Project @ui
       # Trigger a workspace reset
       @ui.workspace.reset()
 
