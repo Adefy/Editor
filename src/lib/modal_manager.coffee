@@ -11,9 +11,10 @@ define (require) ->
   Modal = require "widgets/modal"
   TemplateModalAddTextures = require "templates/modal/add_textures"
   TemplateModalBackgroundColor = require "templates/modal/background_color"
-  TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
-  TemplateModalSetPreviewFPS = require "templates/modal/set_preview_fps"
   TemplateModalRename = require "templates/modal/rename"
+  TemplateModalSetPreviewFPS = require "templates/modal/set_preview_fps"
+  TemplateModalSetTexture = require "templates/modal/set_texture"
+  TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
 
   class ModalManager extends EditorObject
 
@@ -271,8 +272,8 @@ define (require) ->
       textpathID = ID.prefId "_wtext"
 
       new Modal
-        title: "Add textures ..."
-        content: TemplateModalAddTexturesTemplate
+        title: "Add Textures ..."
+        content: TemplateModalAddTextures
           textnameID: textnameID
           textpathID: textpathID
           textname: ""
@@ -290,4 +291,30 @@ define (require) ->
           if data[textpathID] == null or data[textpathID] == ""
             return "You must select a texture"
 
+          true
+
+    ###
+    # Set
+    # @return [Modal]
+    ###
+    showSetTexture: (actor) ->
+
+      textures = _.map @ui.editor.project.textures, (texture) ->
+        {
+          uid: texture.getUID()
+          url: texture.getURL()
+          name: texture.getName()
+        }
+
+      new Modal
+        title: "Set Texture"
+        content: TemplateModalSetTexture
+          textures: textures
+
+        modal: false
+        cb: (data) =>
+
+          actor.setTextureByUID(data["uid"])
+
+        validation: =>
           true

@@ -66,9 +66,12 @@ define (require) ->
         path: "/ads/assets/"
       , (blob) =>
         for obj in blob
-          @ui.editor.project.textures.add new Texture
+          texture = new Texture
             url: obj.url
             name: obj.filename
+
+          @ui.editor.project.textures.push texture
+          @ui.workspace.loadTexture(texture)
 
         @refresh()
 
@@ -83,6 +86,7 @@ define (require) ->
         textureElement = $(e.target).closest(".thumb")
         textureId = textureElement[0].id
         texture = _.find project.textures, (t) -> t.getID() == textureId
+
         if texture
           new ContextMenu e.pageX, e.pageY, texture.getContextProperties()
 

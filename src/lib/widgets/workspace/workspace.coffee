@@ -151,6 +151,33 @@ define (require) ->
       Workspace._selectedActor = actor.getID()
 
     ###
+    # Loads textures into ARE
+    # @param [Array<Texture>] textures
+    ###
+    loadTextures: (textures) ->
+      unless @_are
+        return AUtilLog.error "ARE was not loaded, cannot load texture"
+
+      manifest =
+        textures: _.map textures, (texture) ->
+          {
+            name: texture.getUID()
+            path: texture.getURL()
+          }
+
+      ###
+      # correct me if I'm wrong, but we can't load textures directly!?
+      ###
+      AdefyRE.Engine().loadManifest JSON.stringify(manifest), ->
+        AUtilLog.info "Textures have been loaded successfully"
+
+    ###
+    # @param [Texture] texture
+    ###
+    loadTexture: (texture) ->
+      @loadTextures [texture]
+
+    ###
     # Converts document-relative coordinates to ARE coordinates
     # NOTE: This does not currently take into account any camera transformation!
     #
@@ -377,15 +404,6 @@ define (require) ->
 
       # Start rendering
       @_are.startRendering()
-
-    ###
-    # Upload the textures to the cloud for processing and usage
-    # @private
-    ###
-    _uploadTextures: (name, path) ->
-
-      ARELog.info "Upload textures request"
-      ARELog.info name + "@" + path
 
     ###
     # @private

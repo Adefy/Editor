@@ -98,6 +98,8 @@ define (require) ->
           for texture in @textures
             texture.project = @
 
+          @ui.workspace.loadTextures @textures
+
           ##
           # We reload the workspace state BEFORE the timeline state
           # that way we update the timeline correctly.

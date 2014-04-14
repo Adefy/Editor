@@ -74,6 +74,10 @@ define (require) ->
       # moved. Note that this starts at our birth!
       @_lastTemporalState = Math.floor @lifetimeStart_ms
 
+
+      @_ctx = _.extend @_ctx,
+        "Set Texture ...": => @_contextFuncSetTexture @
+
       me = @
 
       @_properties.position = new CompositeProperty()
@@ -374,9 +378,25 @@ define (require) ->
     ###
     # @param [Texture] texture
     ###
-    setTexture: (texture) ->
-      @_AJSActor.setTexture texture
+    setTexture: (@_texture) ->
+      if @_texture
+        @_AJSActor.setTexture @_texture.getUID()
+      else
+        @_AJSActor.setTexture null
+
       @updateInTime()
+
+    ###
+    # Set a texture by uid by searching the project textures
+    # @param [String] uid
+    ###
+    setTextureByUID: (uid) ->
+      texture = _.find window.AdefyEditor.project.textures, (t) ->
+        t.getUID() == uid
+
+      @setTexture texture
+
+      @
 
     ###
     # Used when exporting, executes the corresponding property genAnimationOpts
@@ -1210,3 +1230,11 @@ define (require) ->
         @_AJSActor = null
 
       super()
+
+    ###
+    # Set Texture context menu function
+    # @param [BaseActor] actor
+    ###
+    _contextFuncSetTexture: (actor) ->
+
+      window.AdefyEditor.ui.modals.showSetTexture actor
