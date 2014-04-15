@@ -64,11 +64,17 @@ define (require) ->
       @getElement().html TemplateWorkspaceCanvasContainer()
 
       # Create an ARE instance on ourselves
-      AUtilLog.info "Creating ARE instance..."
-      new AREEngine @_canvasWidth, @_canvasHeight, (@_are) =>
+      AUtilLog.info "Initializing AJS..."
+      AJS.init =>
+
+        @_are = window.AdefyRE.Engine()._engine
+
+        # window.AdefyRE.Engine().setLogLevel 4
+
         @_engineInit()
         @_applyCanvasSizeUpdate()
-      , 4, "aw-canvas-container"
+
+      , @_canvasWidth, @_canvasHeight, "aw-canvas-container"
 
     ###
     # Internal list of workspace actor objects (Handles)
@@ -155,27 +161,16 @@ define (require) ->
     # @param [Array<Texture>] textures
     ###
     loadTextures: (textures) ->
-      unless @_are
-        return AUtilLog.error "ARE was not loaded, cannot load texture"
-
-      manifest =
-        textures: _.map textures, (texture) ->
-          {
-            name: texture.getUID()
-            path: texture.getURL()
-          }
-
-      ###
-      # correct me if I'm wrong, but we can't load textures directly!?
-      ###
-      AdefyRE.Engine().loadManifest JSON.stringify(manifest), ->
-        AUtilLog.info "Textures have been loaded successfully"
+      @loadTexture texture for texture in textures
 
     ###
     # @param [Texture] texture
     ###
     loadTexture: (texture) ->
-      @loadTextures [texture]
+      return AUtilLog.error "ARE not loaded, cannot load texture" unless @_are
+
+      AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, ->
+        AUtilLog.info "Texture #{texture.getUID()} loaded"
 
     ###
     # Converts document-relative coordinates to ARE coordinates
@@ -298,8 +293,26 @@ define (require) ->
           e.preventDefault()
           false
 
-      $(@_sel).on "drop", (e) ->
-        alert e.originalEvent.dataTransfer.getData "image/texture"
+      $(@_sel).on "drop", (e) =>
+        texID = e.originalEvent.dataTransfer.getData "image/texture"
+        texture = _.find @ui.editor.project.textures, (t) -> t.getID() == texID
+
+        @pickActor e.originalEvent.pageX, e.originalEvent.pageY, (actor) ->
+          actor.setTexture texture
+        , =>
+          time = @ui.timeline.getCursorTime()
+          pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
+
+          pos.x += ARERenderer.camPos.x
+          pos.y += ARERenderer.camPos.y
+
+          texSize = ARERenderer.getTextureSize texture.getUID()
+          w = texSize.w
+          h = texSize.h
+
+          actor = new RectangleActor @ui, time, w, h, pos.x, pos.y
+          actor.setTexture texture
+          @addActor actor
 
         e.preventDefault()
         false
@@ -326,6 +339,28 @@ define (require) ->
       b == 248
 
     ###
+    # Helper to pick an actor at the specified coordinates. The callback is
+    # only called if an actor is found.
+    #
+    # @param [Number] x
+    # @param [Number] y
+    # @param [Method] callback
+    # @param [Method] noActorCallback
+    ###
+    pickActor: (x, y, cb, noActorCb) ->
+      noActorCb = param.optional noActorCb, ->
+
+      @performPick @domToGL(x, y), (r, g, b) =>
+        return noActorCb() unless @isValidPick r, g, b
+
+        handle = @getActorFromPick r, g, b
+
+        if handle
+          cb handle 
+        else
+          noActorCb()
+
+    ###
     # Initializes dragging settings and attaches listeners
     ###
     setupActorDragging: ->
@@ -333,7 +368,6 @@ define (require) ->
 
       @dragger.setOnDragStart (d) =>
         @performPick @domToGL(d.getStart().x, d.getStart().y), (r, g, b) =>
-
           return d.forceDragEnd() unless @isValidPick r, g, b
 
           handle = @getActorFromPick r, g, b
@@ -485,8 +519,6 @@ define (require) ->
       # Framebuffer is 512x512
       gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, _w, _h, 0, gl.RGBA \
         , gl.UNSIGNED_BYTE, null
-
-      gl.generateMipmap gl.TEXTURE_2D
 
       # Set up a depth buffer, bind it and whatnot
       _renderBuff = gl.createRenderbuffer()

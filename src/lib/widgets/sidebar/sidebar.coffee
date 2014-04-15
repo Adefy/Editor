@@ -174,7 +174,6 @@ define (require) ->
       animate = param.optional animate, true
 
       if @_visible
-        AUtilLog.warn "Sidebar was already visible"
         cb() if cb
         return
 
@@ -204,7 +203,6 @@ define (require) ->
       animate = param.optional animate, true
 
       unless @_visible
-        AUtilLog.warn "Sidebar was already hidden"
         cb() if cb
         return
 

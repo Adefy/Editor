@@ -33,7 +33,8 @@ define (require) ->
     ###
     _setupDragging: ->
       $(document).on "dragstart", "#{@_sel} .thumb .img img", (e) ->
-        e.originalEvent.dataTransfer.setData "image/texture", $(e.target).attr "src"
+        textureID = $(e.target).closest(".thumb").attr "id"
+        e.originalEvent.dataTransfer.setData "image/texture", textureID
 
     ###
     # Does this tab require a Panel footer?

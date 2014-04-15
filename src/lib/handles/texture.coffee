@@ -74,8 +74,9 @@ define (require) ->
         validate: (t, name) =>
           return "Name must be longer than 3 characters" if name.length <= 3
 
-          isNotUnique = _.any @project.textures, (t2) -> t2._name == name
-          return "Name must be unique" if isNotUnique
+          if @project
+            isNotUnique = _.any @project.textures, (t2) -> t2._name == name
+            return "Name must be unique" if isNotUnique
 
           true
       @
@@ -104,6 +105,7 @@ define (require) ->
 
       if data.version > "1.0.0"
         @_uid = data.uid
+
       # we are probably dealing with an old v1.0.0 texture, so we'll
       # need to generate a uid for it
       else

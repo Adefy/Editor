@@ -132,7 +132,7 @@ define (require) ->
       @_properties.color.r.setMax 255
       @_properties.color.r.setFloat false
       @_properties.color.r.setPlaceholder 255
-      @_properties.color.r.setValue 0
+      @_properties.color.r.setValue 255
 
       @_properties.color.g = new NumericProperty()
       @_properties.color.b = new NumericProperty()
