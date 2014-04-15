@@ -8,6 +8,7 @@ define (requre) ->
     # render stub function
     ###
     render: ->
+      ""
 
     ###
     # For cases where templates don't really make sense
