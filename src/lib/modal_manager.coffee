@@ -11,7 +11,9 @@ define (require) ->
 
   EditorObject = require "editor_object"
 
-  Modal = require "widgets/modal"
+  FloatingTextureSelect = require "widgets/floating/texture_select"
+  Modal = require "widgets/floating/form"
+
   TemplateModalAddTextures = require "templates/modal/add_textures"
   TemplateModalBackgroundColor = require "templates/modal/background_color"
   TemplateModalEditHistory = require "templates/modal/edit_history"
@@ -19,7 +21,6 @@ define (require) ->
   TemplateModalHelpChangeLog = require "templates/modal/change_log"
   TemplateModalRename = require "templates/modal/rename"
   TemplateModalSetPreviewFPS = require "templates/modal/set_preview_fps"
-  TemplateModalSetTexture = require "templates/modal/set_texture"
   TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
 
   Version = require "version"
@@ -339,18 +340,7 @@ define (require) ->
           name: texture.getName()
         }
 
-      new Modal
-        title: "Set Texture"
-        content: TemplateModalSetTexture
-          textures: textures
-
-        modal: false
-        cb: (data) =>
-
-          actor.setTextureByUID(data["uid"])
-
-        validation: =>
-          true
+      new FloatingTextureSelect textures, actor
 
     ###
     # @return [Modal]
