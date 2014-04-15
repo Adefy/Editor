@@ -320,11 +320,7 @@ define (require) ->
 
         modal: false
         cb: (data) =>
-
           actor.setTextureByUID(data["uid"])
-
-        validation: =>
-          true
 
     ###
     # @return [Modal]

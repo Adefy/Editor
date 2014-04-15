@@ -49,18 +49,18 @@ define (require) ->
 
       @show()
 
-      if not Modal.__listenersRegistered
+      unless Modal.__listenersRegistered
         Modal.__listenersRegistered = true
 
         # Closing non-modal on clicking
         $(document).mouseup (e) ->
-
-          if $("body").data("activeModal") == undefined then return
-          else us = $($("body").data("activeModal")._sel)
+          return unless $("body").data("activeModal")
+          
+          us = $($("body").data("activeModal")._sel)
 
           # Clicked outside of us, hide if we aren't modal
           if !us.is(e.target) && us.has(e.target).length == 0
-            if not modal then $("body").data("activeModal").close()
+            $("body").data("activeModal").close() unless modal
 
         # Close modal on dismiss click
         $(document).on "click", ".modal .modal-dismiss", ->
@@ -106,10 +106,10 @@ define (require) ->
     changed: (i) ->
       param.required i
 
-      if @change == null then return
+      return if @change == null
       data = @scrapeData()
 
-      if @validation != null then if @validation(data) != true then return
+      return if @validation and @validation(data) != true
       delta = @change $(i).attr("name"), $(i).val(), data
 
       @getElement("*[name=\"#{d}\"]").val v for d, v of delta
@@ -118,15 +118,18 @@ define (require) ->
     # Injects and shows us. Doesn't work if we aren't dead
     ###
     show: ->
-      if not @dead then return else @dead = false
+      return unless @dead
+      @dead = false
 
-      # Build!
-      @getElement().html TemplateModal title: @title, content: @content, cb: !!@cb
+      @getElement().html TemplateModal
+        title: @title
+        content: @content
+        cb: !!@cb
 
       # Register us for later
       $("body").data "activeModal", @
 
-      @getElement().animate { opacity: 1 }, 400
+      @getElement().animate opacity: 1, 400
 
     ###
     # Closes and kills us
@@ -155,11 +158,15 @@ define (require) ->
 
         if @dead then return else @dead = true
 
-        if not @getElement().is ":visible" then @_kill()
-        else @getElement().animate { opacity: 0 }, 400, => @_kill()
+        unless @getElement().is ":visible"
+          @_kill()
+        else
+          @getElement().animate { opacity: 0 }, 400, => @_kill()
       else
-        if not @getElement().is ":visible" then @_kill()
-        else @getElement().animate { opacity: 0 }, 400, => @_kill()
+        unless @getElement().is ":visible"
+          @_kill()
+        else
+          @getElement().animate { opacity: 0 }, 400, => @_kill()
 
     ###
     # Sets an error string to display
@@ -168,7 +175,6 @@ define (require) ->
     ###
     setError: (error) ->
       param.required error
-
       @getElement(".modal-error").text error
 
     ###

@@ -4,11 +4,11 @@ define ->
   # @property [Hex] hex
   ###
   Handlebars.compile """
-    {{#each textures}}
-    <ul>
+    <ul id="modal-set-texture">
+      {{#each textures}}
       <li>
-        <img width="48px" height="48px" src="{{url}}"></img>
+        <img src="{{url}}"></img>
       </li>
+      {{/each}}
     </ul>
-    {{/each}}
   """
