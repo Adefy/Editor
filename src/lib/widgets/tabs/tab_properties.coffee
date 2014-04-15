@@ -250,7 +250,8 @@ define (require) ->
     #
     # @param [Handle] obj
     ###
-    refresh: (obj) ->
+    refreshActor: (obj) ->
+
       @targetActor = param.required obj
 
       properties = _.pairs obj.getProperties()
@@ -291,7 +292,7 @@ define (require) ->
     clear: ->
       @_builtHMTL = ""
       @targetActor = null
-      @_parent.render()
+      @refresh()
 
     ###
     # Return internally pre-rendered HTML. We need to pre-render since we rely
@@ -310,7 +311,7 @@ define (require) ->
       return unless @targetActor
 
       if !@_builtHMTL || (@targetActor != oldActor)
-        return @refresh @targetActor
+        return @refreshActor @targetActor
 
       for property, value of @targetActor.getProperties()
 
