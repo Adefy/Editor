@@ -7,7 +7,7 @@ html(lang="en")
 
     //- PaceJS
     script(src="components/pace/pace.min.js")
-    link(rel="stylesheet" href="components/pace/themes/pace-theme-center-atom.css")    
+    link(rel="stylesheet" href="components/pace/themes/pace-theme-center-atom.css")
 
     | <!--[if IE]>
     link(rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon")
@@ -38,6 +38,10 @@ html(lang="en")
 
     //- Load lodash after ARE to override underscore
     script(src="components/lodash/dist/lodash.min.js")
+
+    script(src="//api.filepicker.io/v1/filepicker.js")
+    script.
+      filepicker.setKey("Aw0cpCnEeTLe23CePFWT4z");
 
     //- Load us up!
     script(src="components/requirejs/require.js" data-main="lib/main.js")

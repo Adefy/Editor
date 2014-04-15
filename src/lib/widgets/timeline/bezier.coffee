@@ -2,8 +2,10 @@ define (require) ->
 
   param = require "util/param"
 
+  Dumpable = require "mixin/dumpable"
+
   # Bezier curve implementation
-  class Bezier
+  class Bezier extends Dumpable
 
     ###
     # Instantiate with start, end, and control points. Values are expected to be
@@ -49,6 +51,26 @@ define (require) ->
         if @_degree == 2
           param.required @_control[1].x
           param.required @_control[1].y
+
+    ###
+    # @param [Number] time
+    ###
+    setStartTime: (time) -> @_start.x = time
+
+    ###
+    # @param [Number] time
+    ###
+    setEndTime: (time) -> @_end.x = time
+
+    ###
+    # @param [Number] value
+    ###
+    setStartValue: (value) -> @_start.y = value
+
+    ###
+    # @param [Number] value
+    ###
+    setEndValue: (value) -> @_end.y = value
 
     # Evaluate for a certain t, between 0 and 1. Returns a basic object
     # containing (x,y) keys.
@@ -132,7 +154,7 @@ define (require) ->
       @_buffer = false
       @_bufferData = {}
 
-    serialize: ->
+    dump: ->
       {
         start: @_start
         end: @_end
@@ -141,5 +163,5 @@ define (require) ->
         buffer: @_buffer
       }
 
-    @deserialize: (data) ->
+    @load: (data) ->
       new Bezier data.start, data.end, data.degree, data.control, data.buffer

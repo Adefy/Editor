@@ -130,7 +130,7 @@ define (require) ->
     # @param [String] id
     ###
     removeItem: (id) ->
-      @_items = _.filter @_items, (i) -> i.getId() != id
+      @_items = _.filter @_items, (i) -> i.getID() != id
       @
 
     ###
@@ -142,7 +142,7 @@ define (require) ->
       @getElement().html ""
 
       # Render our decorator
-      _html = @genElement "div", id: "menubar-decorater"
+      _html = @genElement "div", class: "menubar-decorater"
 
       # Menu items
       _html += @genElement "ul", class: "bar", =>
@@ -159,7 +159,7 @@ define (require) ->
         attrs =
           id: ID.nextId()
           class: "menu"
-          "data-owner": item.getId()
+          "data-owner": item.getID()
 
         # Append all secondary children
         @getElement().append @genElement "ul", attrs, =>
@@ -167,4 +167,4 @@ define (require) ->
 
         # Position us on the same left edge as our parents
         $("##{attrs.id}").css
-          left: $("##{item.getId()}").offset().left
+          left: $("##{item.getID()}").offset().left

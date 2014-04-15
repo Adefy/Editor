@@ -1,15 +1,12 @@
 define (require) ->
 
+  ID = require "util/id"
   AUtilLog = require "util/log"
   param = require "util/param"
-  ID = require "util/id"
+
   Widget = require "widgets/widget"
-  Modal = require "widgets/modal"
   ContextMenu = require "widgets/context_menu"
-  AddTexturesTemplate = require "templates/workspace/add_textures"
-  BackgroundColorTemplate = require "templates/workspace/background_color"
-  WorkspaceScreenSizeTemplate = require "templates/workspace/screen_size"
-  WorkspaceCanvasContainerTemplate = require "templates/workspace/canvas_container"
+  TemplateWorkspaceCanvasContainer = require "templates/workspace/canvas_container"
 
   Dragger = require "util/dragger"
 
@@ -64,14 +61,20 @@ define (require) ->
       # Inject our canvas container, along with its status bar
       # Although we currently don't add anything else to the container besides
       # the canvas itself, it might prove useful in the future.
-      @getElement().html WorkspaceCanvasContainerTemplate()
+      @getElement().html TemplateWorkspaceCanvasContainer()
 
       # Create an ARE instance on ourselves
-      AUtilLog.info "Creating ARE instance..."
-      new AREEngine @_canvasWidth, @_canvasHeight, (@_are) =>
+      AUtilLog.info "Initializing AJS..."
+      AJS.init =>
+
+        @_are = window.AdefyRE.Engine()._engine
+
+        # window.AdefyRE.Engine().setLogLevel 4
+
         @_engineInit()
         @_applyCanvasSizeUpdate()
-      , 4, "aw-canvas-container"
+
+      , @_canvasWidth, @_canvasHeight, "aw-canvas-container"
 
     ###
     # Internal list of workspace actor objects (Handles)
@@ -141,51 +144,178 @@ define (require) ->
       @ui.pushEvent "workspace.add.actor", actor: actor
 
     ###
+    # Returns the currently selected actor's id
+    # @return [Id] actorId
+    ###
+    getSelectedActor: -> Workspace._selectedActor
+
+    ###
     # Sets the selectedActor instance
     # @param [Id] actorId
     ###
     setSelectedActor: (actor) ->
-      Workspace._selectedActor = actor.getId()
+      Workspace._selectedActor = actor.getID()
+
+    ###
+    # Loads textures into ARE
+    # @param [Array<Texture>] textures
+    ###
+    loadTextures: (textures) ->
+      @loadTexture texture for texture in textures
+
+    ###
+    # @param [Texture] texture
+    ###
+    loadTexture: (texture) ->
+      return AUtilLog.error "ARE not loaded, cannot load texture" unless @_are
+
+      AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, ->
+        AUtilLog.info "Texture #{texture.getUID()} loaded"
+
+    ###
+    # Converts document-relative coordinates to ARE coordinates
+    # NOTE: This does not currently take into account any camera transformation!
+    #
+    # @param [Number] x x coordinate
+    # @param [Number] y y coordinate
+    ###
+    domToGL: (x, y) ->
+
+      # Bail
+      if @_are == undefined
+        AUtilLog.warn "Can't convert coords, are not up!"
+        return null
+
+      canvasTop = $("#{@getSel()} canvas").offset().top
+      canvasLeft = $("#{@getSel()} canvas").offset().left
+
+      # TODO: Take into account camera coords
+
+      {
+        x: x - canvasLeft
+        y: y - canvasTop
+      }
+
+    ###
+    # Generate workspace right-click ctx data object
+    #
+    # @param [Number] x x coordinate of click
+    # @param [Number] y y coordinate of click
+    # @return [Object] options
+    ###
+    getWorkspaceCtxMenu: (x, y) ->
+      {
+        name: "Workspace"
+        functions:
+          "New Actor +": =>
+            new ContextMenu x, y, @getNewActorCtxMenu x, y
+      }
+
+    ###
+    # Generate the new actor menu options object, opened through the workspace
+    # context menu.
+    #
+    # @param [Number] x x coordinate of click
+    # @param [Number] y y coordinate of click
+    # @return [Object] options
+    ###
+    getNewActorCtxMenu: (x, y) ->
+      time = @ui.timeline.getCursorTime()
+      pos = @domToGL(x, y)
+      pos.x += ARERenderer.camPos.x
+      pos.y += ARERenderer.camPos.y
+
+      {
+        name: "New Actor"
+        functions:
+          "Rectangle Actor": =>
+            @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
+          "Polygon Actor": =>
+            @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
+          "Triangle Actor": =>
+            @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
+      }
 
     ###
     # Bind a contextmenu listener
     ###
-    bindContextClick: ->
+    _bindContextClick: ->
       $(document).on "contextmenu", ".workspace canvas", (e) =>
         return if @dragger.isDragging()
 
-        @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
-          return unless @isValidPick r, g, b
+        x = e.pageX
+        y = e.pageY
 
-          actor = @getActorFromPick r, g, b
-          if actor
-            unless _.isEmpty actor.getContextFunctions()
-              @dragger.forceDragEnd()
-              new ContextMenu e.pageX, e.pageY, actor
+        @performPick @domToGL(x, y), (r, g, b) =>
+          gotActor = @isValidPick r, g, b
+
+          if gotActor
+            actor = @getActorFromPick r, g, b
+            if actor
+              unless _.isEmpty actor.getContextProperties()
+                @dragger.forceDragEnd()
+                new ContextMenu x, y, actor.getContextProperties()
+          else
+            new ContextMenu x, y, @getWorkspaceCtxMenu x, y
 
         e.preventDefault()
         false
 
     ###
-    # Set up our own capture of draggable objects
+    # Register listeners
     ###
-    setupDroppableCanvas: ->
-      $(".workspace canvas").droppable
-        accept: ".workspace-drag"
-        drop: (event, ui) =>
+    _regListeners: ->
+      @_bindContextClick()
 
-          # Calculate workspace coordinates
-          position = @domToGL ui.position.left, ui.position.top
+      $(document).mousemove (e) =>
+        return unless @_workspaceDrag
+        x = @_workspaceDrag.x
+        y = @_workspaceDrag.y
+        ARERenderer.camPos.x += x - e.pageX
+        ARERenderer.camPos.y += y - e.pageY
+        @_workspaceDrag =
+          x: e.pageX
+          y: e.pageY
 
-          object = @ui.toolbar.getItemById $(ui.draggable).attr "data-id"
+      $(document).mouseup (e) =>
+        return unless @_workspaceDrag
+        @_workspaceDrag = null
 
-          # TODO: Consider cleaning this up to just pass the domToGL result
-          handle = object.spawn position.x, position.y
+      $(document).on "mousedown", ".workspace canvas", (e) =>
+        if e.shiftKey && !@_workspaceDrag
+          @_workspaceDrag =
+            x: e.pageX
+            y: e.pageY
 
-          # TODO: Provide some flexibility here, take different actions if
-          #       something besides an actor is dropped. For the time being,
-          #       that can't happen. Yay.
-          @addActor handle if handle.constructor.name.indexOf("Actor") != -1
+      # Setup texture drops
+      $(@_sel).on "dragover", (e) ->
+        if _.contains e.originalEvent.dataTransfer.types, "image/texture"
+          e.preventDefault()
+          false
+
+      $(@_sel).on "drop", (e) =>
+        texID = e.originalEvent.dataTransfer.getData "image/texture"
+        texture = _.find @ui.editor.project.textures, (t) -> t.getID() == texID
+
+        @pickActor e.originalEvent.pageX, e.originalEvent.pageY, (actor) ->
+          actor.setTexture texture
+        , =>
+          time = @ui.timeline.getCursorTime()
+          pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
+
+          pos.x += ARERenderer.camPos.x
+          pos.y += ARERenderer.camPos.y
+
+          texSize = ARERenderer.getTextureSize texture.getUID()
+          w = texSize.w
+          h = texSize.h
+
+          actor = new RectangleActor @ui, time, w, h, pos.x, pos.y
+          actor.setTexture texture
+          @addActor actor
+
+        e.preventDefault()
+        false
 
     ###
     # Translate the pick values into an ID and fetch the associated actor
@@ -209,6 +339,28 @@ define (require) ->
       b == 248
 
     ###
+    # Helper to pick an actor at the specified coordinates. The callback is
+    # only called if an actor is found.
+    #
+    # @param [Number] x
+    # @param [Number] y
+    # @param [Method] callback
+    # @param [Method] noActorCallback
+    ###
+    pickActor: (x, y, cb, noActorCb) ->
+      noActorCb = param.optional noActorCb, ->
+
+      @performPick @domToGL(x, y), (r, g, b) =>
+        return noActorCb() unless @isValidPick r, g, b
+
+        handle = @getActorFromPick r, g, b
+
+        if handle
+          cb handle 
+        else
+          noActorCb()
+
+    ###
     # Initializes dragging settings and attaches listeners
     ###
     setupActorDragging: ->
@@ -216,11 +368,9 @@ define (require) ->
 
       @dragger.setOnDragStart (d) =>
         @performPick @domToGL(d.getStart().x, d.getStart().y), (r, g, b) =>
-
           return d.forceDragEnd() unless @isValidPick r, g, b
 
           handle = @getActorFromPick r, g, b
-
           return d.forceDragEnd() unless handle
 
           d.setTarget handle
@@ -247,12 +397,11 @@ define (require) ->
 
         # Delay the drag untill we finish our pick
         if d.getUserData() and d.getUserData().original
-
           newX = d.getUserData().original.x + deltaX
           newY = d.getUserData().original.y + deltaY
 
           d.getTarget().setPosition newX, newY
-          @ui.pushEvent "selected.actor.changed"
+          @ui.pushEvent "selected.actor.update", actor: d.getTarget()
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
@@ -267,6 +416,7 @@ define (require) ->
 
           actor = @getActorFromPick r, g, b
           if actor
+            oldActor = @getSelectedActor()
             @setSelectedActor actor
             @ui.pushEvent "workspace.selected.actor",
               actorId: @_selectedActor
@@ -282,205 +432,12 @@ define (require) ->
 
       @_are.setClearColor 240, 240, 240
 
-      @bindContextClick()
-      @setupDroppableCanvas()
+      @_regListeners()
+
       @setupActorDragging()
 
       # Start rendering
       @_are.startRendering()
-
-    ###
-    # Shows a modal allowing the user to set screen properties. Sizes are picked
-    # from device templates, rotation and scale are also available
-    ###
-    showSetScreenProperties: ->
-
-      curScale = ID.prefId "_wspscale"
-      cSize = ID.prefId "_wspcsize"
-      pSize = ID.prefId "_wsppsize"
-      pOrie = ID.prefId "_wsporientation"
-
-      curSize = "#{@_pWidth}x#{@_pHeight}"
-      chL = ""
-      chP = ""
-
-      if @_pOrientation == "land" then chL = "checked=\"checked\""
-      else chP = "checked=\"checked\""
-
-      _html = WorkspaceScreenSizeTemplate
-        cSize: cSize
-        pSize: pSize
-        pOrie: pOrie
-        chL: chL
-        chP: chP
-        curScale: curScale
-        pScale: @_pScale
-        currentSize: curSize
-
-      new Modal
-        title: "Set Screen Properties",
-        content: _html,
-        modal: false,
-        cb: (data) =>
-          # Submission
-          size = data[cSize].split "x"
-
-          @_pHeight = Number size[1]
-          @_pWidth = Number size[0]
-          @_pScale = Number data[curScale]
-          @_pOrientation = data[pOrie]
-          @updateOutline()
-
-        validation: (data) =>
-          # Validation
-          size = data[cSize].split "x"
-
-          if size.length != 2 then return "Size is of the format WidthxHeight"
-          else if isNaN(size[0]) or isNaN(size[1])
-            return "Dimensions must be numbers"
-          else if isNaN(data[curScale]) then return "Scale must be a number"
-
-          true
-        change: (deltaName, deltaVal, data) =>
-
-          if deltaName == pSize
-            $("input[name=\"#{cSize}\"]").val deltaVal.split("_").join "x"
-
-    ###
-    # Creates and shows the "Set Background Color" modal
-    # @return [Modal]
-    ###
-    showSetBackgroundColor: ->
-
-      col = @_are.getClearColor()
-
-      _colR = col.getR()
-      _colG = col.getG()
-      _colB = col.getB()
-
-      valHex = _colB | (_colG << 8) | (_colR << 16)
-      valHex = (0x1000000 | valHex).toString(16).substring 1
-
-      preview = ID.prefId "_wbgPreview"
-      hex = ID.prefId "_wbgHex"
-      r = ID.prefId "_wbgR"
-      g = ID.prefId "_wbgG"
-      b = ID.prefId "_wbgB"
-
-      pInitial = "background-color: rgb(#{_colR}, #{_colG}, #{_colB});"
-
-      _html = BackgroundColorTemplate
-        hex: hex
-        hexstr: valHex
-        r: r
-        g: g
-        b: b
-        colorRed: _colR
-        colorGreen: _colG
-        colorBlue: _colB
-        preview: preview
-        pInitial: pInitial
-
-      new Modal
-        title: "Set Background Color",
-        content: _html,
-        modal: false,
-        cb: (data) =>
-          # Submission
-          @_are.setClearColor data[r], data[g], data[b]
-
-        validation: (data) =>
-          # Validation
-          vR = data[r]
-          vG = data[g]
-          vB = data[b]
-
-          if isNaN(vR) or isNaN(vG) or isNaN(vB)
-            return "Components must be numbers"
-          else if vR < 0 or vG < 0 or vB < 0 or vR > 255 or vG > 255 or vB > 255
-            return "Components must be between 0 and 255"
-
-          true
-        change: (deltaName, deltaVal, data) =>
-
-          cH = data[hex]
-          cR = data[r]
-          cG = data[g]
-          cB = data[b]
-
-          delta = {}
-
-          # On change
-          if deltaName == hex
-
-            # Recover rgb from hex
-            cH = cH.substring 1
-            _r = cH.substring 0, 2
-            _g = cH.substring 2, 4
-            _b = cH.substring 4, 6
-
-            delta[hex] = cH
-            delta[r] = parseInt _r, 16
-            delta[g] = parseInt _g, 16
-            delta[b] = parseInt _b, 16
-
-          else
-
-            # Build hex from rgba
-            newHex = cB | (cG << 8) | (cR << 16)
-            newHex = (0x1000000 | newHex).toString(16).substring 1
-
-            delta[hex] = "##{newHex}"
-            delta[r] = data[r]
-            delta[g] = data[g]
-            delta[b] = data[b]
-
-          # Apply bg color to preview
-          rgbCol = "rgb(#{delta[r]}, #{delta[g]}, #{delta[b]})"
-          $("##{preview}").css "background-color", rgbCol
-
-          # Return updates
-          delta
-
-    ###
-    # Creates and shows the "Add Textures" modal
-    # @return [Modal]
-    ###
-    showAddTextures: ->
-      textnameID = ID.prefId "_wtexture"
-      textpathID = ID.prefId "_wtextpath"
-
-      _html = AddTexturesTemplate
-        textnameID: textnameID
-        textpathID: textpathID
-        textname: ""
-        textpath: ""
-
-      new Modal
-        title: "Add textures ..."
-        content: _html
-        modal: false
-        cb: (data) =>
-          #Submission
-          @_uploadTextures data[textnameID], data[textpathID]
-
-        validation: =>
-          if data[textnameID] == ""
-            return "Texture must have a name"
-
-          if data[textpathID] == null or data[textpathID] == ""
-            return "You must select a texture"
-
-          true
-
-    ###
-    # Upload the textures to the cloud for processing and usage
-    # @private
-    ###
-    _uploadTextures: (name, path) ->
-
-      ARELog.info "Upload textures request"
-      ARELog.info name + "@" + path
 
     ###
     # @private
@@ -522,7 +479,7 @@ define (require) ->
       # We keep track of actors internally, splice them out of our array
       if obj.constructor.name.indexOf("Actor") != -1
         for o, i in @actorObjects
-          if o.getId() == obj.getId()
+          if o.getID() == obj.getID()
             @ui.pushEvent "workspace.remove.actor", actor: o
             @actorObjects.splice i, 1
             return
@@ -562,8 +519,6 @@ define (require) ->
       # Framebuffer is 512x512
       gl.texImage2D gl.TEXTURE_2D, 0, gl.RGBA, _w, _h, 0, gl.RGBA \
         , gl.UNSIGNED_BYTE, null
-
-      gl.generateMipmap gl.TEXTURE_2D
 
       # Set up a depth buffer, bind it and whatnot
       _renderBuff = gl.createRenderbuffer()
@@ -653,30 +608,6 @@ define (require) ->
         , 0
 
     ###
-    # Converts document-relative coordinates to ARE coordinates
-    # NOTE: This does not currently take into account any camera transformation!
-    #
-    # @param [Number] x x coordinate
-    # @param [Number] y y coordinate
-    ###
-    domToGL: (x, y) ->
-
-      # Bail
-      if @_are == undefined
-        AUtilLog.warn "Can't convert coords, are not up!"
-        return null
-
-      canvasTop = $("#{@getSel()} canvas").offset().top
-      canvasLeft = $("#{@getSel()} canvas").offset().left
-
-      # TODO: Take into account camera coords
-
-      {
-        x: x - canvasLeft
-        y: y - canvasTop
-      }
-
-    ###
     # Resizes the display outline
     ###
     updateOutline: ->
@@ -726,3 +657,33 @@ define (require) ->
 
       # Center phone outline
       # @updateOutline()
+
+    ###
+    # Dumps the current workspace state
+    # @return [Object] data
+    ###
+    dump: ->
+      _.extend super(),
+        version: "1.2.0"
+        camPos:
+          x: ARERenderer.camPos.x
+          y: ARERenderer.camPos.y
+        actors: _.map @getActors(), (actor) -> actor.dump()
+
+    ###
+    # Loads the a workspace data state
+    # @param [Object] data
+    ###
+    load: (data) ->
+      super data
+      if data.version >= "1.2.0"
+        ARERenderer.camPos.x = data.camPos.x
+        ARERenderer.camPos.y = data.camPos.y
+
+      #data.version == "1.1.0"
+      for actor in data.actors
+        newActor = window[actor.type].load @ui, actor
+        @addActor newActor
+
+      @ui.timeline.updateAllActorsInTime()
+

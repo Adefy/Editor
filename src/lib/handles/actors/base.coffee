@@ -5,8 +5,6 @@ define (require) ->
   Handle = require "handles/handle"
   Bezier = require "widgets/timeline/bezier"
 
-  Timeline = require "widgets/timeline/timeline"
-
   CompositeProperty = require "handles/properties/composite"
   NumericProperty = require "handles/properties/numeric"
   BooleanProperty = require "handles/properties/boolean"
@@ -31,7 +29,7 @@ define (require) ->
       super()
 
       @_AJSActor = null
-      @name = "Base Actor"
+      @setName "Base Actor #{@_id_n}"
       @_alive = false
       @_initialized = false # True after postInit() is called
 
@@ -76,6 +74,10 @@ define (require) ->
       # moved. Note that this starts at our birth!
       @_lastTemporalState = Math.floor @lifetimeStart_ms
 
+
+      @_ctx = _.extend @_ctx,
+        "Set Texture ...": => @_contextFuncSetTexture @
+
       me = @
 
       @_properties.position = new CompositeProperty()
@@ -103,8 +105,21 @@ define (require) ->
       @_properties.position.addProperty "x", @_properties.position.x
       @_properties.position.addProperty "y", @_properties.position.y
 
+      @_properties.opacity = new NumericProperty()
+      @_properties.opacity.setMin 0.0
+      @_properties.opacity.setMax 1.0
+      @_properties.opacity.setValue 1.0
+      @_properties.opacity.setPlaceholder 1.0
+      @_properties.opacity.setFloat true
+      @_properties.opacity.setPrecision 6
+      @_properties.opacity.onUpdate = (opacity) =>
+        @_AJSActor.setOpacity opacity if @_AJSActor
+      @_properties.opacity.requestUpdate = ->
+        @setValue me._AJSActor.getOpacity() if me._AJSActor
 
       @_properties.rotation = new NumericProperty()
+      @_properties.rotation.setMin 0
+      @_properties.rotation.setMax 360
       @_properties.rotation.onUpdate = (rotation) =>
         @_AJSActor.setRotation rotation if @_AJSActor
       @_properties.rotation.requestUpdate = ->
@@ -117,7 +132,7 @@ define (require) ->
       @_properties.color.r.setMax 255
       @_properties.color.r.setFloat false
       @_properties.color.r.setPlaceholder 255
-      @_properties.color.r.setValue 0
+      @_properties.color.r.setValue 255
 
       @_properties.color.g = new NumericProperty()
       @_properties.color.b = new NumericProperty()
@@ -201,6 +216,12 @@ define (require) ->
       @_properties.physics.addProperty "elasticity", @_properties.physics.elasticity
       @_properties.physics.addProperty "friction", @_properties.physics.friction
       @_properties.physics.addProperty "enabled", @_properties.physics.enabled
+
+    ###
+    # Get the actor's name
+    # @return [String] name
+    ###
+    getName: -> @name
 
     ###
     # Get internal actors' id. Note that the actor must exist for this!
@@ -357,9 +378,25 @@ define (require) ->
     ###
     # @param [Texture] texture
     ###
-    setTexture: (texture) ->
-      @_AJSActor.setTexture texture
+    setTexture: (@_texture) ->
+      if @_texture
+        @_AJSActor.setTexture @_texture.getUID()
+      else
+        @_AJSActor.setTexture null
+
       @updateInTime()
+
+    ###
+    # Set a texture by uid by searching the project textures
+    # @param [String] uid
+    ###
+    setTextureByUID: (uid) ->
+      texture = _.find window.AdefyEditor.project.textures, (t) ->
+        t.getUID() == uid
+
+      @setTexture texture
+
+      @
 
     ###
     # Used when exporting, executes the corresponding property genAnimationOpts
@@ -533,7 +570,7 @@ define (require) ->
       next = @_lastTemporalState
 
       while next != state and next != -1
-        next = @_findNearestState next, right
+        next = @findNearestState next, right
 
         if next != Math.floor(@lifetimeStart_ms) and next != -1
 
@@ -629,9 +666,6 @@ define (require) ->
       ##
       cursor = Math.floor @ui.timeline.getCursorTime()
 
-      # If we haven't moved, drop out early
-      return if cursor == @_lastTemporalState
-
       # Ensure cursor is within our lifetime
       return if cursor < @lifetimeStart_ms or cursor > @lifetimeEnd_ms
 
@@ -640,7 +674,7 @@ define (require) ->
       # is our birth
       nearest = cursor
       if @_propBuffer[String(cursor)] == undefined
-        nearest = @_findNearestState cursor
+        nearest = @findNearestState cursor
 
       # Apply intermediary states (up to ourselves if we have a state)
       @_applyKnownState nearest
@@ -649,7 +683,7 @@ define (require) ->
       return if nearest == cursor
 
       # Next, bail if there are no states to the right of ourselves
-      if @_findNearestState(cursor, true) == -1
+      if @findNearestState(cursor, true) == -1
         return @_capState()
 
       @_capped = false
@@ -672,7 +706,7 @@ define (require) ->
         varying.push p if unique
 
       from = cursor
-      while (from = @_findNearestState(from, true)) != -1
+      while (from = @findNearestState(from, true)) != -1
         for p of @_propBuffer[String from]
           _pushUnique { name: p, end: from }
 
@@ -789,13 +823,13 @@ define (require) ->
       param.required p
 
       unless left
-        left = @_findNearestState time, false, p
+        left = @findNearestState time, false, p
 
       left = 0 if left = -1
 
       # Check if we are in the middle of an animation ourselves. If so,
       # split it
-      animCheck = @_findNearestState time, true, p
+      animCheck = @findNearestState time, true, p
 
       _startP = @_propBuffer["#{left}"][p]
       _endP = @_propBuffer["#{time}"][p]
@@ -876,7 +910,7 @@ define (require) ->
           #
           # We find our start value by going back through our prop buffer and
           # finding the nearest reference to the property we now modify
-          trueStart = @_findNearestState @_lastTemporalState, false, p
+          trueStart = @findNearestState @_lastTemporalState, false, p
 
           # Split animation if necessary
           @_splitAnimation @_lastTemporalState, p, trueStart
@@ -923,6 +957,48 @@ define (require) ->
     getAnimations: -> @_animations
 
     ###
+    # Get animation by time
+    #
+    # @param [Number] time
+    # @return [Object] animation
+    ###
+    getAnimation: (time) -> @_animations[time]
+
+    ###
+    # Fetch time of preceding animation, null if there is none
+    #
+    # @param [Number] source search start time
+    # @return [Number] time
+    ###
+    findPrecedingAnimation: (source) ->
+      times = _.keys @_animations
+      times.sort (a, b) -> a - b
+
+      index = _.findIndex times, (t) -> Number(t) == source
+
+      if index > 0
+        times[index - 1]
+      else
+        null
+
+    ###
+    # Fetch time of preceding animation, null if there is none
+    #
+    # @param [Number] source search start time
+    # @return [Number] time
+    ###
+    findSucceedingAnimation: (source) ->
+      times = _.keys @_animations
+      times.sort (a, b) -> a - b
+
+      index = _.findIndex times, (t) -> Number(t) == source
+
+      if index > -1 and index < times.length - 1
+        times[index + 1]
+      else
+        null
+
+    ###
     # Find the nearest prop buffer entry to the left/right of the supplied state
     # An optional property can be passed in, adding its existence as a criteria
     # for the returned state. Validation of the property is also performed
@@ -933,7 +1009,7 @@ define (require) ->
     # @return [Number] nearest key into @_propBuffer
     # @private
     ###
-    _findNearestState: (start, right, prop) ->
+    findNearestState: (start, right, prop) ->
       start = Number param.required start
       right = param.optional right, false
       prop = param.optional prop, null
@@ -950,6 +1026,66 @@ define (require) ->
             nearest = time if prop == null or buffer[prop]
 
       nearest
+
+    ###
+    # Move the keyframe at the specified time and of the specified property to
+    # the target time.
+    #
+    # NOTE: This does not check the validity of the transformation! Make SURE
+    #       the keyframe can be legally moved to the target time! It must not
+    #       cross over any other keyframes belonging to the same property.
+    #
+    # @param [String] property
+    # @param [Number] source source time
+    # @param [Number] destination target time
+    ###
+    transplantKeyframe: (property, source, destination) ->
+      source = Math.floor source
+      destination = Math.floor destination
+
+      return if source == destination
+
+      # Move prop buffer entry first
+      srcPBEntry = @_propBuffer[source][property]
+
+      @_propBuffer[destination] = {} unless @_propBuffer[destination]
+      @_propBuffer[destination][property] = srcPBEntry
+
+      delete @_propBuffer[source][property]
+
+      if _.keys(@_propBuffer[source]).length == 0
+        delete @_propBuffer[source]
+
+      # Now move animation, update affected surrounding animations
+      srcAnimation = @_animations[source]
+
+      # Update any animation to the right of us
+      succeedingAnim = @findSucceedingAnimation source
+
+      if succeedingAnim != null and @_animations[succeedingAnim][property]
+        @mutatePropertyAnimation @_animations[succeedingAnim][property], (a) ->
+          a.setStartTime destination
+
+      # Finally, update our own animation
+      @mutatePropertyAnimation @_animations[source][property], (a) ->
+        a.setEndTime destination
+
+      @_animations[destination] = @_animations[source]
+      delete @_animations[source]
+
+    ###
+    # Runs the callback for each animation object found on the property
+    # animation; runs it for each component for composites (useful). The
+    # callback is given each animation object (Bezier)
+    #
+    # @param [Object] animationSet animation property entry
+    # @param [Method] cb
+    ###
+    mutatePropertyAnimation: (animationSet, cb) ->
+      if animationSet.components
+        _.each _.values(animationSet.components), (animation) -> cb animation
+      else
+        cb animationSet
 
     ###
     # Prepares our properties object for injection into the buffer. In essence,
@@ -1012,11 +1148,11 @@ define (require) ->
           @_properties[p]._value = props[p].value
 
     ###
-    # Dump actor into JSON representation
+    # Dump actor into basic Object
     #
-    # @return [String] actorJSON
+    # @return [Object] actorJSON
     ###
-    serialize: ->
+    dump: ->
       data = super()
 
       data.propBuffer = @_propBuffer
@@ -1033,10 +1169,10 @@ define (require) ->
             animationData = components: {}
 
             for component, animation of propAnimation.components
-              animationData.components[component] = animation.serialize()
+              animationData.components[component] = animation.dump()
 
           else
-            animationData = propAnimation.serialize()
+            animationData = propAnimation.dump()
 
           animationSet[property] = animationData
 
@@ -1047,18 +1183,19 @@ define (require) ->
     ###
     # Loads properties, animations, and a prop buffer from a saved state
     #
-    # @param [Object] state saved state object
+    # @param [Object] data
+    # @return [self]
     ###
-    deserialize: (state) ->
+    load: (data) ->
 
       # Load basic properties
-      super state
+      super data
 
       # Load everything else
-      @_propBuffer = state.propBuffer
+      @_propBuffer = data.propBuffer
 
       @_animations = {}
-      for time, properties of state.animations
+      for time, properties of data.animations
         animationSet = {}
 
         for property, propAnimation of properties
@@ -1067,14 +1204,16 @@ define (require) ->
             animationData = components: {}
 
             for component, animation of propAnimation.components
-              animationData.components[component] = Bezier.deserialize animation
+              animationData.components[component] = Bezier.load animation
 
           else
-            animationData = Bezier.deserialize propAnimation
+            animationData = Bezier.load propAnimation
 
           animationSet[property] = animationData
 
         @_animations[time] = animationSet
+
+      @
 
     ###
     # Deletes us, muahahahaha. We notify the workspace, clear the properties
@@ -1091,3 +1230,11 @@ define (require) ->
         @_AJSActor = null
 
       super()
+
+    ###
+    # Set Texture context menu function
+    # @param [BaseActor] actor
+    ###
+    _contextFuncSetTexture: (actor) ->
+
+      window.AdefyEditor.ui.modals.showSetTexture actor

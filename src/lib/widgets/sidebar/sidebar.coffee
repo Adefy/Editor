@@ -71,7 +71,7 @@ define (require) ->
     # render function that returns HTML. Note that the function should not
     # inject it as it will be injected into the sidebar on render!
     #
-    # @param [Object] item item with render() and getId() methods
+    # @param [Object] item item with render() and getID() methods
     ###
     addItem: (item) ->
       param.required item
@@ -79,8 +79,8 @@ define (require) ->
       if item.render == undefined or item.render == null
         throw new Error "Item must have a render function!"
 
-      if item.getId == undefined or item.getId == null
-        throw new Error "Item must supply a getId() function!"
+      if item.getID == undefined or item.getID == null
+        throw new Error "Item must supply a getID() function!"
 
       # Test out the render function, ensure it returns a string
       test = item.render()
@@ -101,8 +101,8 @@ define (require) ->
       param.required id
 
       for i in [0...@_items.length]
-        if @_items[i].getId() == i
-          if typeof @_items[i].getId() == typeof i # Probably overkill
+        if @_items[i].getID() == i
+          if typeof @_items[i].getID() == typeof i # Probably overkill
             @_items.splice i, 1
             @render()
             return true
@@ -123,6 +123,12 @@ define (require) ->
     postRender: ->
       for item in @_items
         item.postRender() if item.postRender
+
+    ###
+    # Render the HTML content and replace it
+    ###
+    refresh: ->
+      @render()
 
     ###
     # Take the navbar into account, and always position ourselves below it
@@ -168,7 +174,6 @@ define (require) ->
       animate = param.optional animate, true
 
       if @_visible
-        AUtilLog.warn "Sidebar was already visible"
         cb() if cb
         return
 
@@ -182,8 +187,8 @@ define (require) ->
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
       # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-arrow-right")
-      @getElement(".button.toggle i").addClass("fa-arrow-left")
+      @getElement(".button.toggle i").removeClass("fa-toggle-right")
+      @getElement(".button.toggle i").addClass("fa-toggle-left")
 
       Storage.set "sidebar.visible", true
       @_visible = true
@@ -198,7 +203,6 @@ define (require) ->
       animate = param.optional animate, true
 
       unless @_visible
-        AUtilLog.warn "Sidebar was already hidden"
         cb() if cb
         return
 
@@ -212,8 +216,8 @@ define (require) ->
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
       # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-arrow-left")
-      @getElement(".button.toggle i").addClass("fa-arrow-right")
+      @getElement(".button.toggle i").removeClass("fa-toggle-left")
+      @getElement(".button.toggle i").addClass("fa-toggle-right")
 
       Storage.set "sidebar.visible", false
       @_visible = false

@@ -1,146 +1,145 @@
 //
 // Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
 //
-#editor
-  .timeline
-    //position fixed
-    bottom 0
-    left 0
-    width 100%
-    z-index $Z_atimeline
+.timeline
+  //position fixed
+  bottom 0
+  left 0
+  width 100%
+  z-index $Z_atimeline
 
-    // Shared properties
-    #at-actors, #at-timeline, #at-animations
-      display inline-block
-      vertical-align top
-      height 100%
+  // Shared properties
+  #at-actors, #at-timeline, #at-animations
+    display inline-block
+    vertical-align top
+    height 100%
 
-    // Actor list
-    #at-actors
-      width 20%
-      background-color $col_timeline_actors_bg
-      color $col_timeline_actors_col
-      border-right 1px solid $col_divider_bot
-      margin-left -1px
+  // Actor list
+  #at-actors
+    width 20%
+    background-color $col_timeline_actors_bg
+    color $col_timeline_actors_col
+    border-right 1px solid $col_divider_bot
+    margin-left -1px
 
-      #ata-title
-        padding 3px 0
-        text-align center
+    #ata-title
+      padding 3px 0
+      text-align center
 
-      #ata-body
+    #ata-body
 
-        li
-          padding 1px 8px 1px 16px
-          font-size 14px
-
-        .atab-spacer, .atab-name
-          display inline-block
-          vertical-align top
-
-        .atab-spacer
-          margin 8px 8px 0 0
-          height 1px
-          float right
-
-    // Timeline itself
-    #at-timeline
-      width 80%
-      background-color $col_timeline_bg
-      border-top 1px solid $col_divider_top
-      border-left 1px solid $col_divider_top
-      margin-right -2px
-      position relative
-
-      // Toolbar
-      #att-toolbar
-        padding 5px 0 4px 0
-        color $col_timeline_toolbar_col
-        width 100%
-        background-color $col_timeline_bg
-        border-bottom 1px solid $col_timeline_divider_bot
+      li
+        padding 1px 8px 1px 16px
         font-size 14px
-        position relative
-        z-index $Z_atimeline_toolbar
 
-        #attt-cursor-time
-          float left
-          margin-left 8px
+      .atab-spacer, .atab-name
+        display inline-block
+        vertical-align top
 
-        #attt-toggle
-          float right
-          margin-right 8px
+      .atab-spacer
+        margin 8px 8px 0 0
+        height 1px
+        float right
 
-        #attt-toggle:hover
-          cursor hand
-          cursor pointer
+  // Timeline itself
+  #at-timeline
+    width 80%
+    background-color $col_timeline_bg
+    border-top 1px solid $col_divider_top
+    border-left 1px solid $col_divider_top
+    margin-right -2px
+    position relative
 
-        #attt-controls
-          margin 0 auto
-          text-align center
-          display block
+    // Toolbar
+    #att-toolbar
+      padding 5px 0 4px 0
+      color $col_timeline_toolbar_col
+      width 100%
+      background-color $col_timeline_bg
+      border-bottom 1px solid $col_timeline_divider_bot
+      font-size 14px
+      position relative
+      z-index $Z_atimeline_toolbar
 
-          i
-            margin 0 4px
+      #attt-cursor-time
+        float left
+        margin-left 8px
 
-          i:hover
-            cursor pointer
-            cursor hand
-            color $lblue
+      #attt-toggle
+        float right
+        margin-right 8px
 
-        .attt-third
-          width 33%
-          display inline-block
-          vertical-align top
-
-      // #att-toolbar:hover
-      //   cursor hand
-      //   cursor pointer
-      //   cursor s-resize
-
-      // Cursor
-      #att-cursor
-        position absolute
-        top 0
-        left 0
-        width 2px
-        height 100%
-        background-color transparent
-        z-index $Z_atimline_cursor
-        padding 0 3px
-        margin-left -3px
-
-        > *
-          background-color #09c
-          width 100%
-          height 100%
-
-      #att-cursor:hover
+      #attt-toggle:hover
         cursor hand
         cursor pointer
-        cursor e-resize
 
-      // Actual timeline space
-      #att-space
-        border-top 1px solid $col_divider_top
+      #attt-controls
+        margin 0 auto
+        text-align center
+        display block
 
-        // Actor row
-        .atts-outer
-          width 100%
-          height 16px
-          position relative
+        i
+          margin 0 4px
 
-          // Actor lifetime
-          .attso-inner
-            position absolute
-            top 0
-            height 100%
-
-            .attso-key
-              position absolute
-              color white
-
-        // Clicking on a row selects the actor in the workspace
-        .atts-outer:hover
-          background-color #303030
-          cursor hand
+        i:hover
           cursor pointer
+          cursor hand
+          color $lblue
+
+      .attt-third
+        width 33%
+        display inline-block
+        vertical-align top
+
+    // #att-toolbar:hover
+    //   cursor hand
+    //   cursor pointer
+    //   cursor s-resize
+
+    // Cursor
+    #att-cursor
+      position absolute
+      top 0
+      left 0
+      width 2px
+      height 100%
+      background-color transparent
+      z-index $Z_atimline_cursor
+      padding 0 3px
+      margin-left -3px
+
+      > *
+        background-color #09c
+        width 100%
+        height 100%
+
+    #att-cursor:hover
+      cursor hand
+      cursor pointer
+      cursor e-resize
+
+    // Actual timeline space
+    #att-space
+      border-top 1px solid $col_divider_top
+
+      // Actor row
+      .atts-outer
+        width 100%
+        height 16px
+        position relative
+
+        // Actor lifetime
+        .attso-inner
+          position absolute
+          top 0
+          height 100%
+
+          .attso-key
+            position absolute
+            color white
+
+      // Clicking on a row selects the actor in the workspace
+      .atts-outer:hover
+        background-color #303030
+        cursor hand
+        cursor pointer

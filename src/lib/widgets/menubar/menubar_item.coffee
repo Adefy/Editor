@@ -1,8 +1,9 @@
 define (require) ->
 
-  param = require "util/param"
   ID = require "util/id"
-  Renderable = require "renderable"
+  param = require "util/param"
+
+  Renderable = require "mixin/renderable"
 
   # Menubar item class
   #
@@ -92,7 +93,7 @@ define (require) ->
     # @param [String] id child id
     ###
     removeChild: (id) ->
-      @_children = _.filter @_children, (i) -> i.getId() != id
+      @_children = _.filter @_children, (i) -> i.getID() != id
       @
 
     ###
@@ -100,4 +101,4 @@ define (require) ->
     #
     # @return [Number] id
     ###
-    getId: -> @_id
+    getID: -> @_id

@@ -1,11 +1,18 @@
 define (requre) ->
 
+  #AUtilLog = require "util/log"
   config = require "config"
   param = require "util/param"
-  Renderable = require "renderable"
+  Renderable = require "mixin/renderable"
+  Dumpable = require "mixin/dumpable"
+
+  EditorObject = require "editor_object"
 
   # Widgets are the building blocks of the editor's interface
-  class Widget extends Renderable
+  widget = class Widget extends EditorObject
+
+    @include Renderable
+    @include Dumpable
 
     ###
     # Optionally appends a new div to the body to be used as the container for
@@ -95,7 +102,7 @@ define (requre) ->
     #
     # @return [String] id
     ###
-    getId: -> "#{@_id}"
+    getID: -> "#{@_id}"
 
     ###
     # Called when the item is dropped on a receiving droppable. Most often,
