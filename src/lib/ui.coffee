@@ -1,4 +1,4 @@
-define (requre) ->
+define (require) ->
 
   AUtilLog = require "util/log"
   AUtilEventLog = require "util/event_log"
@@ -49,6 +49,7 @@ define (requre) ->
     # http://xparkmedia.com/blog/enter-fullscreen-mode-javascript/
     ###
     toggleFullScreen: ->
+
       if (document.fullScreenElement && document.fullScreenElement != null) || \
        (!document.mozFullScreen && !document.webkitIsFullScreen)
         if document.documentElement.requestFullScreen
@@ -66,18 +67,25 @@ define (requre) ->
           document.webkitCancelFullScreen()
 
     onResize: =>
+
       for widget in @widgets
         widget.onResize() if widget.onResize
 
     renderAll: -> widget.render() for widget in @widgets
+
     initializeToolbar: -> @toolbar = new Toolbar @
+
     initializeStatusbar: -> @statusbar = new StatusBar @
+
     initializeTimeline: -> @timeline = new Timeline @
+
     initializeWorkspace: ->
+
       throw new Error "Timeline required for workspace" unless @timeline
       @workspace = new Workspace @
 
     initializeSidebar: ->
+
       @sidebar = new Sidebar @, 310
 
       propertiesPanel = new SidebarPanel @sidebar
@@ -96,6 +104,7 @@ define (requre) ->
       @sidebar
 
     initializeMenu: ->
+
       @menu = new MenuBar @
 
       # Set up the @menu
@@ -109,6 +118,7 @@ define (requre) ->
       ed = "window.AdefyEditor"
       edUI = "#{ed}.ui"
 
+      ##
       # File menu options
       fileMenu.createChild
         label: "New Ad..."
@@ -133,6 +143,7 @@ define (requre) ->
       fileMenu.createChild
         label: "Quit"
 
+      ##
       # View menu options
       viewMenu.createChild
         label: "Toggle Sidebar"
@@ -141,25 +152,37 @@ define (requre) ->
       viewMenu.createChild
         label: "Toggle Timeline"
         click: "#{edUI}.timeline.toggle()"
+        sectionEnd: true
 
       viewMenu.createChild
         label: "Fullscreen"
         click: "#{edUI}.toggleFullScreen()"
+        sectionEnd: true
 
+      viewMenu.createChild
+        label: "Refresh"
+        click: "#{edUI}.refresh()"
+        sectionEnd: true
+
+      ##
       # Timeline menu options
       timelineMenu.createChild
         label: "Set preview framerate..."
         click: "#{edUI}.modals.showSetPreviewRate()"
 
+      ##
       # Canvas menu options
       canvasMenu.createChild
         label: "Set screen properties..."
         click: "#{edUI}.modals.showSetScreenProperties()"
 
+      ##
+      #
       canvasMenu.createChild
         label: "Set background color..."
         click: "#{edUI}.modals.showSetBackgroundColor()"
 
+      ##
       # Tools menu options
       toolsMenu.createChild
         label: "Preview..."
@@ -175,6 +198,7 @@ define (requre) ->
         #click: "#{edUI}.modals.showAddTextures()"
         click: "#{edUI}.modals.showUploadTextures()"
 
+      ##
       # Help menu options
       helpMenu.createChild
         label: "About Editor"
@@ -199,7 +223,16 @@ define (requre) ->
 
       @menu
 
+    refresh: ->
+
+      AUtilLog.info "UI refresh"
+
+      for widget in @widgets
+        widget.refresh() if widget.refresh
+
+    ###
     ## UES - UI Event System
+    ###
 
     ###
     # Adds a new event
@@ -207,6 +240,7 @@ define (requre) ->
     # @param [Object] params
     ###
     pushEvent: (type, params) ->
+
       unless @_ignoreEventList == null || @_ignoreEventList == undefined
         if _.include @_ignoreEventList, type
           return AUtilEventLog.ignore "ui", type
@@ -229,8 +263,10 @@ define (requre) ->
     # @param [String] type
     ###
     allowEvent: (type) ->
+
       if @_ignoreEventList == null || @_ignoreEventList == undefined
         return
+
       index = @_ignoreEventList.indexOf(type)
       @_ignoreEventList.splice index, 1
 
@@ -239,6 +275,7 @@ define (requre) ->
     # @param [String] type
     ###
     ignoreEvent: (type) ->
+
       if @_ignoreEventList == null || @_ignoreEventList == undefined
         @_ignoreEventList = []
 
