@@ -25,7 +25,7 @@ define (require) ->
     # changes, not the sub objects.
     # @type [String]
     ###
-    @PROJECT_VERSION: "0.2.0"
+    @PROJECT_VERSION: "0.3.0"
 
     ###
     # Current Editor.ui instance
@@ -37,6 +37,8 @@ define (require) ->
 
       @__id = ID.objId "project"
       @id = @__id.id
+
+      @uid = ID.uID()
 
       @version = Project.PROJECT_VERSION
 
@@ -61,6 +63,7 @@ define (require) ->
       # This is a v0.1.0 dump
       _.extend Dumpable::dump.call(@),
         version: @version
+        uid: @uid
         textures: _.map @textures, (texture) -> texture.dump()
         assets: @assets.dump()
         timeline: @ui.timeline.dump()
@@ -85,11 +88,16 @@ define (require) ->
       # assets have remained the same thus far
       @assets = Asset.load data.assets
 
+      if projver >= "0.3.0"
+        @uid = data.uid
+      else
+        @uid = ID.uID()
+
       ##
       # now this is where stuff goes nutty
       # this is mostly an example of what should/could happen in the future
       switch projver
-        when "0.1.0", "0.2.0"
+        when "0.1.0", "0.2.0", "0.3.0"
 
           ##
           # Luckily for us, textures are very similar when they where dumped
@@ -97,6 +105,8 @@ define (require) ->
           @textures = _.map data.textures, (data) -> Texture.load data
           for texture in @textures
             texture.project = @
+
+          @ui.workspace.reset()
 
           @ui.workspace.loadTextures @textures
 
@@ -127,14 +137,37 @@ define (require) ->
     # for now, name does nothing, and save will perform a quicksave
     # instead of a hard save
     # @param [String] name
+    # @return [self] project
     ###
     save: (name) ->
       @quicksave()
+      @snapshot()
+      @
+
+    ###
+    # Saves the current project to the project.snapshots Storage
+    #
+    # @param [String] name
+    # @return [self] project
+    ###
+    snapshot: (name) ->
+      snapshotCount = 20
+
+      snapshots = Storage.get("project.snapshots") || []
+      snapshots.push JSON.stringify(@dump())
+
+      if snapshots.length > snapshotCount
+        snapshots = snapshots.slice snapshots.length-snapshotCount, -1
+
+      Storage.set("project.snapshots", snapshots)
+
+      @
 
     ###
     # Reload a project from a given data structure
     # NOTE* DO NOT SEND A JSON STRING
     # @param [Object] data
+    # @return [Project] project
     ###
     @load: (data) ->
       project = new Project @ui
@@ -145,6 +178,7 @@ define (require) ->
 
     ###
     # Attempt to load an existing quicksave
+    # @return [Project] project
     ###
     @quickload: ->
       if quicksaveState = Storage.get("project.quicksave")
@@ -164,6 +198,22 @@ define (require) ->
     ###
     @quicksaveExists: ->
       !!Storage.get("project.quicksave")
+
+    ###
+    #
+    # @return [Array<String>] snapshots an Array of JSON strings
+    ###
+    @snapshots: ->
+      Storage.get("project.snapshots") || []
+
+    ###
+    # @return [Project] project
+    ###
+    @loadSnapshot: (index) ->
+      if snapshot = @snapshots()[index]
+        @load JSON.parse(snapshot)
+      else
+        AUtilLog.warn "project.snapshot(index: #{index}) does not exist"
 
 ###
   Changelog
