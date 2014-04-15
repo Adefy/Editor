@@ -129,7 +129,7 @@ define (require) ->
       # Register us for later
       $("body").data "activeModal", @
 
-      @getElement().animate opacity: 1, 400
+      @getElement().animate opacity: 1, 200
 
     ###
     # Closes and kills us
@@ -161,12 +161,12 @@ define (require) ->
         unless @getElement().is ":visible"
           @_kill()
         else
-          @getElement().animate { opacity: 0 }, 400, => @_kill()
+          @getElement().animate { opacity: 0 }, 200, => @_kill()
       else
         unless @getElement().is ":visible"
           @_kill()
         else
-          @getElement().animate { opacity: 0 }, 400, => @_kill()
+          @getElement().animate { opacity: 0 }, 200, => @_kill()
 
     ###
     # Sets an error string to display
