@@ -6,6 +6,8 @@ define (require) ->
   Widget = require "widgets/widget"
   TemplateModal = require "templates/modal"
 
+  Draggable = require "util/draggable"
+
   # Bootstrap-like modal (except not!)
   class Modal extends Widget
 
@@ -46,6 +48,10 @@ define (require) ->
       super
         id: ID.prefId("modal")
         classes: [ "modal" ]
+
+      # Make our title bar draggable! :D
+      @_drag = new Draggable "#{@_sel} .modal-header"
+      @_drag.setDragSelector @_sel
 
       @show()
 

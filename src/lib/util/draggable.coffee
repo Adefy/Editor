@@ -16,7 +16,7 @@ define (require) ->
     ###
     constructor: (selector, tolerance) ->
       @_tolerance = param.optional tolerance, 1
-      @_sel = param.required selector
+      @_dragSel = @_sel = param.required selector
 
       # Can be "x" or "y"
       @_constrain = null
@@ -67,16 +67,25 @@ define (require) ->
         return unless @isInBounds pos
 
         if @_constrain == "x"
-          $(selector).offset left: pos.x
+          $(@_dragSel).offset left: pos.x
         else if @_constrain == "y"
-          $(selector).offset top: pos.y
+          $(@_dragSel).offset top: pos.y
         else
-          $(selector).offset top: pos.y, left: pos.x
+          $(@_dragSel).offset top: pos.y, left: pos.x
 
         @onDrag(d, deltaX, deltaY) if @onDrag
 
       @_drag.setOnDragEnd (d) =>
         @onDragEnd(d) if @onDragEnd
+
+    ###
+    # Set a custom drag selector, allowing us to position a different object
+    # than the one that was clicked.
+    #
+    # @param [String] selector
+    ###
+    setDragSelector: (selector) ->
+      @_dragSel = selector
 
     ###
     # Set the drag start listener, called with ourselves as the first argument
