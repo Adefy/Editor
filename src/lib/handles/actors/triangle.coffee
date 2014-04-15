@@ -31,7 +31,7 @@ define (require) ->
       if b <= 0 or h <= 0 then throw new Error "Base/Height must be >0!"
 
       super @ui, birth, death
-      @name = "Triangle"
+      @name = "Triangle #{@_id_n}"
 
       @_properties.position.setValue x: x, y: y
       @_properties.rotation.setValue rotation
@@ -40,7 +40,7 @@ define (require) ->
 
       @_properties.base = new NumericProperty()
       @_properties.base.setMin 0
-      @_properties.base.setPlaceholder 30
+      @_properties.base.setPlaceholder 100
       @_properties.base.setValue b
       @_properties.base.requestUpdate = ->
         @setValue me._AJSActor.getBase() if me._AJSActor
@@ -55,10 +55,10 @@ define (require) ->
 
       @_properties.height = new NumericProperty()
       @_properties.height.setMin 0
-      @_properties.height.setPlaceholder 60
+      @_properties.height.setPlaceholder 100
       @_properties.height.setValue h
       @_properties.height.requestUpdate = ->
-        @setValue me._AJSActor.getWidth() if me._AJSActor
+        @setValue me._AJSActor.getHeight() if me._AJSActor
 
       @_properties.height.onUpdate = (height) =>
         @_AJSActor.setHeight height if @_AJSActor
@@ -118,14 +118,14 @@ define (require) ->
       birth = data.birth
       death = data.death
 
-      position = JSON.parse data.properties.position
+      position = data.properties.position
 
-      b = JSON.parse(data.properties.base).value
-      h = JSON.parse(data.properties.height).value
-      x = JSON.parse(position.x).value
-      y = JSON.parse(position.y).value
-      rotation = JSON.parse(data.properties.rotation).value
+      b = data.properties.base.value
+      h = data.properties.height.value
+      x = position.x.value
+      y = position.y.value
+      rotation = data.properties.rotation.value
 
       actor = new TriangleActor ui, birth, b, h, x, y, rotation, death
-      actor.deserialize data
+      actor.load data
       actor

@@ -1,7 +1,7 @@
 major = 0
-minor = 0
-patch = 0
-build = "FIXME_KTHXBYE"
+minor = 9
+patch = 9
+build = 0
 string = [major, minor, patch, build].join(".")
 
 define

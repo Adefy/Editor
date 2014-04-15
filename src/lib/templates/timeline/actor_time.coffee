@@ -23,15 +23,15 @@ define ->
          class="actor">
       {{#each properties}}
        {{#if isProperty}}
-        <div id="{{ id }}" class="row property keyframes">
+        <div id="{{ id }}" data-property="{{ id }}" class="row property keyframes">
 
          {{#each keyframes}}
-          <div id="{{ id }}" style="left: {{ left }}px" class="keyframe"></div>
+          <div id="{{ id }}" data-time="{{ time }}" style="left: {{ left }}px" class="keyframe"></div>
          {{/each}}
 
         </div>
        {{else}}
-        <div id="{{ id }}" class="row">
+        <div class="row">
           <div style="left: {{ left }}px; width: {{ width }}px" class="bar"></div>
         </div>
        {{/if}}

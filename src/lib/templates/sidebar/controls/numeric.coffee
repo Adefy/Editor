@@ -10,7 +10,7 @@ define ->
   ###
   Handlebars.compile """
     <dl style="width: {{ width }}" class="control">
-      <dt>{{ name }}</dt>
+      <dt>{{ displayName }}</dt>
       <dd>
         <input type="number"
           data-control="number"

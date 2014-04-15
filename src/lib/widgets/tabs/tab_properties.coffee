@@ -1,15 +1,20 @@
 define (require) ->
 
-  AUtilLog = require "util/log"
-  param = require "util/param"
   ID = require "util/id"
+  AUtilLog = require "util/log"
+  AUtilEventLog = require "util/event_log"
+  param = require "util/param"
+
   Tab = require "widgets/tabs/tab"
 
-  NumericControlTemplate = require "templates/sidebar/controls/numeric"
-  BooleanControlTemplate = require "templates/sidebar/controls/boolean"
-  TextControlTemplate = require "templates/sidebar/controls/text"
+  TemplateBooleanControl = require "templates/sidebar/controls/boolean"
+  TemplateCompositeControl = require "templates/sidebar/controls/composite"
+  TemplateNumericControl = require "templates/sidebar/controls/numeric"
+  TemplateTextControl = require "templates/sidebar/controls/text"
 
   CompositeProperty = require "handles/properties/composite"
+
+  Dragger = require "util/dragger"
 
   ###
   # Properties widget, dynamically refreshable
@@ -47,7 +52,9 @@ define (require) ->
       $("body").data "default-properties", @
 
       @targetActor = null
-      @_regListeners()
+
+      @registerInputListener()
+      @setupDragger()
 
     ###
     # Checks if a menu bar has already been created, and returns false if one
@@ -61,63 +68,31 @@ define (require) ->
       PropertiesTab.__exists = true
 
     ###
+    # Initialize our input dragging functionality
     # @private
     ###
-    _regListeners: ->
+    setupDragger: ->
+      @dragger = new Dragger "#{@_sel} input[type=number]"
 
-      # Numeric drag modification
-      # This is very similar to actor dragging, see Workspace
-      __drag_start_x = 0      # Keeps track of the initial drag point, so
-      __drag_start_y = 0      # we know when to start listening
+      @dragger.setOnDragStart (d) ->
+        d.setUserData initialValue: Number $(d.getTarget()).val()
+        $(d.getTarget()).css "cursor", "e-resize"
 
-      __drag_target = null      # Input we need to effect
-      __drag_orig_val = -1      # Value of the input when dragging started
+      @dragger.setOnDrag (d, deltaX, deltaY) =>
+        $(d.getTarget()).val d.getUserData().initialValue + deltaX
+        @saveControl $(d.getTarget())[0]
 
-      __drag_tolerance = 5  # How far the mouse should move before we pick up
-      __drag_sys_active = false
+      @dragger.setOnDragEnd (d) ->
+        $(d.getTarget()).css "cursor", "auto"
 
-      # Start of dragging
+    ###
+    # @private
+    ###
+    registerInputListener: ->
+
       $(document).on "input", "dl > dd > input", (e) =>
         @saveControl e.target
         @ui.pushEvent "tab.properties.update.actor", actor: @targetActor
-
-      $(document).on "mousedown", "input[type=number]", (e) ->
-
-        # Attempt to find a valid target input
-        __drag_target = e.target
-
-        # Store initial cursor position
-        __drag_start_x = e.pageX
-        __drag_start_y = e.pageY
-
-        # Store our target's value
-        __drag_orig_val = Number($(__drag_target).val())
-
-        # Enable mousemove listener
-        __drag_sys_active = true
-
-        setTimeout ->
-          if __drag_target
-            $(__drag_target).css "cursor", "e-resize"
-        , 100
-
-      # The following are global listeners, since mouseup and mousemove can
-      # happen anywhere on the page, yet still relate to us
-      $(document).mousemove (e) =>
-        return unless __drag_sys_active
-
-        if Math.abs(e.pageX - __drag_start_x) > __drag_tolerance \
-        or Math.abs(e.pageY - __drag_start_y) > __drag_tolerance
-
-          # Set val!
-          $(__drag_target).val __drag_orig_val + (e.pageX - __drag_start_x)
-
-          @saveControl $(__drag_target)[0]
-
-      $(document).mouseup (e) ->
-        $(__drag_target).css "cursor", "auto"
-        __drag_sys_active = false
-        __drag_target = null
 
     ###
     # This method applies the state of the control to our current object, by
@@ -169,14 +144,20 @@ define (require) ->
     # @return [String] html rendered widget
     # @private
     ###
-    generateControl: (name, value) ->
-      param.required name
+    generateControl: (data, value) ->
+      param.required data
+      param.required data.name
+      param.optional data.icon, "fa-cog"
       param.required value
       param.required value.getType(), ["composite"]
 
       return unless @["renderControl_#{value.getType()}"]
 
-      @["renderControl_#{value.getType()}"] @prepareNameForDisplay(name), value
+      ndata =
+        name: @prepareNameForDisplay(data.name)
+        icon: data.icon
+
+      @["renderControl_#{value.getType()}"] ndata, value
 
     ###
     # Capitalize first letter of name
@@ -187,16 +168,18 @@ define (require) ->
     prepareNameForDisplay: (name) ->
       name.charAt(0).toUpperCase() + name.substring 1
 
-    renderControl_composite: (displayName, value) ->
+    renderControl_composite: (data, value) ->
+      param.required data
+      param.required data.name
+      param.optional data.icon, "fa-cog"
+
+      displayName = data.name
+      displayIcon = data.icon
+
       param.required value.getType(), ["composite"]
 
-      label = """
-        <h1 data-name="#{displayName.toLowerCase()}">#{displayName}</h1>
-        <div>
-      """
-
       # Build the control by recursing and concating the result
-      label + _.pairs(value.getProperties()).map (component) =>
+      contents = _.pairs(value.getProperties()).map (component) =>
         return "" unless @["renderControl_#{component[1].getType()}"]
 
         # Note that we handle the "Basic" composite differently here
@@ -216,13 +199,20 @@ define (require) ->
 
         @["renderControl_#{type}"] name, component[1], width, parent
 
-      .join("") + "</div>"
+      .join("")
+
+      TemplateCompositeControl
+        icon: displayIcon
+        displayName: displayName
+        dataName: displayName.toLowerCase()
+        contents: contents
 
     renderControl_number: (displayName, value, width, parent) ->
       width = param.optional width, "100%"
       parent = param.optional parent, false
 
-      NumericControlTemplate
+      TemplateNumericControl
+        displayName: displayName
         name: displayName.toLowerCase()
         max: value.getMax()
         min: value.getMin()
@@ -236,7 +226,8 @@ define (require) ->
       width = param.optional width, "100%"
       parent = param.optional parent, false
 
-      BooleanControlTemplate
+      TemplateBooleanControl
+        displayName: displayName
         name: displayName.toLowerCase()
         value: value.getValue()
         width: width
@@ -246,7 +237,8 @@ define (require) ->
       width = param.optional width, "100%"
       parent = param.optional parent, false
 
-      TextControlTemplate
+      TemplateTextControl
+        displayName: displayName
         name: displayName.toLowerCase()
         placeholder: value.getPlaceholder()
         value: value.getValue()
@@ -272,12 +264,21 @@ define (require) ->
         fakeControl = new CompositeProperty()
         fakeControl.setProperties _.object nonComposites
 
-        nonCompositeHTML = @generateControl "basic", fakeControl
+        nonCompositeHTML = @generateControl { name: "basic", icon: "fa-cog"}, fakeControl
       else
         nonCompositeHTML = ""
 
       compositeHTML = composites.map (p) =>
-        @generateControl p[0], p[1]
+        icn = "fa-cog"
+        name = p[0]
+        # wtf hax
+        switch name
+          when "basic"    then icn = "fa-cog"
+          when "color"    then icn = "fa-adjust"
+          when "physics"  then icn = "fa-anchor"
+          when "position" then icn = "fa-arrows"
+
+        @generateControl { name: name, icon: icn }, p[1]
       .join ""
 
       @_builtHMTL = nonCompositeHTML + compositeHTML
@@ -304,10 +305,12 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     updateActor: (actor) ->
+      oldActor = @targetActor
       @targetActor = param.optional actor, @targetActor
       return unless @targetActor
 
-      return @refresh @targetActor unless @_builtHMTL
+      if !@_builtHMTL || (@targetActor != oldActor)
+        return @refresh @targetActor
 
       for property, value of @targetActor.getProperties()
 
@@ -359,10 +362,11 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
+      AUtilEventLog.egot "tab.properties", type
       switch type
         when "workspace.selected.actor", "timeline.selected.actor", "workspace.add.actor"
           @updateActor params.actor
         when "workspace.remove.actor"
           @clearActor params.actor
-        when "selected.actor.changed"
-          @updateActor()
+        when "selected.actor.update"
+          @updateActor params.actor

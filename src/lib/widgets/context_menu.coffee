@@ -4,6 +4,7 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
   Widget = require "widgets/widget"
+  TemplateContextMenu = require "templates/context_menu"
 
   # Context menu widget, created when a handle is right-clicked and
   # supports actions
@@ -32,19 +33,16 @@ define (require) ->
     #
     # @param [Number] x x coordinate to spawn at
     # @param [Number] y y coordinate to spawn at
-    # @param [Handle] handle object to create menu for
+    # @param [Handle] properties context menu property definitions
     ###
-    constructor: (x, y, handle) ->
+    constructor: (x, y, @properties) ->
       param.required x
       param.required y
-      param.required handle
+      param.required @properties
 
-      # Sanity check
-      if handle.getContextFunctions == undefined
-        AUtilLog.warn "Object has no getContextFunctions, can't create context-menu"
-        return
+      @name = @properties.name
+      @functions = @properties.functions
 
-      @functions = handle.getContextFunctions() # Grab functions
       @alive = true # Set to false upon removal
 
       # Silently drop out, empty ctx menu is allowed, we just do nothing
@@ -56,7 +54,7 @@ define (require) ->
         classes: [ "context-menu" ]
 
       # Add a handle to our instance on the body
-      $("body").data @getId(), @
+      $("body").data @getID(), @
 
       # Position and inject ourselves
       @getElement().css
@@ -77,56 +75,57 @@ define (require) ->
     # @private
     ###
     _buildHTML: ->
-      @genElement "ul", {}, =>
 
-        __bindListener = (f) =>
-          # Insane in da membrane
-          if typeof @functions[f] != "function"
-            AUtilLog.error "Only methods can be bound to context menu items"
-            return
+      bindListener = (f) =>
+        # Insane in da membrane
+        if typeof @functions[f] != "function"
+          AUtilLog.error "Only methods can be bound to context menu items"
+          return
 
-          $(document).on "click", "[data-id=\"#{@functions[f]._ident}\"]", =>
-            @remove()
-            @functions[f]()
+        $(document).on "click", "[data-id=\"#{@functions[f]._ident}\"]", =>
+          @remove()
+          @functions[f]()
 
-        __html = ""
-        for f of @functions
 
-          # If f already has an identifier set, unbind any existing listeners
-          if @functions[f]._ident != undefined
-            @_unbindListener @functions[f]._ident
+      entries = []
 
-          # We set a unique identifier for the element to use, and bind listeners
-          @functions[f]._ident = @_convertToIdent(f) + ID.nextId()
+      for f of @functions
+        # If f already has an identifier set, unbind any existing listeners
+        if @functions[f]._ident != undefined
+          @_unbindListener @functions[f]._ident
+        # We set a unique identifier for the element to use, and bind listeners
+        @functions[f]._ident = @_convertToIdent(f) + ID.nextId()
 
-          _attrs = {}
-          _attrs["data-id"] = @functions[f]._ident
+        entries.push
+          name: f
+          dataId: @functions[f]._ident
 
-          __html += @genElement "li", _attrs, => f
+      html = TemplateContextMenu name: @name, entries: entries
 
-          # Bind listener
-          __bindListener f
+      # Bind listeners
+      for f of @functions
+        bindListener f
 
-        if !ContextMenu._registeredMouseup
+      if !ContextMenu._registeredMouseup
 
-          # Mouseup listener to close menu when clicked outside
-          $(document).mouseup (e) ->
+        # Mouseup listener to close menu when clicked outside
+        $(document).mouseup (e) ->
 
-            # Grab both the menu object, and our own instance from the body
-            menu = $(".context-menu")
-            ins = $("body").data $(menu).attr "id"
+          # Grab both the menu object, and our own instance from the body
+          menu = $(".context-menu")
+          ins = $("body").data $(menu).attr "id"
 
-            if menu != undefined and ins != undefined
-              if !menu.is(e.target) && menu.has(e.target).length == 0
-                if ContextMenu.animate
-                  $(ins._sel).slideUp ContextMenu.animateSpeed, ->
-                    $(ins._sel).remove()
-                else
+          if menu != undefined and ins != undefined
+            if !menu.is(e.target) && menu.has(e.target).length == 0
+              if ContextMenu.animate
+                $(ins._sel).slideUp ContextMenu.animateSpeed, ->
                   $(ins._sel).remove()
+              else
+                $(ins._sel).remove()
 
-          ContextMenu._registeredMouseup = true
+        ContextMenu._registeredMouseup = true
 
-        __html
+      html
 
     ###
     # Shorthand, used in @_buildHTML and @remove
@@ -161,6 +160,6 @@ define (require) ->
         # Remove ourselves
         $(@getSel()).remove()
 
-        $("body").removeData @getId()
+        $("body").removeData @getID()
 
         @alive = false

@@ -2,13 +2,15 @@ define (require) ->
 
   param = require "util/param"
 
+  Dumpable = require "mixin/dumpable"
+
   ###
   # Property wrapper, to facilitate HTML control generation and serialization
   #
   # This should never be initialized directly, instead one of the specialized
   # properties should be used.
   ###
-  class HandleProperty
+  class HandleProperty extends Dumpable
 
     constructor: (type) ->
 
@@ -65,13 +67,12 @@ define (require) ->
     requestUpdate: ->
 
     ###
-    # Serialization depends on us having a properly named getter for each value
-    # that needs to be serialized
+    # Dumps the property as a basic Object
     #
-    # @return [String] data
+    # @return [Object] data
     ###
-    serialize: ->
-      data = {}
+    dump: ->
+      data = super()
 
       for key, value of @
         splitKey = key.split("get")
@@ -79,20 +80,20 @@ define (require) ->
         if splitKey.length == 2
           data[splitKey[1].trim().toLowerCase()] = @[key]()
 
-      JSON.stringify data
+      data
 
     ###
-    # Deserialization depends on us having a properly named setter for each
-    # serialized value
+    # Loads the property from a basic Object
     #
-    # @param [String] raw
+    # @param [Object] data
     ###
-    deserialize: (raw) ->
-      raw = JSON.parse raw
-
-      for key, value of raw
+    load: (data) ->
+      super data
+      for key, value of data
         setter = "set#{@capitalize key}"
         @[setter] value if @[setter]
+
+      @
 
     ###
     # Ensure that the provided value is valid for useage
@@ -125,7 +126,7 @@ define (require) ->
     # @param [HandleProperty] property
     ###
     clone: (property) ->
-      @deserialize property.serialize()
+      @load property.dump()
 
     ###
     # The genAnimationOpts method needs to return an animations object suitable

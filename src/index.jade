@@ -7,7 +7,7 @@ html(lang="en")
 
     //- PaceJS
     script(src="components/pace/pace.min.js")
-    link(rel="stylesheet" href="components/pace/themes/pace-theme-center-atom.css")    
+    link(rel="stylesheet" href="components/pace/themes/pace-theme-center-atom.css")
 
     | <!--[if IE]>
     link(rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon")
@@ -33,11 +33,15 @@ html(lang="en")
     script(src="components/handlebars/handlebars.min.js")
 
     //- Adefy libraries
-    script(src="//cdn.adefy.com/are/are-full.js")
-    script(src="//cdn.adefy.com/ajs/ajs.js")
+    script(src="components/adefyre/build/are-prod-full.min.js")
+    script(src="components/adefyjs/build/ajs-prod.min.js")
 
     //- Load lodash after ARE to override underscore
     script(src="components/lodash/dist/lodash.min.js")
+
+    script(src="//api.filepicker.io/v1/filepicker.js")
+    script.
+      filepicker.setKey("Aw0cpCnEeTLe23CePFWT4z");
 
     //- Load us up!
     script(src="components/requirejs/require.js" data-main="lib/main.js")

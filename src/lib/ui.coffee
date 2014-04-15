@@ -1,5 +1,9 @@
 define (requre) ->
 
+  AUtilLog = require "util/log"
+  AUtilEventLog = require "util/event_log"
+  param = require "util/param"
+
   Toolbar = require "widgets/toolbar/toolbar"
   MenuBar = require "widgets/menubar/menubar"
   StatusBar = require "widgets/statusbar/statusbar"
@@ -11,10 +15,14 @@ define (requre) ->
 
   PropertiesTab = require "widgets/tabs/tab_properties"
   AssetsTab = require "widgets/tabs/tab_assets"
+  TexturesTab = require "widgets/tabs/tab_textures"
+
+  ModalManager = require "modal_manager"
 
   class UIManager
 
-    constructor: ->
+    constructor: (@editor) ->
+
       if UIManager.instance
         throw new Error "UIManager already instantiated!"
       else
@@ -29,10 +37,33 @@ define (requre) ->
       @widgets.push @initializeStatusbar()
       @widgets.push @initializeSidebar()
 
+      @modals = new ModalManager @
+
       @renderAll()
 
       @onResize()
       window.onresize = @onResize
+
+    ###
+    # swiped from:
+    # http://xparkmedia.com/blog/enter-fullscreen-mode-javascript/
+    ###
+    toggleFullScreen: ->
+      if (document.fullScreenElement && document.fullScreenElement != null) || \
+       (!document.mozFullScreen && !document.webkitIsFullScreen)
+        if document.documentElement.requestFullScreen
+          document.documentElement.requestFullScreen()
+        else if document.documentElement.mozRequestFullScreen
+          document.documentElement.mozRequestFullScreen()
+        else if document.documentElement.webkitRequestFullScreen
+          document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT)
+      else
+        if document.cancelFullScreen
+          document.cancelFullScreen()
+        else if document.mozCancelFullScreen
+          document.mozCancelFullScreen()
+        else if document.webkitCancelFullScreen
+          document.webkitCancelFullScreen()
 
     onResize: =>
       for widget in @widgets
@@ -54,8 +85,11 @@ define (requre) ->
       propertiesPanel.newTab "Properties", (tab) =>
         new PropertiesTab @, propertiesPanel
 
+      #propertiesPanel.newTab "Assets", (tab) =>
+      #  new AssetsTab @, propertiesPanel
+
       propertiesPanel.newTab "Textures", (tab) =>
-        new AssetsTab @, propertiesPanel
+        new TexturesTab @, propertiesPanel
 
       propertiesPanel.selectTab 0
 
@@ -105,21 +139,26 @@ define (requre) ->
         click: "#{edUI}.sidebar.toggle()"
 
       viewMenu.createChild
+        label: "Toggle Timeline"
+        click: "#{edUI}.timeline.toggle()"
+
+      viewMenu.createChild
         label: "Fullscreen"
+        click: "#{edUI}.toggleFullScreen()"
 
       # Timeline menu options
       timelineMenu.createChild
         label: "Set preview framerate..."
-        click: "#{edUI}.timeline.showSetPreviewRate()"
+        click: "#{edUI}.modals.showSetPreviewRate()"
 
       # Canvas menu options
       canvasMenu.createChild
         label: "Set screen properties..."
-        click: "#{edUI}.workspace.showSetScreenProperties()"
+        click: "#{edUI}.modals.showSetScreenProperties()"
 
       canvasMenu.createChild
         label: "Set background color..."
-        click: "#{edUI}.workspace.showSetBackgroundColor()"
+        click: "#{edUI}.modals.showSetBackgroundColor()"
 
       # Tools menu options
       toolsMenu.createChild
@@ -133,16 +172,17 @@ define (requre) ->
 
       toolsMenu.createChild
         label: "Upload textures..."
-        click: "#{edUI}.workspace.showAddTextures()"
+        #click: "#{edUI}.modals.showAddTextures()"
+        click: "#{edUI}.modals.showUploadTextures()"
 
       # Help menu options
       helpMenu.createChild
         label: "About Editor"
-        click: "#{edUI}.modals.showAbout()"
+        click: "#{edUI}.modals.showHelpAbout()"
 
       helpMenu.createChild
         label: "Changelog"
-        click: "#{edUI}.modals.showChangeLog()"
+        click: "#{edUI}.modals.showHelpChangeLog()"
         sectionEnd: true
 
       helpMenu.createChild
@@ -168,11 +208,21 @@ define (requre) ->
     ###
     pushEvent: (type, params) ->
       unless @_ignoreEventList == null || @_ignoreEventList == undefined
-        return if _.include @_ignoreEventList, type
+        if _.include @_ignoreEventList, type
+          return AUtilEventLog.ignore "ui", type
+
+      AUtilEventLog.epush "ui", type
 
       ## we should probably fine tune this later
       for widget in @widgets
         widget.respondToEvent type, params if widget.respondToEvent
+
+      ##
+      # more debugging stuff
+      @_eventStats ||= {}
+      if @_eventStats[type] == null || @_eventStats[type] == undefined
+        @_eventStats[type] = 0
+      @_eventStats[type]++
 
     ###
     # Allows incoming event of (type)

@@ -3,13 +3,13 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
 
-  # Base class for all elements that can be manipulated by the editor
-  window.Handle = class Handle
+  EditorObject = require "editor_object"
+  Dumpable = require "mixin/dumpable"
 
-    ###
-    #
-    ###
-    @_handle: null
+  # Base class for all elements that can be manipulated by the editor
+  window.Handle = class Handle extends EditorObject
+
+    @include Dumpable
 
     ###
     # Instantiates us, should never be called directly. We serve mearly
@@ -25,13 +25,18 @@ define (require) ->
 
       # Basic right-click menu functions
       @_ctx =
+        "Rename ...": => window.AdefyEditor.ui.modals.showRename @
         "Delete": => @delete()
 
       # Give ourselves a unique id so we can be discovered on the body
-      @_id = ID.prefId "handle"
+      ido = ID.objId "handle"
+      @_id_n = ido.id
+      @_id = ido.prefix
+
+      @name = "handle #{@_id_n}"
 
       # Attach ourselves to the body
-      $("body").data @getId(), @
+      $("body").data @getID(), @
 
     ###
     # Get our id. TODO: Consider giving us a base class, possible giving doing
@@ -39,7 +44,20 @@ define (require) ->
     #
     # @return [String] id
     ###
-    getId: -> @_id
+    getID: -> @_id
+
+    ###
+    # Return's the handle's name
+    # @return [String] name
+    ###
+    getName: -> @name
+
+    ###
+    # Set the handle's name
+    # @param [String] name
+    # @return [self]
+    ###
+    setName: (@name) -> @
 
     ###
     # Cleans us up. Any classes extending us should also extend this method, and
@@ -48,7 +66,7 @@ define (require) ->
     delete: ->
 
       # Also remove ourselves from the body's object list
-      $("body").removeData @getId()
+      $("body").removeData @getID()
 
     ###
     # Returns an object representing the modifiable properties the object holds,
@@ -85,46 +103,50 @@ define (require) ->
       if @_properties[key] != undefined then @_properties[key] = val
 
     ###
-    # Get an object containing key/value pairs of contextual functions, in the
-    # form name: cb
+    # Get an object describing the context menu shown when we are right-clicked
     #
-    # These will be displayed in the context menu when the object is right
-    # cliecked on. Again, just like the properties, global properties may be
-    # applied by ancestors
+    # The object should provide a "name" key, and a "functions" key. Functions
+    # should be a hash of names and methods.
     ###
-    getContextFunctions: -> @_ctx
+    getContextProperties: ->
+      {
+        name: @getName()
+        functions: @_ctx
+      }
 
     ###
-    # Dump handle into JSON representation
+    # Dump handle into basic Object
     #
-    # @return [String] actorJSON
+    # @return [Object] data
     ###
-    serialize: ->
-      data =
+    dump: ->
+      data = _.extend Dumpable::dump.call(@),
+        version: "1.0.1"
         type: "#{@.constructor.name}"
+        name: @name
         properties: {}
 
       for name, property of @_properties
-        data.properties[name] = property.serialize()
+        data.properties[name] = property.dump()
 
       data
 
     ###
-    # Set properties from serialized state
+    # Load properties
     #
-    # @param [String] data
+    # @param [Object] data
     ###
-    cloneFromData: (data) ->
-      data = JSON.parse data
-
-      @setPosition data.position
-
-    ###
-    # Deserialize properties
-    #
-    # @param [Object] state saved state with properties object
-    ###
-    deserialize: (state) ->
-      for name, property of state.properties
+    load: (data) ->
+      Dumpable::load.call @, data
+      @name = data.name || "handle #{@_id_n}"
+      for name, property of data.properties
         if @_properties[name]
-          @_properties[name].deserialize property
+          @_properties[name].load property
+
+      @
+
+###
+  Changelog:
+    dump: "1.0.1"
+      Added name
+###

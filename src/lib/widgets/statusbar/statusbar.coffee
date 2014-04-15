@@ -3,7 +3,7 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
   Widget = require "widgets/widget"
-  StatusBarTemplate = require "templates/statusbar"
+  TemplateStatusBar = require "templates/statusbar"
   Version = require "version"
 
   ###
@@ -26,7 +26,7 @@ define (require) ->
     # Render that StatusBar! (now with a fancy smancy version number!)
     ###
     render: ->
-      @getElement().html StatusBarTemplate version: Version.STRING
+      @getElement().html TemplateStatusBar version: Version.STRING
 
     ###
     # Update the state of the statusbar

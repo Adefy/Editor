@@ -2,7 +2,7 @@ define (require) ->
 
   AUtilLog = require "util/log"
   SidebarItem = require "widgets/sidebar/sidebar_item"
-  SidebarPanelTemplate = require "templates/sidebar_panel"
+  TemplateSidebarPanel = require "templates/sidebar_panel"
 
   class SidebarPanel extends SidebarItem
 
@@ -12,10 +12,12 @@ define (require) ->
     ###
     constructor: (parent, opts) ->
       @_tabs = []
+      @_footerActive = false
 
       super parent, [ "panel" ]
 
       @_parent.addItem @
+
       @registerEvents()
 
     ###
@@ -101,6 +103,7 @@ define (require) ->
       content = ""
       contentKlass = ""
       contentId = ""
+      usesFooter = false
 
       tab = _.find @_tabs, (t) -> t.selected
 
@@ -109,17 +112,22 @@ define (require) ->
           content = tab.content
 
         else # probably is a Object
-          content = tab.content.render()
-          contentKlass = tab.content.cssAppendParentClass()
-          contentId = tab.content.appendParentId()
+          tcontent = tab.content
+          content = tcontent.render()
+          contentKlass = tcontent.cssAppendParentClass()
+          contentId = tcontent.appendParentId()
+          usesFooter = tcontent.needPanelFooter()
 
-      SidebarPanelTemplate
+      @_footerActive = usesFooter
+
+      TemplateSidebarPanel
         id: @_id
-        sidebarId: @_parent.getId()
+        sidebarId: @_parent.getID()
         tabs: @_tabs
         content: content
         contentId: contentId
         contentKlass: contentKlass
+        usesFooter: @_footerActive
 
     ###
     # @return [Void]
@@ -134,6 +142,19 @@ define (require) ->
     ###
     postRender: ->
       @_setupScrollbar()
+      for tab in @_tabs
+        if content = tab.content
+          if content.postRender
+            content.postRender()
+          if @_footerActive && content.renderFooter
+            @getElement(".footer").html content.renderFooter()
+
+    ###
+    # When a child element changes size, position, this function is called
+    # @param [Widget] child
+    ###
+    onChildUpdate: (child) ->
+      @_updateScrollbar()
 
     ###
     # @param [String] type
@@ -143,3 +164,9 @@ define (require) ->
       for tab in @_tabs
         if tab.content
           tab.content.respondToEvent type, params if tab.content.respondToEvent
+
+    ###
+    # Panels don't refresh themselves
+    ###
+    refresh: ->
+      @_parent.refresh() if @_parent.refresh
