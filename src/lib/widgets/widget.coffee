@@ -105,17 +105,6 @@ define (requre) ->
     getID: -> "#{@_id}"
 
     ###
-    # Called when the item is dropped on a receiving droppable. Most often,
-    # this is the "workspace"
-    #
-    # @param [String] target droppable identifier, usually "workspace"
-    # @param [Number] x x coordinate of drop point
-    # @param [Number] y y coordinate of drop point
-    # @param [Handle] handle created handle
-    ###
-    dropped: (target, x, y, handle) -> null
-
-    ###
     # Called by ui.pushEvent
     # @param [String] type
     # @param [Object] params

@@ -8,7 +8,10 @@ define (require) ->
   ContextMenu = require "widgets/context_menu"
   TimelineControl = require "widgets/timeline/timeline_control"
   Workspace = require "widgets/workspace/workspace"
+
   Dragger = require "util/dragger"
+  Draggable = require "util/draggable"
+
   TemplateTimelineBase = require "templates/timeline/base"
   TemplateTimelineActor = require "templates/timeline/actor"
   TemplateTimelineActorTime = require "templates/timeline/actor_time"
@@ -259,8 +262,8 @@ define (require) ->
 
       $("#timeline-cursor").css "left", $(@_spaceSelector()).width() * (time / @_duration)
 
-      @_onCursorDrag()
-      @_onCursorDragStop()
+      @_updateCursorTime()
+      @updateAllActorsInTime()
 
     ###
     # Validates an actor's lifetime
@@ -318,25 +321,6 @@ define (require) ->
     ###
     _onActorToggleGraph: (actorElement, propertyElement) ->
       #
-
-    ###
-    # Cursor drag event
-    #
-    # @param [Event] e
-    # @param [Object] ui
-    # @private
-    ###
-    _onCursorDrag: (e, ui) -> @_updateCursorTime()
-
-    ###
-    # Cursor drag stop event, updates all living
-    #
-    # @param [Event] e
-    # @param [Object] ui
-    # @private
-    ###
-    _onCursorDragStop: (e, ui) ->
-      @updateAllActorsInTime()
 
     updateAllActorsInTime: ->
       t = @getCursorTime()
@@ -427,18 +411,15 @@ define (require) ->
         @_control.onClickFastForward e
         @updateControls()
 
-      $("#timeline-cursor").draggable
-        axis: "x"
-        containment: "parent"
-        drag: (e, ui) =>
+      @_cursorDraggable = new Draggable "#timeline-cursor"
+      @_cursorDraggable.constrainToX()
+      @_cursorDraggable.constrainToParent()
 
-          # Cancel the drag if we are currently in the middle of playback
-          return false if @_playbackID != undefined and @_playbackID != null
+      # Cancel the drag if we are currently in the middle of playback
+      @_cursorDraggable.setCondition -> !!@_playbackID
 
-          @_onCursorDrag e, ui
-
-        stop: (e, ui) =>
-          @_onCursorDragStop e, ui
+      @_cursorDraggable.setOnDrag => @_updateCursorTime()
+      @_cursorDraggable.setOnDragEnd => @updateAllActorsInTime()
 
     ###
     # Construct a new scrollbar
