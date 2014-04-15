@@ -14,6 +14,7 @@ define (require) ->
   Modal = require "widgets/modal"
   TemplateModalAddTextures = require "templates/modal/add_textures"
   TemplateModalBackgroundColor = require "templates/modal/background_color"
+  TemplateModalEditHistory = require "templates/modal/edit_history"
   TemplateModalHelpAbout = require "templates/modal/help_about"
   TemplateModalHelpChangeLog = require "templates/modal/change_log"
   TemplateModalRename = require "templates/modal/rename"
@@ -105,6 +106,31 @@ define (require) ->
 
         modal: false
         cb: (data) => @ui.timeline._previewFPS = data[name]
+        validation: (data) ->
+          return "Framerate must be a number" if isNaN data[name]
+          return "Framerate must be > 0" if data[name] <= 0
+          true
+
+    ###
+    # TODO
+    # Show dialog box for setting the export framerate
+    # @return [Modal]
+    ###
+    showSetExportRate: ->
+
+      # Randomized input name
+      name = ID.prefId "_tPreviewRate"
+
+      new Modal
+        title: "Set Export Framerate"
+        content: TemplateModalSetPreviewFPS
+          previewFPS: @ui.timeline.getPreviewFPS()
+          name: name
+
+        modal: false
+        cb: (data) =>
+          #@ui.timeline._previewFPS = data[name]
+
         validation: (data) ->
           return "Framerate must be a number" if isNaN data[name]
           return "Framerate must be > 0" if data[name] <= 0
@@ -366,3 +392,9 @@ define (require) ->
 
         if cb = options.cb
           cb blob
+
+    showEditHistory: ->
+
+      new Modal
+        title: "Edit History"
+        content: TemplateModalEditHistory()

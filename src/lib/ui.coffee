@@ -1,4 +1,4 @@
-define (requre) ->
+define (require) ->
 
   AUtilLog = require "util/log"
   AUtilEventLog = require "util/event_log"
@@ -49,6 +49,7 @@ define (requre) ->
     # http://xparkmedia.com/blog/enter-fullscreen-mode-javascript/
     ###
     toggleFullScreen: ->
+
       if (document.fullScreenElement && document.fullScreenElement != null) || \
        (!document.mozFullScreen && !document.webkitIsFullScreen)
         if document.documentElement.requestFullScreen
@@ -66,18 +67,25 @@ define (requre) ->
           document.webkitCancelFullScreen()
 
     onResize: =>
+
       for widget in @widgets
         widget.onResize() if widget.onResize
 
     renderAll: -> widget.render() for widget in @widgets
+
     initializeToolbar: -> @toolbar = new Toolbar @
+
     initializeStatusbar: -> @statusbar = new StatusBar @
+
     initializeTimeline: -> @timeline = new Timeline @
+
     initializeWorkspace: ->
+
       throw new Error "Timeline required for workspace" unless @timeline
       @workspace = new Workspace @
 
     initializeSidebar: ->
+
       @sidebar = new Sidebar @, 310
 
       propertiesPanel = new SidebarPanel @sidebar
@@ -96,23 +104,26 @@ define (requre) ->
       @sidebar
 
     initializeMenu: ->
+
       @menu = new MenuBar @
 
       # Set up the @menu
       fileMenu = @menu.addItem "File"
+      editMenu = @menu.addItem "Edit"
       viewMenu = @menu.addItem "View"
       timelineMenu = @menu.addItem "Timeline"
       canvasMenu = @menu.addItem "Canvas"
       toolsMenu = @menu.addItem "Tools"
       helpMenu = @menu.addItem "Help"
 
-      ed = "window.AdefyEditor"
-      edUI = "#{ed}.ui"
+      editor = "window.AdefyEditor"
+      editorUI = "#{editor}.ui"
 
+      ##
       # File menu options
       fileMenu.createChild
         label: "New Ad..."
-        click: "#{ed}.newAd()"
+        click: "#{editor}.newAd()"
 
       fileMenu.createChild
         label: "New From Template..."
@@ -120,69 +131,105 @@ define (requre) ->
 
       fileMenu.createChild
         label: "Save"
-        click: "#{ed}.save()"
+        click: "#{editor}.save()"
 
       fileMenu.createChild
         label: "Save As..."
 
       fileMenu.createChild
         label: "Export..."
-        click: "#{ed}.export()"
+        click: "#{editor}.export()"
         sectionEnd: true
 
       fileMenu.createChild
         label: "Quit"
 
+      ##
+      # Edit menu options
+      editMenu.createChild
+        label: "Undo"
+
+      editMenu.createChild
+        label: "Redo"
+
+      editMenu.createChild
+        label: "History ..."
+        sectionEnd: true
+        click: "#{editorUI}.modals.showEditHistory()"
+
+      editMenu.createChild
+        label: "Copy"
+
+      editMenu.createChild
+        label: "Cut"
+
+      editMenu.createChild
+        label: "Paste"
+
+      ##
       # View menu options
       viewMenu.createChild
         label: "Toggle Sidebar"
-        click: "#{edUI}.sidebar.toggle()"
+        click: "#{editorUI}.sidebar.toggle()"
 
       viewMenu.createChild
         label: "Toggle Timeline"
-        click: "#{edUI}.timeline.toggle()"
+        click: "#{editorUI}.timeline.toggle()"
+        sectionEnd: true
 
       viewMenu.createChild
         label: "Fullscreen"
-        click: "#{edUI}.toggleFullScreen()"
+        click: "#{editorUI}.toggleFullScreen()"
+        sectionEnd: true
 
+      viewMenu.createChild
+        label: "Refresh"
+        click: "#{editorUI}.refresh()"
+        sectionEnd: true
+
+      ##
       # Timeline menu options
       timelineMenu.createChild
-        label: "Set preview framerate..."
-        click: "#{edUI}.modals.showSetPreviewRate()"
+        label: "Set Preview Framerate ..."
+        click: "#{editorUI}.modals.showSetPreviewRate()"
 
+      ##
       # Canvas menu options
       canvasMenu.createChild
-        label: "Set screen properties..."
-        click: "#{edUI}.modals.showSetScreenProperties()"
+        label: "Set Screen Properties ..."
+        click: "#{editorUI}.modals.showSetScreenProperties()"
 
+      ##
+      #
       canvasMenu.createChild
-        label: "Set background color..."
-        click: "#{edUI}.modals.showSetBackgroundColor()"
+        label: "Set Background Color ..."
+        click: "#{editorUI}.modals.showSetBackgroundColor()"
 
+      ##
       # Tools menu options
       toolsMenu.createChild
-        label: "Preview..."
+        label: "Preview ..."
 
       toolsMenu.createChild
-        label: "Calculate device support..."
+        label: "Calculate device support ..."
 
       toolsMenu.createChild
-        label: "Set export framerate..."
+        label: "Set Export Framerate ..."
+        click: "#{editorUI}.modals.showSetExportRate()"
 
       toolsMenu.createChild
-        label: "Upload textures..."
-        #click: "#{edUI}.modals.showAddTextures()"
-        click: "#{edUI}.modals.showUploadTextures()"
+        label: "Upload textures ..."
+        click: "#{editorUI}.modals.showUploadTextures()"
 
+      ##
       # Help menu options
       helpMenu.createChild
         label: "About Editor"
-        click: "#{edUI}.modals.showHelpAbout()"
+        click: "#{editorUI}.modals.showHelpAbout()"
 
       helpMenu.createChild
         label: "Changelog"
-        click: "#{edUI}.modals.showHelpChangeLog()"
+        click: "#{editorUI}.modals.showHelpChangeLog()"
         sectionEnd: true
 
       helpMenu.createChild
@@ -199,7 +246,16 @@ define (requre) ->
 
       @menu
 
+    refresh: ->
+
+      AUtilLog.info "UI refresh"
+
+      for widget in @widgets
+        widget.refresh() if widget.refresh
+
+    ###
     ## UES - UI Event System
+    ###
 
     ###
     # Adds a new event
@@ -207,6 +263,7 @@ define (requre) ->
     # @param [Object] params
     ###
     pushEvent: (type, params) ->
+
       unless @_ignoreEventList == null || @_ignoreEventList == undefined
         if _.include @_ignoreEventList, type
           return AUtilEventLog.ignore "ui", type
@@ -229,8 +286,10 @@ define (requre) ->
     # @param [String] type
     ###
     allowEvent: (type) ->
+
       if @_ignoreEventList == null || @_ignoreEventList == undefined
         return
+
       index = @_ignoreEventList.indexOf(type)
       @_ignoreEventList.splice index, 1
 
@@ -239,6 +298,7 @@ define (requre) ->
     # @param [String] type
     ###
     ignoreEvent: (type) ->
+
       if @_ignoreEventList == null || @_ignoreEventList == undefined
         @_ignoreEventList = []
 

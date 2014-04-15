@@ -170,7 +170,7 @@ define (require) ->
       return AUtilLog.error "ARE not loaded, cannot load texture" unless @_are
 
       AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, ->
-        AUtilLog.info "Texture #{texture.getUID()} loaded"
+        AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
 
     ###
     # Converts document-relative coordinates to ARE coordinates
@@ -356,7 +356,7 @@ define (require) ->
         handle = @getActorFromPick r, g, b
 
         if handle
-          cb handle 
+          cb handle
         else
           noActorCb()
 
@@ -466,7 +466,11 @@ define (require) ->
         o.timelineDeath()
         o.delete()
 
-      @actorObjects = []
+      @actorObjects.length = 0
+
+      AUtilLog.info "Workspace(id: #{@_id}) reset"
+
+      @
 
     ###
     # Any objects that need to tell us about their death have to do so by calling
