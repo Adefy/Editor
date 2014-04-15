@@ -7,7 +7,6 @@ define (require) ->
 
   Tab = require "widgets/tabs/tab"
   Asset = require "handles/asset"
-  Modal = require "widgets/modal"
   TemplateAssetDirectory = require "templates/tabs/asset_directory"
   TemplateAssetFile = require "templates/tabs/asset_file"
   ContextMenu = require "widgets/context_menu"

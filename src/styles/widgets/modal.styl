@@ -9,18 +9,12 @@
   margin 8px auto
   border 1px solid rgba(0, 0, 0, 0.1)
 
-.modal
+.modal, .floating-widget
   position absolute
   z-index $Z_amodal
+
   top 50px
   left 450px
-  min-width 510px
-  min-height 120px
-  //min-height 360px
-  //width 100%
-
-  border-radius: 4px
-  background-color: $mgray
 
   font-weight 600
   text-shadow 0 1px 1px rgba(0,0,0,0.58)
@@ -28,72 +22,82 @@
   border 1px solid rgba(0,0,0,.6)
 
   opacity 0
-  position absolute
-
   color #ddd
 
-  .modal-inner
-    width 100%
-    margin 0 auto
+  background-color $mgray
+  border-radius 4px
+
+  .header
+    position relative
+    height 36px
+    line-height 36px
+    padding 0 12px
+    border-radius 4px 4px 0 0
+    background linear-gradient(top, #343434,#292929)
+    box-shadow inset 0 -1px rgba(0,0,0,.35), inset 0 1px rgba(255,255,255,.05)
+    border-bottom 1px solid rgba(255,255,255,.05)
+    vertical-align middle
+    color #ddd
+
+    > *
+      display inline-block
+      vertical-align top
+
+    .close
+      position absolute
+      right 8px
+      top 0
+
+      button
+        vertical-align middle
+        margin-top -1px
+
+      &:hover
+        cursor pointer
+
+    > .title
+      padding-right 64px
+
+    &:hover
+      cursor pointer
+
+  .modal-body
+    color #666
+    padding: 0 12px 6px
+
+    .input_group
+      margin 4px 0
+
+      label, input
+        display inline-block
+        vertical-align top
+
+      label
+        width 30%
+        text-align right
+        margin-right 8px
+        padding 4px 0
+
+      .radio
+        padding 4px 0
+        display inline-block
+
+  .modal-footer
     display block
+    margin 4px
+    margin-top 8px
+    height 28px
+    padding: 0 12px 6px
 
-    .modal-header
-      height 36px
-      line-height 36px
-      padding 0 12px
-      border-radius 4px 4px 0 0
-      background linear-gradient(top, #343434,#292929)
-      box-shadow inset 0 -1px rgba(0,0,0,.35), inset 0 1px rgba(255,255,255,.05)
-      border-bottom 1px solid rgba(255,255,255,.05)
-      vertical-align middle
-      color #ddd
+    border-top 1px solid rgba(255,255,255,.05)
 
-      &:after
-        content ""
-        display table
-        clear both
-      .title
-        float left
-      .close
-        float right
+    .modal-error
+      color $lred
+      width 240px
+      float left
 
-    .modal-body
-      color #666
-      padding: 0 12px 6px
+    .modal-dismiss
+      float right
 
-      .input_group
-        margin 4px 0
-
-        label, input
-          display inline-block
-          vertical-align top
-
-        label
-          width 30%
-          text-align right
-          margin-right 8px
-          padding 4px 0
-
-        .radio
-          padding 4px 0
-          display inline-block
-
-    .modal-footer
-      display block
-      margin 4px
-      margin-top 8px
-      height 28px
-      padding: 0 12px 6px
-
-      border-top 1px solid rgba(255,255,255,.05)
-
-      .modal-error
-        color $lred
-        width 240px
-        float left
-
-      .modal-dismiss
-        float right
-
-      .modal-submit
-        float right
+    .modal-submit
+      float right

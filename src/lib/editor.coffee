@@ -11,7 +11,6 @@ define (require) ->
   UIManager = require "ui"
 
   Notification = require "widgets/notification"
-  Modal = require "widgets/modal"
 
   Bezier = require "widgets/timeline/bezier"
   Project = require "project"
@@ -230,7 +229,8 @@ define (require) ->
         _html += "<a href=\"#{result.link}\" target=\"_blank\">View</a>"
         _html += " or "
         _html += "<a href=\"#{result.link}?download=yes\">Download</a>"
-        new Modal title: "Exported", content: _html
+
+        # new Modal title: "Exported", content: _html
 
     ###
     # @private
