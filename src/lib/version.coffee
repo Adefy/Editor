@@ -1,6 +1,6 @@
 major = 0
-minor = 9
-patch = 9
+minor = 1
+patch = 0
 build = 0
 string = [major, minor, patch, build].join(".")
 
