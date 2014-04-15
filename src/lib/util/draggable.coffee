@@ -39,7 +39,7 @@ define (require) ->
 
       @_drag = new Dragger @_sel, @_tolerance
       @_drag.setOnDragStart (d) =>
-        # return d.forceDragEnd() unless @_condition()
+        return d.forceDragEnd() unless @_condition()
 
         d.setUserData $(@_sel).offset()
 
@@ -55,6 +55,8 @@ define (require) ->
         @onDragStart(d) if @onDragStart
 
       @_drag.setOnDrag (d, deltaX, deltaY) =>
+        return unless d.getUserData()
+
         pos =
           x: d.getUserData().left
           y: d.getUserData().top

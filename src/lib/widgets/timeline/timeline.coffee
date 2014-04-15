@@ -53,6 +53,7 @@ define (require) ->
 
       @_previewFPS = 30
       @_visible = true
+      @_playbackID = null
 
       @controlState =
         fast_backward: false
@@ -416,7 +417,7 @@ define (require) ->
       @_cursorDraggable.constrainToParent()
 
       # Cancel the drag if we are currently in the middle of playback
-      @_cursorDraggable.setCondition -> !!@_playbackID
+      @_cursorDraggable.setCondition => @_playbackID == null
 
       @_cursorDraggable.setOnDrag => @_updateCursorTime()
       @_cursorDraggable.setOnDragEnd => @updateAllActorsInTime()
