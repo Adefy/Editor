@@ -25,7 +25,7 @@ define (require) ->
     # changes, not the sub objects.
     # @type [String]
     ###
-    @PROJECT_VERSION: "0.3.0"
+    @PROJECT_VERSION: "0.3.1"
 
     ###
     # Current Editor.ui instance
@@ -33,14 +33,21 @@ define (require) ->
     ###
     @ui: null
 
+    @current: null
+
     constructor: (@ui) ->
 
       @__id = ID.objId "project"
       @id = @__id.id
 
-      @uid = ID.uID()
-
       @version = Project.PROJECT_VERSION
+
+      @uid = ID.uID()
+      @name = "Untitled #{@id}"
+
+      @dateStarted = Date.now()
+
+      @saveCount = 0
 
       ###
       # @type [Array<Object>]
@@ -54,6 +61,8 @@ define (require) ->
         disabled: ["delete", "rename"],
         isDirectory: true
 
+      Project.current = @
+
     ###
     # Dumps the current Project state to basic Object for stringify-ing#
     # @return [Object]
@@ -62,12 +71,17 @@ define (require) ->
       ##
       # This is a v0.1.0 dump
       _.extend Dumpable::dump.call(@),
-        version: @version
-        uid: @uid
-        textures: _.map @textures, (texture) -> texture.dump()
-        assets: @assets.dump()
-        timeline: @ui.timeline.dump()
-        workspace: @ui.workspace.dump()
+        version: @version                                      # v0.1.0
+        uid: @uid                                              # v0.3.0
+        dateStarted: @dateStarted                              # v0.3.1
+        dateDumped: Date.now()                                 # v0.3.1
+        name: @name                                            # v0.3.1
+        saveCount: @saveCount+1                                # v0.3.1
+        #textures: @textures                                   # v0.1.0
+        assets: @assets.dump()                                 # v0.1.0
+        textures: _.map @textures, (texture) -> texture.dump() # v0.2.0
+        workspace: @ui.workspace.dump()                        # v0.1.0
+        timeline: @ui.timeline.dump()                          # v0.1.0
 
     ###
     # Load the current Project state to basic Object for stringify-ing#
@@ -76,50 +90,44 @@ define (require) ->
     ###
     load: (data) ->
       Dumpable::load.call @, data
+
+      @ui.workspace.reset()
+
       ##
       # we may need to handle different project version in the future
       # for backward compatability.
       # so its best to tag the project version from early in production
       projver = data.version
 
-      AUtilLog.info "Loading a v#{projver} Project dump"
+      AUtilLog.info "Loading v#{projver} Project::dump"
 
       ##
       # assets have remained the same thus far
-      @assets = Asset.load data.assets
-
-      if projver >= "0.3.0"
-        @uid = data.uid
-      else
-        @uid = ID.uID()
+      @assets = Asset.load data.assets                     # v0.1.0
+      @uid = data.uid || ID.uID()                          # v0.3.0
+      @name = data.name || "Untitled #{projver} (project)" # v0.3.1
+      @dateStarted = data.dateStarted || Date.now()        # v0.3.1
+      @saveCount = data.saveCount || 1                     # v0.3.1
 
       ##
-      # now this is where stuff goes nutty
-      # this is mostly an example of what should/could happen in the future
-      switch projver
-        when "0.1.0", "0.2.0", "0.3.0"
+      # Luckily for us, textures are very similar when they where dumped
+      # back in 0.1.0
+      @textures = _.map data.textures, (data) -> Texture.load data
+      for texture in @textures
+        texture.project = @
 
-          ##
-          # Luckily for us, textures are very similar when they where dumped
-          # back in 0.1.0
-          @textures = _.map data.textures, (data) -> Texture.load data
-          for texture in @textures
-            texture.project = @
+      @ui.workspace.loadTextures @textures
 
-          @ui.workspace.reset()
+      ##
+      # We reload the workspace state BEFORE the timeline state
+      # that way we update the timeline correctly.
+      @ui.workspace.load data.workspace
 
-          @ui.workspace.loadTextures @textures
-
-          ##
-          # We reload the workspace state BEFORE the timeline state
-          # that way we update the timeline correctly.
-          @ui.workspace.load data.workspace
-
-          ##
-          # This is a timeline load, on the instance level,
-          # rather than the class level, I guess we could treat it as
-          # a singleton object in that essence.
-          @ui.timeline.load data.timeline
+      ##
+      # This is a timeline load, on the instance level,
+      # rather than the class level, I guess we could treat it as
+      # a singleton object in that essence.
+      @ui.timeline.load data.timeline
 
       @
 
@@ -128,8 +136,9 @@ define (require) ->
     # @return [self]
     ###
     quicksave: ->
-      Storage.set "project.quicksave", JSON.stringify @dump()
-      AUtilLog.info "quicksave created"
+      data = @dump()
+      Storage.set "project.quicksave", JSON.stringify data
+      AUtilLog.info "Project(uid: #{data.uid}) quicksave created"
       @
 
     ###
