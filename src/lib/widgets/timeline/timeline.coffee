@@ -112,7 +112,7 @@ define (require) ->
         id = $(d.getTarget()).attr "id"
 
         keyframeTime = d.getUserDataValue "startTime"
-        property = $(d.getTarget()).parent().attr("data-property").split("-")[3]
+        property = $(d.getTarget()).parent().attr("data-property")
 
         targetTime = keyframeTime + (deltaX * @getTimePerPixel())
 
@@ -720,25 +720,25 @@ define (require) ->
 
         if anim.opacity
           keyframes["opacity"].push
-            id: "key-#{keyframes["opacity"].length}"
+            id: "actor-#{actorId}-key-opacity-#{keyframes["opacity"].length}"
             left: offset
             time: time
 
         if anim.position
           keyframes["position"].push
-            id: "key-#{keyframes["position"].length}"
+            id: "actor-#{actorId}-key-position-#{keyframes["position"].length}"
             left: offset
             time: time
 
         if anim.rotation
           keyframes["rotation"].push
-            id: "key-#{keyframes["rotation"].length}"
+            id: "actor-#{actorId}-key-rotation-#{keyframes["rotation"].length}"
             left: offset
             time: time
 
         if anim.color
           keyframes["color"].push
-            id: "key-#{keyframes["color"].length}"
+            id: "actor-#{actorId}-key-color-#{keyframes["color"].length}"
             left: offset
             time: time
 
@@ -775,21 +775,25 @@ define (require) ->
 
       properties.push
         id: "actor-time-property-opacity-#{actorId}"
+        name: "opacity"
         isProperty: true
         keyframes: keyframes["opacity"]
 
       properties.push
         id: "actor-time-property-position-#{actorId}"
+        name: "position"
         isProperty: true
         keyframes: keyframes["position"]
 
       properties.push
         id: "actor-time-property-rotation-#{actorId}"
+        name: "rotation"
         isProperty: true
         keyframes: keyframes["rotation"]
 
       properties.push
         id: "actor-time-property-color-#{actorId}"
+        name: "color"
         isProperty: true
         keyframes: keyframes["color"]
 
@@ -1024,8 +1028,10 @@ define (require) ->
           for keyframe in keyframes
             elem.append TemplateTimelineKeyframe
               id: keyframe.id
-              left: keyframe.left
+              index: keyframe.index
+              property: property.name
               time: keyframe.time
+              left: keyframe.left
 
           ## soft refresh (and it doesnt work)
           #elems = $("#{timeSelector} ##{property.id} keyframe")

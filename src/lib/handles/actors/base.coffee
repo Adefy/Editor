@@ -1043,35 +1043,44 @@ define (require) ->
       source = Math.floor source
       destination = Math.floor destination
 
+      ##
+      # If the source keyframe pos and destination keyframe pos are the same
+      # skip transplanting.
       return if source == destination
+      AUtilLog.info "transplating keyframe(property: #{property} from: #{source}, to: #{destination})"
 
+      ##
       # Move prop buffer entry first
-      srcPBEntry = @_propBuffer[source][property]
-
-      @_propBuffer[destination] = {} unless @_propBuffer[destination]
-      @_propBuffer[destination][property] = srcPBEntry
-
+      @_propBuffer[destination] ||= {}
+      @_propBuffer[destination][property] = @_propBuffer[source][property]
+      ##
+      # Destroy the old property entry
       delete @_propBuffer[source][property]
-
+      ##
+      # If the property is now empty, delete it completely
       if _.keys(@_propBuffer[source]).length == 0
         delete @_propBuffer[source]
 
-      # Now move animation, update affected surrounding animations
+      ##
+      # Now move the animation, update affected surrounding animations
       srcAnimation = @_animations[source]
 
       # Update any animation to the right of us
-      succeedingAnim = @findSucceedingAnimation source
+      #succeedingAnim = @findSucceedingAnimation source
+      #if succeedingAnim != null and @_animations[succeedingAnim][property]
+      #  @mutatePropertyAnimation @_animations[succeedingAnim][property], (a) ->
+      #    a.setStartTime destination
+      ## Finally, update our own animation
+      #@mutatePropertyAnimation @_animations[source][property], (a) ->
+      #  a.setEndTime destination
 
-      if succeedingAnim != null and @_animations[succeedingAnim][property]
-        @mutatePropertyAnimation @_animations[succeedingAnim][property], (a) ->
-          a.setStartTime destination
+      @_animations[destination] ||= {}
+      @_animations[destination][property] = srcAnimation[property]
 
-      # Finally, update our own animation
-      @mutatePropertyAnimation @_animations[source][property], (a) ->
-        a.setEndTime destination
+      delete srcAnimation[property]
 
-      @_animations[destination] = @_animations[source]
-      delete @_animations[source]
+      if _.keys(@_animations[source]).length == 0
+        delete @_animations[source]
 
     ###
     # Runs the callback for each animation object found on the property
