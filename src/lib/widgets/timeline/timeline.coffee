@@ -932,6 +932,11 @@ define (require) ->
       @_renderActorList()
       @_renderSpace()
       @_setupScrollbar()
+      @
+
+    refresh: ->
+      @render()
+      @
 
     ## UPDATE
 
@@ -941,6 +946,7 @@ define (require) ->
     ###
     _updateScrollbar: ->
       @_scrollbarElement().perfectScrollbar "update"
+      @
 
     ###
     # Update displayed cursor time

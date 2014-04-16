@@ -64,6 +64,8 @@ define (require) ->
       #
       # If no control points are specified, linear interpolation is assumed
       ###
+      ## TODO * Spin the mapping around, from Time Hash<String, Value> to
+      ## String Hash<Time, Value>
       @_animations = {}
 
       # Set to true if the cursor is to the right of our last prop buffer, and
@@ -614,16 +616,17 @@ define (require) ->
 
       for name, property of buffer
 
-        if property.components
-          update = {}
+        if property
+          if property.components
+            update = {}
 
-          for cName, cValue of property.components
-            update[cName] = cValue.value
+            for cName, cValue of property.components
+              update[cName] = cValue.value
 
-          @_properties[name].setValue update
+            @_properties[name].setValue update
 
-        else
-          @_properties[name].setValue property.value
+          else
+            @_properties[name].setValue property.value
 
     ###
     # Updates our state according to the current cursor position. Goes through
@@ -915,6 +918,7 @@ define (require) ->
           # Split animation if necessary
           @_splitAnimation @_lastTemporalState, p, trueStart
 
+          @_propBuffer["#{trueStart}"] ||= {}
           _startP = @_propBuffer["#{trueStart}"][p]
           _endP = @_propBuffer["#{@_lastTemporalState}"][p]
 
@@ -1028,6 +1032,38 @@ define (require) ->
       nearest
 
     ###
+    # @param [String] property name of the property to affect
+    # @param [Number] frametime the center frame time
+    # @private
+    ###
+    updateKeyframeTime: (property, frametime) ->
+
+      currentAnim = null
+
+      succeedingAnim = @findSucceedingAnimation frametime
+      precedingAnim = @findPrecedingAnimation frametime
+
+      # if a current frame exists...
+      if @_animations[currentAnim]
+        currentAnim = frametime
+
+      # is there a current frame
+      if currentAnim != null && @_animations[currentAnim][property]
+        @mutatePropertyAnimation @_animations[currentAnim][property], (a) ->
+          a.setStartTime precedingAnim || currentAnim || 0
+          a.setEndTime currentAnim || a.getEndTime()
+
+      # is there a succeeding frame?
+      if succeedingAnim != null and @_animations[succeedingAnim][property]
+        @mutatePropertyAnimation @_animations[succeedingAnim][property], (a) ->
+          a.setStartTime currentAnim || precedingAnim || 0
+
+      # is there a preceeding frame?
+      if precedingAnim != null && @_animations[precedingAnim][property]
+        @mutatePropertyAnimation @_animations[precedingAnim][property], (a) ->
+          a.setEndTime currentAnim || succeedingAnim || a.getEndTime()
+
+    ###
     # Move the keyframe at the specified time and of the specified property to
     # the target time.
     #
@@ -1047,40 +1083,36 @@ define (require) ->
       # If the source keyframe pos and destination keyframe pos are the same
       # skip transplanting.
       return if source == destination
-      AUtilLog.info "transplating keyframe(property: #{property} from: #{source}, to: #{destination})"
 
       ##
       # Move prop buffer entry first
-      @_propBuffer[destination] ||= {}
-      @_propBuffer[destination][property] = @_propBuffer[source][property]
-      ##
-      # Destroy the old property entry
-      delete @_propBuffer[source][property]
-      ##
-      # If the property is now empty, delete it completely
-      if _.keys(@_propBuffer[source]).length == 0
-        delete @_propBuffer[source]
+      if @_propBuffer[source]
+        @_propBuffer[destination] ||= {}
+        @_propBuffer[destination][property] = @_propBuffer[source][property]
+        ##
+        # Destroy the old property entry
+        delete @_propBuffer[source][property]
+        ##
+        # If the property is now empty, delete it completely
+        if _.keys(@_propBuffer[source]).length == 0
+          delete @_propBuffer[source]
 
       ##
       # Now move the animation, update affected surrounding animations
-      srcAnimation = @_animations[source]
+      if @_animations[source]
+        @_animations[destination] ||= {}
+        @_animations[destination][property] = @_animations[source][property]
+        ##
+        # Destory the old property entry
+        delete @_animations[source][property]
+        ##
+        # If the property is now empty, delete it completely
+        if _.keys(@_animations[source]).length == 0
+          delete @_animations[source]
 
-      # Update any animation to the right of us
-      #succeedingAnim = @findSucceedingAnimation source
-      #if succeedingAnim != null and @_animations[succeedingAnim][property]
-      #  @mutatePropertyAnimation @_animations[succeedingAnim][property], (a) ->
-      #    a.setStartTime destination
-      ## Finally, update our own animation
-      #@mutatePropertyAnimation @_animations[source][property], (a) ->
-      #  a.setEndTime destination
-
-      @_animations[destination] ||= {}
-      @_animations[destination][property] = srcAnimation[property]
-
-      delete srcAnimation[property]
-
-      if _.keys(@_animations[source]).length == 0
-        delete @_animations[source]
+        # update all sorrounding keyframes for both the source and destination
+        @updateKeyframeTime source
+        @updateKeyframeTime destination
 
     ###
     # Runs the callback for each animation object found on the property

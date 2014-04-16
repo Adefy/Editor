@@ -53,6 +53,16 @@ define (require) ->
           param.required @_control[1].y
 
     ###
+    # @return [Number]
+    ###
+    getEndTime: -> @_end.x
+
+    ###
+    # @return [Number]
+    ###
+    getStartTime: -> @_start.x
+
+    ###
     # @param [Number] time
     ###
     setStartTime: (time) -> @_start.x = time
