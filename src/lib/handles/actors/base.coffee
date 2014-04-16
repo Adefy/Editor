@@ -972,35 +972,51 @@ define (require) ->
     # Fetch time of preceding animation, null if there is none
     #
     # @param [Number] source search start time
+    # @param [String] property finetune by finiding the nearest property
+    #   @optional
     # @return [Number] time
     ###
-    findPrecedingAnimation: (source) ->
+    findPrecedingAnimation: (source, property) ->
       times = _.keys @_animations
       times.sort (a, b) -> a - b
 
       index = _.findIndex times, (t) -> Number(t) == source
 
       if index > 0
-        times[index - 1]
-      else
-        null
+        if property != undefined
+          for i in [(index-1)..0]
+            time = times[i]
+            if @_animations[time] && @_animations[time][property]
+              return time
+        else
+          return times[index - 1]
+
+      null
 
     ###
     # Fetch time of preceding animation, null if there is none
     #
     # @param [Number] source search start time
+    # @param [String] property finetune by finiding the nearest property
+    #   @optional
     # @return [Number] time
     ###
-    findSucceedingAnimation: (source) ->
+    findSucceedingAnimation: (source, property) ->
       times = _.keys @_animations
       times.sort (a, b) -> a - b
 
       index = _.findIndex times, (t) -> Number(t) == source
 
       if index > -1 and index < times.length - 1
-        times[index + 1]
-      else
-        null
+        if property != undefined
+          for i in [(index+1)..(times.length-1)]
+            time = times[i]
+            if @_animations[time] && @_animations[time][property]
+              return time
+        else
+          return times[index + 1]
+
+      null
 
     ###
     # Find the nearest prop buffer entry to the left/right of the supplied state
@@ -1040,28 +1056,24 @@ define (require) ->
 
       currentAnim = null
 
-      succeedingAnim = @findSucceedingAnimation frametime
-      precedingAnim = @findPrecedingAnimation frametime
+      succAnim = @findSucceedingAnimation frametime, property
+      predAnim = @findPrecedingAnimation frametime, property
 
       # if a current frame exists...
-      if @_animations[currentAnim]
+      if @_animations[frametime]
         currentAnim = frametime
 
       # is there a current frame
       if currentAnim != null && @_animations[currentAnim][property]
         @mutatePropertyAnimation @_animations[currentAnim][property], (a) ->
-          a.setStartTime precedingAnim || currentAnim || 0
-          a.setEndTime currentAnim || a.getEndTime()
+          a.setStartTime predAnim || 0
+          a.setEndTime currentAnim
 
       # is there a succeeding frame?
-      if succeedingAnim != null and @_animations[succeedingAnim][property]
-        @mutatePropertyAnimation @_animations[succeedingAnim][property], (a) ->
-          a.setStartTime currentAnim || precedingAnim || 0
-
-      # is there a preceeding frame?
-      if precedingAnim != null && @_animations[precedingAnim][property]
-        @mutatePropertyAnimation @_animations[precedingAnim][property], (a) ->
-          a.setEndTime currentAnim || succeedingAnim || a.getEndTime()
+      if succAnim != null and @_animations[succAnim][property]
+        @mutatePropertyAnimation @_animations[succAnim][property], (a) ->
+          a.setStartTime currentAnim || predAnim || 0
+          a.setEndTime succAnim
 
     ###
     # Move the keyframe at the specified time and of the specified property to
@@ -1110,9 +1122,9 @@ define (require) ->
         if _.keys(@_animations[source]).length == 0
           delete @_animations[source]
 
-        # update all sorrounding keyframes for both the source and destination
-        @updateKeyframeTime source
-        @updateKeyframeTime destination
+      # update all sorrounding keyframes for both the source and destination
+      @updateKeyframeTime property, source
+      @updateKeyframeTime property, destination
 
     ###
     # Runs the callback for each animation object found on the property
