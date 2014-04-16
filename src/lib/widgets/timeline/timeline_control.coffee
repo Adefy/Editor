@@ -59,6 +59,31 @@ define (require) ->
     # @private
     ###
     onClickForward: ->
+      _currentPosition = @timeline.getCursorTime()
+      _newPosition = null
+      _min = 99999
+      index = Workspace.getSelectedActor()
+
+      # only enter checks if an actor is actually selected
+      if index != null and index != undefined
+        for actor, i in @_actors
+          if actor.getID() == index then index = i
+
+        _animations = @timeline._actors[index].getAnimations()
+        for anim of _animations
+          if anim < _currentPosition
+            if _currentPosition - anim < _min and _currentPosition - anim > 1
+              _newPosition = anim
+              _min = Math.round(_currentPosition - anim)
+
+        # if no animtaions before this one we go to the beginning of the timeline
+        if _newPosition != null
+          if @timeline._playbackID != null and @timeline._playbackID != undefined
+            @_pausePlayback()
+          @timeline.setCursorTime _newPosition
+        else
+          @timeline.setCursorTime 0
+          @_endPlayback()
 
     ###
     # Backward playback button clicked (prev keyframe)
@@ -66,12 +91,6 @@ define (require) ->
     # @private
     ###
     onClickBackward: ->
-
-    ###
-    # @friend [Timeline]
-    # @private
-    ###
-    onClickFastBackward: ->
       _currentPosition = @timeline.getCursorTime()
       _newPosition = null
       _min = 99999
@@ -105,29 +124,12 @@ define (require) ->
     # @friend [Timeline]
     # @private
     ###
+    onClickFastBackward: ->
+      @timeline.setCursorTime 0
+
+    ###
+    # @friend [Timeline]
+    # @private
+    ###
     onClickFastForward: ->
-      _currentPosition = @timeline.getCursorTime()
-      _newPosition = null
-      _min = 99999
-      index = Workspace.getSelectedActor()
-
-      # only enter checks if an actor is actually selected
-      if index != null and index != undefined
-        for actor, i in @_actors
-          if actor.getID() == index then index = i
-
-        _animations = @timeline._actors[index].getAnimations()
-        for anim of _animations
-          if anim < _currentPosition
-            if _currentPosition - anim < _min and _currentPosition - anim > 1
-              _newPosition = anim
-              _min = Math.round(_currentPosition - anim)
-
-        # if no animtaions before this one we go to the beginning of the timeline
-        if _newPosition != null
-          if @timeline._playbackID != null and @timeline._playbackID != undefined
-            @_pausePlayback()
-          @timeline.setCursorTime _newPosition
-        else
-          @timeline.setCursorTime 0
-          @_endPlayback()
+      @timeline.setCursorTime @timeline.getDuration()
