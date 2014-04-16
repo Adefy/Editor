@@ -370,7 +370,7 @@ define (require) ->
         textures = []
         for obj in blob
           texture = new Texture
-            url: obj.url
+            url: "//d3r6kqp8brgiqm.cloudfront.net/#{obj.key}"
             name: obj.filename
 
           @ui.editor.project.textures.push texture
