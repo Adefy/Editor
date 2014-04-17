@@ -92,18 +92,22 @@ define (require) ->
     ###
     refreshSettings: ->
       @settings.autosave =
-        # How often should we autosave?
-        frequency: Number(Storage.get("editor.autosave.frequency")) || 50000
+        # How often should we autosave? (milliseconds)
+        frequency: Number(Storage.get("editor.autosave.frequency") || 50000)
         # How many saves should we keep at a time?
-        maxcount: Number(Storage.get("editor.autosave.maxcount")) || 10
+        maxcount: Number(Storage.get("editor.autosave.maxcount") || 10)
 
     ###
     # Saves the settings to Local Storage
     # @return [Void]
     ###
     saveSettings: ->
-      Storage.set("editor.autosave.frequency", @settings.frequency)
-      Storage.set("editor.autosave.maxcount", @settings.maxcount)
+      Storage.set("editor.autosave.frequency", @settings.autosave.frequency)
+      Storage.set("editor.autosave.maxcount", @settings.autosave.maxcount)
+
+      AUtilLog.info "Saved editor.settings"
+
+      @
 
     ###
     # Update state snapshot and save it in storage
