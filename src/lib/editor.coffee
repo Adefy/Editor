@@ -4,6 +4,8 @@ define (require) ->
   AUtilLog = require "util/log"
   param = require "util/param"
 
+  Storage = require "storage"
+
   PolygonActor = require "handles/actors/polygon"
   TriangleActor = require "handles/actors/triangle"
   RectangleActor = require "handles/actors/rectangle"
@@ -24,6 +26,7 @@ define (require) ->
     # @param [String] sel container selector, created if non-existent
     ###
     constructor: (sel) ->
+
       @checkForOpera()
       @checkForLocalStorage()
 
@@ -40,6 +43,12 @@ define (require) ->
       #   @property [Object] data contents of the clipboard
       ###
       @clipboard = null
+
+      ###
+      # @type [Object] settings
+      ###
+      @settings = {}
+      @refreshSettings()
 
       Project.ui = @ui
       if Project.quicksaveExists()
@@ -63,6 +72,7 @@ define (require) ->
       false
 
     ###
+    # Check that the browser supports HTML local storage
     # @return [Boolean]
     ###
     checkForLocalStorage: ->
@@ -74,6 +84,24 @@ define (require) ->
         return false
 
       true
+
+    ###
+    # @return [Void]
+    ###
+    refreshSettings: ->
+      @settings.autosave =
+        # How often should we autosave?
+        frequency: Number(Storage.get("editor.autosave.frequency")) || 50000
+        # How many saves should we keep at a time?
+        maxcount: Number(Storage.get("editor.autosave.maxcount")) || 10
+
+    ###
+    # Saves the settings to Local Storage
+    # @return [Void]
+    ###
+    saveSettings: ->
+      Storage.set("editor.autosave.frequency", @settings.frequency)
+      Storage.set("editor.autosave.maxcount", @settings.maxcount)
 
     ###
     # Update state snapshot and save it in storage
