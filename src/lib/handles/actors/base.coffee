@@ -843,6 +843,7 @@ define (require) ->
 
         # An animation overlaps us. Perform an integrity check on it, then
         # split.
+        @_animations[animCheck] ||= {}
         anim = @_animations[animCheck]
 
         if anim[p].components
