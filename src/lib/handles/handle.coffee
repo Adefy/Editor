@@ -29,7 +29,7 @@ define (require) ->
         "Delete": => @delete()
 
       # Give ourselves a unique id so we can be discovered on the body
-      ido = ID.objId "handle"
+      ido = ID.objID "handle"
       @_id_n = ido.id
       @_id = ido.prefix
 

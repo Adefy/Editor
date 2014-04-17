@@ -15,7 +15,7 @@ define (require) ->
     ###
     constructor: (@ui) ->
       super
-        id: ID.prefId("toolbar")
+        id: ID.prefID("toolbar")
         classes: ["toolbar"]
         parent: "header"
 

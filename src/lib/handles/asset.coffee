@@ -19,7 +19,7 @@ define (require) ->
 
       @_parent = parent
 
-      @_id = ID.prefId "asset"
+      @_id = ID.prefID "asset"
 
       @_name = param.required options.name
       #@_color = param.optional options.color, [198, 198, 198]

@@ -19,7 +19,7 @@ define (require) ->
     ###
     constructor: (@ui, parent) ->
       super
-        id: ID.prefId("tab-assets")
+        id: ID.prefID("tab-assets")
         parent: parent
         classes: ["tab-assets"]
 

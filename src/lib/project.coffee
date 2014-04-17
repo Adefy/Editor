@@ -37,7 +37,7 @@ define (require) ->
 
     constructor: (@ui) ->
 
-      @__id = ID.objId "project"
+      @__id = ID.objID "project"
       @id = @__id.id
 
       @version = Project.PROJECT_VERSION

@@ -18,9 +18,11 @@ define (require) ->
 
       @project = null
 
-      @__id = ID.objId "texture"
+      @__id = ID.objID "texture"
       @_id = @__id.prefix
+
       @_uid = ID.uID()
+
       @_url = param.optional options.url, ""
       @_name = param.optional options.name, ""
 

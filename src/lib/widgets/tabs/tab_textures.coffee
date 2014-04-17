@@ -21,7 +21,7 @@ define (require) ->
       @_viewMode = "list"
 
       super
-        id: ID.prefId("tab-textures")
+        id: ID.prefID("tab-textures")
         parent: parent
         classes: ["tab-textures"]
 

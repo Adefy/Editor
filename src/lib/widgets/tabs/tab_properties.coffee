@@ -37,7 +37,7 @@ define (require) ->
       return unless @enforceSingleton()
 
       super
-        id: ID.prefId("tab-properties")
+        id: ID.prefID("tab-properties")
         parent: parent
         classes: ["tab-properties"]
 

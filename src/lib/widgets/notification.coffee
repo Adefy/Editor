@@ -58,7 +58,7 @@ define (require) ->
 
       # Create object
       super
-        id: ID.prefId("anotification")
+        id: ID.prefID("anotification")
         classes: [ "anotification" ]
 
       # Build and inject

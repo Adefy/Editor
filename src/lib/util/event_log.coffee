@@ -4,7 +4,7 @@ define ->
 
   class AUtilEventLog
 
-    @enabled: false
+    @enabled: true
 
     @elog: (tag, meth, type) ->
       if @enabled

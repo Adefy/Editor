@@ -34,7 +34,7 @@ define (require) ->
       @_width = param.optional width, 300
 
       super
-        id: ID.prefId("sidebar")
+        id: ID.prefID("sidebar")
         parent: "section#main"
         classes: ["sidebar"]
 

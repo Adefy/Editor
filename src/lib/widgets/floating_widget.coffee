@@ -27,7 +27,7 @@ define (require) ->
       param.required title
 
       super
-        id: ID.prefId("floating-widget")
+        id: ID.prefID("floating-widget")
         classes: ["floating-widget"]
 
       @_closeOnFocusLoss = false

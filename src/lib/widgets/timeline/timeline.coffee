@@ -40,7 +40,7 @@ define (require) ->
       return unless @enforceSingleton()
 
       super
-        id: ID.prefId("timeline")
+        id: ID.prefID("timeline")
         parent: "footer"
         classes: ["timeline"]
 

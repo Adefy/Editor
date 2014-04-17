@@ -18,7 +18,7 @@ define (require) ->
       @_items = []
 
       super
-        id: ID.prefId("statusbar")
+        id: ID.prefID("statusbar")
         parent: "footer"
         classes: [ "statusbar" ]
 

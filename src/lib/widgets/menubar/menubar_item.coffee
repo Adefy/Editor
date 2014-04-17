@@ -76,7 +76,7 @@ define (require) ->
 
       role = "secondary"
 
-      child = new MenubarItem ID.prefId("menubar-item"), @, @_menubar, role
+      child = new MenubarItem ID.prefID("menubar-item"), @, @_menubar, role
       child.label = label
       child.href = href
       child.sectionEnd = sectionEnd

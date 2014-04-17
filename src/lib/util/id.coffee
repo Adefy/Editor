@@ -8,7 +8,7 @@ define
   #
   # @return [String] id
   ###
-  nextId: -> "#{@__nextID++}"
+  nextID: -> "#{@__nextID++}"
 
   ###
   # Returns a unique id with the specified prefix
@@ -16,7 +16,7 @@ define
   # @param [String] prefix
   # @return [String] id
   ###
-  prefId: (prefix) -> "#{prefix}-#{@__nextID++}"
+  prefID: (prefix) -> "#{prefix}-#{@__nextID++}"
 
   ###
   # Randomly generates a UUID
@@ -38,7 +38,7 @@ define
   #   @property [Number] id
   #   @property [String] prefix
   ###
-  objId: (prefix) ->
+  objID: (prefix) ->
     id = @__nextID++
     {
       id: id

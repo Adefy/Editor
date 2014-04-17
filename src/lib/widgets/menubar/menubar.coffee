@@ -20,7 +20,7 @@ define (require) ->
       @_items = []
 
       super
-        id: ID.prefId("menubar")
+        id: ID.prefID("menubar")
         classes: ["menubar"]
         prepend: true
         parent: "header"
@@ -118,7 +118,7 @@ define (require) ->
       param.required label
       link = param.optional link, "#"
 
-      _id = ID.prefId "menubar-item"
+      _id = ID.prefID "menubar-item"
       child = new MenuBarItem _id, "#", @, "primary", label, link
       @_items.push child
 
@@ -157,7 +157,7 @@ define (require) ->
         secondaries = _.filter item._children, (c) -> c._role == "secondary"
 
         attrs =
-          id: ID.nextId()
+          id: ID.nextID()
           class: "menu"
           "data-owner": item.getID()
 

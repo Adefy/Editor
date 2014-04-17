@@ -50,7 +50,7 @@ define (require) ->
 
       # Create object
       super
-        id: ID.prefId("context-menu")
+        id: ID.prefID("context-menu")
         classes: [ "context-menu" ]
 
       # Add a handle to our instance on the body
@@ -94,7 +94,7 @@ define (require) ->
         if @functions[f]._ident != undefined
           @_unbindListener @functions[f]._ident
         # We set a unique identifier for the element to use, and bind listeners
-        @functions[f]._ident = @_convertToIdent(f) + ID.nextId()
+        @functions[f]._ident = @_convertToIdent(f) + ID.nextID()
 
         entries.push
           name: f

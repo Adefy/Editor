@@ -21,6 +21,6 @@ define (require) ->
         throw new Error "Sidebar items need a AWidgetSidebar as a parent!"
 
       # Build the containing div
-      super ID.prefId("sidebar-item"), parent, classes
+      super ID.prefID("sidebar-item"), parent, classes
 
     getSidebar: -> @_parent

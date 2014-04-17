@@ -34,7 +34,7 @@ define (require) ->
       param.required @ui
 
       super
-        id: ID.prefId("workspace")
+        id: ID.prefID("workspace")
         parent: "section#main"
         classes: ["workspace"]
         prepend: true
