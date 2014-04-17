@@ -20,11 +20,40 @@ define (require) ->
 
       @bindListeners()
 
+      @withModifier =
+        altKey: null
+        ctrlKey: null
+        shiftKey: null
+        superKey: null
+
+    ###
+    # Validates that a event has, or doesn't have the corresponding modifier
+    # keys enabled.
+    # @param [Event] e
+    ###
+    checkModifier: (e) ->
+
+      if @withModifier.altKey != null
+        return false unless e.altKey == @withModifier.altKey
+
+      if @withModifier.ctrlKey != null
+        return false unless e.ctrlKey == @withModifier.ctrlKey
+
+      if @withModifier.shiftKey != null
+        return false unless e.shiftKey == @withModifier.shiftKey
+
+      if @withModifier.superKey != null
+        return false unless e.superKey == @withModifier.superKey
+
+      true
+
     ###
     # Set up drag event listeners
     ###
     bindListeners: ->
       $(document).on "mousedown", @_sel, (e) =>
+        return unless @checkModifier e
+
         @_delta = x: 0, y: 0
         @_start = x: e.pageX, y: e.pageY
         @_target = e.target

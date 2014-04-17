@@ -280,6 +280,7 @@ define (require) ->
     # Register listeners
     ###
     _regListeners: ->
+
       @_bindContextClick()
 
       $(document).mousemove (e) =>
@@ -381,6 +382,9 @@ define (require) ->
     setupActorDragging: ->
       @dragger = new Dragger ".workspace canvas"
 
+      # shift key must not be pressed.
+      @dragger.withModifier.shiftKey = false
+
       @dragger.setOnDragStart (d) =>
         @performPick @domToGL(d.getStart().x, d.getStart().y), (r, g, b) =>
           return d.forceDragEnd() unless @isValidPick r, g, b
@@ -422,8 +426,10 @@ define (require) ->
       # NOTE: This should only be allowed when the scene is not being animated!
       $(".workspace canvas").click (e) =>
         return if @dragger.isDragging()
+        return if e.shiftKey
 
         @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
+
           unless @isValidPick r, g, b
             data = $("body").data("default-properties")
             data.clear() if data
