@@ -78,6 +78,8 @@ define (require) ->
 
 
       @_ctx = _.extend @_ctx,
+        "Copy": => @_contextFuncCopy @
+        "Duplicate": => @_contextFuncDuplicate @
         "Set Texture ...": => @_contextFuncSetTexture @
 
       me = @
@@ -1285,9 +1287,48 @@ define (require) ->
       super()
 
     ###
+    # Make a clone of the current Actor
+    # @return [BaseActor]
+    ###
+    duplicate: ->
+
+      dumpdata = @dump()
+      window[dumpdata.type].load @ui, dumpdata
+
+    ###
     # Set Texture context menu function
     # @param [BaseActor] actor
     ###
     _contextFuncSetTexture: (actor) ->
 
-      window.AdefyEditor.ui.modals.showSetTexture actor
+      @ui.modals.showSetTexture actor
+
+      @
+
+    ###
+    # Copy the current actor to the clipboard
+    # @param [BaseActor] actor
+    ###
+    _contextFuncCopy: (actor) ->
+
+      window.AdefyEditor.clipboard =
+        type: "actor"
+        reason: "copy"
+        data: @
+
+      @
+
+    ###
+    # Immediately copy and paste the current actor into the workspace
+    # @param [BaseActor] actor
+    ###
+    _contextFuncDuplicate: (actor) ->
+
+      newActor = actor.duplicate()
+      newActor.setName(newActor.getName() + " copy")
+      pos = newActor.getPosition()
+      newActor.setPosition pos.x + 16, pos.y + 16
+
+      @ui.workspace.addActor newActor
+
+      @

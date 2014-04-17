@@ -28,9 +28,18 @@ define (require) ->
       @checkForLocalStorage()
 
       @widgets = []
+
       @ui = new UIManager @
 
       AUtilLog.info "Adefy Editor created id(#{config.selector})"
+
+      ###
+      # @type [Object] clipboard
+      #   @property [String] type what is in the clipboard
+      #   @property [String] reason why is this content in the clipboard
+      #   @property [Object] data contents of the clipboard
+      ###
+      @clipboard = null
 
       Project.ui = @ui
       if Project.quicksaveExists()
@@ -41,33 +50,48 @@ define (require) ->
     ###
     # We can't run properly in Opera, as it does not let us override the
     # right-click context menu. Notify the user
+    #
+    # @return [Boolean]
     ###
     checkForOpera: ->
       agent = navigator.userAgent
 
       if agent.search("Opera") != -1 or agent.search("OPR") != -1
         alert "Opera is not supported at this time, you may experience problems"
+        return true
 
+      false
+
+    ###
+    # @return [Boolean]
+    ###
     checkForLocalStorage: ->
       unless window.localStorage
         alert """
           Your browser does not support HMTL5 local storage ;(
           Please use a modern, evergreen browser like Chrome or Firefox
         """
+        return false
+
+      true
 
     ###
     # Update state snapshot and save it in storage
     ###
     save: ->
       @project.save()
+      @
 
     ###
     # Clears the workspace, creating a new ad
     ###
     newAd: ->
+      # replace current project
       @project = new Project @ui
+      ##
       # Trigger a workspace reset
       @ui.workspace.reset()
+      @
 
     ###
     # I really thought this would be sexier, expecting that we could simply

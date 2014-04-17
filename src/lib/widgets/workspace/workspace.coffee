@@ -204,11 +204,26 @@ define (require) ->
     # @return [Object] options
     ###
     getWorkspaceCtxMenu: (x, y) ->
+      functions =
+        "New Actor +": =>
+            new ContextMenu x, y, @getNewActorCtxMenu x, y
+
+      if AdefyEditor.clipboard && AdefyEditor.clipboard.type == "actor"
+        functions["Paste"] = =>
+
+          pos = @domToGL(x, y)
+          pos.x += ARERenderer.camPos.x
+          pos.y += ARERenderer.camPos.y
+
+          newActor = AdefyEditor.clipboard.data.duplicate()
+          newActor.setPosition pos.x, pos.y
+          newActor.setName(newActor.getName() + " copy")
+
+          @addActor newActor
+
       {
         name: "Workspace"
-        functions:
-          "New Actor +": =>
-            new ContextMenu x, y, @getNewActorCtxMenu x, y
+        functions: functions
       }
 
     ###
