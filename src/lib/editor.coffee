@@ -56,6 +56,8 @@ define (require) ->
       else
         @project = new Project @ui
 
+      @startAutosaveTask()
+
     ###
     # We can't run properly in Opera, as it does not let us override the
     # right-click context menu. Notify the user
@@ -108,6 +110,13 @@ define (require) ->
     ###
     save: ->
       @project.save()
+      @
+
+    ###
+    ###
+    autosave: ->
+      AUtilLog.info "[Editor] auto-saving project"
+      @project.autosave()
       @
 
     ###
@@ -400,3 +409,19 @@ define (require) ->
     fileExport: ->
       @export()
       @
+
+
+    ###
+    ###
+    startAutosaveTask: ->
+
+      editor = @
+
+      autosaveTask = =>
+        setTimeout ->
+          editor.autosave()
+          editor.ui.pushEvent "autosave"
+          autosaveTask()
+        , @settings.autosave.frequency
+
+      autosaveTask()

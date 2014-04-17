@@ -160,7 +160,7 @@ define (require) ->
     # @return [self] project
     ###
     snapshot: (name) ->
-      snapshotCount = 20
+      snapshotCount = window.AdefyEditor.settings.autosave.maxcount
 
       snapshots = Storage.get("project.snapshots") || []
       snapshots.push JSON.stringify(@dump())
@@ -170,6 +170,13 @@ define (require) ->
 
       Storage.set("project.snapshots", snapshots)
 
+      @
+
+    ###
+    # @return [self] project
+    ###
+    autosave: ->
+      @snapshot @name
       @
 
     ###
