@@ -20,12 +20,20 @@ define (require) ->
   class Editor
 
     ###
+    # Last active instance of the Editor
+    # @type [Editor] current
+    ###
+    @current: null
+
+    ###
     # Editor execution starts here. We spawn all other objects ourselves. If a
     # selector is not supplied, we go with #editor
     #
     # @param [String] sel container selector, created if non-existent
     ###
     constructor: (sel) ->
+
+      Editor.current = @
 
       @checkForOpera()
       @checkForLocalStorage()
