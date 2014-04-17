@@ -251,87 +251,6 @@ define (require) ->
             @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
       }
 
-    ###
-    # Bind a contextmenu listener
-    ###
-    _bindContextClick: ->
-      $(document).on "contextmenu", ".workspace canvas", (e) =>
-        return if @dragger.isDragging()
-
-        x = e.pageX
-        y = e.pageY
-
-        @performPick @domToGL(x, y), (r, g, b) =>
-          gotActor = @isValidPick r, g, b
-
-          if gotActor
-            actor = @getActorFromPick r, g, b
-            if actor
-              unless _.isEmpty actor.getContextProperties()
-                @dragger.forceDragEnd()
-                new ContextMenu x, y, actor.getContextProperties()
-          else
-            new ContextMenu x, y, @getWorkspaceCtxMenu x, y
-
-        e.preventDefault()
-        false
-
-    ###
-    # Register listeners
-    ###
-    _regListeners: ->
-
-      @_bindContextClick()
-
-      $(document).mousemove (e) =>
-        return unless @_workspaceDrag
-        x = @_workspaceDrag.x
-        y = @_workspaceDrag.y
-        ARERenderer.camPos.x += x - e.pageX
-        ARERenderer.camPos.y += y - e.pageY
-        @_workspaceDrag =
-          x: e.pageX
-          y: e.pageY
-
-      $(document).mouseup (e) =>
-        return unless @_workspaceDrag
-        @_workspaceDrag = null
-
-      $(document).on "mousedown", ".workspace canvas", (e) =>
-        if e.shiftKey && !@_workspaceDrag
-          @_workspaceDrag =
-            x: e.pageX
-            y: e.pageY
-
-      # Setup texture drops
-      $(@_sel).on "dragover", (e) ->
-        if _.contains e.originalEvent.dataTransfer.types, "image/texture"
-          e.preventDefault()
-          false
-
-      $(@_sel).on "drop", (e) =>
-        texID = e.originalEvent.dataTransfer.getData "image/texture"
-        texture = _.find @ui.editor.project.textures, (t) -> t.getID() == texID
-
-        @pickActor e.originalEvent.pageX, e.originalEvent.pageY, (actor) ->
-          actor.setTexture texture
-        , =>
-          time = @ui.timeline.getCursorTime()
-          pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
-
-          pos.x += ARERenderer.camPos.x
-          pos.y += ARERenderer.camPos.y
-
-          texSize = ARERenderer.getTextureSize texture.getUID()
-          w = texSize.w
-          h = texSize.h
-
-          actor = new RectangleActor @ui, time, w, h, pos.x, pos.y
-          actor.setTexture texture
-          @addActor actor
-
-        e.preventDefault()
-        false
 
     ###
     # Translate the pick values into an ID and fetch the associated actor
@@ -377,13 +296,159 @@ define (require) ->
           noActorCb()
 
     ###
+    # Bind a contextmenu listener
+    ###
+    _bindContextClick: ->
+      $(document).on "contextmenu", ".workspace canvas", (e) =>
+        return if @dragger.isDragging()
+
+        x = e.pageX
+        y = e.pageY
+
+        @performPick @domToGL(x, y), (r, g, b) =>
+          gotActor = @isValidPick r, g, b
+
+          if gotActor
+            actor = @getActorFromPick r, g, b
+            if actor
+              unless _.isEmpty actor.getContextProperties()
+                @dragger.forceDragEnd()
+                new ContextMenu x, y, actor.getContextProperties()
+          else
+            new ContextMenu x, y, @getWorkspaceCtxMenu x, y
+
+        e.preventDefault()
+        false
+
+    ###
+    # Register listeners
+    ###
+    _regListeners: ->
+
+      @_bindContextClick()
+
+      ###
+      # Workspace drag
+      ###
+      $(document).mousemove (e) =>
+        return unless @_workspaceDrag
+
+        x = @_workspaceDrag.x
+        y = @_workspaceDrag.y
+        ARERenderer.camPos.x += x - e.pageX
+        ARERenderer.camPos.y += y - e.pageY
+
+        @_workspaceDrag =
+          x: e.pageX
+          y: e.pageY
+
+      $(document).mouseup (e) =>
+        return unless @_workspaceDrag
+
+        @_workspaceDrag = null
+
+      $(document).on "mousedown", ".workspace canvas", (e) =>
+        if e.shiftKey && !e.ctrlKey && !@_workspaceDrag
+          @_workspaceDrag =
+            x: e.pageX
+            y: e.pageY
+
+      ###
+      # Setup texture drops
+      ###
+      $(@_sel).on "dragover", (e) ->
+        if _.contains e.originalEvent.dataTransfer.types, "image/texture"
+          e.preventDefault()
+          false
+
+      $(@_sel).on "drop", (e) =>
+        texID = e.originalEvent.dataTransfer.getData "image/texture"
+        texture = _.find @ui.editor.project.textures, (t) -> t.getID() == texID
+
+        @pickActor e.originalEvent.pageX, e.originalEvent.pageY, (actor) ->
+          actor.setTexture texture
+        , =>
+          time = @ui.timeline.getCursorTime()
+          pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
+
+          pos.x += ARERenderer.camPos.x
+          pos.y += ARERenderer.camPos.y
+
+          texSize = ARERenderer.getTextureSize texture.getUID()
+          w = texSize.w
+          h = texSize.h
+
+          actor = new RectangleActor @ui, time, w, h, pos.x, pos.y
+          actor.setTexture texture
+          @addActor actor
+
+        e.preventDefault()
+        false
+
+    ###
     # Initializes dragging settings and attaches listeners
     ###
-    setupActorDragging: ->
+    _setupActorDragging: ->
+
+      toggleActorPhysics = (d, handle) ->
+
+        if handle.getActor().hasPsyx()
+          handle.getActor().disablePsyx()
+          d.setUserDataValue "hasPhysics", true
+        else
+          d.setUserDataValue "hasPhysics", false
+
+      ###
+      # Rotate Actor
+      ###
+      @draggerRotate = new Dragger ".workspace canvas"
+
+      @draggerRotate.setCheckDrag (e) =>
+        !e.shiftKey && e.ctrlKey
+
+      @draggerRotate.setOnDragStart (d) =>
+        @performPick @domToGL(d.getStart().x, d.getStart().y), (r, g, b) =>
+          return d.forceDragEnd() unless @isValidPick r, g, b
+
+          handle = @getActorFromPick r, g, b
+          return d.forceDragEnd() unless handle
+
+          d.setTarget handle
+          d.setUserData
+            updateProperties: true
+            original: handle.getRotation()
+
+          toggleActorPhysics d, handle
+
+          document.body.style.cursor = "pointer"
+
+      @draggerRotate.setOnDragEnd (d) =>
+
+        document.body.style.cursor = "auto"
+
+        if d.getUserData()
+          handle = d.getTarget()
+          handle.getActor().enablePsyx() if d.getUserData().hasPhysics
+
+      @draggerRotate.setOnDrag (d, deltaX, deltaY) =>
+
+        # Delay the drag untill we finish our pick
+        if d.getUserData() and d.getUserData().original != null
+          org = d.getUserData().original
+          n = (org + deltaX + deltaY) % 360
+          n = 360+n if n < 0
+
+          d.getTarget().setRotation n
+
+          @ui.pushEvent "selected.actor.update", actor: d.getTarget()
+
+      ###
+      # Move actor
+      ###
       @dragger = new Dragger ".workspace canvas"
 
-      # shift key must not be pressed.
-      @dragger.withModifier.shiftKey = false
+      @dragger.setCheckDrag (e) =>
+        !e.shiftKey && !e.ctrlKey
 
       @dragger.setOnDragStart (d) =>
         @performPick @domToGL(d.getStart().x, d.getStart().y), (r, g, b) =>
@@ -397,11 +462,7 @@ define (require) ->
             updateProperties: true
             original: handle.getPosition()
 
-          if handle.getActor().hasPsyx()
-            handle.getActor().disablePsyx()
-            d.setUserDataValue "hasPhysics", true
-          else
-            d.setUserDataValue "hasPhysics", false
+          toggleActorPhysics d, handle
 
           document.body.style.cursor = "pointer"
 
@@ -455,7 +516,7 @@ define (require) ->
 
       @_regListeners()
 
-      @setupActorDragging()
+      @_setupActorDragging()
 
       # Start rendering
       @_are.startRendering()
@@ -711,4 +772,3 @@ define (require) ->
         @addActor newActor
 
       @ui.timeline.updateAllActorsInTime()
-
