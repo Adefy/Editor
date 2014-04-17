@@ -328,3 +328,47 @@ define (require) ->
       options = JSON.stringify options
 
       "AJS.animate(#{actorName}, #{properties}, #{options});"
+
+
+    ## File Menu Commands
+
+    ###
+    # Create a new Ad
+    ###
+    fileNewAd: ->
+      @newAd()
+      @
+
+    ###
+    # Create a new Ad from Template
+    ###
+    fileNewFromTemplate: ->
+      #
+      @
+
+    ###
+    # Open an existing ad
+    ###
+    fileOpen: ->
+      #
+      @
+
+    ###
+    # Save current ad
+    ###
+    fileSave: ->
+      @save()
+      @
+
+    ###
+    # Save current ad, with new name
+    ###
+    fileSaveAs: ->
+      @
+
+    ###
+    # Export the current ad
+    ###
+    fileExport: ->
+      @export()
+      @

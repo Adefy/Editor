@@ -114,38 +114,54 @@ define (require) ->
       timelineMenu = @menu.addItem "Timeline"
       canvasMenu = @menu.addItem "Canvas"
       toolsMenu = @menu.addItem "Tools"
+      prefMenu = @menu.addItem "Preferences"
       helpMenu = @menu.addItem "Help"
 
       editor = "window.AdefyEditor"
       editorUI = "#{editor}.ui"
 
-      ##
+      ###
+      #
       # File menu options
+      #
+      ###
       fileMenu.createChild
-        label: "New Ad..."
-        click: "#{editor}.newAd()"
+        label: "New Ad ..."
+        click: "#{editor}.fileNewAd()"
 
       fileMenu.createChild
-        label: "New From Template..."
+        label: "New From Template ..."
+        click: "#{editor}.fileNewFromTemplate()"
+        sectionEnd: true
+
+      fileMenu.createChild
+        label: "Open"
+        click: "#{editor}.fileOpen()"
         sectionEnd: true
 
       fileMenu.createChild
         label: "Save"
-        click: "#{editor}.save()"
+        click: "#{editor}.fileSave()"
 
       fileMenu.createChild
         label: "Save As..."
-
-      fileMenu.createChild
-        label: "Export..."
-        click: "#{editor}.export()"
+        click: "#{editor}.fileSaveAs()"
         sectionEnd: true
 
       fileMenu.createChild
-        label: "Quit"
+        label: "Export..."
+        click: "#{editor}.fileExport()"
+        sectionEnd: true
 
-      ##
+      # and why would we even need this...
+      #fileMenu.createChild
+      #  label: "Quit"
+
+      ###
+      #
       # Edit menu options
+      #
+      ###
       editMenu.createChild
         label: "Undo"
 
@@ -165,9 +181,17 @@ define (require) ->
 
       editMenu.createChild
         label: "Paste"
+        sectionEnd: true
 
-      ##
+      editMenu.createChild
+        label: "Project ..."
+        sectionEnd: true
+
+      ###
+      #
       # View menu options
+      #
+      ###
       viewMenu.createChild
         label: "Toggle Sidebar"
         click: "#{editorUI}.sidebar.toggle()"
@@ -187,26 +211,33 @@ define (require) ->
         click: "#{editorUI}.refresh()"
         sectionEnd: true
 
-      ##
+      ###
+      #
       # Timeline menu options
+      #
+      ###
       timelineMenu.createChild
         label: "Set Preview Framerate ..."
         click: "#{editorUI}.modals.showSetPreviewRate()"
 
-      ##
+      ###
+      #
       # Canvas menu options
+      #
+      ###
       canvasMenu.createChild
         label: "Set Screen Properties ..."
         click: "#{editorUI}.modals.showSetScreenProperties()"
 
-      ##
-      #
       canvasMenu.createChild
         label: "Set Background Color ..."
         click: "#{editorUI}.modals.showSetBackgroundColor()"
 
-      ##
+      ###
+      #
       # Tools menu options
+      #
+      ###
       toolsMenu.createChild
         label: "Preview ..."
 
@@ -221,8 +252,20 @@ define (require) ->
         label: "Upload textures ..."
         click: "#{editorUI}.modals.showUploadTextures()"
 
-      ##
+      ###
+      #
+      # Preferences menu options
+      #
+      ###
+      prefMenu.createChild
+        label: "Settings"
+        click: "#{editorUI}.modals.showPrefSettings()"
+
+      ###
+      #
       # Help menu options
+      #
+      ###
       helpMenu.createChild
         label: "About Editor"
         click: "#{editorUI}.modals.showHelpAbout()"

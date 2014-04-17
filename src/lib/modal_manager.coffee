@@ -345,6 +345,15 @@ define (require) ->
     ###
     # @return [Modal]
     ###
+    showEditHistory: ->
+
+      new Modal
+        title: "Edit History"
+        content: TemplateModalEditHistory()
+
+    ###
+    # @return [Modal]
+    ###
     showHelpAbout: ->
 
       new Modal
@@ -352,13 +361,20 @@ define (require) ->
         content: TemplateModalHelpAbout
           version: Version.STRING
 
+    ###
+    # @return [Modal]
+    ###
     showHelpChangeLog: ->
 
       new Modal
         title: "Change Log"
         content: TemplateModalHelpChangeLog()
 
+    ###
+    # @return [Void]
+    ###
     showUploadTextures: (options) ->
+
       options = param.optional options, {}
 
       filepicker.pickAndStore
@@ -383,8 +399,13 @@ define (require) ->
         if cb = options.cb
           cb blob
 
-    showEditHistory: ->
+    ###
+    # @return [Modal]
+    ###
+    showPrefSettings: ->
+
+      contents = ""
 
       new Modal
-        title: "Edit History"
-        content: TemplateModalEditHistory()
+        title: "Settings"
+        contents: contents
