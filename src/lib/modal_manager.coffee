@@ -19,9 +19,12 @@ define (require) ->
   TemplateModalEditHistory = require "templates/modal/edit_history"
   TemplateModalHelpAbout = require "templates/modal/help_about"
   TemplateModalHelpChangeLog = require "templates/modal/change_log"
+  TemplateModalPrefSettings = require "templates/modal/pref_settings"
   TemplateModalRename = require "templates/modal/rename"
   TemplateModalSetPreviewFPS = require "templates/modal/set_preview_fps"
   TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
+
+  ChangeLog = require "info_change_log"
 
   Version = require "version"
 
@@ -44,17 +47,16 @@ define (require) ->
 
       options = param.optional options, {}
 
-      nameId = ID.prefId "fileName"
+      nameId = ID.prefID "fileName"
 
       _html = TemplateModalRename
         nameId: nameId
         name: handle.getName()
 
       new Modal
-        title: "Rename",
-        mini: true,
-        content: _html,
-        modal: false,
+        title: "Rename"
+        mini: true
+        content: _html
 
         cb: (data) =>
           # Submission
@@ -97,7 +99,7 @@ define (require) ->
     showSetPreviewRate: ->
 
       # Randomized input name
-      name = ID.prefId "_tPreviewRate"
+      name = ID.prefID "_tPreviewRate"
 
       new Modal
         title: "Set Preview Framerate"
@@ -105,7 +107,6 @@ define (require) ->
           previewFPS: @ui.timeline.getPreviewFPS()
           name: name
 
-        modal: false
         cb: (data) => @ui.timeline._previewFPS = data[name]
         validation: (data) ->
           return "Framerate must be a number" if isNaN data[name]
@@ -120,7 +121,7 @@ define (require) ->
     showSetExportRate: ->
 
       # Randomized input name
-      name = ID.prefId "_tPreviewRate"
+      name = ID.prefID "_tPreviewRate"
 
       new Modal
         title: "Set Export Framerate"
@@ -128,7 +129,6 @@ define (require) ->
           previewFPS: @ui.timeline.getPreviewFPS()
           name: name
 
-        modal: false
         cb: (data) =>
           #@ui.timeline._previewFPS = data[name]
 
@@ -145,10 +145,10 @@ define (require) ->
 
       workspace = @ui.workspace
 
-      curScale = ID.prefId "_wspscale"
-      cSize = ID.prefId "_wspcsize"
-      pSize = ID.prefId "_wsppsize"
-      pOrie = ID.prefId "_wsporientation"
+      curScale = ID.prefID "_wspscale"
+      cSize = ID.prefID "_wspcsize"
+      pSize = ID.prefID "_wsppsize"
+      pOrie = ID.prefID "_wsporientation"
 
       curSize = "#{workspace._pWidth}x#{workspace._pHeight}"
       chL = ""
@@ -169,7 +169,6 @@ define (require) ->
           pScale: workspace._pScale
           currentSize: curSize
 
-        modal: false
         cb: (data) =>
           # Submission
           size = data[cSize].split "x"
@@ -212,11 +211,11 @@ define (require) ->
       valHex = _colB | (_colG << 8) | (_colR << 16)
       valHex = (0x1000000 | valHex).toString(16).substring 1
 
-      preview = ID.prefId "_wbgPreview"
-      hex = ID.prefId "_wbgHex"
-      r = ID.prefId "_wbgR"
-      g = ID.prefId "_wbgG"
-      b = ID.prefId "_wbgB"
+      preview = ID.prefID "_wbgPreview"
+      hex = ID.prefID "_wbgHex"
+      r = ID.prefID "_wbgR"
+      g = ID.prefID "_wbgG"
+      b = ID.prefID "_wbgB"
 
       pInitial = "background-color: rgb(#{_colR}, #{_colG}, #{_colB});"
 
@@ -236,7 +235,6 @@ define (require) ->
           preview: preview
           pInitial: pInitial
 
-        modal: false
         cb: (data) =>
           # Submission
           workspace._are.setClearColor data[r], data[g], data[b]
@@ -302,8 +300,8 @@ define (require) ->
 
       workspace = @ui.workspace
 
-      textnameID = ID.prefId "_wtexture"
-      textpathID = ID.prefId "_wtext"
+      textnameID = ID.prefID "_wtexture"
+      textpathID = ID.prefID "_wtext"
 
       new Modal
         title: "Add Textures ..."
@@ -313,12 +311,11 @@ define (require) ->
           textname: ""
           textpath: ""
 
-        modal: false
         cb: (data) =>
           #Submission
           workspace._uploadTextures data[textnameID], data[textpathID]
 
-        validation: =>
+        validation: (data) =>
           if data[textnameID] == ""
             return "Texture must have a name"
 
@@ -341,34 +338,6 @@ define (require) ->
         }
 
       new FloatingTextureSelect textures, actor
-
-    ###
-    # @return [Modal]
-    ###
-    showEditHistory: ->
-
-      new Modal
-        title: "Edit History"
-        content: TemplateModalEditHistory()
-
-    ###
-    # @return [Modal]
-    ###
-    showHelpAbout: ->
-
-      new Modal
-        title: "About"
-        content: TemplateModalHelpAbout
-          version: Version.STRING
-
-    ###
-    # @return [Modal]
-    ###
-    showHelpChangeLog: ->
-
-      new Modal
-        title: "Change Log"
-        content: TemplateModalHelpChangeLog()
 
     ###
     # @return [Void]
@@ -404,8 +373,54 @@ define (require) ->
     ###
     showPrefSettings: ->
 
-      contents = ""
+      autosaveFreqID = ID.prefID "autosave-frequency"
+
+      contents = TemplateModalPrefSettings
+        autosaveFreq: @ui.editor.settings.autosave.frequency
+        autosaveFreqID: autosaveFreqID
 
       new Modal
         title: "Settings"
-        contents: contents
+        content: contents
+        cb: (data) =>
+
+          freq = Number(data[autosaveFreqID])
+          @ui.editor.settings.autosave.frequency = freq
+          @ui.editor.saveSettings()
+
+        validation: (data) =>
+
+          freq = Number(data[autosaveFreqID])
+
+          unless freq >= 0
+            return "Autosave Frequency must be 0 or more"
+
+          true
+
+    ###
+    # @return [Modal]
+    ###
+    showEditHistory: ->
+
+      new Modal
+        title: "Edit History"
+        content: TemplateModalEditHistory()
+
+    ###
+    # @return [Modal]
+    ###
+    showHelpAbout: ->
+
+      new Modal
+        title: "About"
+        content: TemplateModalHelpAbout
+          version: Version.STRING
+
+    ###
+    # @return [Modal]
+    ###
+    showHelpChangeLog: ->
+
+      new Modal
+        title: "Change Log"
+        content: TemplateModalHelpChangeLog changes: ChangeLog.changes
