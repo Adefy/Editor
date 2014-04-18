@@ -238,4 +238,10 @@ define (require) ->
 
     "0.2.0"
       texures is now an Array<Texture>
+
+    "0.3.0"
+      Added a uid
+
+    "0.3.1"
+      Added name, dateDumped, dateStarted and saveCount
 ###

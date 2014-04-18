@@ -6,9 +6,16 @@
 # retain type information)
 define
 
+  ###
+  # @param [String] key
+  # @param [Object] value
+  ###
   set: (key, value) ->
     window.localStorage.setItem key, JSON.stringify value
 
+  ###
+  # @param [String] key
+  ###
   get: (key) ->
     try
       JSON.parse window.localStorage.getItem(key)
