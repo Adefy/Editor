@@ -24,6 +24,8 @@ define (require) ->
       ###
       @_spawnCap = 100
 
+      @handleType = "ParticleSystem"
+
     spawn: ->
       @_actors.push
 

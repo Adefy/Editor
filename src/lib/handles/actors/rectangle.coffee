@@ -31,6 +31,9 @@ define (require) ->
       if w <= 0 or h <= 0 then throw new Error "Width/Height must be >0!"
 
       super @ui, birth, death
+
+      @handleType = "RectangleActor"
+
       @setName "Rectangle #{@_id_n}"
 
       @_properties.position.setValue x: x, y: y

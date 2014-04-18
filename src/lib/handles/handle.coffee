@@ -35,6 +35,8 @@ define (require) ->
 
       @name = "handle #{@_id_n}"
 
+      @handleType = "Handle"
+
       # Attach ourselves to the body
       $("body").data @getID(), @
 
@@ -121,7 +123,8 @@ define (require) ->
     ###
     dump: ->
       data = _.extend Dumpable::dump.call(@),
-        handleVersion: "1.0.1"
+        handleVersion: "1.1.0"
+        handleType: @handleType
         type: "#{@.constructor.name}"
         name: @name
         properties: {}
@@ -149,4 +152,7 @@ define (require) ->
   Changelog:
     dump: "1.0.1"
       Added name
+
+    dump: "1.1.0"
+      Added handleType
 ###

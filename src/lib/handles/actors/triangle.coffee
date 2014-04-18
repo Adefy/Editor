@@ -31,6 +31,9 @@ define (require) ->
       if b <= 0 or h <= 0 then throw new Error "Base/Height must be >0!"
 
       super @ui, birth, death
+
+      @handleType = "TriangleActor"
+
       @name = "Triangle #{@_id_n}"
 
       @_properties.position.setValue x: x, y: y

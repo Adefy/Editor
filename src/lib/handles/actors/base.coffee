@@ -28,6 +28,8 @@ define (require) ->
 
       super()
 
+      @handleType = "BaseActor"
+
       @_AJSActor = null
       @setName "Base Actor #{@_id_n}"
       @_alive = false
