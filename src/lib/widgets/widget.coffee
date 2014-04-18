@@ -110,3 +110,21 @@ define (requre) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
+
+    ###
+    # @return [Object] data
+    ###
+    dump: ->
+      _.extend Dumpable::dump.call(@),
+        widgetVersion: "1.0.0"
+
+    ###
+    # Load from Widget dump
+    # @param [Object] data
+    ###
+    load: (data) ->
+      Dumpable::load.call @, data
+
+      # data.widgetVersion
+
+      @

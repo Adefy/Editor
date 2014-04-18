@@ -1204,74 +1204,6 @@ define (require) ->
           @_properties[p]._value = props[p].value
 
     ###
-    # Dump actor into basic Object
-    #
-    # @return [Object] actorJSON
-    ###
-    dump: ->
-      data = super()
-
-      data.propBuffer = @_propBuffer
-      data.birth = @lifetimeStart_ms
-      data.death = @lifetimeEnd_ms
-      data.animations = {}
-
-      for time, properties of @_animations
-        animationSet = {}
-
-        for property, propAnimation of properties
-
-          if propAnimation.components
-            animationData = components: {}
-
-            for component, animation of propAnimation.components
-              animationData.components[component] = animation.dump()
-
-          else
-            animationData = propAnimation.dump()
-
-          animationSet[property] = animationData
-
-        data.animations[time] = animationSet
-
-      data
-
-    ###
-    # Loads properties, animations, and a prop buffer from a saved state
-    #
-    # @param [Object] data
-    # @return [self]
-    ###
-    load: (data) ->
-
-      # Load basic properties
-      super data
-
-      # Load everything else
-      @_propBuffer = data.propBuffer
-
-      @_animations = {}
-      for time, properties of data.animations
-        animationSet = {}
-
-        for property, propAnimation of properties
-
-          if propAnimation.components
-            animationData = components: {}
-
-            for component, animation of propAnimation.components
-              animationData.components[component] = Bezier.load animation
-
-          else
-            animationData = Bezier.load propAnimation
-
-          animationSet[property] = animationData
-
-        @_animations[time] = animationSet
-
-      @
-
-    ###
     # Deletes us, muahahahaha. We notify the workspace, clear the properties
     # panel if it is targetting us, and destroy our actor.
     ###
@@ -1333,3 +1265,73 @@ define (require) ->
       @ui.workspace.addActor newActor
 
       @
+
+    ###
+    # Dump actor into basic Object
+    #
+    # @return [Object] actorJSON
+    ###
+    dump: ->
+      data = super()
+
+      data.actorBaseVersion = "1.0.0"
+      data.propBuffer = @_propBuffer
+      data.birth = @lifetimeStart_ms
+      data.death = @lifetimeEnd_ms
+      data.animations = {}
+
+      for time, properties of @_animations
+        animationSet = {}
+
+        for property, propAnimation of properties
+
+          if propAnimation.components
+            animationData = components: {}
+
+            for component, animation of propAnimation.components
+              animationData.components[component] = animation.dump()
+
+          else
+            animationData = propAnimation.dump()
+
+          animationSet[property] = animationData
+
+        data.animations[time] = animationSet
+
+      data
+
+    ###
+    # Loads properties, animations, and a prop buffer from a saved state
+    #
+    # @param [Object] data
+    # @return [self]
+    ###
+    load: (data) ->
+
+      # Load basic properties
+      super data
+
+      # Load everything else
+      @_propBuffer = data.propBuffer
+
+      @_animations = {}
+      for time, properties of data.animations
+        animationSet = {}
+
+        for property, propAnimation of properties
+
+          if propAnimation.components
+            animationData = components: {}
+
+            for component, animation of propAnimation.components
+              animationData.components[component] = Bezier.load animation
+
+          else
+            animationData = Bezier.load propAnimation
+
+          animationSet[property] = animationData
+
+        @_animations[time] = animationSet
+
+      @
+

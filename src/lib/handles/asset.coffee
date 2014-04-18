@@ -275,7 +275,7 @@ define (require) ->
     ###
     dump: ->
       data = _.extend Dumpable::dump.call(@),
-        version: "1.0.0"
+        assetVersion: "1.1.0"
         id: @_id # will be ignored on load though
         name: @_name
         isDirectory: @_isDirectory
@@ -295,7 +295,7 @@ define (require) ->
 
     @load: (data) ->
 
-      # data.version
+      # data.assetVersion
       # for now we don't have to handle different project versions
       # since assets remain relatively the same
       asset = new Asset null, data
@@ -303,3 +303,11 @@ define (require) ->
       asset.load data
       asset
 
+###
+  "1.0.0"
+
+  "1.1.0"
+    version has been renamed to assetVersion this is to prevent name clashes
+    with super classes who use "version" for their dumps as well
+
+###

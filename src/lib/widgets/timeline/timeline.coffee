@@ -1120,13 +1120,12 @@ define (require) ->
           @updateActor params.actor
 
     dump: ->
-      {
-        version: "1.0.0"
+      _.extend super(),
+        timelineVersion: "1.1.0"
         duration: @getDuration()
         current: @getCursorTime()
-      }
 
     load: (data) ->
-      # data.version == "1.0.0"
+      # data.timelineVersion >= "1.0.0"
       @setDuration data.duration
       @setCursorTime data.current

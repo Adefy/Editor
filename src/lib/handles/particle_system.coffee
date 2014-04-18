@@ -40,16 +40,16 @@ define (require) ->
 
     dump: ->
       _.extend super(),
-        version: "1.0.0"
-        position: @_position.dump()                                     # 1.0.0
-        spawnCap: @_spawnCap                                            # 1.0.0
-        spawnList: @_spawnList                                          # 1.0.0
+        psVersion: "1.0.0"
+        position: @_position.dump()                                    # v1.0.0
+        spawnCap: @_spawnCap                                           # v1.0.0
+        spawnList: @_spawnList                                         # v1.0.0
 
     load: (data) ->
       super data
 
-      @_position = Vec2.load data.position
-      @_spawnCap = data.spawnCap
-      @_spawnList = data.spawnList
+      @_position = Vec2.load data.position                             # v1.0.0
+      @_spawnCap = data.spawnCap                                       # v1.0.0
+      @_spawnList = data.spawnList                                     # v1.0.0
 
       @

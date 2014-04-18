@@ -71,17 +71,17 @@ define (require) ->
       ##
       # This is a v0.1.0 dump
       _.extend Dumpable::dump.call(@),
-        version: @version                                      # v0.1.0
-        uid: @uid                                              # v0.3.0
-        dateStarted: @dateStarted                              # v0.3.1
-        dateDumped: Date.now()                                 # v0.3.1
-        name: @name                                            # v0.3.1
-        saveCount: @saveCount+1                                # v0.3.1
-        #textures: @textures                                   # v0.1.0
-        assets: @assets.dump()                                 # v0.1.0
-        textures: _.map @textures, (texture) -> texture.dump() # v0.2.0
-        workspace: @ui.workspace.dump()                        # v0.1.0
-        timeline: @ui.timeline.dump()                          # v0.1.0
+        version: @version                                              # v0.1.0
+        uid: @uid                                                      # v0.3.0
+        dateStarted: @dateStarted                                      # v0.3.1
+        dateDumped: Date.now()                                         # v0.3.1
+        name: @name                                                    # v0.3.1
+        saveCount: @saveCount+1                                        # v0.3.1
+        #textures: @textures                                           # v0.1.0
+        assets: @assets.dump()                                         # v0.1.0
+        textures: _.map @textures, (texture) -> texture.dump()         # v0.2.0
+        workspace: @ui.workspace.dump()                                # v0.1.0
+        timeline: @ui.timeline.dump()                                  # v0.1.0
 
     ###
     # Load the current Project state to basic Object for stringify-ing#
@@ -103,11 +103,11 @@ define (require) ->
 
       ##
       # assets have remained the same thus far
-      @assets = Asset.load data.assets                     # v0.1.0
-      @uid = data.uid || ID.uID()                          # v0.3.0
-      @name = data.name || "Untitled #{projver} (project)" # v0.3.1
-      @dateStarted = data.dateStarted || Date.now()        # v0.3.1
-      @saveCount = data.saveCount || 1                     # v0.3.1
+      @assets = Asset.load data.assets                                 # v0.1.0
+      @uid = data.uid || ID.uID()                                      # v0.3.0
+      @name = data.name || "Untitled #{projver} (project)"             # v0.3.1
+      @dateStarted = data.dateStarted || Date.now()                    # v0.3.1
+      @saveCount = data.saveCount || 1                                 # v0.3.1
 
       ##
       # Luckily for us, textures are very similar when they where dumped

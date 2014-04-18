@@ -28,8 +28,8 @@ define (require) ->
     ###
     dump: ->
       _.extend super(),
-        x: @x
-        y: @y
+        x: @x                                                          # v1.0.0
+        y: @y                                                          # v1.0.0
 
     ###
     # Load a Vec2 from a dump
@@ -39,8 +39,8 @@ define (require) ->
     load: (data) ->
       super data
 
-      @x = data.x
-      @y = data.y
+      @x = data.x                                                      # v1.0.0
+      @y = data.y                                                      # v1.0.0
 
       @
 

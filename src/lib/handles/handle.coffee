@@ -121,7 +121,7 @@ define (require) ->
     ###
     dump: ->
       data = _.extend Dumpable::dump.call(@),
-        version: "1.0.1"
+        handleVersion: "1.0.1"
         type: "#{@.constructor.name}"
         name: @name
         properties: {}

@@ -750,11 +750,11 @@ define (require) ->
     ###
     dump: ->
       _.extend super(),
-        version: "1.2.0"
-        camPos:
+        workspaceVersion: "1.2.0"
+        camPos:                                                        # v1.2.0
           x: ARERenderer.camPos.x
           y: ARERenderer.camPos.y
-        actors: _.map @getActors(), (actor) -> actor.dump()
+        actors: _.map @getActors(), (actor) -> actor.dump()            # v1.1.0
 
     ###
     # Loads the a workspace data state
@@ -762,11 +762,13 @@ define (require) ->
     ###
     load: (data) ->
       super data
-      if data.version >= "1.2.0"
+
+      if (data.workspaceVersion >= "1.2.0") || \
+       ((data.dumpVersion == "1.0.0") && (data.version >= "1.2.0"))
         ARERenderer.camPos.x = data.camPos.x
         ARERenderer.camPos.y = data.camPos.y
 
-      #data.version == "1.1.0"
+      # data.workspaceVersion >= "1.1.0"
       for actor in data.actors
         newActor = window[actor.type].load @ui, actor
         @addActor newActor

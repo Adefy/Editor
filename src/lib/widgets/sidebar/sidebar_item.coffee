@@ -23,4 +23,8 @@ define (require) ->
       # Build the containing div
       super ID.prefID("sidebar-item"), parent, classes
 
+    ###
+    # Returns the Sidebar object for this sidebar item
+    # @return [Sidebar] parent
+    ###
     getSidebar: -> @_parent

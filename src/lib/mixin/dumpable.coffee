@@ -9,7 +9,7 @@ define (require) ->
     ###
     dump: ->
       {
-        dumpVersion: "1.0.0"
+        dumpVersion: "1.1.0"
       }
 
     ###

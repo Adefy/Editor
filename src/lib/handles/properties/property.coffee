@@ -67,35 +67,6 @@ define (require) ->
     requestUpdate: ->
 
     ###
-    # Dumps the property as a basic Object
-    #
-    # @return [Object] data
-    ###
-    dump: ->
-      data = super()
-
-      for key, value of @
-        splitKey = key.split("get")
-
-        if splitKey.length == 2
-          data[splitKey[1].trim().toLowerCase()] = @[key]()
-
-      data
-
-    ###
-    # Loads the property from a basic Object
-    #
-    # @param [Object] data
-    ###
-    load: (data) ->
-      super data
-      for key, value of data
-        setter = "set#{@capitalize key}"
-        @[setter] value if @[setter]
-
-      @
-
-    ###
     # Ensure that the provided value is valid for useage
     #
     # @param [Object] value
@@ -142,3 +113,35 @@ define (require) ->
     ###
     genAnimationOpts: (animation, options) -> options
 
+    ###
+    # Dumps the property as a basic Object
+    #
+    # @return [Object] data
+    ###
+    dump: ->
+      data = super()
+
+      data.propertyVersion = "1.0.0"
+
+      for key, value of @
+        splitKey = key.split("get")
+
+        if splitKey.length == 2
+          data[splitKey[1].trim().toLowerCase()] = @[key]()
+
+      data
+
+    ###
+    # Loads the property from a basic Object
+    #
+    # @param [Object] data
+    ###
+    load: (data) ->
+      super data
+
+      # data.propertyVersion >= "1.0.0"
+      for key, value of data
+        setter = "set#{@capitalize key}"
+        @[setter] value if @[setter]
+
+      @

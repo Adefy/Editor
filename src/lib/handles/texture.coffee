@@ -96,7 +96,7 @@ define (require) ->
 
     dump: ->
       _.extend Dumpable::dump.call(@),
-        version: "1.1.0"
+        textureVersion: "1.2.0"
         id: @_id
         uid: @_uid
         name: @_name
@@ -105,7 +105,8 @@ define (require) ->
     load: (data) ->
       Dumpable::load.call @, data
 
-      if data.version > "1.0.0"
+      if data.textureVersion > "1.0.0" || \
+       (data.dumpableVersion == "1.0.0" && data.version > "1.1.0")
         @_uid = data.uid
 
       # we are probably dealing with an old v1.0.0 texture, so we'll
