@@ -1,2 +1,4 @@
 src/components
 doc/
+node_modules
+src/build

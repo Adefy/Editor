@@ -1,3 +1,3 @@
-requirejs.config baseUrl: "lib/"
+requirejs.config baseUrl: "/editor/build/lib/"
 requirejs ["editor"], (Editor) ->
   window.AdefyEditor = new Editor
