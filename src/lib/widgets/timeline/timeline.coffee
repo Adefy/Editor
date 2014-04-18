@@ -1119,13 +1119,31 @@ define (require) ->
         when "selected.actor.update"
           @updateActor params.actor
 
+    ###
+    # @return [Object] data
+    ###
     dump: ->
       _.extend super(),
         timelineVersion: "1.1.0"
         duration: @getDuration()
         current: @getCursorTime()
 
+    ###
+    # @param [Object] data
+    ###
     load: (data) ->
+      super data
       # data.timelineVersion >= "1.0.0"
       @setDuration data.duration
       @setCursorTime data.current
+
+###
+
+  ChangeLog
+    dump: "1.0.0"
+      Initial
+
+    dump: "1.1.0"
+      Initial
+
+###

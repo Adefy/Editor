@@ -122,3 +122,16 @@ define (require) ->
     @load: (data) ->
       texture = new Texture
       texture.load data
+
+###
+  ChangeLog
+    dump: "1.0.0"
+      Initial
+
+    dump: "1.1.0"
+      Added uid
+
+    dump: "1.2.0"
+      dumpVersion bump changes
+
+###

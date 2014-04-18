@@ -151,6 +151,7 @@ define (require) ->
     remove: ->
       if @alive
 
+        ##
         # Unbind listeners
         for f of @functions
           if @functions[f]._ident != undefined
@@ -163,3 +164,7 @@ define (require) ->
         $("body").removeData @getID()
 
         @alive = false
+
+        return true
+
+      false

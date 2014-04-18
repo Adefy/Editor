@@ -55,3 +55,9 @@ define (require) ->
       @_spawnList = data.spawnList                                     # v1.0.0
 
       @
+
+###
+  ChangeLog
+    dump: "1.0.0"
+
+###

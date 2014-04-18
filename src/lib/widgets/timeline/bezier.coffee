@@ -191,3 +191,11 @@ define (require) ->
     @load: (data) ->
       # data.bezierVersion == "1.0.0"
       new Bezier data.start, data.end, data.degree, data.control, data.buffer
+
+###
+
+  Changelog:
+    dump: "1.0.0"
+      Initial
+
+###

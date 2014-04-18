@@ -38,3 +38,12 @@ define (require) ->
     deserialize: (raw) ->
       param.required raw
       @load JSON.parse raw
+
+###
+  ChangeLog
+    dump: "1.0.0"
+      Initial
+
+    dump: "1.1.0"
+      dumpVersion bump
+###
