@@ -6,10 +6,13 @@ define (require) ->
 
   class ParticleSystem extends Handle
 
-    constructor: ->
+    constructor: (@ui) ->
 
       @_position = new Vec2(0, 0)
 
+      ###
+      # @type [Array<BaseActor>]
+      ###
       @_actors = []
 
       ###
@@ -18,6 +21,8 @@ define (require) ->
       #   @property
       ###
       @_spawnList = []
+      @_spawnSelector = =>
+        @_spawnList[Math.floor(Math.random() * @_spawnList.length)]
 
       ###
       # @type [Number] _spawnCap maximum number of spawns allowed
@@ -27,19 +32,35 @@ define (require) ->
       @handleType = "ParticleSystem"
 
     spawn: ->
-      @_actors.push
+      actor = window[actor.type].load @ui, @_spawnSelector()
+      actor.isParticle = true
+
+      @_actors.push actor
 
       @
 
+    ###
+    # Get the ParticleSystem root position
+    # @return [Vec2]
+    ###
     getPosition: ->
       @_position
 
+    ###
+    # Set the ParticleSystem root position
+    # @param [Number] x
+    # @param [Number] y
+    ###
     setPosition: (x, y) ->
       @_position.x = x
       @_position.y = y
 
       @
 
+    ###
+    # Dumps the ParticleSystem to a basic Object
+    # @return [Object] data
+    ###
     dump: ->
       _.extend super(),
         psVersion: "1.0.0"
@@ -47,6 +68,10 @@ define (require) ->
         spawnCap: @_spawnCap                                           # v1.0.0
         spawnList: @_spawnList                                         # v1.0.0
 
+    ###
+    # @param [Object] data
+    # @return [self]
+    ###
     load: (data) ->
       super data
 
@@ -55,6 +80,15 @@ define (require) ->
       @_spawnList = data.spawnList                                     # v1.0.0
 
       @
+
+    ###
+    # @param [Object] data
+    # @return [ParticleSystem]
+    ###
+    @load: (data) ->
+      ps = new ParticleSystem AdefyEditor.ui
+      ps.load data
+      ps
 
 ###
   ChangeLog
