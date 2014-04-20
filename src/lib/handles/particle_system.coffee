@@ -1,17 +1,27 @@
 define (require) ->
 
+  ID = require "util/id"
+  seedrand = require "util/seedrandom"
+
   Handle = require "handles/handle"
 
   Vec2 = require "core/vec2"
 
   class ParticleSystem extends Handle
 
+    ###
+    # @param [UIManager] ui
+    ###
     constructor: (@ui) ->
+      super()
+
+      @_uid = ID.uID()
 
       ###
       # @type [Vec2]
       ###
       @_position = new Vec2(0, 0)
+      @_actorRandomSpawnDelta = new Vec2(0, 0)
 
       ###
       # @type [Array<BaseActor>]
@@ -43,12 +53,37 @@ define (require) ->
       ###
       @handleType = "ParticleSystem"
 
+      ###
+      # @type [Number]
+      ###
+      @_seed = Math.random() * 0xFFFF
+
+      @_iSeed = @_seed
+
+    ###
+    # Reset the particle system to its original state
+    # @return [self]
+    ###
+    reset: ->
+      @_iSeed = @_seed
+
+      for actor in @_actors
+        actor.destroy()
+
+      @_actors.length = 0
+
+      @
+
     ###
     # Spawn a new actor and add it to the internal list
     # @return [self]
     ###
     spawn: ->
+      @_iSeed++
+
       actor = window[actor.type].load @ui, @_spawnSelector()
+      pos = @_actorRandomSpawnDelta.random(seed: @_iSeed).add(@_position)
+      actor.setPosition pos.x, pos.y
       actor.isParticle = true
 
       @_actors.push actor
@@ -62,6 +97,18 @@ define (require) ->
     remove: (actor) ->
       @_actors = _.without @_actors, (a) -> a.getId() == actor.getId()
       @
+
+    ###
+    # @return [Number] seed
+    ###
+    getSeed: ->
+      @_seed
+
+    ###
+    # @param [Number] seed
+    # @return [self]
+    ###
+    setSeed: (@_seed) -> @
 
     ###
     # Get the ParticleSystem root position
@@ -87,7 +134,9 @@ define (require) ->
     ###
     dump: ->
       _.extend super(),
-        psVersion: "1.0.0"
+        psVersion: "1.1.0"
+        uid: @_uid                                                     # v1.1.0
+        actorRandomSpawnDelta: @_actorRandomSpawnDelta.dump()          # v1.1.0
         position: @_position.dump()                                    # v1.0.0
         spawnCap: @_spawnCap                                           # v1.0.0
         spawnList: @_spawnList                                         # v1.0.0
@@ -99,6 +148,10 @@ define (require) ->
     ###
     load: (data) ->
       super data
+
+      if data.psVersion >= "1.1.0"
+        @_uid = data.uid                                               # v1.1.0
+        @_actorRandomSpawnDelta = Vec2.load data.actorRandomSpawnDelta # v1.1.0
 
       @_position = Vec2.load data.position                             # v1.0.0
       @_spawnCap = data.spawnCap                                       # v1.0.0

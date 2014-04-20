@@ -10,17 +10,51 @@ define (require) ->
       @x = param.optional x, 0
       @y = param.optional y, 0
 
+    ###
+    # @param [Boolean] bipolar should randomization occur in all directions?
+    # @return [Vec2]
+    ###
+    random: (options) ->
+      options = param.optional options, {}
+      bipolar = options.bipolar
+      seed = param.optional options.seed, Math.random() * 0xFFFF
+
+      x = Math.random() * @x
+      y = Math.random() * @y
+      if bipolar
+        x = -x if Math.random() < 0.5
+        y = -y if Math.random() < 0.5
+
+      new Vec2 x, y
+
+    ###
+    # @param [Vec2]
+    # @return [Vec2]
+    ###
     add: (other) ->
       new Vec2 @x + other.x, @y + other.y
 
+    ###
+    # @param [Vec2]
+    # @return [Vec2]
+    ###
     sub: (other) ->
       new Vec2 @x - other.x, @y - other.y
 
+    ###
+    # @param [Vec2]
+    # @return [Vec2]
+    ###
     mul: (other) ->
       new Vec2 @x * other.x, @y * other.y
 
+    ###
+    # @param [Vec2]
+    # @return [Vec2]
+    ###
     div: (other) ->
       new Vec2 @x / other.x, @y / other.y
+
 
     ###
     # Dump the current Vec2 to a basic Object
