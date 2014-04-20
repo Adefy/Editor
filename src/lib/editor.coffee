@@ -42,7 +42,7 @@ define (require) ->
 
       @ui = new UIManager @
 
-      AUtilLog.info "Adefy Editor created id(#{config.selector})"
+      AUtilLog.debug "Adefy Editor created id(#{config.selector})"
 
       ###
       # @type [Object] clipboard
@@ -123,6 +123,8 @@ define (require) ->
         @settings.autosave.maxcount = maxcount
 
       @startAutosaveTask() if restartAutosave
+
+      @saveSettings()
       @
 
     ###
@@ -134,7 +136,7 @@ define (require) ->
       Storage.set("editor.autosave.maxcount", @settings.autosave.maxcount)
       #Storage.set("are.renderer.mode", @settings.are.rendererMode)
 
-      AUtilLog.info "Saved editor.settings"
+      AUtilLog.debug "Saved editor.settings"
 
       @
 
@@ -148,7 +150,7 @@ define (require) ->
     ###
     ###
     autosave: ->
-      AUtilLog.info "[Editor] auto-saving project"
+      AUtilLog.debug "[Editor] auto-saving project"
       @project.autosave()
       @
 
@@ -404,6 +406,7 @@ define (require) ->
 
     ###
     # Create a new Ad
+    # @return [self]
     ###
     fileNewAd: ->
       @newAd()
@@ -411,6 +414,7 @@ define (require) ->
 
     ###
     # Create a new Ad from Template
+    # @return [self]
     ###
     fileNewFromTemplate: ->
       #
@@ -418,6 +422,7 @@ define (require) ->
 
     ###
     # Open an existing ad
+    # @return [self]
     ###
     fileOpen: ->
       #
@@ -425,6 +430,7 @@ define (require) ->
 
     ###
     # Save current ad
+    # @return [self]
     ###
     fileSave: ->
       @save()
@@ -432,21 +438,25 @@ define (require) ->
 
     ###
     # Save current ad, with new name
+    # @return [self]
     ###
     fileSaveAs: ->
       @
 
     ###
     # Export the current ad
+    # @return [self]
     ###
     fileExport: ->
       @export()
       @
 
     ###
-    #
+    # @return [self]
     ###
     startAutosaveTask: ->
+
+      AUtilLog.debug "Starting autosave task"
 
       clearInterval @autosaveTaskID if @autosaveTaskID
 
