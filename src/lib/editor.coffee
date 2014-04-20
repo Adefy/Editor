@@ -106,12 +106,33 @@ define (require) ->
         maxcount: Number(Storage.get("editor.autosave.maxcount") || 10)
 
     ###
+    # @return [self]
+    ###
+    applySettings: (options) ->
+      restartAutosave = false
+      autosaveData = param.optional options.autosave, null
+      if autosaveData
+        freq = param.optional autosaveData.frequency, \
+                              @settings.autosave.frequency
+        if freq
+          @settings.autosave.frequency = freq
+          restartAutosave = true
+
+        maxcount = param.optional autosaveData.maxcount, \
+                                  @settings.autosave.maxcount
+        @settings.autosave.maxcount = maxcount
+
+      @startAutosaveTask() if restartAutosave
+      @
+
+    ###
     # Saves the settings to Local Storage
     # @return [Void]
     ###
     saveSettings: ->
       Storage.set("editor.autosave.frequency", @settings.autosave.frequency)
       Storage.set("editor.autosave.maxcount", @settings.autosave.maxcount)
+      #Storage.set("are.renderer.mode", @settings.are.rendererMode)
 
       AUtilLog.info "Saved editor.settings"
 
@@ -422,18 +443,16 @@ define (require) ->
       @export()
       @
 
-
     ###
+    #
     ###
     startAutosaveTask: ->
 
-      editor = @
+      clearInterval @autosaveTaskID if @autosaveTaskID
 
-      autosaveTask = =>
-        setTimeout ->
-          editor.autosave()
-          editor.ui.pushEvent "autosave"
-          autosaveTask()
-        , @settings.autosave.frequency
+      @autosaveTaskID = setInterval =>
+        @autosave()
+        @ui.pushEvent "autosave"
+      , @settings.autosave.frequency
 
-      autosaveTask()
+      @

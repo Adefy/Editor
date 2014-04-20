@@ -391,13 +391,11 @@ define (require) ->
         content: contents
         cb: (data) =>
 
-          freq = Number(data[autosaveFreqID])
-          @ui.editor.settings.autosave.frequency = freq
-
-          #arerm = Number(data[areRendererModeID])
-          #Storage.set("are.renderer.mode", arerm)
-
-          @ui.editor.saveSettings()
+          @ui.editor.applySettings
+            autosave:
+              frequency: Number(data[autosaveFreqID])
+            #are:
+            #  rendererMode: Number(data[areRendererModeID])
 
         validation: (data) =>
 
