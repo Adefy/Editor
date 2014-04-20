@@ -4,12 +4,34 @@ define ->
 
   class AUtilEventLog
 
-    @enabled: true
+    ###
+    # @type [Boolean]
+    ###
+    @enabled: false
 
-    @elog: (tag, meth, type) ->
+    ###
+    # @param [String] tag
+    # @param [String] method
+    # @param [String] type
+    ###
+    @elog: (tag, method, type) ->
       if @enabled
-        AUtilLog.debug "[#{tag}] #{meth} event(type: \"#{type}\")"
+        AUtilLog.debug "[#{tag}] #{method} event(type: \"#{type}\")"
 
+    ###
+    # @param [String] tag
+    # @param [String] type
+    ###
     @epush: (tag, type) -> @elog tag, "PUSH", type
+
+    ###
+    # @param [String] tag
+    # @param [String] type
+    ###
     @egot: (tag, type) -> @elog tag, "GOT", type
+
+    ###
+    # @param [String] tag
+    # @param [String] type
+    ###
     @eignore: (tag, type) -> @elog tag, "IGNORE", type
