@@ -981,20 +981,26 @@ define (require) ->
     #   @optional
     # @return [Number] time
     ###
-    findPrecedingAnimation: (source, property) ->
+    findPrecedingAnimationTime: (source, property) ->
       times = _.keys @_animations
       times.sort (a, b) -> a - b
 
       index = _.findIndex times, (t) -> Number(t) == source
 
-      if index > 0
-        if property != undefined
+      if property != undefined
+        if (index > 0 && (index < times.length))
           for i in [(index-1)..0]
             time = times[i]
             if @_animations[time] && @_animations[time][property]
               return time
         else
+          return _.find times.reverse(), (t) ->
+            source > Number(t) && (@_animations[t] && @_animations[t][property])
+      else
+        if (index > 0 && (index < times.length))
           return times[index - 1]
+        else
+          return _.find times.reverse(), (t) -> source > Number(t)
 
       null
 
@@ -1006,22 +1012,50 @@ define (require) ->
     #   @optional
     # @return [Number] time
     ###
-    findSucceedingAnimation: (source, property) ->
+    findSucceedingAnimationTime: (source, property) ->
       times = _.keys @_animations
       times.sort (a, b) -> a - b
 
       index = _.findIndex times, (t) -> Number(t) == source
 
-      if index > -1 and index < times.length - 1
-        if property != undefined
+      if property != undefined
+        if (index >= 0 && (index < times.length-1))
           for i in [(index+1)..(times.length-1)]
             time = times[i]
             if @_animations[time] && @_animations[time][property]
               return time
         else
+          return _.find times, (t) ->
+            Number(t) > source && (@_animations[t] && @_animations[t][property])
+      else
+        if (index >= 0 && (index < times.length-1))
           return times[index + 1]
+        else
+          return _.find times, (t) -> Number(t) > source
 
       null
+
+    ###
+    # Retrieve the nearest animation based on a source time
+    # @return [Object] animation
+    ###
+    getNearestAnimationTime: (source, options) ->
+      options = param.optional options, {}
+      time = null
+
+      if options.right
+        time = @findSucceedingAnimationTime(source, options.property)
+      else if options.left
+        time = @findPrecedingAnimationTime(source, options.property)
+      else
+        lefttime = @findPrecedingAnimationTime(source, options.property)
+        righttime = @findSucceedingAnimationTime(source, options.property)
+        if (source - lefttime) < (righttime - source)
+          time = lefttime
+        else
+          time = righttime
+
+      time
 
     ###
     # Find the nearest prop buffer entry to the left/right of the supplied state
@@ -1061,8 +1095,8 @@ define (require) ->
 
       currentAnim = null
 
-      succAnim = @findSucceedingAnimation frametime, property
-      predAnim = @findPrecedingAnimation frametime, property
+      succAnim = @findSucceedingAnimationTime frametime, property
+      predAnim = @findPrecedingAnimationTime frametime, property
 
       # if a current frame exists...
       if @_animations[frametime]

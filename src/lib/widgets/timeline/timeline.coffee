@@ -200,6 +200,11 @@ define (require) ->
     ## ATTRIBUTES
 
     ###
+    # @return [Array<BaseActor>] actors
+    ###
+    getActors: -> @_actors
+
+    ###
     # Get timeline duration
     #
     # @return [Number] duration
