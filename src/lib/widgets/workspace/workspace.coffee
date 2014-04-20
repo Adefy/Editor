@@ -4,6 +4,10 @@ define (require) ->
   AUtilLog = require "util/log"
   param = require "util/param"
 
+  Storage = require "storage"
+
+  ParticleSystem = require "handles/particle_system"
+
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
   TemplateWorkspaceCanvasContainer = require "templates/workspace/canvas_container"
@@ -16,13 +20,13 @@ define (require) ->
     ###
     # @type [BaseActor]
     ###
-    @_selectedActor: null
+    @_selectedActorID: null
 
     ###
     # Retrieves the currently selected actor, if any
     # @return [Id] actorId
     ###
-    @getSelectedActor: -> @_selectedActor
+    @getSelectedActorID: -> @_selectedActorID
 
     ###
     # Creates a new workspace if one does not already exist
@@ -39,8 +43,16 @@ define (require) ->
         classes: ["workspace"]
         prepend: true
 
+      ###
       # Keep track of spawned handle actor objects
+      # @type [Array<Handle>]
+      ###
       @actorObjects = []
+
+      ###
+      # @type [Array<ParticleSystem>]
+      ###
+      @_particleSystems = []
 
       # The canvas is fullscreen, minus the mainbar
       @_canvasWidth = @getElement().width()
@@ -82,13 +94,6 @@ define (require) ->
       , @_canvasWidth, @_canvasHeight, "aw-canvas-container"
 
     ###
-    # Internal list of workspace actor objects (Handles)
-    #
-    # @return [Array<Handle>] actors
-    ###
-    getActors: -> @actorObjects
-
-    ###
     # Checks if a workspace has already been created, and returns false if one
     # has. Otherwise, sets a flag preventing future calls from returning true
     ###
@@ -98,6 +103,18 @@ define (require) ->
         return false
 
       Workspace.__exists = true
+
+    ###
+    # Internal list of workspace actor objects (Handles)
+    #
+    # @return [Array<Handle>] actors
+    ###
+    getActors: -> @actorObjects
+
+    ###
+    # @return [Array<ParticleSystem>] particle_systems
+    ###
+    getParticleSystems: -> @_particleSystems
 
     ###
     # Get ARE instance
@@ -142,40 +159,57 @@ define (require) ->
     getPhoneScale: -> @_pScale
 
     ###
-    # Adds an actor to the workspace
-    ###
-    addActor: (actor) ->
-      @actorObjects.push actor
-      @ui.pushEvent "workspace.add.actor", actor: actor
-
-    ###
     # Returns the currently selected actor's id
     # @return [Id] actorId
     ###
-    getSelectedActor: -> Workspace._selectedActor
+    getSelectedActorID: -> Workspace.getSelectedActorID()
 
     ###
     # Sets the selectedActor instance
     # @param [Id] actorId
+    # @return [self]
     ###
     setSelectedActor: (actor) ->
-      Workspace._selectedActor = actor.getID()
+      Workspace._selectedActorID = actor.getID()
 
     ###
     # Loads textures into ARE
     # @param [Array<Texture>] textures
+    # @return [self]
     ###
     loadTextures: (textures) ->
       @loadTexture texture for texture in textures
+      @
 
     ###
     # @param [Texture] texture
+    # @return [self]
     ###
     loadTexture: (texture) ->
       return AUtilLog.error "ARE not loaded, cannot load texture" unless @_are
 
       AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, ->
         AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
+
+      @
+
+    ###
+    # Adds an actor to the workspace
+    # @return [self]
+    ###
+    addActor: (actor) ->
+      @actorObjects.push actor
+      @ui.pushEvent "workspace.add.actor", actor: actor
+      @
+
+    ###
+    # Add a new Particle System to the list
+    # @return [self]
+    ###
+    addParticleSystem: (ps) ->
+      @_particleSystems.push ps
+      @ui.pushEvent "workspace.add.particle_system", ps: ps
+      @
 
     ###
     # Converts document-relative coordinates to ARE coordinates
@@ -503,11 +537,8 @@ define (require) ->
 
           actor = @getActorFromPick r, g, b
           if actor
-            oldActor = @getSelectedActor()
             @setSelectedActor actor
-            @ui.pushEvent "workspace.selected.actor",
-              actorId: @_selectedActor
-              actor: actor
+            @ui.pushEvent "workspace.selected.actor", actor: actor
 
     ###
     # @private
@@ -754,12 +785,15 @@ define (require) ->
     # @return [Object] data
     ###
     dump: ->
+      particleSystems = _.map @getParticleSystems(), (ps) -> ps.dump()
+      actors = _.map @getActors(), (actor) -> actor.dump()
       _.extend super(),
-        workspaceVersion: "1.2.0"
+        workspaceVersion: "1.3.0"
         camPos:                                                        # v1.2.0
           x: ARERenderer.camPos.x
           y: ARERenderer.camPos.y
-        actors: _.map @getActors(), (actor) -> actor.dump()            # v1.1.0
+        actors: actors                                                 # v1.1.0
+        particleSystems: particleSystems                               # v1.3.0
 
     ###
     # Loads the a workspace data state
@@ -772,6 +806,10 @@ define (require) ->
        ((data.dumpVersion == "1.0.0") && (data.version >= "1.2.0"))
         ARERenderer.camPos.x = data.camPos.x
         ARERenderer.camPos.y = data.camPos.y
+
+      if data.workspaceVersion >= "1.3.0"
+        @_particleSystems = _.map data.particleSystems, (psData) ->
+          ParticleSystem.load psData
 
       # data.workspaceVersion >= "1.1.0"
       for actor in data.actors

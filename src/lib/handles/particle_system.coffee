@@ -8,6 +8,9 @@ define (require) ->
 
     constructor: (@ui) ->
 
+      ###
+      # @type [Vec2]
+      ###
       @_position = new Vec2(0, 0)
 
       ###
@@ -21,6 +24,11 @@ define (require) ->
       #   @property
       ###
       @_spawnList = []
+
+      ###
+      # Returns an element from the @_spawnList
+      # @return [Object]
+      ###
       @_spawnSelector = =>
         @_spawnList[Math.floor(Math.random() * @_spawnList.length)]
 
@@ -29,6 +37,10 @@ define (require) ->
       ###
       @_spawnCap = 100
 
+      ###
+      # Handle
+      # @type [String]
+      ###
       @handleType = "ParticleSystem"
 
     ###
@@ -81,6 +93,7 @@ define (require) ->
         spawnList: @_spawnList                                         # v1.0.0
 
     ###
+    # Load the state of a dumped particle system into the current
     # @param [Object] data
     # @return [self]
     ###
@@ -94,6 +107,7 @@ define (require) ->
       @
 
     ###
+    # Load a ParticleSystem from a dump
     # @param [Object] data
     # @return [ParticleSystem]
     ###
