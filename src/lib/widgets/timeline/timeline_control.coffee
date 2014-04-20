@@ -64,7 +64,7 @@ define (require) ->
 
       # if an actor is selected, jump to their nearest keyframe
       if actorID != null and actorID != undefined
-        actor = _.findOne @timeline.getActors(), (a) -> a.getID() == actorID
+        actor = _.find @timeline.getActors(), (a) -> a.getID() == actorID
         return unless actor
 
         time = actor.getNearestAnimationTime(cursorTime, right: true)
@@ -92,7 +92,7 @@ define (require) ->
 
       # if an actor is selected, jump to their nearest keyframe
       if actorID != null and actorID != undefined
-        actor = _.findOne @timeline.getActors(), (a) -> a.getID() == actorID
+        actor = _.find @timeline.getActors(), (a) -> a.getID() == actorID
         return unless actor
 
         time = actor.getNearestAnimationTime(cursorTime, left: true)
