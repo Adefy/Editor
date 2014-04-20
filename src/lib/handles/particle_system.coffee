@@ -31,12 +31,24 @@ define (require) ->
 
       @handleType = "ParticleSystem"
 
+    ###
+    # Spawn a new actor and add it to the internal list
+    # @return [self]
+    ###
     spawn: ->
       actor = window[actor.type].load @ui, @_spawnSelector()
       actor.isParticle = true
 
       @_actors.push actor
 
+      @
+
+    ###
+    # Remove an actor from the actors list
+    # @return [self]
+    ###
+    remove: (actor) ->
+      @_actors = _.without @_actors, (a) -> a.getId() == actor.getId()
       @
 
     ###
