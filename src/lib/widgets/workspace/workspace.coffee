@@ -63,6 +63,11 @@ define (require) ->
       # the canvas itself, it might prove useful in the future.
       @getElement().html TemplateWorkspaceCanvasContainer()
 
+      ## AJS overrides setting the renderer mode...
+      #mode = Storage.get("are.renderer.mode")
+      #mode = ARERenderer.rendererMode if mode == null
+      #ARERenderer.rendererMode = Number(mode)
+
       # Create an ARE instance on ourselves
       AUtilLog.info "Initializing AJS..."
       AJS.init =>

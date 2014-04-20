@@ -3,6 +3,8 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
 
+  Storage = require "storage"
+
   Asset = require "handles/asset"
   Texture = require "handles/texture"
 
@@ -13,6 +15,7 @@ define (require) ->
 
   FloatingTextureSelect = require "widgets/floating/texture_select"
   Modal = require "widgets/floating/form"
+
 
   TemplateModalAddTextures = require "templates/modal/add_textures"
   TemplateModalBackgroundColor = require "templates/modal/background_color"
@@ -374,8 +377,12 @@ define (require) ->
     showPrefSettings: ->
 
       autosaveFreqID = ID.prefID "autosave-frequency"
+      #areRendererModeID = ID.prefID "are-renderer-mode"
 
       contents = TemplateModalPrefSettings
+        #areRendererMode: Number(Storage.get("are.renderer.mode")) || \
+        #                 ARERenderer.rendererMode
+        #areRendererModeID: areRendererModeID
         autosaveFreq: @ui.editor.settings.autosave.frequency
         autosaveFreqID: autosaveFreqID
 
@@ -386,14 +393,24 @@ define (require) ->
 
           freq = Number(data[autosaveFreqID])
           @ui.editor.settings.autosave.frequency = freq
+
+          #arerm = Number(data[areRendererModeID])
+          #Storage.set("are.renderer.mode", arerm)
+
           @ui.editor.saveSettings()
 
         validation: (data) =>
 
           freq = Number(data[autosaveFreqID])
+          #arerm = Number(data[areRendererModeID])
 
           unless freq >= 0
             return "Autosave Frequency must be 0 or more"
+
+          #unless _.contains(ARERenderer.renderereModes, (n) -> arerm == n)
+          #  return "ARERenderer mode must be 1 or 2"
+          #if arerm == ARERenderer.RENDERER_MODE_NULL
+          #  return "You cannot use the NULL renderer"
 
           true
 
