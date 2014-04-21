@@ -5,6 +5,10 @@ html(lang="en")
     meta(charset="utf-8")
     title Adefy Editor
 
+    //- We need this, otherwise pace.js won't get past 99% most of the time
+    script.
+      window.paceOptions = { eventLag: false };
+
     //- PaceJS
     script(src="/editor/components/pace/pace.min.js")
     link(rel="stylesheet" href="/editor/components/pace/themes/pace-theme-center-atom.css")
