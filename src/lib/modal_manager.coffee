@@ -1,11 +1,11 @@
 define (require) ->
 
+  Project = require "project"
   param = require "util/param"
   ID = require "util/id"
 
   Asset = require "handles/asset"
   Texture = require "handles/texture"
-
   BaseActor = require "handles/actors/base"
   Handle = require "handles/handle"
 
@@ -25,7 +25,6 @@ define (require) ->
   TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
 
   ChangeLog = require "info_change_log"
-
   Version = require "version"
 
   class ModalManager extends EditorObject
@@ -350,23 +349,22 @@ define (require) ->
         mimetype: "image/*"
       ,
         location: "S3"
-        path: "/ads/assets/"
+        path: Project.getS3Prefix()
       , (blob) =>
         textures = []
+
         for obj in blob
-          texture = new Texture
-            url: "//d3r6kqp8brgiqm.cloudfront.net/#{obj.key}"
+          texture = new Texture Project.current
+            key: obj.key
             name: obj.filename
 
           @ui.editor.project.textures.push texture
           textures.push texture
 
         @ui.workspace.loadTextures(textures)
-
         @ui.pushEvent "upload.textures"
 
-        if cb = options.cb
-          cb blob
+        cb blob if cb = options.cb
 
     ###
     # @return [Modal]

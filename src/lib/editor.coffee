@@ -32,17 +32,16 @@ define (require) ->
     # @param [String] sel container selector, created if non-existent
     ###
     constructor: (sel) ->
-
       Editor.current = @
 
-      @checkForOpera()
-      @checkForLocalStorage()
-
-      @widgets = []
-
-      @ui = new UIManager @
+      return if @checkForOpera()
+      return unless @checkForLocalStorage()
+      return unless @checkForCreativePayload()
 
       AUtilLog.info "Adefy Editor created id(#{config.selector})"
+
+      @widgets = []
+      @ui = new UIManager @
 
       ###
       # @type [Object] clipboard
@@ -58,11 +57,8 @@ define (require) ->
       @settings = {}
       @refreshSettings()
 
-      Project.ui = @ui
-      if Project.quicksaveExists()
-        @project = Project.quickload()
-      else
-        @project = new Project @ui
+      @project = new Project @ui, window.ADEFY_EDITOR_CREATIVE_PAYLOAD
+      @project.loadNewestSnapshot()
 
       @startAutosaveTask()
 
@@ -70,16 +66,28 @@ define (require) ->
     # We can't run properly in Opera, as it does not let us override the
     # right-click context menu. Notify the user
     #
-    # @return [Boolean]
+    # @return [Boolean] isOpera
     ###
     checkForOpera: ->
       agent = navigator.userAgent
 
       if agent.search("Opera") != -1 or agent.search("OPR") != -1
         alert "Opera is not supported at this time, you may experience problems"
-        return true
+        true
+      else
+        false
 
-      false
+    ###
+    # Ensure that a creative payload is attached to the window
+    #
+    # @return [Boolean] havePayload
+    ###
+    checkForCreativePayload: ->
+      unless !!window.ADEFY_EDITOR_CREATIVE_PAYLOAD
+        alert "Something went wrong, no creative loaded ;("
+        false
+      else
+        true
 
     ###
     # Check that the browser supports HTML local storage
@@ -426,12 +434,11 @@ define (require) ->
     ###
     ###
     startAutosaveTask: ->
-
       editor = @
 
       autosaveTask = =>
         setTimeout ->
-          editor.autosave()
+          editor.project.spnapshot()
           editor.ui.pushEvent "autosave"
           autosaveTask()
         , @settings.autosave.frequency

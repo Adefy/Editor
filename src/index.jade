@@ -11,7 +11,7 @@ html(lang="en")
 
     //- PaceJS
     script(src="/editor/components/pace/pace.min.js")
-    link(rel="stylesheet" href="/editor/components/pace/themes/pace-theme-center-atom.css")
+    link(rel="stylesheet" href="/editor/components/pace/themes/pace-theme-minimal.css")
 
     | <!--[if IE]>
     link(rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon")
@@ -21,6 +21,10 @@ html(lang="en")
 
     link(rel="stylesheet" href="/editor/build/css/style.min.css")
     link(rel="stylesheet" href="/editor/components/fontawesome/css/font-awesome.min.css")
+
+    //- Payload used to properly load up the creative as a Project
+    script.
+      window.ADEFY_EDITOR_CREATIVE_PAYLOAD = !{JSON.stringify(creative)};
 
   body
     #editor
