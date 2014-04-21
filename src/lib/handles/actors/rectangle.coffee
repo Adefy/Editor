@@ -45,6 +45,7 @@ define (require) ->
       @_properties.width.setMin 0
       @_properties.width.setPlaceholder 100
       @_properties.width.setValue w
+      @_properties.width.setPrecision 0
       @_properties.width.requestUpdate = ->
         @setValue me._AJSActor.getWidth() if me._AJSActor
 
@@ -60,6 +61,7 @@ define (require) ->
       @_properties.height.setMin 0
       @_properties.height.setPlaceholder 100
       @_properties.height.setValue h
+      @_properties.height.setPrecision 0
       @_properties.height.requestUpdate = ->
         @setValue me._AJSActor.getHeight() if me._AJSActor
 

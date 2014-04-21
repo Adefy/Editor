@@ -18,6 +18,7 @@ define (require) ->
     @PropertyTypes:
       number: NumericProperty
       boolean: BooleanProperty
+      composite: @
 
     @type: "composite"
 
@@ -36,44 +37,6 @@ define (require) ->
 
     setProperties: (properties) ->
       @_properties = properties
-
-    ###
-    # Dumps as a basic Object
-    # @return [Object] data
-    ###
-    dump: ->
-      #data = super()
-      data = _.extend Dumpable::dump.call(@),
-        type: "composite"
-
-      for id of @_properties
-        data[id] = @_properties[id].dump()
-
-      data
-
-    ###
-    # Loads from a basic Object
-    # @params [Object] data
-    # @return [self]
-    ###
-    load: (data) ->
-      Dumpable::load.call @, data
-      #super data
-      for id, property of data
-        continue if id == "dumpVersion" # we don't want the dump version
-        continue if id == "type" # we don't want the type
-
-        if @_properties[id]
-          @_properties[id].load property
-        else
-          unless CompositeProperty.PropertyTypes[property.type]
-            AUtilLog.error "Unknown property type: #{property.type}"
-          else
-            newProperty = new CompositeProperty.PropertyTypes[property.type]
-            newProperty.load property
-            @addProperty id, newProperty
-
-      @
 
     ###
     # Requests an update for each child property
@@ -119,3 +82,41 @@ define (require) ->
 
     validateValue: null
     processValue: null
+
+    ###
+    # Dumps as a basic Object
+    # @return [Object] data
+    ###
+    dump: ->
+      #data = super()
+      data = _.extend Dumpable::dump.call(@),
+        type: "composite"
+
+      for id of @_properties
+        data[id] = @_properties[id].dump()
+
+      data
+
+    ###
+    # Loads from a basic Object
+    # @params [Object] data
+    # @return [self]
+    ###
+    load: (data) ->
+      Dumpable::load.call @, data
+      #super data
+      for id, property of data
+        continue if id == "dumpVersion" # we don't want the dump version
+        continue if id == "type" # we don't want the type
+
+        if @_properties[id]
+          @_properties[id].load property
+        else
+          unless CompositeProperty.PropertyTypes[property.type]
+            AUtilLog.error "Unknown property type: #{property.type}"
+          else
+            newProperty = new CompositeProperty.PropertyTypes[property.type]
+            newProperty.load property
+            @addProperty id, newProperty
+
+      @

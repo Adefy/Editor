@@ -170,35 +170,52 @@ define (require) ->
 
     renderControl_composite: (data, value) ->
       param.required data
-      param.required data.name
-      param.optional data.icon, "fa-cog"
 
-      displayName = data.name
-      displayIcon = data.icon
+      displayName = param.required data.name
+      displayIcon = param.optional data.icon, "fa-cog"
 
       param.required value.getType(), ["composite"]
 
       # Build the control by recursing and concating the result
-      contents = _.pairs(value.getProperties()).map (component) =>
-        return "" unless @["renderControl_#{component[1].getType()}"]
+      properties = value.getProperties()
+      batches = [[]]
+      batch_i = 0
 
-        # Note that we handle the "Basic" composite differently here
-        componentCount = _.keys(value.getProperties()).length
-        if componentCount <= 3 and displayName.toLowerCase() != "basic"
-          width = "#{100 / _.keys(value.getProperties()).length}%"
+      for property in _.pairs(properties)
+        if property[1].getType() == "composite"
+          if batches[batch_i].length > 0
+            batches[++batch_i] = []
+          batches[batch_i].push property
+          batches[++batch_i] = []
         else
-          width = "100%"
+          batches[batch_i].push property
 
-        name = @prepareNameForDisplay component[0]
-        type = component[1].getType()
+      contents = batches.map (batch) =>
+        batch.map (component) =>
+          name = @prepareNameForDisplay component[0]
+          type = component[1].getType()
 
-        unless displayName.toLowerCase() == "basic"
-          parent = displayName.toLowerCase()
-        else
-          parent = ""
+          return "" unless @["renderControl_#{type}"]
 
-        @["renderControl_#{type}"] name, component[1], width, parent
+          # Note that we handle the "Basic" composite differently here
+          componentCount = batch.length
+          if componentCount <= 3 and displayName.toLowerCase() != "basic"
+            width = "#{100 / batch.length}%"
+          else
+            width = "100%"
 
+          unless displayName.toLowerCase() == "basic"
+            parent = displayName.toLowerCase()
+          else
+            parent = ""
+
+          @["renderControl_#{type}"]
+            name: name
+            width: width
+            parent: parent
+          , component[1]
+
+        .join("")
       .join("")
 
       TemplateCompositeControl
@@ -207,9 +224,11 @@ define (require) ->
         dataName: displayName.toLowerCase()
         contents: contents
 
-    renderControl_number: (displayName, value, width, parent) ->
-      width = param.optional width, "100%"
-      parent = param.optional parent, false
+    renderControl_number: (data, value) ->
+      value = param.required value
+      displayName = param.required data.name
+      width = param.optional data.width, "100%"
+      parent = param.optional data.parent, false
 
       TemplateNumericControl
         displayName: displayName
@@ -218,13 +237,15 @@ define (require) ->
         min: value.getMin()
         float: value.getFloat()
         placeholder: value.getPlaceholder()
-        value: value.getValue()
+        value: value.getValueString()
         width: width
         parent: parent
 
-    renderControl_bool: (displayName, value, width, parent) ->
-      width = param.optional width, "100%"
-      parent = param.optional parent, false
+    renderControl_bool: (data, value) ->
+      value = param.required value
+      displayName = param.required data.name
+      width = param.optional data.width, "100%"
+      parent = param.optional data.parent, false
 
       TemplateBooleanControl
         displayName: displayName
@@ -233,15 +254,17 @@ define (require) ->
         width: width
         parent: parent
 
-    renderControl_text: (displayName, value, width, parent) ->
-      width = param.optional width, "100%"
-      parent = param.optional parent, false
+    renderControl_text: (data, value) ->
+      value = param.required value
+      displayName = param.required data.name
+      width = param.optional data.width, "100%"
+      parent = param.optional data.parent, false
 
       TemplateTextControl
         displayName: displayName
         name: displayName.toLowerCase()
         placeholder: value.getPlaceholder()
-        value: value.getValue()
+        value: value.getValueString()
         parent: parent
 
     ###
@@ -265,21 +288,22 @@ define (require) ->
         fakeControl = new CompositeProperty()
         fakeControl.setProperties _.object nonComposites
 
-        nonCompositeHTML = @generateControl { name: "basic", icon: "fa-cog"}, fakeControl
+        nonCompositeHTML = @generateControl
+          name: "basic"
+          icon: "fa-cog"
+        , fakeControl
       else
         nonCompositeHTML = ""
 
       compositeHTML = composites.map (p) =>
         icn = "fa-cog"
         name = p[0]
-        # wtf hax
-        switch name
-          when "basic"    then icn = "fa-cog"
-          when "color"    then icn = "fa-adjust"
-          when "physics"  then icn = "fa-anchor"
-          when "position" then icn = "fa-arrows"
+        property = p[1]
 
-        @generateControl { name: name, icon: icn }, p[1]
+        if property.icon
+          icn = property.icon
+
+        @generateControl { name: name, icon: icn }, property
       .join ""
 
       @_builtHMTL = nonCompositeHTML + compositeHTML
@@ -324,29 +348,13 @@ define (require) ->
           for cName, cValue of value.getProperties()
 
             input = $("#{@_sel} #{parent} + div > dl input[name=#{cName}]")
-            value = cValue.getValue()
-
-            if $(input).attr("type") == "number"
-              value = Number value
-
-              if $(input).attr("data-float") == "true"
-                value = value.toFixed 2
-              else
-                value = value.toFixed 0
+            value = cValue.getValueString()
 
             $(input).val value
 
         else
           input = $("#{@_sel} #{parent} + div > dl input[name=#{property}]")
-          value = value.getValue()
-
-          if $(input).attr("type") == "number"
-            value = Number value
-
-            if $(input).attr("data-float") == "true"
-              value = value.toFixed 2
-            else
-              value = value.toFixed 0
+          value = value.getValueString()
 
           $(input).val value
 

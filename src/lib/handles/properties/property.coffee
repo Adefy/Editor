@@ -35,6 +35,12 @@ define (require) ->
       @data_value
 
     ###
+    # @return [String]
+    ###
+    getValueString: ->
+      String @getValue()
+
+    ###
     # Sets our type, used by deserialization (loading state)
     #
     # @param [String] type

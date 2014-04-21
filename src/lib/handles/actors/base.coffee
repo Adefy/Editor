@@ -93,15 +93,18 @@ define (require) ->
       me = @
 
       @_properties.position = new CompositeProperty()
+      @_properties.position.icon = "fa-arrows"
       @_properties.position.x = new NumericProperty()
       @_properties.position.y = new NumericProperty()
 
+      @_properties.position.x.setPrecision 0
       @_properties.position.x.onUpdate = (value) =>
         return unless @_AJSActor
         position = @_AJSActor.getPosition()
         position.x = value
         @_AJSActor.setPosition position
 
+      @_properties.position.y.setPrecision 0
       @_properties.position.y.onUpdate = (value) =>
         return unless @_AJSActor
         position = @_AJSActor.getPosition()
@@ -123,7 +126,7 @@ define (require) ->
       @_properties.opacity.setValue 1.0
       @_properties.opacity.setPlaceholder 1.0
       @_properties.opacity.setFloat true
-      @_properties.opacity.setPrecision 6
+      @_properties.opacity.setPrecision 4
       @_properties.opacity.onUpdate = (opacity) =>
         @_AJSActor.setOpacity opacity if @_AJSActor
       @_properties.opacity.requestUpdate = ->
@@ -132,6 +135,7 @@ define (require) ->
       @_properties.rotation = new NumericProperty()
       @_properties.rotation.setMin 0
       @_properties.rotation.setMax 360
+      @_properties.rotation.setPrecision 0
       @_properties.rotation.onUpdate = (rotation) =>
         @_AJSActor.setRotation rotation if @_AJSActor
       @_properties.rotation.requestUpdate = ->
@@ -139,12 +143,14 @@ define (require) ->
 
 
       @_properties.color = new CompositeProperty()
+      @_properties.color.icon = "fa-adjust"
       @_properties.color.r = new NumericProperty()
       @_properties.color.r.setMin 0
       @_properties.color.r.setMax 255
       @_properties.color.r.setFloat false
       @_properties.color.r.setPlaceholder 255
       @_properties.color.r.setValue 255
+      @_properties.color.r.setPrecision 0
 
       @_properties.color.g = new NumericProperty()
       @_properties.color.b = new NumericProperty()
@@ -184,10 +190,12 @@ define (require) ->
 
 
       @_properties.physics = new CompositeProperty()
+      @_properties.physics.icon = "fa-anchor"
       @_properties.physics.mass = new NumericProperty()
       @_properties.physics.mass.setMin 0
       @_properties.physics.mass.setPlaceholder 50
       @_properties.physics.mass.setValue 50
+      @_properties.physics.mass.setPrecision 0
 
       @_properties.physics.mass.onUpdate = (mass) =>
         @_AJSActor.setMass mass if @_AJSActor
