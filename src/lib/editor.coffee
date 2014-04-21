@@ -438,7 +438,7 @@ define (require) ->
 
       autosaveTask = =>
         setTimeout ->
-          editor.project.spnapshot()
+          editor.project.snapshot()
           editor.ui.pushEvent "autosave"
           autosaveTask()
         , @settings.autosave.frequency
