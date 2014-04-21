@@ -235,16 +235,22 @@ define (require) ->
       functions = {}
 
       if @_isDirectory
-        functions["Add Directory"] = =>
-          @contextFuncAddDirectory @, "New Folder"
-        functions["Add File"] = =>
-          @contextFuncAddFile @, "New File"
+        functions.addDir =
+          name: "Add Directory"
+          cb: => @contextFuncAddDirectory @, "New Folder"
+        functions.addFile =
+          name: "Add File"
+          cb: => @contextFuncAddFile @, "New File"
 
       unless _.contains @_disabled, "delete"
-        functions["Delete"] = => @contextFuncRemoveAsset @
+        functions.del =
+          name: "Delete"
+          cb: => @contextFuncRemoveAsset @
 
       unless _.contains @_disabled, "rename"
-        functions["Rename ..."] = => @contextFuncRenameAsset @
+        functions.rename =
+          name: "Rename ..."
+          cb: => @contextFuncRenameAsset @
 
       {
         name: @getName()

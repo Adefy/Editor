@@ -80,9 +80,15 @@ define (require) ->
 
 
       @_ctx = _.extend @_ctx,
-        "Copy": => @_contextFuncCopy @
-        "Duplicate": => @_contextFuncDuplicate @
-        "Set Texture ...": => @_contextFuncSetTexture @
+        copy:
+          name: "Copy"
+          cb: => @_contextFuncCopy @
+        dup:
+          name: "Duplicate"
+          cb: => @_contextFuncDuplicate @
+        setTexture:
+          name: "Set Texture ..."
+          cb: => @_contextFuncSetTexture @
 
       me = @
 

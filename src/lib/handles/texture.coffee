@@ -90,8 +90,12 @@ define (require) ->
       {
         name: @getName()
         functions:
-          "Delete": => @contextFuncDelete @
-          "Rename": => @contextFuncRename @
+          del:
+            name: "Delete"
+            cb: => @contextFuncDelete @
+          rename:
+            name: "Rename"
+            cb: => @contextFuncRename @
       }
 
     dump: ->

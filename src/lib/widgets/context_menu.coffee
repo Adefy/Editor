@@ -78,13 +78,18 @@ define (require) ->
 
       bindListener = (f) =>
         # Insane in da membrane
-        if typeof @functions[f] != "function"
-          AUtilLog.error "Only methods can be bound to context menu items"
+        if @functions[f].cb
+          if typeof @functions[f].cb != "function"
+            AUtilLog.error "Only methods can be bound to context menu items"
+            return
+        else
+          AUtilLog.error "No callback function was given for #{f}"
           return
+
 
         $(document).on "click", "[data-id=\"#{@functions[f]._ident}\"]", =>
           @remove()
-          @functions[f]()
+          @functions[f].cb()
 
 
       entries = []
@@ -97,7 +102,7 @@ define (require) ->
         @functions[f]._ident = @_convertToIdent(f) + ID.nextID()
 
         entries.push
-          name: f
+          name: @functions[f].name || f
           dataId: @functions[f]._ident
 
       html = TemplateContextMenu name: @name, entries: entries

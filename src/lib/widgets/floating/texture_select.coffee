@@ -30,10 +30,14 @@ define (require) ->
         new ContextMenu e.pageX, e.pageY,
           name: "Apply Texture?"
           functions:
-            "Yes": =>
-              @_actor.setTextureByUID $(e.target).attr "data-uid"
-              @kill()
-            "No": =>
+            ok:
+              name: "Yes"
+              cb: =>
+                @_actor.setTextureByUID $(e.target).attr "data-uid"
+                @kill()
+            cancel:
+              name: "No"
+              cb: =>
 
     render: ->
       @getElement().html SelectTextureModal

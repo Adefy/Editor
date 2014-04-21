@@ -244,21 +244,36 @@ define (require) ->
     ###
     getWorkspaceCtxMenu: (x, y) ->
       functions =
-        "New Actor +": =>
-            new ContextMenu x, y, @getNewActorCtxMenu x, y
+        newActor:
+          name: "New Actor +"
+          cb: => new ContextMenu x, y, @getNewActorCtxMenu x, y
+
+        newParticleSystem:
+          name: "New Particle Sys."
+          cb: =>
+            ps = new ParticleSystem @ui
+
+            pos = @domToGL x, y
+            pos.x += ARERenderer.camPos.x
+            pos.y += ARERenderer.camPos.y
+            ps.setPosition pos.x, pos.y
+
+            @addParticleSystem ps
 
       if AdefyEditor.clipboard && AdefyEditor.clipboard.type == "actor"
-        functions["Paste"] = =>
+        functions.paste =
+          name: "Paste"
+          cb: =>
 
-          pos = @domToGL(x, y)
-          pos.x += ARERenderer.camPos.x
-          pos.y += ARERenderer.camPos.y
+            pos = @domToGL(x, y)
+            pos.x += ARERenderer.camPos.x
+            pos.y += ARERenderer.camPos.y
 
-          newActor = AdefyEditor.clipboard.data.duplicate()
-          newActor.setPosition pos.x, pos.y
-          newActor.setName(newActor.getName() + " copy")
+            newActor = AdefyEditor.clipboard.data.duplicate()
+            newActor.setPosition pos.x, pos.y
+            newActor.setName(newActor.getName() + " copy")
 
-          @addActor newActor
+            @addActor newActor
 
       {
         name: "Workspace"
@@ -282,12 +297,15 @@ define (require) ->
       {
         name: "New Actor"
         functions:
-          "Rectangle Actor": =>
-            @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
-          "Polygon Actor": =>
-            @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
-          "Triangle Actor": =>
-            @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
+          rectActor:
+            name: "Rectangle Actor"
+            cb: => @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
+          polyActor:
+            name: "Polygon Actor"
+            cb: => @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
+          trinActor:
+            name: "Triangle Actor"
+            cb: => @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
       }
 
 
