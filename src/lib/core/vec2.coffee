@@ -1,6 +1,6 @@
 define (require) ->
 
-  param = require "util/id"
+  param = require "util/param"
 
   Dumpable = require "mixin/dumpable"
 
@@ -55,6 +55,17 @@ define (require) ->
     div: (other) ->
       new Vec2 @x / other.x, @y / other.y
 
+    ###
+    # @return [Vec2]
+    ###
+    floor: ->
+      new Vec2 Math.floor(@x), Math.floor(@y)
+
+    ###
+    # @return [Vec2]
+    ###
+    ceil: ->
+      new Vec2 Math.ceil(@x), Math.ceil(@y)
 
     ###
     # Dump the current Vec2 to a basic Object
