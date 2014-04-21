@@ -209,6 +209,8 @@ define (require) ->
     addParticleSystem: (ps) ->
       @_particleSystems.push ps
       @ui.pushEvent "workspace.add.particle_system", ps: ps
+      # ParticleSystems are still a kind of actor.
+      @addActor ps
       @
 
     ###

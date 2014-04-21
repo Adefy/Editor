@@ -1,26 +1,31 @@
 define (require) ->
 
+  param = require "util/param"
   ID = require "util/id"
   seedrand = require "util/seedrandom"
 
   Handle = require "handles/handle"
+  RectangleActor = require "handles/actors/rectangle"
 
   Vec2 = require "core/vec2"
 
-  class ParticleSystem extends Handle
+  CompositeProperty = require "handles/properties/composite"
+  NumericProperty = require "handles/properties/numeric"
+  BooleanProperty = require "handles/properties/boolean"
+
+  class ParticleSystem extends RectangleActor
 
     ###
     # @param [UIManager] ui
     ###
     constructor: (@ui) ->
-      super()
+      super @ui, @ui.timeline.getCursorTime(), 32, 32, 0, 0
 
       @_uid = ID.uID()
 
       ###
       # @type [Vec2]
       ###
-      @_position = new Vec2(0, 0)
       @_actorRandomSpawnDelta = new Vec2(0, 0)
 
       ###
@@ -43,29 +48,62 @@ define (require) ->
         @_spawnList[Math.floor(Math.random() * @_spawnList.length)]
 
       ###
-      # @type [Number] _spawnCap maximum number of spawns allowed
-      ###
-      @_spawnCap = 100
-
-      ###
       # Handle
       # @type [String]
       ###
       @handleType = "ParticleSystem"
 
+      @setName "#{@handleType} #{@_id_n}"
+
+      @_properties.particles = new CompositeProperty()
+      @_properties.particles.icon = "fa-star"
       ###
       # @type [Number]
       ###
-      @_seed = Math.random() * 0xFFFF
+      @_properties.particles.seed = new NumericProperty()
+      @_properties.particles.seed.setPrecision 0
+      @_properties.particles.seed.setValue Math.floor(Math.random() * 0xFFFF)
+      ###
+      # @type [Number] _spawnCap maximum number of spawns allowed
+      ###
+      @_properties.particles.max = new NumericProperty()
+      @_properties.particles.max.setPrecision 0
+      @_properties.particles.max.setValue 20
 
-      @_iSeed = @_seed
+      @_properties.spawn = new CompositeProperty()
+      @_properties.spawn.icon = "fa-arrows"
+      @_properties.spawn.x = new NumericProperty()
+      @_properties.spawn.x.setValue 0
+      @_properties.spawn.y = new NumericProperty()
+      @_properties.spawn.y.setValue 0
+
+      ## add properties
+      @_properties.particles.addProperty "seed", @_properties.particles.seed
+      @_properties.particles.addProperty "max",
+        @_properties.particles.max
+
+      @_properties.spawn.addProperty "x",
+        @_properties.spawn.x
+
+      @_properties.spawn.addProperty "y",
+        @_properties.spawn.y
+
+      ###
+      # @type [Number] iSeed seed increment
+      ###
+      @_iSeed = 0
+
+      # ParticleSystems do not need a texture.
+      delete @_ctx.setTexture
+
+      @_properties.color.setValue r: 255, g: 110, b: 48
 
     ###
     # Reset the particle system to its original state
     # @return [self]
     ###
     reset: ->
-      @_iSeed = @_seed
+      @_iSeed = 0
 
       for actor in @_actors
         actor.destroy()
@@ -79,10 +117,28 @@ define (require) ->
     # @return [self]
     ###
     spawn: ->
-      @_iSeed++
+      @_iSeed++ # still increment the iSeed
 
-      actor = window[actor.type].load @ui, @_spawnSelector()
-      pos = @_actorRandomSpawnDelta.random(seed: @_iSeed).add(@_position)
+      # we have no actor data, forget about spawning
+      return @ if @_spawnList.length == 0
+
+      spawnData = @_spawnSelector()
+
+      unless spawnData
+        throw new Error "null spawn data!"
+
+      actor = window[spawnData.type].load @ui, spawnData
+
+      seed = @_properties.particles.seed.getValue()
+
+      pos = @_properties.spawn.getValue()
+      console.log pos
+      pos = new Vec2(pos.x, pos.y)
+        .random(seed: seed + @_iSeed)
+        .add(@_properties.position.getValue())
+
+      console.log pos
+
       actor.setPosition pos.x, pos.y
       actor.isParticle = true
 
@@ -91,42 +147,50 @@ define (require) ->
       @
 
     ###
+    # @return [Object] data actor dump used for spawning
+    ###
+    addSpawnData: (data) ->
+      @_spawnList.push data
+      @
+
+    ###
     # Remove an actor from the actors list
+    # NOTE* This does not destroy the actor, use killActor instead
     # @return [self]
     ###
-    remove: (actor) ->
+    removeActor: (actor) ->
       @_actors = _.without @_actors, (a) -> a.getId() == actor.getId()
+      @
+
+    ###
+    # Removes all actively spawned Actors
+    # @return [self]
+    ###
+    killActor: (actor) ->
+      @removeActor actor
+      actor.delete()
+      @
+
+    ###
+    # Removes all actively spawned Actors
+    # @return [self]
+    ###
+    killActors: ->
+      for actor in @_actors
+        actor.delete()
+      @_actors.length = 0
       @
 
     ###
     # @return [Number] seed
     ###
-    getSeed: ->
-      @_seed
+    getSeed: -> @_properties.particles.seed.getValue()
 
     ###
     # @param [Number] seed
     # @return [self]
     ###
-    setSeed: (@_seed) -> @
-
-    ###
-    # Get the ParticleSystem root position
-    # @return [Vec2]
-    ###
-    getPosition: ->
-      @_position
-
-    ###
-    # Set the ParticleSystem root position
-    # @param [Number] x
-    # @param [Number] y
-    ###
-    setPosition: (x, y) ->
-      @_position.x = x
-      @_position.y = y
-
-      @
+    setSeed: (seed) -> @_properties.particles.seed.setValue(seed); @
 
     ###
     # Dumps the ParticleSystem to a basic Object
@@ -134,11 +198,11 @@ define (require) ->
     ###
     dump: ->
       _.extend super(),
-        psVersion: "1.1.0"
+        psVersion: "1.2.0"
         uid: @_uid                                                     # v1.1.0
-        actorRandomSpawnDelta: @_actorRandomSpawnDelta.dump()          # v1.1.0
-        position: @_position.dump()                                    # v1.0.0
-        spawnCap: @_spawnCap                                           # v1.0.0
+        #actorRandomSpawnDelta: @_actorRandomSpawnDelta.dump()          # v1.1.0
+        #position: @_position.dump()                                    # v1.0.0
+        #spawnCap: @_spawnCap                                           # v1.0.0
         spawnList: @_spawnList                                         # v1.0.0
 
     ###
@@ -151,10 +215,10 @@ define (require) ->
 
       if data.psVersion >= "1.1.0"
         @_uid = data.uid                                               # v1.1.0
-        @_actorRandomSpawnDelta = Vec2.load data.actorRandomSpawnDelta # v1.1.0
+        #@_actorRandomSpawnDelta = Vec2.load data.actorRandomSpawnDelta # v1.1.0
 
-      @_position = Vec2.load data.position                             # v1.0.0
-      @_spawnCap = data.spawnCap                                       # v1.0.0
+      #@_position = Vec2.load data.position                             # v1.0.0
+      #@_spawnCap = data.spawnCap                                       # v1.0.0
       @_spawnList = data.spawnList                                     # v1.0.0
 
       @

@@ -538,8 +538,9 @@ define (require) ->
     registerActor: (actor) ->
       param.required actor
 
-      if actor.constructor.name.indexOf("Actor") == -1
-        throw new Error "Actor must be an instance of BaseActor!"
+      ## screw it!
+      #if actor.constructor.name.indexOf("Actor") == -1
+      #  throw new Error "Actor must be an instance of BaseActor!"
 
       @_actors.push actor
       @_renderActorTimebar _.last @_actors
