@@ -127,7 +127,7 @@ define (require) ->
         click: => @editor.fileNewAd()
 
       fileMenu.createChild
-        label: "Open"
+        label: "Open..."
         click: => @editor.fileOpen()
         sectionEnd: true
 
