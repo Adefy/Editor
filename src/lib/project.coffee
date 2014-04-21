@@ -27,12 +27,6 @@ define (require) ->
     ###
     @PROJECT_VERSION: "0.3.1"
 
-    ###
-    # Current Editor.ui instance
-    # @type [UIManager]
-    ###
-    @ui: null
-
     @current: null
 
     constructor: (@ui) ->
@@ -185,8 +179,8 @@ define (require) ->
     # @param [Object] data
     # @return [Project] project
     ###
-    @load: (data) ->
-      project = new Project @ui
+    @load: (ui, data) ->
+      project = new Project ui
       project.load data
       ##
       # and there you have it, your awesome project reloaded
@@ -196,7 +190,7 @@ define (require) ->
     # Attempt to load an existing quicksave
     # @return [Project] project
     ###
-    @quickload: ->
+    @quickload: (ui) ->
       if quicksaveState = Storage.get("project.quicksave")
         data = null
         try
@@ -204,7 +198,7 @@ define (require) ->
         catch e
           return AUtilLog.error "Failed to load state. [#{e}]"
 
-        return @load data
+        return @load ui, data
       else
         AUtilLog.warn "quicksave does not exist"
 
@@ -225,9 +219,9 @@ define (require) ->
     ###
     # @return [Project] project
     ###
-    @loadSnapshot: (index) ->
+    @loadSnapshot: (ui, index) ->
       if snapshot = @snapshots()[index]
-        @load JSON.parse(snapshot)
+        @load ui, JSON.parse(snapshot)
       else
         AUtilLog.warn "project.snapshot(index: #{index}) does not exist"
 

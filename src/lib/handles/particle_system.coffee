@@ -18,8 +18,8 @@ define (require) ->
     ###
     # @param [UIManager] ui
     ###
-    constructor: (@ui) ->
-      super @ui, @ui.timeline.getCursorTime(), 32, 32, 0, 0
+    constructor: (ui) ->
+      super ui, 0, 32, 32, 0, 0
 
       @_uid = ID.uID()
 
@@ -96,6 +96,11 @@ define (require) ->
       # ParticleSystems do not need a texture.
       delete @_ctx.setTexture
 
+      ## for testing!
+      @_ctx.spawn =
+        name: "Spawn!"
+        cb: => @spawn()
+
       @_properties.color.setValue r: 255, g: 110, b: 48
 
     ###
@@ -132,12 +137,9 @@ define (require) ->
       seed = @_properties.particles.seed.getValue()
 
       pos = @_properties.spawn.getValue()
-      console.log pos
       pos = new Vec2(pos.x, pos.y)
         .random(seed: seed + @_iSeed)
         .add(@_properties.position.getValue())
-
-      console.log pos
 
       actor.setPosition pos.x, pos.y
       actor.isParticle = true
@@ -150,6 +152,11 @@ define (require) ->
     # @return [Object] data actor dump used for spawning
     ###
     addSpawnData: (data) ->
+      param.required data
+      if data.handleType == "ParticleSystem"
+        msg = "You can't have a particle system that spawns a particle system"
+        throw new Error msg
+
       @_spawnList.push data
       @
 
@@ -228,8 +235,8 @@ define (require) ->
     # @param [Object] data
     # @return [ParticleSystem]
     ###
-    @load: (data) ->
-      ps = new ParticleSystem AdefyEditor.ui
+    @load: (ui, data) ->
+      ps = new ParticleSystem ui
       ps.load data
       ps
 

@@ -79,7 +79,8 @@ define (require) ->
       @_regListeners()
       @_setupDraggableKeyframes()
 
-      if Storage.get("timeline.visible") != false
+      @_visible = Storage.get("timeline.visible")
+      if @_visible
         @show()
       else
         @hide()
@@ -602,6 +603,15 @@ define (require) ->
     switchSelectedActorByIndex: (index) -> @switchSelectedActor @_actors[index]
 
     ###
+    # Refreshes the state of the timeline toggle icons and storage
+    ###
+    refreshVisible: ->
+
+      @getElement(".button.toggle i").toggleClass "fa-toggle-down", @_visible
+      @getElement(".button.toggle i").toggleClass "fa-toggle-up", !@_visible
+      Storage.set "timeline.visible", @_visible
+
+    ###
     # Toggle visibility of the sidebar with an optional animation
     #
     # @param [Method] cb callback
@@ -631,6 +641,8 @@ define (require) ->
 
       AUtilLog.info "Showing Timeline"
 
+      @_visible = true
+
       if animate
         @getElement().animate height: @_height, 300, "swing", =>
           @ui.pushEvent "timeline.show"
@@ -638,14 +650,7 @@ define (require) ->
         @getElement().height @_height
         @ui.pushEvent "timeline.show"
 
-      ##
-      # I'm sure jQuery's toggle class can do this, but I still haven't
-      # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-toggle-up")
-      @getElement(".button.toggle i").addClass("fa-toggle-down")
-
-      Storage.set "timeline.visible", true
-      @_visible = true
+      @refreshVisible()
 
     ###
     # Hide the sidebar with an optional animation
@@ -663,6 +668,8 @@ define (require) ->
 
       AUtilLog.info "Hiding Timeline"
 
+      @_visible = false
+
       if animate
         @getElement().animate height: @_hiddenHeight, 300, "swing", =>
           @ui.pushEvent "timeline.hide"
@@ -670,14 +677,7 @@ define (require) ->
         @getElement().height @_hiddenHeight
         @ui.pushEvent "timeline.hide"
 
-      ##
-      # I'm sure jQuery's toggle class can do this, but I still haven't
-      # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-toggle-down")
-      @getElement(".button.toggle i").addClass("fa-toggle-up")
-
-      Storage.set "timeline.visible", false
-      @_visible = false
+      @refreshVisible()
 
     ## CALC
 

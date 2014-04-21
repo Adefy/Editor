@@ -58,13 +58,19 @@ define (require) ->
       @settings = {}
       @refreshSettings()
 
-      Project.ui = @ui
+    ###
+    # Call after creating the editor, this ensures the top level is set
+    # @return [self]
+    ###
+    init: ->
       if Project.quicksaveExists()
-        @project = Project.quickload()
+        @project = Project.quickload @ui
       else
         @project = new Project @ui
 
       @startAutosaveTask()
+
+      @
 
     ###
     # We can't run properly in Opera, as it does not let us override the

@@ -807,6 +807,9 @@ define (require) ->
     dump: ->
       particleSystems = _.map @getParticleSystems(), (ps) -> ps.dump()
       actors = _.map @getActors(), (actor) -> actor.dump()
+      actors = _.without actors, (actor) ->
+        actor.handleType == "ParticleSystem"
+
       _.extend super(),
         workspaceVersion: "1.3.0"
         camPos:                                                        # v1.2.0
@@ -828,12 +831,17 @@ define (require) ->
         ARERenderer.camPos.y = data.camPos.y
 
       if data.workspaceVersion >= "1.3.0"
-        @_particleSystems = _.map data.particleSystems, (psData) ->
-          ParticleSystem.load psData
+        for psData in data.particleSystems
+          @addParticleSystem ParticleSystem.load @ui, psData
 
       # data.workspaceVersion >= "1.1.0"
       for actor in data.actors
-        newActor = window[actor.type].load @ui, actor
-        @addActor newActor
+        continue if actor.handleType == "ParticleSystem"
+        handleKlass = window[actor.type]
+        if handleKlass
+          newActor = handleKlass.load @ui, actor
+          @addActor newActor
+        else
+          AUtilLog.warn "No such handle class #{actor.type}"
 
       @ui.timeline.updateAllActorsInTime()
