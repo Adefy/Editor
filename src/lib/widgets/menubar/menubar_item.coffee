@@ -44,7 +44,6 @@ define (require) ->
     ###
     render: ->
       opts = id: @_id, href: @href
-      opts.onclick = @click if @click
 
       if @_role == "primary" and @_children.length > 0
         opts.class = "mb-primary-has-children"
@@ -52,6 +51,14 @@ define (require) ->
       # The last secondary item in a section gets a special divider class
       else if @_role == "secondary" and @sectionEnd
         opts.class = "mb-section-end"
+
+      ###
+      # @todo This is REALLY hacky. We MUST refactor this beast, and make it
+      # easier to add onclick listeners
+      ###
+      setTimeout =>
+        $("##{@_id}")[0].onclick = @click if @click
+      , 0
 
       @genElement "a", opts, =>
         @genElement "li", {}, => @label

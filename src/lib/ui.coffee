@@ -117,75 +117,56 @@ define (require) ->
       prefMenu = @menu.addItem "Preferences"
       helpMenu = @menu.addItem "Help"
 
-      editor = "window.AdefyEditor"
-      editorUI = "#{editor}.ui"
-
       ###
       #
       # File menu options
       #
       ###
       fileMenu.createChild
-        label: "New Ad ..."
-        click: "#{editor}.fileNewAd()"
-
-      fileMenu.createChild
-        label: "New From Template ..."
-        click: "#{editor}.fileNewFromTemplate()"
-        sectionEnd: true
+        label: "New Creative..."
+        click: => @editor.fileNewAd()
 
       fileMenu.createChild
         label: "Open"
-        click: "#{editor}.fileOpen()"
+        click: => @editor.fileOpen()
         sectionEnd: true
 
       fileMenu.createChild
         label: "Save"
-        click: "#{editor}.fileSave()"
+        click: => @editor.fileSave()
 
       fileMenu.createChild
         label: "Save As..."
-        click: "#{editor}.fileSaveAs()"
+        click: => @editor.fileSaveAs()
         sectionEnd: true
 
       fileMenu.createChild
         label: "Export..."
-        click: "#{editor}.fileExport()"
+        click: => @editor.fileExport()
         sectionEnd: true
 
-      # and why would we even need this...
-      #fileMenu.createChild
-      #  label: "Quit"
+      fileMenu.createChild
+        label: "Quit"
+        click: =>
+          window.location.pathname = "/creatives/#{@editor.getProject().getId()}"
 
       ###
       #
       # Edit menu options
       #
       ###
-      editMenu.createChild
-        label: "Undo"
-
-      editMenu.createChild
-        label: "Redo"
+      editMenu.createChild label: "Undo"
+      editMenu.createChild label: "Redo"
 
       editMenu.createChild
         label: "History ..."
         sectionEnd: true
-        click: "#{editorUI}.modals.showEditHistory()"
+        click: => @modals.showEditHistory()
 
-      editMenu.createChild
-        label: "Copy"
-
-      editMenu.createChild
-        label: "Cut"
-
-      editMenu.createChild
-        label: "Paste"
-        sectionEnd: true
-
-      editMenu.createChild
-        label: "Project ..."
-        sectionEnd: true
+      editMenu.createChild label: "Copy"
+      editMenu.createChild label: "Cut"
+      editMenu.createChild label: "Paste", sectionEnd: true
+      editMenu.createChild label: "Project ...", sectionEnd: true
 
       ###
       #
@@ -194,21 +175,21 @@ define (require) ->
       ###
       viewMenu.createChild
         label: "Toggle Sidebar"
-        click: "#{editorUI}.sidebar.toggle()"
+        click: => @sidebar.toggle()
 
       viewMenu.createChild
         label: "Toggle Timeline"
-        click: "#{editorUI}.timeline.toggle()"
+        click: => @timeline.toggle()
         sectionEnd: true
 
       viewMenu.createChild
         label: "Fullscreen"
-        click: "#{editorUI}.toggleFullScreen()"
+        click: => @toggleFullScreen()
         sectionEnd: true
 
       viewMenu.createChild
         label: "Refresh"
-        click: "#{editorUI}.refresh()"
+        click: => @refresh()
         sectionEnd: true
 
       ###
@@ -218,7 +199,7 @@ define (require) ->
       ###
       timelineMenu.createChild
         label: "Set Preview Framerate ..."
-        click: "#{editorUI}.modals.showSetPreviewRate()"
+        click: => @modals.showSetPreviewRate()
 
       ###
       #
@@ -227,30 +208,27 @@ define (require) ->
       ###
       canvasMenu.createChild
         label: "Set Screen Properties ..."
-        click: "#{editorUI}.modals.showSetScreenProperties()"
+        click: => @modals.showSetScreenProperties()
 
       canvasMenu.createChild
         label: "Set Background Color ..."
-        click: "#{editorUI}.modals.showSetBackgroundColor()"
+        click: => @modals.showSetBackgroundColor()
 
       ###
       #
       # Tools menu options
       #
       ###
-      toolsMenu.createChild
-        label: "Preview ..."
-
-      toolsMenu.createChild
-        label: "Calculate device support ..."
+      toolsMenu.createChild label: "Preview ..."
+      toolsMenu.createChild label: "Calculate device support ..."
 
       toolsMenu.createChild
         label: "Set Export Framerate ..."
-        click: "#{editorUI}.modals.showSetExportRate()"
+        click: => @modals.showSetExportRate()
 
       toolsMenu.createChild
         label: "Upload textures ..."
-        click: "#{editorUI}.modals.showUploadTextures()"
+        click: => @modals.showUploadTextures()
 
       ###
       #
@@ -259,7 +237,7 @@ define (require) ->
       ###
       prefMenu.createChild
         label: "Settings"
-        click: "#{editorUI}.modals.showPrefSettings()"
+        click: => @modals.showPrefSettings()
 
       ###
       #
@@ -268,24 +246,17 @@ define (require) ->
       ###
       helpMenu.createChild
         label: "About Editor"
-        click: "#{editorUI}.modals.showHelpAbout()"
+        click: => @modals.showHelpAbout()
 
       helpMenu.createChild
         label: "Changelog"
-        click: "#{editorUI}.modals.showHelpChangeLog()"
+        click: => @modals.showHelpChangeLog()
         sectionEnd: true
 
-      helpMenu.createChild
-        label: "Take a Guided Tour"
-
-      helpMenu.createChild
-        label: "Quick Start"
-
-      helpMenu.createChild
-        label: "Tutorials"
-
-      helpMenu.createChild
-        label: "Documentation"
+      helpMenu.createChild label: "Take a Guided Tour"
+      helpMenu.createChild label: "Quick Start"
+      helpMenu.createChild label: "Tutorials"
+      helpMenu.createChild label: "Documentation"
 
       @menu
 

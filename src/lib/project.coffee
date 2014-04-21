@@ -166,6 +166,13 @@ define (require) ->
       "project.#{@slugifiedName}"
 
     ###
+    # Get project ID. This is what identifies us to the platform
+    #
+    # @return [String] id
+    ###
+    getId: -> @id
+
+    ###
     # Generate a packed save object, ready for sending to a remote, or storing
     # locally. These objects are what we can @load()
     #
