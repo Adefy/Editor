@@ -9,7 +9,7 @@ define (requre) ->
     # @return [Void]
     ###
     render: ->
-      #
+      ""
 
     ###
     # For cases where templates don't really make sense
