@@ -123,6 +123,6 @@ define (require) ->
       AUtilEventLog.egot "tab.textures", type
 
       switch type
-        when "rename.texture", "upload.textures"
+        when "rename.texture", "upload.textures", "remove.texture", "update.textures"
           # params.texture
           @refresh()

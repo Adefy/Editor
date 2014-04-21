@@ -55,7 +55,6 @@ define (require) ->
       return false unless fieldCheck "owner"
       return false unless fieldCheck "slugifiedName"
       return false unless fieldCheck "saves"
-      return false unless fieldCheck "assets"
       return false unless fieldCheck "exports"
 
       for save in creative.saves
@@ -79,19 +78,15 @@ define (require) ->
 
       return false unless fieldCheck "timestamp"
       return false unless fieldCheck "dump"
-      return false unless fieldCheck "assets"
-
-      for asset in save.assets
-        return false unless fieldCheck "name"
-        return false unless fieldCheck "key"
 
       true
 
     ###
     # @param [UIManager] ui
     # @param [Object] creative initial creative payload
+    # @param [Method] onLoad cb called after the initial project load
     ###
-    constructor: (@ui, creative) ->
+    constructor: (@ui, creative, onLoad) ->
       param.required ui
       param.required creative
 
@@ -104,16 +99,6 @@ define (require) ->
       Project.current = @
       @version = Project.PROJECT_VERSION
 
-      # Load active save, if there is one
-      if creative.activeSave and creative.saves.length > 0
-        save = _.find creative.saves, (s) ->
-          s.timestamp == new Date(creative.activeSave).getTime()
-
-        if save
-          @load save
-        else
-          AUtilLog.error "Invalid creative payload, active save not found"
-
       ###
       # @type [Array<Object>]
       #   @property [String] url
@@ -121,12 +106,24 @@ define (require) ->
       ###
       @textures = []
 
-      ###
-      @assets = new Asset @,
-        name: "top",
-        disabled: ["delete", "rename"],
-        isDirectory: true
-      ###
+      # Load active save, if there is one, but do it after the current chain
+      # of execution; otherwise, we won't be tied to objects like the current
+      # Editor class
+      if creative.activeSave and creative.saves.length > 0
+        setTimeout =>
+          save = _.find creative.saves, (s) ->
+            s.timestamp == new Date(creative.activeSave).getTime()
+
+          if save
+            @load save
+          else
+            AUtilLog.error "Invalid creative payload, active save not found"
+
+          onLoad() if onLoad
+
+        , 0
+      else
+        onLoad() if onLoad
 
     ###
     # Get S3 folder prefix
@@ -134,7 +131,7 @@ define (require) ->
     # @return [String] prefix
     ###
     getS3Prefix: ->
-      "/creatives/#{@owner}/#{@slugifiedName}-#{@id}/"
+      "creatives/#{@owner}/#{@slugifiedName}-#{@id}/"
 
     ###
     # Get CDN url
@@ -142,7 +139,7 @@ define (require) ->
     # @return [String] prefix
     ###
     getCDNUrl: ->
-      "//d3r6kqp8brgiqm.cloudfront.net"
+      "http://cdn.adefy.com"
 
     ###
     # Get S3 folder prefix for active project
@@ -214,7 +211,8 @@ define (require) ->
 
       AUtilLog.info "Loading v#{data.version} Project::dump"
 
-      @textures = _.map dump.textures, (texData) -> Texture.load texData
+      @saveTimestamp = data.timestamp
+      @textures = _.map dump.textures, (texData) => Texture.load @, texData
       texture.project = @ for texture in @textures
 
       @ui.workspace.loadTextures @textures
@@ -261,7 +259,7 @@ define (require) ->
       snapshotCount = window.AdefyEditor.settings.autosave.maxcount
 
       snapshots = Storage.get("#{@getStoragePrefix()}.snapshots") || []
-      snapshots.push JSON.stringify(@generateSave())
+      snapshots.push @generateSave()
 
       if snapshots.length > snapshotCount
         snapshots = snapshots.slice snapshots.length-snapshotCount, -1
@@ -271,12 +269,12 @@ define (require) ->
       @
 
     ###
-    # Return the local snapshot array
+    # Return the local snapshot array.
     #
     # @return [Array<Object>] snapshots
     ###
     getSnapshots: ->
-      JSON.parse Storage.get("#{@getStoragePrefix()}.snapshots") || "[]"
+      Storage.get("#{@getStoragePrefix()}.snapshots") || []
 
     ###
     # @param [Number] timestamp snapshot timestamp
@@ -303,5 +301,8 @@ define (require) ->
 
       timestamps = _.pluck snapshots, "timestamp"
       timestamps.sort (a, b) -> b - a
+
+      if timestamps[0] < @saveTimestamp
+        return AUtilLog.warning "Refusing to load snapshot older than our save"
 
       @loadSnapshot timestamps[0]

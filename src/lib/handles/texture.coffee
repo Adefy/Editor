@@ -16,13 +16,15 @@ define (require) ->
     ###
     constructor: (@project, options) ->
       param.required project
-      options = param.optional options, {}
+      param.required options
       param.required options.key
+      param.required options.name
 
       @__id = ID.objID "texture"
       @_id = @__id.prefix
 
-      @_uid = ID.uID()
+      @_uid = param.optional options.uid, ID.uID()
+      @_name = options.name
 
       @setKey options.key
 
@@ -51,8 +53,7 @@ define (require) ->
     # @return [self]
     ###
     contextFuncDelete: (texture) ->
-      @project.textures = _.without @project.textures, (t) ->
-        t._id == texture._id
+      _.remove @project.textures, (t) -> t.getID() == texture.getID()
 
       window.AdefyEditor.ui.pushEvent "remove.texture",
         texture: texture
@@ -106,7 +107,7 @@ define (require) ->
     ###
     setKey: (key) ->
       @_key = key
-      @_url = "#{@project.getCDNUrl()}/#{@project.getS3Prefix()}#{key}"
+      @_url = "#{@project.getCDNUrl()}/#{key}"
 
     load: (data) ->
       Dumpable::load.call @, data
@@ -124,6 +125,7 @@ define (require) ->
 
       @
 
-    @load: (data) ->
-      texture = new Texture @project
-      texture.load data
+    @load: (project, data) ->
+      param.required project
+      param.required data
+      texture = new Texture project, data

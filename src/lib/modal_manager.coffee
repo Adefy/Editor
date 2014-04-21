@@ -354,7 +354,7 @@ define (require) ->
         textures = []
 
         for obj in blob
-          texture = new Texture Project.current
+          texture = new Texture Project.current,
             key: obj.key
             name: obj.filename
 

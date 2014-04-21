@@ -57,10 +57,17 @@ define (require) ->
       @settings = {}
       @refreshSettings()
 
-      @project = new Project @ui, window.ADEFY_EDITOR_CREATIVE_PAYLOAD
-      @project.loadNewestSnapshot()
+      @project = new Project @ui, window.ADEFY_EDITOR_CREATIVE_PAYLOAD, =>
+        @project.loadNewestSnapshot()
 
       @startAutosaveTask()
+
+    ###
+    # Get currently loaded project
+    #
+    # @return [Project] project
+    ###
+    getProject: -> @project
 
     ###
     # We can't run properly in Opera, as it does not let us override the
