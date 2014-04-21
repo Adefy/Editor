@@ -23,6 +23,7 @@ define (require) ->
   TemplateModalRename = require "templates/modal/rename"
   TemplateModalSetPreviewFPS = require "templates/modal/set_preview_fps"
   TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
+  TemplateModalOpenProject = require "templates/modal/open_project"
 
   ChangeLog = require "info_change_log"
   Version = require "version"
@@ -394,6 +395,11 @@ define (require) ->
             return "Autosave Frequency must be 0 or more"
 
           true
+
+    showOpenProject: ->
+      new Modal
+        title: "Open Project"
+        content: TemplateModalOpenProject()
 
     ###
     # @return [Modal]

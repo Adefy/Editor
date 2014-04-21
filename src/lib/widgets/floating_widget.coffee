@@ -110,6 +110,11 @@ define (require) ->
     ###
     show: ->
       return if @_visible
+
+      @getElement().offset
+        top: (window.innerHeight / 2) - (@getElement().width() / 2)
+        left: (window.innerWidth / 2) - (@getElement().height() / 2)
+
       @getElement().animate opacity: 1, @_animateSpeed
 
     ###
