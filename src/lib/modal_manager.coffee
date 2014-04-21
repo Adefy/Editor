@@ -13,6 +13,7 @@ define (require) ->
 
   FloatingTextureSelect = require "widgets/floating/texture_select"
   Modal = require "widgets/floating/form"
+  SettingsWidget = require "widgets/floating/settings"
 
   TemplateModalAddTextures = require "templates/modal/add_textures"
   TemplateModalBackgroundColor = require "templates/modal/background_color"
@@ -371,6 +372,8 @@ define (require) ->
     # @return [Modal]
     ###
     showPrefSettings: ->
+
+      return new SettingsWidget
 
       autosaveFreqID = ID.prefID "autosave-frequency"
 

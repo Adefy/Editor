@@ -22,13 +22,15 @@ define (require) ->
     # Creates and draws us
     #
     # @param [String] title
+    # @param [Array<String>] extraClasses optional array of extra classes
     ###
-    constructor: (title) ->
+    constructor: (title, extraClasses) ->
       param.required title
+      extraClasses = param.optional extraClasses, []
 
       super
         id: ID.prefID("floating-widget")
-        classes: ["floating-widget"]
+        classes: _.union ["floating-widget"], extraClasses
 
       @_closeOnFocusLoss = false
       @_visible = false
@@ -106,23 +108,31 @@ define (require) ->
         @hide()
 
     ###
-    # Animate us visible
+    # Animate us visible. Coordinates are optional, defaulting to the center of
+    # the screen
+    #
+    # @param [Number] x
+    # @param [Number] y
     ###
-    show: ->
+    show: (x, y) ->
       return if @_visible
 
-      @getElement().offset
-        top: (window.innerHeight / 2) - (@getElement().width() / 2)
-        left: (window.innerWidth / 2) - (@getElement().height() / 2)
+      w = @getElement().width()
+      h = @getElement().height()
+      x = param.optional x, (window.innerWidth / 2) - (w / 2)
+      y = param.optional y, (window.innerHeight / 2) - (h / 2)
 
-      @getElement().animate opacity: 1, @_animateSpeed
+      @getElement().offset top: y, left: x
+      @getElement().animate opacity: 1, @_animateSpeed, ->
+        @_visible = true
 
     ###
     # Animate us invisible
     ###
     hide: ->
       return unless @_visible
-      @getElement().animate opacity: 0, @_animateSpeed
+      @getElement().animate opacity: 0, @_animateSpeed, ->
+        @_visible = false
 
     ###
     # Check if we are visible
