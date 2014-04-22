@@ -1,7 +1,9 @@
 define (require) ->
 
-  AUtilLog = require "util/log"
+  config = require "config"
   param = require "util/param"
+
+  AUtilLog = require "util/log"
   Handle = require "handles/handle"
   Bezier = require "widgets/timeline/bezier"
 
@@ -92,8 +94,55 @@ define (require) ->
 
       me = @
 
+      @_properties.layer = new CompositeProperty()
+      @_properties.layer.icon = config.icon.property_layer
+      @_properties.layer.main = new NumericProperty()
+      @_properties.layer.main.setValue 0
+      @_properties.layer.main.setPrecision 0
+
+      @_properties.layer.physics = new NumericProperty()
+      @_properties.layer.physics.clone @_properties.layer.main
+
+      @_properties.layer.main.onUpdate = (_layer_) =>
+        @_AJSActor.setLayer _layer_
+      @_properties.layer.main.requestUpdate = ->
+        @setValue me._AJSActor.getLayer() if me._AJSActor
+
+      @_properties.layer.physics.onUpdate (_layer_) =>
+        @_AJSActor.setPhysicsLayer _layer_
+      @_properties.layer.physics.requestUpdate = ->
+        @setValue me._AJSActor.getPhysicsLayer() if me._AJSActor
+
+      @_properties.layer.addProperty "main",
+        @_properties.layer.main
+
+      @_properties.layer.addProperty "physics",
+        @_properties.layer.physics
+
+
+      @_properties.opacity = new NumericProperty()
+      @_properties.opacity.setMin 0.0
+      @_properties.opacity.setMax 1.0
+      @_properties.opacity.setValue 1.0
+      @_properties.opacity.setPlaceholder 1.0
+      @_properties.opacity.setFloat true
+      @_properties.opacity.setPrecision 4
+      @_properties.opacity.onUpdate = (opacity) =>
+        @_AJSActor.setOpacity opacity if @_AJSActor
+      @_properties.opacity.requestUpdate = ->
+        @setValue me._AJSActor.getOpacity() if me._AJSActor
+
+      @_properties.rotation = new NumericProperty()
+      @_properties.rotation.setMin 0
+      @_properties.rotation.setMax 360
+      @_properties.rotation.setPrecision 0
+      @_properties.rotation.onUpdate = (rotation) =>
+        @_AJSActor.setRotation rotation if @_AJSActor
+      @_properties.rotation.requestUpdate = ->
+        @setValue me._AJSActor.getRotation() if me._AJSActor
+
       @_properties.position = new CompositeProperty()
-      @_properties.position.icon = "fa-arrows"
+      @_properties.position.icon = config.icon.property_position
       @_properties.position.x = new NumericProperty()
       @_properties.position.y = new NumericProperty()
 
@@ -120,30 +169,8 @@ define (require) ->
       @_properties.position.addProperty "x", @_properties.position.x
       @_properties.position.addProperty "y", @_properties.position.y
 
-      @_properties.opacity = new NumericProperty()
-      @_properties.opacity.setMin 0.0
-      @_properties.opacity.setMax 1.0
-      @_properties.opacity.setValue 1.0
-      @_properties.opacity.setPlaceholder 1.0
-      @_properties.opacity.setFloat true
-      @_properties.opacity.setPrecision 4
-      @_properties.opacity.onUpdate = (opacity) =>
-        @_AJSActor.setOpacity opacity if @_AJSActor
-      @_properties.opacity.requestUpdate = ->
-        @setValue me._AJSActor.getOpacity() if me._AJSActor
-
-      @_properties.rotation = new NumericProperty()
-      @_properties.rotation.setMin 0
-      @_properties.rotation.setMax 360
-      @_properties.rotation.setPrecision 0
-      @_properties.rotation.onUpdate = (rotation) =>
-        @_AJSActor.setRotation rotation if @_AJSActor
-      @_properties.rotation.requestUpdate = ->
-        @setValue me._AJSActor.getRotation() if me._AJSActor
-
-
       @_properties.color = new CompositeProperty()
-      @_properties.color.icon = "fa-adjust"
+      @_properties.color.icon = config.icon.property_color
       @_properties.color.r = new NumericProperty()
       @_properties.color.r.setMin 0
       @_properties.color.r.setMax 255
@@ -190,7 +217,7 @@ define (require) ->
 
 
       @_properties.physics = new CompositeProperty()
-      @_properties.physics.icon = "fa-anchor"
+      @_properties.physics.icon = config.icon.property_physics
       @_properties.physics.mass = new NumericProperty()
       @_properties.physics.mass.setMin 0
       @_properties.physics.mass.setPlaceholder 50

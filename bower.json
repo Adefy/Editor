@@ -24,8 +24,8 @@
     "perfect-scrollbar": "~0.4.9",
     "pace": "~0.5.1",
     "lodash": "~2.4.1",
-    "adefyjs": "git@github.com:Adefy/AdefyJS.git#v1.0.4",
-    "adefyre": "git@github.com:Adefy/AdefyRE.git#v1.0.5",
+    "adefyjs": "git@github.com:Adefy/AdefyJS.git#v1.0.6",
+    "adefyre": "git@github.com:Adefy/AdefyRE.git#v1.0.7",
     "fontawesome": "~4.0.3",
     "typekit-load": "~0.1.2"
   }
