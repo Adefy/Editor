@@ -1,8 +1,10 @@
 define (require) ->
 
+  config = require "config"
+  param = require "util/param"
+
   ID = require "util/id"
   AUtilLog = require "util/log"
-  param = require "util/param"
 
   Storage = require "storage"
 
@@ -58,9 +60,6 @@ define (require) ->
       @_canvasWidth = @getElement().width()
       @_canvasHeight = $(window).height() - $(".menubar").height()
 
-      console.log @_canvasWidth
-      console.log @_canvasHeight
-
       # Starting phone size is 800x480
       @_pWidth = 800
       @_pHeight = 480
@@ -76,7 +75,8 @@ define (require) ->
       # Inject our canvas container, along with its status bar
       # Although we currently don't add anything else to the container besides
       # the canvas itself, it might prove useful in the future.
-      @getElement().html TemplateWorkspaceCanvasContainer()
+      @getElement().html TemplateWorkspaceCanvasContainer
+        id: config.id.are_canvas
 
       ## AJS overrides setting the renderer mode...
       #mode = Storage.get("are.renderer.mode")
@@ -94,7 +94,7 @@ define (require) ->
         @_engineInit()
         @_applyCanvasSizeUpdate()
 
-      , @_canvasWidth, @_canvasHeight, "are-canvas-container"
+      , @_canvasWidth, @_canvasHeight, config.id.are_canvas
 
     ###
     # Checks if a workspace has already been created, and returns false if one
@@ -389,6 +389,14 @@ define (require) ->
 
       @_bindContextClick()
 
+      $(document).on "mousemove", ".workspace canvas", (e) =>
+        pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
+
+        pos.x += ARERenderer.camPos.x
+        pos.y += ARERenderer.camPos.y
+
+        $(".workspace .cursor-position").text "x: #{pos.x}, y: #{pos.y}"
+
       ###
       # Workspace drag
       ###
@@ -589,7 +597,7 @@ define (require) ->
     _applyCanvasSizeUpdate: ->
 
       # Resize canvas container
-      $("#are-canvas-container").css
+      $("##{config.id.are_canvas}").css
         height: "#{@_canvasHeight}px"
         width: "#{@_canvasWidth}px"
 
