@@ -62,11 +62,8 @@ define (require) ->
     # @return [self]
     ###
     init: ->
-      if Project.quicksaveExists()
-        @project = Project.quickload @ui
-      else
-        @project = new Project @ui, window.ADEFY_EDITOR_CREATIVE_PAYLOAD, =>
-          @project.loadNewestSnapshot()
+      @project = new Project @ui, window.ADEFY_EDITOR_CREATIVE_PAYLOAD, (p) =>
+        p.loadNewestSnapshot()
 
       @startAutosaveTask()
 

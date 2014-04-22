@@ -101,20 +101,15 @@ define (require) ->
       # of execution; otherwise, we won't be tied to objects like the current
       # Editor class
       if creative.activeSave and creative.saves.length > 0
-        setTimeout =>
-          save = _.find creative.saves, (s) ->
-            s.timestamp == new Date(creative.activeSave).getTime()
+        save = _.find creative.saves, (s) ->
+          s.timestamp == new Date(creative.activeSave).getTime()
 
-          if save
-            @load save
-          else
-            AUtilLog.error "Invalid creative payload, active save not found"
+        if save
+          @load save
+        else
+          AUtilLog.error "Invalid creative payload, active save not found"
 
-          onLoad() if onLoad
-
-        , 0
-      else
-        onLoad() if onLoad
+      onLoad(@) if onLoad
 
     ###
     # Get S3 folder prefix
