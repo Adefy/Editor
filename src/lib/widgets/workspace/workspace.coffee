@@ -253,7 +253,8 @@ define (require) ->
           name: "New Actor +"
           cb: => new ContextMenu x, y, @getNewActorCtxMenu x, y
 
-        newParticleSystem:
+      if config.use.particle_system
+        functions.newParticleSystem =
           name: "New Particle Sys."
           cb: =>
             ps = new ParticleSystem @ui

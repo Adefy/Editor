@@ -1,4 +1,7 @@
 define
+  use:
+    particle_system: false
+
   id:
     are_canvas: "are-canvas"
 

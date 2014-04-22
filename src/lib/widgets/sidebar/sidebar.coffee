@@ -42,7 +42,7 @@ define (require) ->
 
       @_hiddenX = 0
       @_visibleX = 0
-      @_visible = Storage.get("sidebar.visible") != false
+      @_visible = Storage.get("sidebar.visible") == true
 
       @setWidth @_width
       @onResize()           # Calculate X offsets
@@ -116,7 +116,7 @@ define (require) ->
     ###
     render: ->
       @getElement().html @_items.map((i) -> i.render()).join ""
-
+      @refreshVisible()
       @postRender()
 
     ###
@@ -156,10 +156,9 @@ define (require) ->
     # Refreshes the state of the timeline toggle icons and storage
     ###
     refreshVisible: ->
-
+      Storage.set "sidebar.visible", @_visible
       @getElement(".button.toggle i").toggleClass config.icon.toggle_left, @_visible
       @getElement(".button.toggle i").toggleClass config.icon.toggle_right, !@_visible
-      Storage.set "sidebar.visible", @_visible
 
     ###
     # Toggle visibility of the sidebar with an optional animation
@@ -195,10 +194,6 @@ define (require) ->
       else
         @getElement().css left: @_visibleX
 
-      ##
-      # I'm sure jQuery's toggle class can do this, but I still haven't
-      # figured it out properly
-
       @_visible = true
       @refreshVisible()
 
@@ -222,9 +217,6 @@ define (require) ->
       else
         @getElement().css left: @_hiddenX
 
-      ##
-      # I'm sure jQuery's toggle class can do this, but I still haven't
-      # figured it out properly
       @_visible = false
       @refreshVisible()
 
