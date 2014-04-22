@@ -1,7 +1,8 @@
 define (require) ->
 
-  AUtilLog = require "util/log"
+  config = require "config"
   param = require "util/param"
+  AUtilLog = require "util/log"
 
   Storage = require "storage"
 
@@ -36,8 +37,6 @@ define (require) ->
       return if @checkForOpera()
       return unless @checkForLocalStorage()
       return unless @checkForCreativePayload()
-
-      AUtilLog.info "Adefy Editor created id(#{config.selector})"
 
       @widgets = []
       @ui = new UIManager @
