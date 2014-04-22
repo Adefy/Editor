@@ -779,3 +779,12 @@ define (require) ->
         @addActor newActor
 
       @ui.timeline.updateAllActorsInTime()
+
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
+    respondToEvent: (type, params) ->
+      switch type
+        when "timeline.selected.actor"
+          @setSelectedActor params.actor
