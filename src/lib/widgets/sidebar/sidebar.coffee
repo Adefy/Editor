@@ -35,7 +35,7 @@ define (require) ->
 
       super
         id: ID.prefID("sidebar")
-        parent: "section#main"
+        parent: "section.main"
         classes: ["sidebar"]
 
       @_hiddenX = 0

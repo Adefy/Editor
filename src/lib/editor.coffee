@@ -1,6 +1,5 @@
 define (require) ->
 
-  config = require "config"
   AUtilLog = require "util/log"
   param = require "util/param"
 
@@ -42,8 +41,6 @@ define (require) ->
 
       @ui = new UIManager @
 
-      AUtilLog.debug "Adefy Editor created id(#{config.selector})"
-
       ###
       # @type [Object] clipboard
       #   @property [String] type what is in the clipboard
@@ -57,6 +54,8 @@ define (require) ->
       ###
       @settings = {}
       @refreshSettings()
+
+      AUtilLog.debug "Adefy Editor created"
 
     ###
     # Call after creating the editor, this ensures the top level is set

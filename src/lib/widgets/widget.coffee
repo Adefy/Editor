@@ -39,7 +39,7 @@ define (requre) ->
       ##
       ##
 
-      @_parent = param.optional parent, config.selector
+      @_parent = param.optional parent, ".editor"
       @_classes = param.optional classes, []
       prepend = param.optional prepend, false
 

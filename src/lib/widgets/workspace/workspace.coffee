@@ -39,7 +39,7 @@ define (require) ->
 
       super
         id: ID.prefID("workspace")
-        parent: "section#main"
+        parent: "section.main"
         classes: ["workspace"]
         prepend: true
 
@@ -57,6 +57,9 @@ define (require) ->
       # The canvas is fullscreen, minus the mainbar
       @_canvasWidth = @getElement().width()
       @_canvasHeight = $(window).height() - $(".menubar").height()
+
+      console.log @_canvasWidth
+      console.log @_canvasHeight
 
       # Starting phone size is 800x480
       @_pWidth = 800
@@ -84,14 +87,14 @@ define (require) ->
       AUtilLog.info "Initializing AJS..."
       AJS.init =>
 
-        @_are = window.AdefyRE.Engine()._engine
+        @_are = AdefyRE.Engine()._engine
 
-        # window.AdefyRE.Engine().setLogLevel 4
+        # AdefyRE.Engine().setLogLevel 4
 
         @_engineInit()
         @_applyCanvasSizeUpdate()
 
-      , @_canvasWidth, @_canvasHeight, "aw-canvas-container"
+      , @_canvasWidth, @_canvasHeight, "are-canvas-container"
 
     ###
     # Checks if a workspace has already been created, and returns false if one
@@ -586,7 +589,7 @@ define (require) ->
     _applyCanvasSizeUpdate: ->
 
       # Resize canvas container
-      $("#aw-canvas-container").css
+      $("#are-canvas-container").css
         height: "#{@_canvasHeight}px"
         width: "#{@_canvasWidth}px"
 
@@ -785,7 +788,7 @@ define (require) ->
     # Note that this does NOT resize the canvas
     ###
     onResize: ->
-      @getElement().height $("section#main").height()
+      @getElement().height $("section.main").height()
 
       #elm.offset
       #  top: toolb.position().top + toolb.height()
