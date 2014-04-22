@@ -2,26 +2,25 @@ define (require) ->
 
   config = require "config"
   param = require "util/param"
-
-  ID = require "util/id"
   AUtilLog = require "util/log"
   AUtilEventLog = require "util/event_log"
-
-  Tab = require "widgets/tabs/tab"
-
-  TemplateBooleanControl = require "templates/sidebar/controls/boolean"
-  TemplateCompositeControl = require "templates/sidebar/controls/composite"
-  TemplateNumericControl = require "templates/sidebar/controls/numeric"
-  TemplateTextControl = require "templates/sidebar/controls/text"
+  ID = require "util/id"
+  Widget = require "widgets/widget"
 
   CompositeProperty = require "handles/properties/composite"
 
   Dragger = require "util/dragger"
 
+  TemplatePropertyBar = require "templates/property_bar"
+  TemplateBooleanControl = require "templates/sidebar/controls/boolean"
+  TemplateCompositeControl = require "templates/sidebar/controls/composite"
+  TemplateNumericControl = require "templates/sidebar/controls/numeric"
+  TemplateTextControl = require "templates/sidebar/controls/text"
+
   ###
-  # Properties widget, dynamically refreshable
+  # Property bar, breaks out settings and high-level editor controls
   ###
-  class PropertiesTab extends Tab
+  class PropertyBar extends Widget
 
     ###
     # Prevents us from binding event listeners twice
@@ -30,18 +29,15 @@ define (require) ->
     @__exists: false
 
     ###
-    # Instantiates, but does not set data!
-    #
-    # @param [UIManager] ui
-    # @param [Sidebar] parent sidebar parent
+    # @param [UI] ui
     ###
-    constructor: (@ui, parent) ->
+    constructor: (@ui) ->
       return unless @enforceSingleton()
 
       super
-        id: ID.prefID("tab-properties")
-        parent: parent
-        classes: ["tab-properties"]
+        id: ID.prefID("property-bar")
+        classes: ["property-bar"]
+        parent: "header"
 
       # We cache our internal built state, since we require an object to show
       # anything meaningful. Our state is refreshed externally, after which
@@ -59,15 +55,14 @@ define (require) ->
       @setupDragger()
 
     ###
-    # Checks if a menu bar has already been created, and returns false if one
-    # has. Otherwise, sets a flag preventing future calls from returning true
+    # Checks if a property bar has already been created
     ###
     enforceSingleton: ->
-      if PropertiesTab.__exists
-        AUtilLog.warn "A properties tab already exists, refusing to initialize!"
+      if PropertyBar.__exists
+        AUtilLog.warn "A property bar already exists, refusing to initialize!"
         return false
 
-      PropertiesTab.__exists = true
+      PropertyBar.__exists = true
 
     ###
     # Initialize our input dragging functionality
@@ -94,7 +89,7 @@ define (require) ->
 
       $(document).on "input", "dl > dd > input", (e) =>
         @saveControl e.target
-        @ui.pushEvent "tab.properties.update.actor", actor: @targetActor
+        @ui.pushEvent "property.bar.update.actor", actor: @targetActor
 
     ###
     # This method applies the state of the control to our current object, by
@@ -137,6 +132,127 @@ define (require) ->
         updatePacket
       else
         @targetActor.updateProperties updatePacket
+
+
+
+    ###
+    # Refresh widget data using a manipulatable, not that this function is
+    # not where injection occurs! We request a refresh from our parent for that
+    #
+    # @param [Handle] obj
+    ###
+    refreshActor: (obj) ->
+      @targetActor = param.required obj
+
+      properties = _.pairs obj.getProperties()
+
+      # Bring together all non-composites and render them under the "Basic"
+      # label
+      nonComposites = _.filter properties, (p) -> p[1].getType() != "composite"
+      composites = _.filter properties, (p) -> p[1].getType() == "composite"
+
+      if nonComposites.length > 0
+        fakeControl = new CompositeProperty()
+        fakeControl.setProperties _.object nonComposites
+
+        nonCompositeHTML = @generateControl
+          name: "basic"
+          icon: config.icon.property_basic
+        , fakeControl
+      else
+        nonCompositeHTML = ""
+
+      compositeHTML = composites.map (p) =>
+        icn = config.icon.property_default
+        name = p[0]
+        property = p[1]
+
+        icn = property.icon if property.icon
+
+        @generateControl { name: name, icon: icn }, property
+      .join ""
+
+      compositeHTML.unshift nonCompositeHTML
+
+      @getElement().html TemplatePropertyBar
+        controls: compositeHTML
+        actorName: @targetActor.getName()
+
+    ###
+    # Clear the property widget
+    ###
+    clear: ->
+      @_builtHMTL = ""
+      @targetActor = null
+      @getElement().html ""
+
+    ###
+    # Return internally pre-rendered HTML. We need to pre-render since we rely
+    # upon object data to be meaningful (note comment in the constructor)
+    #
+    # @return [String] html
+    ###
+    render: -> @_builtHMTL
+
+    ###
+    # @param [BaseActor] actor
+    ###
+    updateActor: (actor) ->
+      oldActor = @targetActor
+      @targetActor = param.optional actor, @targetActor
+      return unless @targetActor
+
+      if !@_builtHMTL || (@targetActor != oldActor)
+        return @refreshActor @targetActor
+
+      for property, value of @targetActor.getProperties()
+
+        if value.getType() == "composite"
+          parent = "h1[data-name=#{property}]"
+        else
+          parent = "h1[data-name=basic]"
+
+        if value.getType() == "composite"
+          for cName, cValue of value.getProperties()
+
+            input = $("#{@_sel} #{parent} + div > dl input[name=#{cName}]")
+            value = cValue.getValueString()
+
+            $(input).val value
+
+        else
+          input = $("#{@_sel} #{parent} + div > dl input[name=#{property}]")
+          value = value.getValueString()
+
+          $(input).val value
+
+    ###
+    #
+    ###
+    clearActor: (actor) ->
+      if actor && @targetActor
+        if actor.getActorId() == @targetActor.getActorId()
+          @clear()
+
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
+    respondToEvent: (type, params) ->
+      AUtilEventLog.egot "tab.properties", type
+      switch type
+        when "workspace.selected.actor", "timeline.selected.actor", "workspace.add.actor"
+          @updateActor params.actor
+        when "workspace.remove.actor"
+          @clearActor params.actor
+        when "selected.actor.update"
+          @updateActor params.actor
+
+    ###
+    #
+    # Control rendering
+    #
+    ###
 
     ###
     # Generates a mini HTML control widget for the property in question
@@ -268,115 +384,3 @@ define (require) ->
         placeholder: value.getPlaceholder()
         value: value.getValueString()
         parent: parent
-
-    ###
-    # Refresh widget data using a manipulatable, not that this function is
-    # not where injection occurs! We request a refresh from our parent for that
-    #
-    # @param [Handle] obj
-    ###
-    refreshActor: (obj) ->
-
-      @targetActor = param.required obj
-
-      properties = _.pairs obj.getProperties()
-
-      # Bring together all non-composites and render them under the "Basic"
-      # label
-      nonComposites = _.filter properties, (p) -> p[1].getType() != "composite"
-      composites = _.filter properties, (p) -> p[1].getType() == "composite"
-
-      if nonComposites.length > 0
-        fakeControl = new CompositeProperty()
-        fakeControl.setProperties _.object nonComposites
-
-        nonCompositeHTML = @generateControl
-          name: "basic"
-          icon: config.icon.property_basic
-        , fakeControl
-      else
-        nonCompositeHTML = ""
-
-      compositeHTML = composites.map (p) =>
-        icn = config.icon.property_default
-        name = p[0]
-        property = p[1]
-
-        icn = property.icon if property.icon
-
-        @generateControl { name: name, icon: icn }, property
-      .join ""
-
-      @_builtHMTL = nonCompositeHTML + compositeHTML
-
-      @getSidebar().render()
-
-    ###
-    # Clear the property widget
-    ###
-    clear: ->
-      @_builtHMTL = ""
-      @targetActor = null
-      @refresh()
-
-    ###
-    # Return internally pre-rendered HTML. We need to pre-render since we rely
-    # upon object data to be meaningful (note comment in the constructor)
-    #
-    # @return [String] html
-    ###
-    render: -> @_builtHMTL
-
-    ###
-    # @param [BaseActor] actor
-    ###
-    updateActor: (actor) ->
-      oldActor = @targetActor
-      @targetActor = param.optional actor, @targetActor
-      return unless @targetActor
-
-      if !@_builtHMTL || (@targetActor != oldActor)
-        return @refreshActor @targetActor
-
-      for property, value of @targetActor.getProperties()
-
-        if value.getType() == "composite"
-          parent = "h1[data-name=#{property}]"
-        else
-          parent = "h1[data-name=basic]"
-
-        if value.getType() == "composite"
-          for cName, cValue of value.getProperties()
-
-            input = $("#{@_sel} #{parent} + div > dl input[name=#{cName}]")
-            value = cValue.getValueString()
-
-            $(input).val value
-
-        else
-          input = $("#{@_sel} #{parent} + div > dl input[name=#{property}]")
-          value = value.getValueString()
-
-          $(input).val value
-
-    ###
-    #
-    ###
-    clearActor: (actor) ->
-      if actor && @targetActor
-        if actor.getActorId() == @targetActor.getActorId()
-          @clear()
-
-    ###
-    # @param [String] type
-    # @param [Object] params
-    ###
-    respondToEvent: (type, params) ->
-      AUtilEventLog.egot "tab.properties", type
-      switch type
-        when "workspace.selected.actor", "timeline.selected.actor", "workspace.add.actor"
-          @updateActor params.actor
-        when "workspace.remove.actor"
-          @clearActor params.actor
-        when "selected.actor.update"
-          @updateActor params.actor

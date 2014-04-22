@@ -236,6 +236,11 @@ define (require) ->
     getPreviewFPS: -> @_previewFPS
 
     ###
+    # @param [Number] fps
+    ###
+    setPreviewFPS: (fps) -> @_previewFPS = fps
+
+    ###
     # Return current cursor time in ms (relative to duration)
     #
     # @return [Number] time cursor time in ms
@@ -271,8 +276,10 @@ define (require) ->
 
       $("#timeline-cursor").css "left", $(@_spaceSelector()).width() * (time / @_duration)
 
-      @_updateCursorTime()
-      @updateAllActorsInTime()
+      setTimeout =>
+        @_updateCursorTime()
+        @updateAllActorsInTime()
+      , 0
 
     ###
     # Validates an actor's lifetime
@@ -1118,7 +1125,7 @@ define (require) ->
         when "workspace.selected.actor"
           @switchSelectedActor params.actor
           @updateActor params.actor
-        when "tab.properties.update.actor"
+        when "property.bar.update.actor"
           @updateActor params.actor
         when "actor.update.intime"
           @updateActor params.actor

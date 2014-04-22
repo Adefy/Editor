@@ -864,3 +864,12 @@ define (require) ->
           AUtilLog.warn "No such handle class #{actor.type}"
 
       @ui.timeline.updateAllActorsInTime()
+
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
+    respondToEvent: (type, params) ->
+      switch type
+        when "timeline.selected.actor"
+          @setSelectedActor params.actor

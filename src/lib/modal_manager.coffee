@@ -35,7 +35,6 @@ define (require) ->
   class ModalManager extends EditorObject
 
     constructor: (@ui) ->
-      #
 
     ###
     # @param [Handle] handle
@@ -376,43 +375,28 @@ define (require) ->
     ###
     showPrefSettings: ->
 
-      return new SettingsWidget
-
-      autosaveFreqID = ID.prefID "autosave-frequency"
-      #areRendererModeID = ID.prefID "are-renderer-mode"
-
-      contents = TemplateModalPrefSettings
-        #areRendererMode: Number(Storage.get("are.renderer.mode")) || \
-        #                 ARERenderer.rendererMode
-        #areRendererModeID: areRendererModeID
-        autosaveFreq: @ui.editor.settings.autosave.frequency
-        autosaveFreqID: autosaveFreqID
-
-      new Modal
-        title: "Settings"
-        content: contents
+      new SettingsWidget
+        title: "Preferences"
+        settings: [
+          label: "Autosave Frequency (s)"
+          type: Number
+          placeholder: "Enter an autosave frequency (s)"
+          value: @ui.editor.settings.autosave.frequency / 1000
+          id: "freq"
+          min: 0
+        ,
+          label: "Preview Framerate"
+          type: Number
+          placeholder: "Enter a framerate (FPS)"
+          value: @ui.timeline.getPreviewFPS()
+          id: "preview_fps"
+          min: 0
+        ]
         cb: (data) =>
+          @ui.editor.settings.autosave.frequency = data.freq * 1000
+          @ui.editor.saveSettings()
 
-          @ui.editor.applySettings
-            autosave:
-              frequency: Number(data[autosaveFreqID])
-            #are:
-            #  rendererMode: Number(data[areRendererModeID])
-
-        validation: (data) =>
-
-          freq = Number(data[autosaveFreqID])
-          #arerm = Number(data[areRendererModeID])
-
-          unless freq >= 0
-            return "Autosave Frequency must be 0 or more"
-
-          #unless _.contains(ARERenderer.renderereModes, (n) -> arerm == n)
-          #  return "ARERenderer mode must be 1 or 2"
-          #if arerm == ARERenderer.RENDERER_MODE_NULL
-          #  return "You cannot use the NULL renderer"
-
-          true
+          @ui.timeline.setPreviewFPS data.preview_fps
 
     showOpenProject: ->
       new Modal

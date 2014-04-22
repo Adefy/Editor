@@ -76,8 +76,6 @@ define (require) ->
           [actor, actor.getNearestAnimationTime(cursorTime, right: true)]
 
         if minimum = _.min(pairs, (pair) -> (pair[1] || 0) - cursorTime)
-          console.log cursorTime
-          console.log minimum
           if time = minimum[1]
             @timeline.setCursorTime time
 
@@ -104,8 +102,6 @@ define (require) ->
           [actor, actor.getNearestAnimationTime(cursorTime, left: true)]
 
         if minimum = _.min(pairs, (pair) -> cursorTime - (pair[1] || 0))
-          console.log cursorTime
-          console.log minimum
           if time = minimum[1]
             @timeline.setCursorTime time
 
