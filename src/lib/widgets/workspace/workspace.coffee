@@ -212,8 +212,22 @@ define (require) ->
     ###
     getWorkspaceCtxMenu: (x, y) ->
       functions =
-        "New Actor +": =>
-            new ContextMenu x, y, @getNewActorCtxMenu x, y
+        newActor:
+          name: "New Actor +"
+          cb: => new ContextMenu x, y, @getNewActorCtxMenu x, y
+
+      if config.use.particle_system
+        functions.newParticleSystem =
+          name: "New Particle Sys."
+          cb: =>
+            ps = new ParticleSystem @ui
+
+            pos = @domToGL x, y
+            pos.x += ARERenderer.camPos.x
+            pos.y += ARERenderer.camPos.y
+            ps.setPosition pos.x, pos.y
+
+            @addParticleSystem ps
 
       if AdefyEditor.clipboard && AdefyEditor.clipboard.type == "actor"
         functions["Paste"] = =>

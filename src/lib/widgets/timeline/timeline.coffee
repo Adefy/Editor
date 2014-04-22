@@ -79,7 +79,9 @@ define (require) ->
       @_regListeners()
       @_setupDraggableKeyframes()
 
-      if Storage.get("timeline.visible") != false
+      @_visible = Storage.get("timeline.visible") == true
+
+      if @_visible
         @show()
       else
         @hide()
@@ -603,6 +605,14 @@ define (require) ->
     switchSelectedActorByIndex: (index) -> @switchSelectedActor @_actors[index]
 
     ###
+    # Refreshes the state of the timeline toggle icons and storage
+    ###
+    refreshVisible: ->
+      Storage.set "timeline.visible", @_visible
+      @getElement(".button.toggle i").toggleClass config.icon.toggle_down, @_visible
+      @getElement(".button.toggle i").toggleClass config.icon.toggle_up, !@_visible
+
+    ###
     # Toggle visibility of the sidebar with an optional animation
     #
     # @param [Method] cb callback
@@ -939,6 +949,7 @@ define (require) ->
       @_renderActorList()
       @_renderSpace()
       @_setupScrollbar()
+      @refreshVisible()
       @
 
     refresh: ->

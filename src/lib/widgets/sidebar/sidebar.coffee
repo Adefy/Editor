@@ -40,7 +40,7 @@ define (require) ->
 
       @_hiddenX = 0
       @_visibleX = 0
-      @_visible = true
+      @_visible = Storage.get("sidebar.visible") == true
 
       @setWidth @_width
       @onResize()           # Calculate X offsets
@@ -114,7 +114,7 @@ define (require) ->
     ###
     render: ->
       @getElement().html @_items.map((i) -> i.render()).join ""
-
+      @refreshVisible()
       @postRender()
 
     ###
@@ -151,6 +151,15 @@ define (require) ->
       @_visibleX = 0
 
     ###
+    # Refreshes the state of the timeline toggle icons and storage
+    ###
+    refreshVisible: ->
+      Storage.set "sidebar.visible", @_visible
+      @getElement(".button.toggle i").toggleClass config.icon.toggle_left, @_visible
+      @getElement(".button.toggle i").toggleClass config.icon.toggle_right, !@_visible
+
+    ###
+
     # Toggle visibility of the sidebar with an optional animation
     #
     # @param [Method] cb callback

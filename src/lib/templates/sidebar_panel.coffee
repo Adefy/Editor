@@ -12,9 +12,9 @@ define ->
   ###
   Handlebars.compile """
     {{#if usesFooter}}
-    <div id="{{ id }}" class="panel with-footer">
+    <div id="{{id}}" class="panel with-footer">
     {{else}}
-    <div id="{{ id }}" class="panel">
+    <div id="{{id}}" class="panel">
     {{/if}}
       <div class="tabs">
         {{#each tabs}}
@@ -28,7 +28,7 @@ define ->
         {{/each}}
 
         <div data-sidebarid="{{sidebarId}}" class="button toggle">
-          <i class="fa fa-fw fa-toggle-left"></i>
+          <i class="fa fa-fw "></i>
         </div>
       </div>
       <div id="{{contentId}}" class="content {{contentKlass}}">
