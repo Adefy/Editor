@@ -43,6 +43,8 @@ define (require) ->
       @onResize()
       window.onresize = @onResize
 
+      @refresh()
+
     ###
     # swiped from:
     # http://xparkmedia.com/blog/enter-fullscreen-mode-javascript/
