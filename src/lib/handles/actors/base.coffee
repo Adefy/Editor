@@ -557,7 +557,7 @@ define (require) ->
       @_updateActorState()
       @_genSnapshot()
 
-      @seedBirth() if @isBirth(@_lastTemporalState) and !seededBirth
+      @seedBirth() if @isBirth(Math.floor cursor) and !seededBirth
 
       # Save state
       @_lastTemporalState = Number Math.floor(cursor)
@@ -616,10 +616,10 @@ define (require) ->
       while next != state and next != -1
         next = @findNearestState next, right
 
-        if next != Math.floor(@lifetimeStart_ms) and next != -1
+        if next != -1
 
           # Ensure next hasn't overshot us
-          if (right and next < state) or (!right and next > state)
+          if (right and next <= state) or (!right and next >= state)
             intermStates.push next
 
       # Now sort accordingly
@@ -644,8 +644,7 @@ define (require) ->
             0
 
       # Now apply our states in the order presented
-      for s in intermStates
-        @_applyPropBuffer @_propBuffer[s]
+      @_applyPropBuffer @_propBuffer[s] for s in intermStates
 
     ###
     # Applies data in prop buffer entry
@@ -677,7 +676,7 @@ define (require) ->
     # @return [Boolean] inLifetime
     ###
     inLifetime: (time) ->
-      time >= @lifetimeStart_ms and time < @lifetimeEnd_ms
+      time >= @lifetimeStart_ms and time <= @lifetimeEnd_ms
 
     ###
     # Updates our state according to the current cursor position. Goes through
@@ -716,6 +715,10 @@ define (require) ->
     _updateActorState: ->
       cursor = Math.floor @ui.timeline.getCursorTime()
       return unless @inLifetime cursor
+
+      # If it's our birth state, take a shortcut and just apply it directly
+      if cursor == Math.floor @lifetimeStart_ms
+        return @_applyPropBuffer @_propBuffer[Math.floor @lifetimeStart_ms]
 
       # Find the nearest state to the left of ourselves
       if @_propBuffer[cursor]
