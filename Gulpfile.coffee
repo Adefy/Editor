@@ -6,7 +6,7 @@ minifycss = require "gulp-minify-css"
 
 paths =
   lib: "src/lib/**/*.coffee"
-  styl: "src/styles/style.styl"
+  styl: "src/styles/**/*.styl"
 
 # Compile stylus
 gulp.task "stylus", ->

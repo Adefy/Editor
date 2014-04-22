@@ -4,7 +4,7 @@ define (require) ->
   AUtilEventLog = require "util/event_log"
   param = require "util/param"
 
-  Toolbar = require "widgets/toolbar/toolbar"
+  PropertyBar = require "widgets/property_bar"
   MenuBar = require "widgets/menubar/menubar"
   StatusBar = require "widgets/statusbar/statusbar"
   Timeline = require "widgets/timeline/timeline"
@@ -31,7 +31,7 @@ define (require) ->
       @widgets = []
 
       @widgets.push @initializeMenu()
-      @widgets.push @initializeToolbar()
+      @widgets.push @initializePropertyBar()
       @widgets.push @initializeTimeline()
       @widgets.push @initializeWorkspace()
       @widgets.push @initializeStatusbar()
@@ -73,33 +73,22 @@ define (require) ->
 
     renderAll: -> widget.render() for widget in @widgets
 
-    initializeToolbar: -> @toolbar = new Toolbar @
-
+    initializePropertyBar: -> @propertyBar = new PropertyBar @
     initializeStatusbar: -> @statusbar = new StatusBar @
-
     initializeTimeline: -> @timeline = new Timeline @
 
     initializeWorkspace: ->
-
       throw new Error "Timeline required for workspace" unless @timeline
       @workspace = new Workspace @
 
     initializeSidebar: ->
-
       @sidebar = new Sidebar @, 310
 
-      propertiesPanel = new SidebarPanel @sidebar
-
-      propertiesPanel.newTab "Properties", (tab) =>
-        new PropertiesTab @, propertiesPanel
-
-      #propertiesPanel.newTab "Assets", (tab) =>
-      #  new AssetsTab @, propertiesPanel
-
-      propertiesPanel.newTab "Textures", (tab) =>
-        new TexturesTab @, propertiesPanel
-
-      propertiesPanel.selectTab 0
+      setTimeout =>
+        panel = new SidebarPanel @sidebar
+        panel.newTab "Textures", (tab) => new TexturesTab @, panel
+        panel.selectTab 0
+      , 0
 
       @sidebar
 
@@ -111,10 +100,8 @@ define (require) ->
       fileMenu = @menu.addItem "File"
       editMenu = @menu.addItem "Edit"
       viewMenu = @menu.addItem "View"
-      timelineMenu = @menu.addItem "Timeline"
       canvasMenu = @menu.addItem "Canvas"
       toolsMenu = @menu.addItem "Tools"
-      prefMenu = @menu.addItem "Preferences"
       helpMenu = @menu.addItem "Help"
 
       ###
@@ -138,11 +125,15 @@ define (require) ->
       fileMenu.createChild
         label: "Save As..."
         click: => @editor.fileSaveAs()
-        sectionEnd: true
 
       fileMenu.createChild
         label: "Export..."
         click: => @editor.fileExport()
+        sectionEnd: true
+
+      fileMenu.createChild
+        label: "Preferences"
+        click: => @modals.showPrefSettings()
         sectionEnd: true
 
       fileMenu.createChild
@@ -166,7 +157,6 @@ define (require) ->
       editMenu.createChild label: "Copy"
       editMenu.createChild label: "Cut"
       editMenu.createChild label: "Paste", sectionEnd: true
-      editMenu.createChild label: "Project ...", sectionEnd: true
 
       ###
       #
@@ -191,15 +181,6 @@ define (require) ->
         label: "Refresh"
         click: => @refresh()
         sectionEnd: true
-
-      ###
-      #
-      # Timeline menu options
-      #
-      ###
-      timelineMenu.createChild
-        label: "Set Preview Framerate ..."
-        click: => @modals.showSetPreviewRate()
 
       ###
       #
@@ -229,15 +210,6 @@ define (require) ->
       toolsMenu.createChild
         label: "Upload textures ..."
         click: => @modals.showUploadTextures()
-
-      ###
-      #
-      # Preferences menu options
-      #
-      ###
-      prefMenu.createChild
-        label: "Settings"
-        click: => @modals.showPrefSettings()
 
       ###
       #

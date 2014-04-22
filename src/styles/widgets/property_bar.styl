@@ -1,0 +1,78 @@
+.property-bar
+  z-index $Z_amainbar
+  font-size 12px
+  line-height 24px
+  padding 0 16px
+  height 28px
+  overflow hidden
+
+  color #ccc
+
+  border-top 1px solid rgba(255,255,255,.1)
+  border-bottom 1px solid rgba(0,0,0,.1)
+  background linear-gradient(top, #343434, #272727)
+  box-shadow inset 0 -1px rgba(0,0,0,.25)
+
+  .button
+    margin-left: 2px
+    margin-right: 2px
+    padding: 4px
+    text-align: center
+
+  .right
+    float right
+
+  *
+    display inline-block
+    vertical-align top
+
+  .controls
+    .target-name
+      margin-right 16px
+
+    .target-name + .control-wrapper
+      border-left 1px solid #666
+
+    .control-wrapper
+      padding 1px 8px 0 8px
+      border-right 1px solid #666
+
+      > *
+        margin-top 2px
+
+      .label
+        margin-right 4px
+        line-height 18px
+        font-size 12px
+
+      .control
+        
+        &:first-child label
+          margin-left 0
+
+        input, label
+          display inline-block
+          vertical-align top
+
+        input
+          background transparent
+          padding 1px 4px
+          margin 0
+          width 64px
+
+        label
+          margin-left 16px
+          margin-right 4px
+          line-height 18px
+
+        .color-picker
+          display block
+          width 16px
+          height 16px
+          background-color #33b5e5
+          border-radius 4px
+          box-shadow 0 0 2px rgba(0, 0, 0, 0.5)
+          margin-top 1px
+
+          &:hover
+            cursor pointer

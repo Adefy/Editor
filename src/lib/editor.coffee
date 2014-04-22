@@ -414,7 +414,7 @@ define (require) ->
     # Open an existing ad
     ###
     fileOpen: ->
-      #
+      @ui.modals.showOpenProject()
       @
 
     ###

@@ -6,20 +6,19 @@ define ->
   # @property [Number] value
   ###
   Handlebars.compile """
-    <dl style="width: {{ width }}" class="control">
-      <dt>{{ displayName }}</dt>
-      <dd>
-        <input type="text"
-          data-control="text"
+  <div class="control">
+    <label>{{displayName}}</label>
 
-          {{#if parent}}
-          data-parent="{{ parent }}"
-          {{/if}}
+    <input type="text"
+      data-control="text"
 
-          name="{{ name }}"
-          placeholder="{{ placeholder }}"
-          value="{{ value }}"
-        />
-      </dd>
-    </dl>
+      {{#if parent}}
+      data-parent="{{ parent }}"
+      {{/if}}
+
+      name="{{ name }}"
+      placeholder="{{ placeholder }}"
+      value="{{ value }}"
+    />
+  </div>
   """.split("\n").join " "

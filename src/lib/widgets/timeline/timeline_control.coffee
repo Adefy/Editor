@@ -54,19 +54,19 @@ define (require) ->
       @timeline.updateControls()
 
     ###
-    # Forward playback button clicked (next keyframe)
+    # Backward playback button clicked (prev keyframe)
     # @friend [Timeline]
     # @private
     ###
-    onClickForward: ->
+    onClickBackward: ->
       _currentPosition = @timeline.getCursorTime()
       _newPosition = null
-      _min = 99999
+      _min = Infinity
       index = Workspace.getSelectedActor()
 
       # only enter checks if an actor is actually selected
-      if index != null and index != undefined
-        for actor, i in @_actors
+      if index
+        for actor, i in @timeline._actors
           if actor.getID() == index then index = i
 
         _animations = @timeline._actors[index].getAnimations()
@@ -86,18 +86,18 @@ define (require) ->
           @_endPlayback()
 
     ###
-    # Backward playback button clicked (prev keyframe)
+    # Forward playback button clicked (next keyframe)
     # @friend [Timeline]
     # @private
     ###
-    onClickBackward: ->
+    onClickForward: ->
       _currentPosition = @timeline.getCursorTime()
       _newPosition = null
-      _min = 99999
+      _min = Infinity
       index = Workspace.getSelectedActor()
 
       # only enter checks if an actor is actually selected
-      if index != null and index != undefined
+      if index
         for actor, i in @timeline._actors
           if actor.getID() == index then index = i
 

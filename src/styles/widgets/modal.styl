@@ -13,10 +13,7 @@
   position absolute
   z-index $Z_amodal
 
-  top 50px
-  left 450px
-
-  font-weight 600
+  font-weight 300
   text-shadow 0 1px 1px rgba(0,0,0,0.58)
   box-shadow inset 0 0 1px rgba(255,255,255,.15), 0 3px 15px rgba(0,0,0,.15)
   border 1px solid rgba(0,0,0,.6)
@@ -24,46 +21,34 @@
   opacity 0
   color #ddd
 
-  background-color $mgray
+  background rgba(48, 48, 48, 0.96)
   border-radius 4px
 
   .header
     position relative
-    height 36px
-    line-height 36px
     padding 0 12px
+
     border-radius 4px 4px 0 0
     background linear-gradient(top, #343434,#292929)
     box-shadow inset 0 -1px rgba(0,0,0,.35), inset 0 1px rgba(255,255,255,.05)
     border-bottom 1px solid rgba(255,255,255,.05)
-    vertical-align middle
+
+    line-height 28px
+    font-size 14px
+    text-align center
     color #ddd
-
-    > *
-      display inline-block
-      vertical-align top
-
-    .close
-      position absolute
-      right 8px
-      top 0
-
-      button
-        vertical-align middle
-        margin-top -1px
-
-      &:hover
-        cursor pointer
-
-    > .title
-      padding-right 64px
 
     &:hover
       cursor pointer
 
   .modal-body
-    color #666
-    padding: 0 12px 6px
+    color #aaa
+    padding 16px
+    font-size 14px
+
+    p.description
+      display block !important
+      margin-bottom 16px
 
     .input_group
       margin 4px 0
@@ -73,7 +58,7 @@
         vertical-align top
 
       label
-        width 30%
+        width 45%
         text-align right
         margin-right 8px
         padding 4px 0
@@ -84,17 +69,20 @@
 
   .modal-footer
     display block
-    margin 4px
-    margin-top 8px
-    height 28px
-    padding: 0 12px 6px
+    height 46px
+    padding 8px
 
     border-top 1px solid rgba(255,255,255,.05)
 
-    .modal-error
-      color $lred
-      width 240px
-      float left
+    .message
+      color #aaa
+      font-size 14px
+      line-height 28px
+      margin-left 8px
+      font-style italic
+
+      &.error
+        color $lred
 
     .modal-dismiss
       float right

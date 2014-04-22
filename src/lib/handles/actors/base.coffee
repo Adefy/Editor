@@ -122,8 +122,6 @@ define (require) ->
         @setValue me._AJSActor.getOpacity() if me._AJSActor
 
       @_properties.rotation = new NumericProperty()
-      @_properties.rotation.setMin 0
-      @_properties.rotation.setMax 360
       @_properties.rotation.onUpdate = (rotation) =>
         @_AJSActor.setRotation rotation if @_AJSActor
       @_properties.rotation.requestUpdate = ->
@@ -321,7 +319,16 @@ define (require) ->
     # @param [Number] time
     # @return [Object] entry prop buffer entry, may be undefined
     ###
-    getBufferEntry: (time) -> @_propBuffer["#{Math.floor time}"]
+    getBufferEntry: (time) -> @_propBuffer[Math.floor time]
+
+    ###
+    # Check if the specified value is our birth (floors it)
+    #
+    # @param [Number] value
+    # @return [Boolean] isBirth
+    ###
+    isBirth: (val) ->
+      Math.floor(val) == Math.floor(@lifetimeStart_ms)
 
     ###
     # @param [Boolean] visible
@@ -480,6 +487,25 @@ define (require) ->
       @updateInTime()
 
     ###
+    # Seed the birth position in our property buffer with our current values
+    ###
+    seedBirth: ->
+      @_propBuffer[Math.floor(@lifetimeStart_ms)] = @_serializeProperties()
+
+    ###
+    # Store the provided property deltas in a new buffer entry at the specified
+    # time
+    #
+    # @param [Number] time
+    # @param [Array<String>] deltas array of property names
+    ###
+    serializeDeltasToBufferEntry: (time, deltas) ->
+      param.required time
+      param.required deltas
+
+      @_propBuffer[Math.floor(time)] = @_serializeProperties deltas
+
+    ###
     # Helper function to call a cb for each property. Useful to avoid writing
     # composite-aware property iterating code.
     #
@@ -521,11 +547,17 @@ define (require) ->
 
       cursor = @ui.timeline.getCursorTime()
 
-      # return if Number(Math.floor(cursor)) == @_lastTemporalState
+      if @_propSnapshot == null
+        @seedBirth()
+        seededBirth = true
+      else
+        seededBirth = false
 
       @_updatePropBuffer()
       @_updateActorState()
       @_genSnapshot()
+
+      @seedBirth() if @isBirth(Math.floor cursor) and !seededBirth
 
       # Save state
       @_lastTemporalState = Number Math.floor(cursor)
@@ -575,10 +607,7 @@ define (require) ->
       #
       # NOTE: The order of application varies depending on the direction in
       #       time in which we moved!
-      if state > @_lastTemporalState
-        right = true
-      else
-        right = false
+      right = state > @_lastTemporalState
 
       # Figure out intermediary states
       intermStates = []
@@ -587,10 +616,10 @@ define (require) ->
       while next != state and next != -1
         next = @findNearestState next, right
 
-        if next != Math.floor(@lifetimeStart_ms) and next != -1
+        if next != -1
 
           # Ensure next hasn't overshot us
-          if (right and next < state) or (!right and next > state)
+          if (right and next <= state) or (!right and next >= state)
             intermStates.push next
 
       # Now sort accordingly
@@ -615,8 +644,7 @@ define (require) ->
             0
 
       # Now apply our states in the order presented
-      for s in intermStates
-        @_applyPropBuffer @_propBuffer["#{s}"]
+      @_applyPropBuffer @_propBuffer[s] for s in intermStates
 
     ###
     # Applies data in prop buffer entry
@@ -640,6 +668,15 @@ define (require) ->
 
           else
             @_properties[name].setValue property.value
+
+    ###
+    # Checks if the specified time is within our lifetime
+    #
+    # @param [Number] time
+    # @return [Boolean] inLifetime
+    ###
+    inLifetime: (time) ->
+      time >= @lifetimeStart_ms and time <= @lifetimeEnd_ms
 
     ###
     # Updates our state according to the current cursor position. Goes through
@@ -676,31 +713,26 @@ define (require) ->
     # @private
     ###
     _updateActorState: ->
-
-      ##
-      ## First, apply intermediary states
-      ##
       cursor = Math.floor @ui.timeline.getCursorTime()
+      return unless @inLifetime cursor
 
-      # Ensure cursor is within our lifetime
-      return if cursor < @lifetimeStart_ms or cursor > @lifetimeEnd_ms
+      # If it's our birth state, take a shortcut and just apply it directly
+      if cursor == Math.floor @lifetimeStart_ms
+        return @_applyPropBuffer @_propBuffer[Math.floor @lifetimeStart_ms]
 
-      # If we don't have a saved state at the current cursor position, find the
-      # nearest and calculate our time offset. Worst case, the closest state
-      # is our birth
-      nearest = cursor
-      if @_propBuffer[String(cursor)] == undefined
-        nearest = @findNearestState cursor
+      # Find the nearest state to the left of ourselves
+      if @_propBuffer[cursor]
+        nearestState = cursor
+      else
+        nearestState = @findNearestState cursor
 
-      # Apply intermediary states (up to ourselves if we have a state)
-      @_applyKnownState nearest
+      @_applyKnownState nearestState
 
       # Return if we have nothing else to do (cursor is at a known state)
-      return if nearest == cursor
+      return if nearestState == cursor
 
       # Next, bail if there are no states to the right of ourselves
-      if @findNearestState(cursor, true) == -1
-        return @_capState()
+      return @_capState() if @findNearestState(cursor, true) == -1
 
       @_capped = false
 
@@ -721,9 +753,9 @@ define (require) ->
 
         varying.push p if unique
 
-      from = cursor
+      from = nearestState
       while (from = @findNearestState(from, true)) != -1
-        for p of @_propBuffer[String from]
+        for p of @_propBuffer[from]
           _pushUnique { name: p, end: from }
 
       ##
@@ -732,7 +764,7 @@ define (require) ->
       ##
       for v in varying
 
-        anim = @_animations["#{v.end}"]
+        anim = @_animations[v.end]
         _prop = @_properties[v.name]
 
         # Sanity checks
@@ -787,11 +819,11 @@ define (require) ->
       @_capped = true
 
       # Sort prop buffer entries
-      _buff = _.keys(@_propBuffer).map (b) -> Number b
-      _buff.sort (a, b) -> a - b
+      entries = _.keys(@_propBuffer).map (b) -> Number b
+      entries.sort (a, b) -> a - b
 
       # Apply buffers in order
-      @_applyPropBuffer @_propBuffer["#{b}"] for b in _buff
+      @_applyPropBuffer(@_propBuffer[entry]) for entry in entries
 
     ###
     # Returns an array containing the names of properties that have been
@@ -826,56 +858,67 @@ define (require) ->
       delta
 
     ###
-    # Split the animation containing 'time', if it operates on prop. Used in
-    # @_updatePropBuffer
+    # Split the animation overlapping the specified time, and operating on the
+    # specified property. This replaces the animation (if there is one) with
+    # two new animations to the left & right of it.
     #
-    # @param [Number] time
-    # @param [String] prop property key
-    # @param [String] left optional pre-calculated left cap
+    # @param [Object] animation property animation object to modify
+    # @param [Object] startTime new start time
+    # @param [Object] startP start position prop buffer entry
     # @private
     ###
-    _splitAnimation: (time, p, left) ->
-      param.required time
-      param.required p
+    setAnimationStart: (animation, startTime, startP) ->
+      param.required animation
+      param.required startTime
+      param.required startP
 
-      unless left
-        left = @findNearestState time, false, p
+      if animation.components
+        for c, componentVal of animation.components
+          componentVal._start.x = startTime
+          componentVal._start.y = startP.components[c].value
 
-      left = 0 if left = -1
+      else
+        animation._start.x = startTime
+        animation._start.y = startP.value
 
-      # Check if we are in the middle of an animation ourselves. If so,
-      # split it
-      animCheck = @findNearestState time, true, p
+    ###
+    # Create a new animation object ready for our @_animations hash
+    #
+    # @param [Object] options
+    #   @option [Number] start start time
+    #   @option [Number] end end time
+    #   @option [Object] startSnapshot starting snapshot for property
+    #   @option [Object] endSnapshot ending snapshot for property
+    # @return [Object] animation
+    ###
+    createNewAnimation: (options) ->
+      param.required options.start
+      param.required options.end
+      param.required options.startSnapshot
+      param.required options.endSnapshot
 
-      _startP = @_propBuffer["#{left}"][p]
-      _endP = @_propBuffer["#{time}"][p]
+      animation = {}
 
-      if animCheck != -1
+      if options.endSnapshot.components
+        unless options.endSnapshot.components and options.startSnapshot.components
+          throw new Error "Start and end snapshots don't both have components!"
 
-        # An animation overlaps us. Perform an integrity check on it, then
-        # split.
-        @_animations[animCheck] ||= {}
-        anim = @_animations[animCheck]
+        animation.components = {}
 
-        if anim[p].components
-          for c of anim[p].components
+        for c, cVal of options.endSnapshot.components
+          startPoint = x: options.start, y: options.startSnapshot.components[c].value
+          endPoint = x: options.end, y: cVal.value
 
-            # Rebase animation by calculating new start value
-            _newX = time
-            _newY = _endP.components[c].value
+          bezzie = new Bezier startPoint, endPoint, 0, [], false
+          animation.components[c] = bezzie
+      else
+        startPoint = x: options.start, y: options.startSnapshot.value
+        endPoint = x: options.end, y: options.endSnapshot.value
 
-            @_animations[animCheck][p].components[c]._start.x = _newX
-            @_animations[animCheck][p].components[c]._start.y = _newY
+        bezzie = new Bezier startPoint, endPoint, 0, [], false
+        animation = bezzie
 
-        else
-          if anim[p]._start.x != Number left
-            throw new Error "Existing animation invalid!"
-
-          _newX = time
-          _newY = _endP.value
-
-          @_animations[animCheck][p]._start.x = _newX
-          @_animations[animCheck][p]._start.y = _newY
+      animation
 
     ###
     # Calculates new prop buffer state, using current prop snapshot, cursor
@@ -884,88 +927,45 @@ define (require) ->
     # @private
     ###
     _updatePropBuffer: ->
-
-      # propSnapshot is null when we have just been initialized, current
-      # properties are defaults. Set up our birth state
-      if @_propSnapshot == null
-
-        # Save current property values
-        @_propBuffer[@_lastTemporalState] = @_serializeProperties()
-
-      delta = @_getPropertiesDelta()
+      return if @isBirth @_lastTemporalState
 
       # If we have anything to save, ship to our buffer, and create a new
       # animation entry.
       #
       # cursor is our last temporal state, since the current cursor position
       # is not where the properties were set!
-      if delta.length > 0
+      if (deltas = @_getPropertiesDelta()).length > 0
 
-        _serialized = @_serializeProperties delta
-        @_propBuffer[@_lastTemporalState] = _serialized
+        @serializeDeltasToBufferEntry @_lastTemporalState, deltas
 
-        # Ensure we are not at birth!
-        return if @_lastTemporalState == Math.floor @lifetimeStart_ms
+        ###
+        # Generate new animation entry for each changed property
+        ###
+        for p in deltas
 
-        # Define our animation
-        # Note that an animation is an object with a bezier function for
-        # every component changed in our end object
-        if @_animations["#{@_lastTemporalState}"] == undefined
-          @_animations["#{@_lastTemporalState}"] = {}
+          deltaStartTime = @findNearestState @_lastTemporalState, false, p
+          deltaEndTime = @_lastTemporalState
 
-        # Go through and set up individual variable beziers. Note that for
-        # composites the same bezier is made for each component in an identical
-        # manner! Since we assume linear interpolation, we fill in blank
-        # objects with no control points.
-        #
-        # If we are between two end points in which the property changes, split
-        # the animation appropriately
-        for p in delta
+          ###
+          # Check if there is another animation after us; if so, move its start
+          # position up
+          ###
+          if (nextAnim = @findNearestState @_lastTemporalState, true, p) != -1
 
-          # Create a bezier class; this would be the place to do that
-          # per-component
-          #
-          # We find our start value by going back through our prop buffer and
-          # finding the nearest reference to the property we now modify
-          trueStart = @findNearestState @_lastTemporalState, false, p
+            startTime = @_lastTemporalState
+            startP = @_propBuffer[@_lastTemporalState][p]
 
-          # Split animation if necessary
-          @_splitAnimation @_lastTemporalState, p, trueStart
+            @setAnimationStart @_animations[nextAnim][p], startTime, startP
 
-          @_propBuffer["#{trueStart}"] ||= {}
-          _startP = @_propBuffer["#{trueStart}"][p]
-          _endP = @_propBuffer["#{@_lastTemporalState}"][p]
-
-          # Create multiple beziers if so required
-          if _endP.components
-            @_animations["#{@_lastTemporalState}"][p] = components: {}
-            for c of _endP.components
-
-              _start =
-                x: trueStart
-                y: _startP.components[c].value
-
-              _end =
-                x: @_lastTemporalState
-                y: _endP.components[c].value
-
-              # We no longer enable buffering, since saving our state creates an
-              # obnoxiously large buffer!
-              bezzie = new Bezier _start, _end, 0, [], false
-              @_animations["#{@_lastTemporalState}"][p].components[c] = bezzie
-          else
-            _start =
-              x: trueStart
-              y: _startP.value
-
-            _end =
-              x: @_lastTemporalState
-              y: _endP.value
-
-            # We no longer enable buffering, since saving our state creates an
-            # obnoxiously large buffer!
-            bezzie = new Bezier _start, _end, 0, [], false
-            @_animations["#{@_lastTemporalState}"][p] = bezzie
+          ###
+          # Finally, create new animation
+          ###
+          @_animations[@_lastTemporalState] ||= {}
+          @_animations[@_lastTemporalState][p] = @createNewAnimation
+            start: deltaStartTime
+            end: deltaEndTime
+            startSnapshot: @_propBuffer[deltaStartTime][p]
+            endSnapshot: @_propBuffer[deltaEndTime][p]
 
     ###
     # Return animations array
@@ -1079,14 +1079,14 @@ define (require) ->
 
       # is there a current frame
       if currentAnim != null && @_animations[currentAnim][property]
-        @mutatePropertyAnimation @_animations[currentAnim][property], (a) ->
-          a.setStartTime predAnim || 0
+        @mutatePropertyAnimation @_animations[currentAnim][property], (a) =>
+          a.setStartTime predAnim || Math.floor @lifetimeStart_ms
           a.setEndTime currentAnim
 
       # is there a succeeding frame?
       if succAnim != null and @_animations[succAnim][property]
-        @mutatePropertyAnimation @_animations[succAnim][property], (a) ->
-          a.setStartTime currentAnim || predAnim || 0
+        @mutatePropertyAnimation @_animations[succAnim][property], (a) =>
+          a.setStartTime currentAnim || predAnim || Math.floor @lifetimeStart_ms
           a.setEndTime succAnim
 
     ###
