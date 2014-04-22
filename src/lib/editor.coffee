@@ -172,8 +172,10 @@ define (require) ->
     ###
     ###
     autosave: ->
-      AUtilLog.debug "[Editor] auto-saving project"
-      @project.autosave()
+      AUtilLog.debug "[Editor] autosaving current project"
+      AUtilLog.debug "[Editor] autosave is disabled"
+      #@project.autosave()
+      #@project.snapshot()
       @
 
     ###
