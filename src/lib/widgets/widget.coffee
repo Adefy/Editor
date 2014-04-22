@@ -9,7 +9,7 @@ define (requre) ->
   EditorObject = require "editor_object"
 
   # Widgets are the building blocks of the editor's interface
-  widget = class Widget extends EditorObject
+  class Widget extends EditorObject
 
     @include Renderable
     @include Dumpable

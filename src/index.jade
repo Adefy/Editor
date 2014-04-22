@@ -1,22 +1,30 @@
-doctype 5
+doctype html
 html(lang="en")
   head
 
     meta(charset="utf-8")
     title Adefy Editor
 
+    //- We need this, otherwise pace.js won't get past 99% most of the time
+    script.
+      window.paceOptions = { eventLag: false };
+
     //- PaceJS
-    script(src="components/pace/pace.min.js")
-    link(rel="stylesheet" href="components/pace/themes/pace-theme-center-atom.css")
+    script(src="/editor/components/pace/pace.min.js")
+    link(rel="stylesheet" href="/editor/components/pace/themes/pace-theme-minimal.css")
 
     | <!--[if IE]>
     link(rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon")
     | <![endif]-->
 
-    link(rel="icon" href="/img/favicon.png" type="image/png")
+    link(rel="icon" href="/editor//img/favicon.png" type="image/png")
 
-    link(rel="stylesheet" href="styles/style.css")
-    link(rel="stylesheet" href="components/fontawesome/css/font-awesome.min.css")
+    link(rel="stylesheet" href="/editor/build/css/style.min.css")
+    link(rel="stylesheet" href="/editor/components/fontawesome/css/font-awesome.min.css")
+
+    //- Payload used to properly load up the creative as a Project
+    script.
+      window.ADEFY_EDITOR_CREATIVE_PAYLOAD = !{JSON.stringify(creative)};
 
   body.editor
     header
@@ -24,21 +32,21 @@ html(lang="en")
     footer
 
     //- Vendor libs
-    script(src="components/jquery/dist/jquery.min.js")
-    script(src="components/jquery.mousewheel/jquery.mousewheel.js")
-    script(src="components/perfect-scrollbar/min/perfect-scrollbar-0.4.9.min.js")
-    script(src="components/handlebars/handlebars.min.js")
+    script(src="/editor/components/jquery/dist/jquery.min.js")
+    script(src="/editor/components/jquery.mousewheel/jquery.mousewheel.js")
+    script(src="/editor/components/perfect-scrollbar/min/perfect-scrollbar-0.4.9.min.js")
+    script(src="/editor/components/handlebars/handlebars.min.js")
 
     //- Adefy libraries
-    script(src="components/adefyre/build/are-prod-full.min.js")
-    script(src="components/adefyjs/build/ajs-prod.min.js")
+    script(src="/editor/components/adefyre/build/are-prod-full.min.js")
+    script(src="/editor/components/adefyjs/build/ajs-prod.min.js")
 
     //- Load lodash after ARE to override underscore
-    script(src="components/lodash/dist/lodash.min.js")
+    script(src="/editor/components/lodash/dist/lodash.min.js")
 
     script(src="//api.filepicker.io/v1/filepicker.js")
     script.
       filepicker.setKey("Aw0cpCnEeTLe23CePFWT4z");
 
     //- Load us up!
-    script(src="components/requirejs/require.js" data-main="lib/main.js")
+    script(src="/editor/components/requirejs/require.js" data-main="/editor/build/lib/main.js")

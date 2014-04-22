@@ -1,5 +1,6 @@
 define (require) ->
 
+  Project = require "project"
   param = require "util/param"
   ID = require "util/id"
 
@@ -7,7 +8,6 @@ define (require) ->
 
   Asset = require "handles/asset"
   Texture = require "handles/texture"
-
   BaseActor = require "handles/actors/base"
   Handle = require "handles/handle"
 
@@ -15,6 +15,7 @@ define (require) ->
 
   FloatingTextureSelect = require "widgets/floating/texture_select"
   Modal = require "widgets/floating/form"
+  SettingsWidget = require "widgets/floating/settings"
 
 
   TemplateModalAddTextures = require "templates/modal/add_textures"
@@ -26,9 +27,9 @@ define (require) ->
   TemplateModalRename = require "templates/modal/rename"
   TemplateModalSetPreviewFPS = require "templates/modal/set_preview_fps"
   TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
+  TemplateModalOpenProject = require "templates/modal/open_project"
 
   ChangeLog = require "info_change_log"
-
   Version = require "version"
 
   class ModalManager extends EditorObject
@@ -353,28 +354,29 @@ define (require) ->
         mimetype: "image/*"
       ,
         location: "S3"
-        path: "/ads/assets/"
+        path: Project.getS3Prefix()
       , (blob) =>
         textures = []
+
         for obj in blob
-          texture = new Texture
-            url: "//d3r6kqp8brgiqm.cloudfront.net/#{obj.key}"
+          texture = new Texture Project.current,
+            key: obj.key
             name: obj.filename
 
           @ui.editor.project.textures.push texture
           textures.push texture
 
         @ui.workspace.loadTextures(textures)
-
         @ui.pushEvent "upload.textures"
 
-        if cb = options.cb
-          cb blob
+        cb blob if cb = options.cb
 
     ###
     # @return [Modal]
     ###
     showPrefSettings: ->
+
+      return new SettingsWidget
 
       autosaveFreqID = ID.prefID "autosave-frequency"
       #areRendererModeID = ID.prefID "are-renderer-mode"
@@ -411,6 +413,11 @@ define (require) ->
           #  return "You cannot use the NULL renderer"
 
           true
+
+    showOpenProject: ->
+      new Modal
+        title: "Open Project"
+        content: TemplateModalOpenProject()
 
     ###
     # @return [Modal]

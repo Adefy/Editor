@@ -6,14 +6,7 @@ define ->
   # @property [Boolean] cb is a callback present? (this will enable the Submit button)
   ###
   Handlebars.compile """
-    <div class="header">
-      <div class="title">{{ title }}</div>
-      <div class="close">
-        <button class="modal-dismiss">
-          <i class="fa fa-times"></i>
-        </button>
-      </div>
-    </div>
+    <div class="header">{{ title }}</div>
     <div class="modal-body">
       {{{ content }}}
     </div>

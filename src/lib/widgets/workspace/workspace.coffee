@@ -191,8 +191,15 @@ define (require) ->
     loadTexture: (texture) ->
       return AUtilLog.error "ARE not loaded, cannot load texture" unless @_are
 
-      AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, ->
+      AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, =>
         AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
+
+        @ui.pushEvent "update.textures"
+
+        # Refresh any actors that already have the texture assigned
+        for actor in @actorObjects
+          if actor.getTextureUID() == texture.getUID()
+            actor.setTexture texture
 
       @
 

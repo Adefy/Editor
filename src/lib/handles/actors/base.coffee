@@ -438,12 +438,23 @@ define (require) ->
     # @param [String] uid
     ###
     setTextureByUID: (uid) ->
-      texture = _.find window.AdefyEditor.project.textures, (t) ->
+      texture = _.find @ui.editor.getProject().textures, (t) ->
         t.getUID() == uid
 
-      @setTexture texture
+      try
+        @setTexture texture
+      catch e
+        AUtilLog.warn "Texture not loaded yet, but continuing... [#{uid}]"
 
       @
+
+    ###
+    # Get the UID of the current texture, if we have one. Null otherwise
+    #
+    # @return [String] uid
+    ###
+    getTextureUID: ->
+      @_AJSActor.getTexture()
 
     ###
     # Used when exporting, executes the corresponding property genAnimationOpts
@@ -1343,6 +1354,7 @@ define (require) ->
 
       @
 
+
     ###
     # Dump actor into basic Object
     #
@@ -1355,6 +1367,7 @@ define (require) ->
       data.propBuffer = @_propBuffer
       data.birth = @lifetimeStart_ms
       data.death = @lifetimeEnd_ms
+      data.texture = @getTextureUID()
       data.animations = {}
 
       for time, properties of @_animations
@@ -1391,6 +1404,8 @@ define (require) ->
       # Load everything else
       @_propBuffer = data.propBuffer
 
+      @setTextureByUID data.texture if data.texture
+
       @_animations = {}
       for time, properties of data.animations
         animationSet = {}
@@ -1411,4 +1426,3 @@ define (require) ->
         @_animations[time] = animationSet
 
       @
-
