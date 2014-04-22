@@ -1,7 +1,9 @@
 define (require) ->
 
-  AUtilLog = require "util/log"
+  config = require "config"
   param = require "util/param"
+
+  AUtilLog = require "util/log"
   ID = require "util/id"
   Widget = require "widgets/widget"
   Storage = require "storage"
@@ -40,13 +42,13 @@ define (require) ->
 
       @_hiddenX = 0
       @_visibleX = 0
-      @_visible = true
+      @_visible = Storage.get("sidebar.visible") != false
 
       @setWidth @_width
       @onResize()           # Calculate X offsets
       @_bindToggle()        # Bind an event listener for sidebar toggles.
 
-      if Storage.get("sidebar.visible") != false
+      if @_visible
         @show()
       else
         @hide()
@@ -151,6 +153,15 @@ define (require) ->
       @_visibleX = 0
 
     ###
+    # Refreshes the state of the timeline toggle icons and storage
+    ###
+    refreshVisible: ->
+
+      @getElement(".button.toggle i").toggleClass config.icon.toggle_left, @_visible
+      @getElement(".button.toggle i").toggleClass config.icon.toggle_right, !@_visible
+      Storage.set "sidebar.visible", @_visible
+
+    ###
     # Toggle visibility of the sidebar with an optional animation
     #
     # @param [Method] cb callback
@@ -187,11 +198,9 @@ define (require) ->
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
       # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-toggle-right")
-      @getElement(".button.toggle i").addClass("fa-toggle-left")
 
-      Storage.set "sidebar.visible", true
       @_visible = true
+      @refreshVisible()
 
     ###
     # Hide the sidebar with an optional animation
@@ -216,18 +225,15 @@ define (require) ->
       ##
       # I'm sure jQuery's toggle class can do this, but I still haven't
       # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-toggle-left")
-      @getElement(".button.toggle i").addClass("fa-toggle-right")
-
-      Storage.set "sidebar.visible", false
       @_visible = false
+      @refreshVisible()
 
     ###
     # @param [String] type
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      if type == "timeline.show" || type == "timeline.hide"
+      if (type == "timeline.show") || (type == "timeline.hide")
         @onResize()
 
       for item in @_items

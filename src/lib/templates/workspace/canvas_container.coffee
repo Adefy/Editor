@@ -1,8 +1,9 @@
 define ->
 
   Handlebars.compile """
-    <div id="are-canvas-container">
-      <div id="awcc-outline-text"></div>
-      <div id="awcc-outline"></div>
+    <div id="{{id}}" class="editor-canvas">
+      <div class="outline-text"></div>
+      <div class="outline"></div>
+      <div class="cursor-position"></div>
     </div>
   """

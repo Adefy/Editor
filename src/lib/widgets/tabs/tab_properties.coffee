@@ -1,9 +1,11 @@
 define (require) ->
 
+  config = require "config"
+  param = require "util/param"
+
   ID = require "util/id"
   AUtilLog = require "util/log"
   AUtilEventLog = require "util/event_log"
-  param = require "util/param"
 
   Tab = require "widgets/tabs/tab"
 
@@ -147,7 +149,7 @@ define (require) ->
     generateControl: (data, value) ->
       param.required data
       param.required data.name
-      param.optional data.icon, "fa-cog"
+      param.optional data.icon, config.icon.property_default
       param.required value
       param.required value.getType(), ["composite"]
 
@@ -172,7 +174,7 @@ define (require) ->
       param.required data
 
       displayName = param.required data.name
-      displayIcon = param.optional data.icon, "fa-cog"
+      displayIcon = param.optional data.icon, config.icon.property_default
 
       param.required value.getType(), ["composite"]
 
@@ -290,18 +292,17 @@ define (require) ->
 
         nonCompositeHTML = @generateControl
           name: "basic"
-          icon: "fa-cog"
+          icon: config.icon.property_basic
         , fakeControl
       else
         nonCompositeHTML = ""
 
       compositeHTML = composites.map (p) =>
-        icn = "fa-cog"
+        icn = config.icon.property_default
         name = p[0]
         property = p[1]
 
-        if property.icon
-          icn = property.icon
+        icn = property.icon if property.icon
 
         @generateControl { name: name, icon: icn }, property
       .join ""

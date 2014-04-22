@@ -1,6 +1,8 @@
 define (require) ->
 
+  config = require "config"
   param = require "util/param"
+
   ID = require "util/id"
   seedrand = require "util/seedrandom"
 
@@ -56,7 +58,7 @@ define (require) ->
       @setName "#{@handleType} #{@_id_n}"
 
       @_properties.particles = new CompositeProperty()
-      @_properties.particles.icon = "fa-star"
+      @_properties.particles.icon = config.icon.property_particles
       ###
       # @type [Number]
       ###
@@ -71,7 +73,7 @@ define (require) ->
       @_properties.particles.max.setValue 20
 
       @_properties.spawn = new CompositeProperty()
-      @_properties.spawn.icon = "fa-arrows"
+      @_properties.spawn.icon = config.icon.property_spawn
       @_properties.spawn.x = new NumericProperty()
       @_properties.spawn.x.setValue 0
       @_properties.spawn.y = new NumericProperty()

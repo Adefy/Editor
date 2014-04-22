@@ -1,8 +1,10 @@
 define (require) ->
 
-  AUtilLog = require "util/log"
+  config = require "config"
   param = require "util/param"
+
   ID = require "util/id"
+  AUtilLog = require "util/log"
   aformat = require "util/format"
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
@@ -607,8 +609,8 @@ define (require) ->
     ###
     refreshVisible: ->
 
-      @getElement(".button.toggle i").toggleClass "fa-toggle-down", @_visible
-      @getElement(".button.toggle i").toggleClass "fa-toggle-up", !@_visible
+      @getElement(".button.toggle i").toggleClass config.icon.toggle_down, @_visible
+      @getElement(".button.toggle i").toggleClass config.icon.toggle_up, !@_visible
       Storage.set "timeline.visible", @_visible
 
     ###
