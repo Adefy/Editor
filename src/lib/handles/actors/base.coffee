@@ -15,16 +15,18 @@ define (require) ->
   window.BaseActor = class BaseActor extends Handle
 
     ###
-    # @property [Number] accuracy the number of digits we round animations to
+    # @property [Number] accuracy the number of digits animations round-off to
     ###
-    ACCURACY: 4
+    ACCURACY: config.precision.animation
 
+    ###
     # Defines a raw actor, with no shape information or any other presets.
     # This serves as the base for the other actor classes
     #
     # @param [UIManager] ui
     # @param [Number] lifetimeStart_ms time at which we are created, in ms
     # @param [Number] lifetimeEnd_ms time we are destroyed, defaults to end of ad
+    ###
     constructor: (@ui, lifetimeStart, lifetimeEnd) ->
       param.required @ui
 
@@ -98,7 +100,7 @@ define (require) ->
       @_properties.layer.icon = config.icon.property_layer
       @_properties.layer.main = new NumericProperty()
       @_properties.layer.main.setValue 0
-      @_properties.layer.main.setPrecision 0
+      @_properties.layer.main.setPrecision config.precision.layer
 
       @_properties.layer.physics = new NumericProperty()
       @_properties.layer.physics.clone @_properties.layer.main
@@ -126,7 +128,7 @@ define (require) ->
       @_properties.opacity.setValue 1.0
       @_properties.opacity.setPlaceholder 1.0
       @_properties.opacity.setFloat true
-      @_properties.opacity.setPrecision 4
+      @_properties.opacity.setPrecision config.precision.opacity
       @_properties.opacity.onUpdate = (opacity) =>
         @_AJSActor.setOpacity opacity if @_AJSActor
       @_properties.opacity.requestUpdate = ->
@@ -135,7 +137,7 @@ define (require) ->
       @_properties.rotation = new NumericProperty()
       @_properties.rotation.setMin 0
       @_properties.rotation.setMax 360
-      @_properties.rotation.setPrecision 0
+      @_properties.rotation.setPrecision config.precision.rotation
       @_properties.rotation.onUpdate = (rotation) =>
         @_AJSActor.setRotation rotation if @_AJSActor
       @_properties.rotation.requestUpdate = ->
@@ -146,14 +148,14 @@ define (require) ->
       @_properties.position.x = new NumericProperty()
       @_properties.position.y = new NumericProperty()
 
-      @_properties.position.x.setPrecision 0
+      @_properties.position.x.setPrecision config.precision.position
       @_properties.position.x.onUpdate = (value) =>
         return unless @_AJSActor
         position = @_AJSActor.getPosition()
         position.x = value
         @_AJSActor.setPosition position
 
-      @_properties.position.y.setPrecision 0
+      @_properties.position.y.setPrecision config.precision.position
       @_properties.position.y.onUpdate = (value) =>
         return unless @_AJSActor
         position = @_AJSActor.getPosition()
@@ -177,7 +179,7 @@ define (require) ->
       @_properties.color.r.setFloat false
       @_properties.color.r.setPlaceholder 255
       @_properties.color.r.setValue 255
-      @_properties.color.r.setPrecision 0
+      @_properties.color.r.setPrecision config.precision.color
 
       @_properties.color.g = new NumericProperty()
       @_properties.color.b = new NumericProperty()
@@ -222,7 +224,7 @@ define (require) ->
       @_properties.physics.mass.setMin 0
       @_properties.physics.mass.setPlaceholder 50
       @_properties.physics.mass.setValue 50
-      @_properties.physics.mass.setPrecision 0
+      @_properties.physics.mass.setPrecision config.precision.physics_mass
 
       @_properties.physics.mass.onUpdate = (mass) =>
         @_AJSActor.setMass mass if @_AJSActor
@@ -230,7 +232,7 @@ define (require) ->
       @_properties.physics.elasticity = new NumericProperty()
       @_properties.physics.elasticity.setMin 0
       @_properties.physics.elasticity.setMax 1
-      @_properties.physics.elasticity.setPrecision 6
+      @_properties.physics.elasticity.setPrecision config.precision.physics_elasticity
       @_properties.physics.elasticity.setPlaceholder 0.3
       @_properties.physics.elasticity.setValue 0.3
 
@@ -240,7 +242,7 @@ define (require) ->
       @_properties.physics.friction = new NumericProperty()
       @_properties.physics.friction.setMin 0
       @_properties.physics.friction.setMax 1
-      @_properties.physics.friction.setPrecision 6
+      @_properties.physics.friction.setPrecision config.precision.physics_friction
       @_properties.physics.friction.setPlaceholder 0.2
       @_properties.physics.friction.setValue 0.2
 

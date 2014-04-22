@@ -1,6 +1,8 @@
 define (require) ->
 
+  config = require "config"
   param = require "util/param"
+
   BaseActor = require "handles/actors/base"
 
   NumericProperty = require "handles/properties/numeric"
@@ -8,6 +10,7 @@ define (require) ->
   # N-sided actor
   window.PolygonActor = class PolygonActor extends BaseActor
 
+    ###
     # Defines a variable-sided actor, psicktually
     #
     # @param [UIManager] ui
@@ -19,6 +22,7 @@ define (require) ->
     # @param [Number] rotation optional, angle in degrees
     # @param [Number] death optional death time specification
     # @param [Boolean] manualInit optional, postInit() not called if true
+    ###
     constructor: (@ui, birth, sides, radius, x, y, rotation, death, manualInit) ->
       param.required @ui
       param.required sides
@@ -44,7 +48,7 @@ define (require) ->
       @_properties.sides.setPlaceholder 5
       @_properties.sides.setFloat false
       @_properties.sides.setValue sides
-      @_properties.sides.setPrecision 0
+      @_properties.sides.setPrecision config.precision.sides
       @_properties.sides.onUpdate = (sides) =>
         @_AJSActor.setSegments sides if @_AJSActor
 
@@ -56,7 +60,7 @@ define (require) ->
       @_properties.radius.setMin 0
       @_properties.radius.setPlaceholder 50
       @_properties.radius.setValue radius
-      @_properties.radius.setPrecision 0
+      @_properties.radius.setPrecision config.precision.radius
       @_properties.radius.onUpdate = (radius) =>
         @_AJSActor.setRadius radius if @_AJSActor
 

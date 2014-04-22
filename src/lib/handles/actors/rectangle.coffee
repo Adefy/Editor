@@ -1,6 +1,8 @@
 define (require) ->
 
+  config = require "config"
   param = require "util/param"
+
   BaseActor = require "handles/actors/base"
 
   NumericProperty = require "handles/properties/numeric"
@@ -8,6 +10,7 @@ define (require) ->
   # Rectangular actor
   window.RectangleActor = class RectangleActor extends BaseActor
 
+    ###
     # Instantiates an AJSRectangle and keeps track of it
     #
     # @param [UIManager] ui
@@ -19,6 +22,7 @@ define (require) ->
     # @param [Number] rotation optional, angle in degrees
     # @param [Number] death optional death time specification
     # @param [Boolean] manualInit optional, postInit() not called if true
+    ###
     constructor: (@ui, birth, w, h, x, y, rotation, death, manualInit) ->
       param.required @ui
       param.required w
@@ -45,7 +49,7 @@ define (require) ->
       @_properties.width.setMin 0
       @_properties.width.setPlaceholder 100
       @_properties.width.setValue w
-      @_properties.width.setPrecision 0
+      @_properties.width.setPrecision config.precision.width
       @_properties.width.requestUpdate = ->
         @setValue me._AJSActor.getWidth() if me._AJSActor
 
@@ -61,7 +65,7 @@ define (require) ->
       @_properties.height.setMin 0
       @_properties.height.setPlaceholder 100
       @_properties.height.setValue h
-      @_properties.height.setPrecision 0
+      @_properties.height.setPrecision config.precision.height
       @_properties.height.requestUpdate = ->
         @setValue me._AJSActor.getHeight() if me._AJSActor
 
@@ -74,18 +78,24 @@ define (require) ->
 
       @postInit() unless manualInit
 
+    ###
     # Get rectangle height value
     #
     # @return [Number] height
+    ###
     getHeight: -> @_properties.height.getValue()
 
+    ###
     # Get rectangle width value
     #
     # @return [Number] width
+    ###
     getWidth: -> @_properties.width.getValue()
 
+    ###
     # Instantiate our AJS actor
     # @private
+    ###
     _birth: ->
       return if @_alive
       @_alive = true
