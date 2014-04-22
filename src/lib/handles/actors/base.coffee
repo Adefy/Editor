@@ -839,7 +839,7 @@ define (require) ->
       unless left
         left = @findNearestState time, false, p
 
-      left = 0 if left = -1
+      left = Math.floor(@lifetimeStart_ms) if left = -1
 
       # Check if we are in the middle of an animation ourselves. If so,
       # split it
@@ -1077,14 +1077,14 @@ define (require) ->
 
       # is there a current frame
       if currentAnim != null && @_animations[currentAnim][property]
-        @mutatePropertyAnimation @_animations[currentAnim][property], (a) ->
-          a.setStartTime predAnim || 0
+        @mutatePropertyAnimation @_animations[currentAnim][property], (a) =>
+          a.setStartTime predAnim || Math.floor @lifetimeStart_ms
           a.setEndTime currentAnim
 
       # is there a succeeding frame?
       if succAnim != null and @_animations[succAnim][property]
-        @mutatePropertyAnimation @_animations[succAnim][property], (a) ->
-          a.setStartTime currentAnim || predAnim || 0
+        @mutatePropertyAnimation @_animations[succAnim][property], (a) =>
+          a.setStartTime currentAnim || predAnim || Math.floor @lifetimeStart_ms
           a.setEndTime succAnim
 
     ###
