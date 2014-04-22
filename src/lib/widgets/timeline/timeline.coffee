@@ -268,8 +268,10 @@ define (require) ->
 
       $("#timeline-cursor").css "left", $(@_spaceSelector()).width() * (time / @_duration)
 
-      @_updateCursorTime()
-      @updateAllActorsInTime()
+      setTimeout =>
+        @_updateCursorTime()
+        @updateAllActorsInTime()
+      , 0
 
     ###
     # Validates an actor's lifetime

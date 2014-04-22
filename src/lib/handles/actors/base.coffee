@@ -319,7 +319,7 @@ define (require) ->
     # @param [Number] time
     # @return [Object] entry prop buffer entry, may be undefined
     ###
-    getBufferEntry: (time) -> @_propBuffer["#{Math.floor time}"]
+    getBufferEntry: (time) -> @_propBuffer[Math.floor time]
 
     ###
     # Check if the specified value is our birth (floors it)
@@ -607,10 +607,7 @@ define (require) ->
       #
       # NOTE: The order of application varies depending on the direction in
       #       time in which we moved!
-      if state > @_lastTemporalState
-        right = true
-      else
-        right = false
+      right = state > @_lastTemporalState
 
       # Figure out intermediary states
       intermStates = []
@@ -648,7 +645,7 @@ define (require) ->
 
       # Now apply our states in the order presented
       for s in intermStates
-        @_applyPropBuffer @_propBuffer["#{s}"]
+        @_applyPropBuffer @_propBuffer[s]
 
     ###
     # Applies data in prop buffer entry
@@ -672,6 +669,15 @@ define (require) ->
 
           else
             @_properties[name].setValue property.value
+
+    ###
+    # Checks if the specified time is within our lifetime
+    #
+    # @param [Number] time
+    # @return [Boolean] inLifetime
+    ###
+    inLifetime: (time) ->
+      time >= @lifetimeStart_ms and time < @lifetimeEnd_ms
 
     ###
     # Updates our state according to the current cursor position. Goes through
@@ -708,38 +714,22 @@ define (require) ->
     # @private
     ###
     _updateActorState: ->
-
-      ##
-      ## First, apply intermediary states
-      ##
       cursor = Math.floor @ui.timeline.getCursorTime()
+      return unless @inLifetime cursor
 
-      # Ensure cursor is within our lifetime
-      return if cursor < @lifetimeStart_ms or cursor > @lifetimeEnd_ms
+      # Find the nearest state to the left of ourselves
+      if @_propBuffer[cursor]
+        nearestState = cursor
+      else
+        nearestState = @findNearestState cursor
 
-      # If we don't have a saved state at the current cursor position, find the
-      # nearest and calculate our time offset. Worst case, the closest state
-      # is our birth
-      nearest = cursor
-
-      if @_propBuffer[String(cursor)] == undefined
-        nearest = @findNearestState cursor
-
-        # This should never happen, but protect just in case it does
-        if nearest == -1
-          AUtilLog.warning "Birth not found to left of cursor #{cursor}"
-          AUtilLog.info "Continuing with birth as left-most state..."
-          nearest = Math.floor @lifetimeStart_ms
-
-      # Apply intermediary states (up to ourselves if we have a state)
-      @_applyKnownState nearest
+      @_applyKnownState nearestState
 
       # Return if we have nothing else to do (cursor is at a known state)
-      return if nearest == cursor
+      return if nearestState == cursor
 
       # Next, bail if there are no states to the right of ourselves
-      if @findNearestState(cursor, true) == -1
-        return @_capState()
+      return @_capState() if @findNearestState(cursor, true) == -1
 
       @_capped = false
 
@@ -760,9 +750,9 @@ define (require) ->
 
         varying.push p if unique
 
-      from = cursor
+      from = nearestState
       while (from = @findNearestState(from, true)) != -1
-        for p of @_propBuffer[String from]
+        for p of @_propBuffer[from]
           _pushUnique { name: p, end: from }
 
       ##
@@ -771,7 +761,7 @@ define (require) ->
       ##
       for v in varying
 
-        anim = @_animations["#{v.end}"]
+        anim = @_animations[v.end]
         _prop = @_properties[v.name]
 
         # Sanity checks
@@ -826,11 +816,11 @@ define (require) ->
       @_capped = true
 
       # Sort prop buffer entries
-      _buff = _.keys(@_propBuffer).map (b) -> Number b
-      _buff.sort (a, b) -> a - b
+      entries = _.keys(@_propBuffer).map (b) -> Number b
+      entries.sort (a, b) -> a - b
 
       # Apply buffers in order
-      @_applyPropBuffer @_propBuffer["#{b}"] for b in _buff
+      @_applyPropBuffer(@_propBuffer[entry]) for entry in entries
 
     ###
     # Returns an array containing the names of properties that have been
