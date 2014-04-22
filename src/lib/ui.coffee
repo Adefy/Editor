@@ -13,7 +13,6 @@ define (require) ->
   Sidebar = require "widgets/sidebar/sidebar"
   SidebarPanel = require "widgets/sidebar/sidebar_panel"
 
-  PropertiesTab = require "widgets/tabs/tab_properties"
   AssetsTab = require "widgets/tabs/tab_assets"
   TexturesTab = require "widgets/tabs/tab_textures"
 
