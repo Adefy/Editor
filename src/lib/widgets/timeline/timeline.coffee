@@ -228,6 +228,11 @@ define (require) ->
     getPreviewFPS: -> @_previewFPS
 
     ###
+    # @param [Number] fps
+    ###
+    setPreviewFPS: (fps) -> @_previewFPS = fps
+
+    ###
     # Return current cursor time in ms (relative to duration)
     #
     # @return [Number] time cursor time in ms
@@ -1110,7 +1115,7 @@ define (require) ->
         when "workspace.selected.actor"
           @switchSelectedActor params.actor
           @updateActor params.actor
-        when "tab.properties.update.actor"
+        when "property.bar.update.actor"
           @updateActor params.actor
         when "actor.update.intime"
           @updateActor params.actor

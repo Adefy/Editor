@@ -32,7 +32,6 @@ define (require) ->
   class ModalManager extends EditorObject
 
     constructor: (@ui) ->
-      #
 
     ###
     # @param [Handle] handle
@@ -373,31 +372,28 @@ define (require) ->
     ###
     showPrefSettings: ->
 
-      return new SettingsWidget
-
-      autosaveFreqID = ID.prefID "autosave-frequency"
-
-      contents = TemplateModalPrefSettings
-        autosaveFreq: @ui.editor.settings.autosave.frequency
-        autosaveFreqID: autosaveFreqID
-
-      new Modal
-        title: "Settings"
-        content: contents
+      new SettingsWidget
+        title: "Preferences"
+        settings: [
+          label: "Autosave Frequency (s)"
+          type: Number
+          placeholder: "Enter an autosave frequency (s)"
+          value: @ui.editor.settings.autosave.frequency / 1000
+          id: "freq"
+          min: 0
+        ,
+          label: "Preview Framerate"
+          type: Number
+          placeholder: "Enter a framerate (FPS)"
+          value: @ui.timeline.getPreviewFPS()
+          id: "preview_fps"
+          min: 0
+        ]
         cb: (data) =>
-
-          freq = Number(data[autosaveFreqID])
-          @ui.editor.settings.autosave.frequency = freq
+          @ui.editor.settings.autosave.frequency = data.freq * 1000
           @ui.editor.saveSettings()
 
-        validation: (data) =>
-
-          freq = Number(data[autosaveFreqID])
-
-          unless freq >= 0
-            return "Autosave Frequency must be 0 or more"
-
-          true
+          @ui.timeline.setPreviewFPS data.preview_fps
 
     showOpenProject: ->
       new Modal

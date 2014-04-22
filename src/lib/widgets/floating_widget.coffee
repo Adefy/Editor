@@ -151,7 +151,7 @@ define (require) ->
 
       setTimeout =>
         @getElement().remove()
-      , @_animateSpeed
+      , @_animateSpeed * 2
 
     minimize: ->
 
