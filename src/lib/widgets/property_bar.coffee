@@ -170,7 +170,6 @@ define (require) ->
         icn = property.icon if property.icon
 
         @generateControl { name: name, icon: icn }, property
-      .join ""
 
       compositeHTML.unshift nonCompositeHTML
 
