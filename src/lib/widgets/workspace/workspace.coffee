@@ -35,11 +35,11 @@ define (require) ->
     #
     # @param [UIManager] ui
     ###
-    constructor: (@ui) ->
+    constructor: (@ui, options) ->
       return unless @enforceSingleton()
       param.required @ui
 
-      super
+      super @ui,
         id: ID.prefID("workspace")
         parent: "section.main"
         classes: ["workspace"]
@@ -56,10 +56,6 @@ define (require) ->
       ###
       @_particleSystems = []
 
-      # The canvas is fullscreen, minus the mainbar
-      @_canvasWidth = @getElement().width()
-      @_canvasHeight = $(window).height() - $(".menubar").height()
-
       # Starting phone size is 800x480
       @_pWidth = 800
       @_pHeight = 480
@@ -73,16 +69,15 @@ define (require) ->
       @_pickQueue = []
 
     postInit: ->
-      # Inject our canvas container, along with its status bar
-      # Although we currently don't add anything else to the container besides
-      # the canvas itself, it might prove useful in the future.
-      @getElement().html TemplateWorkspaceCanvasContainer
-        id: config.id.are_canvas
-
       ## AJS overrides setting the renderer mode...
       #mode = Storage.get("are.renderer.mode")
       #mode = ARERenderer.rendererMode if mode == null
       #ARERenderer.rendererMode = Number(mode)
+
+      # The canvas is fullscreen, minus the mainbar
+      sectionElement = $("section.main")
+      @_canvasWidth  = sectionElement.width()
+      @_canvasHeight = sectionElement.height()
 
       # Create an ARE instance on ourselves
       AUtilLog.info "Initializing AJS..."
@@ -274,7 +269,7 @@ define (require) ->
 
             @addParticleSystem ps
 
-      if AdefyEditor.clipboard && AdefyEditor.clipboard.type == "actor"
+      if @ui.editor.clipboard && @ui.editor.clipboard.type == "actor"
         functions.paste =
           name: "Paste"
           cb: =>
@@ -283,7 +278,7 @@ define (require) ->
             pos.x += ARERenderer.camPos.x
             pos.y += ARERenderer.camPos.y
 
-            newActor = AdefyEditor.clipboard.data.duplicate()
+            newActor = @ui.editor.clipboard.data.duplicate()
             newActor.setPosition pos.x, pos.y
             newActor.setName(newActor.getName() + " copy")
 
@@ -645,6 +640,16 @@ define (require) ->
             @ui.pushEvent "workspace.remove.actor", actor: o
             @actorObjects.splice i, 1
             return
+
+    ###
+    # @param [String]
+    ###
+    renderStub: ->
+      # Inject our canvas container, along with its status bar
+      # Although we currently don't add anything else to the container besides
+      # the canvas itself, it might prove useful in the future.
+      super content: TemplateWorkspaceCanvasContainer
+        id: config.id.are_canvas
 
     ###
     # @private

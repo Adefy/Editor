@@ -5,7 +5,7 @@ define (require) ->
 
   AUtilLog = require "util/log"
   Handle = require "handles/handle"
-  Bezier = require "widgets/timeline/bezier"
+  Bezier = require "handles/bezier"
 
   CompositeProperty = require "handles/properties/composite"
   NumericProperty = require "handles/properties/numeric"

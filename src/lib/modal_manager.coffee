@@ -35,6 +35,7 @@ define (require) ->
   class ModalManager extends EditorObject
 
     constructor: (@ui) ->
+      #
 
     ###
     # @param [Handle] handle
@@ -56,7 +57,7 @@ define (require) ->
         nameId: nameId
         name: handle.getName()
 
-      new Modal
+      new Modal @ui,
         title: "Rename"
         mini: true
         content: _html
@@ -104,7 +105,7 @@ define (require) ->
       # Randomized input name
       name = ID.prefID "_tPreviewRate"
 
-      new Modal
+      new Modal @ui,
         title: "Set Preview Framerate"
         content: TemplateModalSetPreviewFPS
           previewFPS: @ui.timeline.getPreviewFPS()
@@ -126,7 +127,7 @@ define (require) ->
       # Randomized input name
       name = ID.prefID "_tPreviewRate"
 
-      new Modal
+      new Modal @ui,
         title: "Set Export Framerate"
         content: TemplateModalSetPreviewFPS
           previewFPS: @ui.timeline.getPreviewFPS()
@@ -160,7 +161,7 @@ define (require) ->
       if workspace._pOrientation == "land" then chL = "checked=\"checked\""
       else chP = "checked=\"checked\""
 
-      new Modal
+      new Modal @ui,
         title: "Set Screen Properties"
         content: TemplateModalWorkspaceScreenSize
           cSize: cSize
@@ -224,7 +225,7 @@ define (require) ->
 
       _html =
 
-      new Modal
+      new Modal @ui,
         title: "Set Background Color"
         content: TemplateModalBackgroundColor
           hex: hex
@@ -306,7 +307,7 @@ define (require) ->
       textnameID = ID.prefID "_wtexture"
       textpathID = ID.prefID "_wtext"
 
-      new Modal
+      new Modal @ui,
         title: "Add Textures ..."
         content: TemplateModalAddTextures
           textnameID: textnameID
@@ -340,7 +341,7 @@ define (require) ->
           name: texture.getName()
         }
 
-      new FloatingTextureSelect textures, actor
+      new FloatingTextureSelect @ui, textures, actor
 
     ###
     # @return [Void]
@@ -375,7 +376,7 @@ define (require) ->
     ###
     showPrefSettings: ->
 
-      new SettingsWidget
+      new SettingsWidget @ui,
         title: "Preferences"
         settings: [
           label: "Autosave Frequency (s)"
@@ -399,7 +400,7 @@ define (require) ->
           @ui.timeline.setPreviewFPS data.preview_fps
 
     showOpenProject: ->
-      new Modal
+      new Modal @ui,
         title: "Open Project"
         content: TemplateModalOpenProject()
 
@@ -408,7 +409,7 @@ define (require) ->
     ###
     showEditHistory: ->
 
-      new Modal
+      new Modal @ui,
         title: "Edit History"
         content: TemplateModalEditHistory()
 
@@ -417,7 +418,7 @@ define (require) ->
     ###
     showHelpAbout: ->
 
-      new Modal
+      new Modal @ui,
         title: "About"
         content: TemplateModalHelpAbout
           version: Version.STRING
@@ -427,6 +428,6 @@ define (require) ->
     ###
     showHelpChangeLog: ->
 
-      new Modal
+      new Modal @ui,
         title: "Change Log"
         content: TemplateModalHelpChangeLog changes: ChangeLog.changes

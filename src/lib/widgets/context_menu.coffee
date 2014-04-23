@@ -1,8 +1,12 @@
 define (require) ->
 
-  AUtilLog = require "util/log"
+  config = require "config"
   param = require "util/param"
+
+  AUtilLog = require "util/log"
+
   ID = require "util/id"
+
   Widget = require "widgets/widget"
   TemplateContextMenu = require "templates/context_menu"
 
@@ -35,10 +39,10 @@ define (require) ->
     # @param [Number] y y coordinate to spawn at
     # @param [Handle] properties context menu property definitions
     ###
-    constructor: (x, y, @properties) ->
-      param.required x
-      param.required y
-      param.required @properties
+    constructor: (@ui, options) ->
+      param.required options.x
+      param.required options.y
+      @properties = param.required options.properties
 
       @name = @properties.name
       @functions = @properties.functions
@@ -49,7 +53,7 @@ define (require) ->
       if $.isEmptyObject(@functions) then return
 
       # Create object
-      super
+      super @ui,
         id: ID.prefID("context-menu")
         classes: [ "context-menu" ]
 

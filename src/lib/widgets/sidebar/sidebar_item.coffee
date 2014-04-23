@@ -14,14 +14,15 @@ define (require) ->
     # @param [Sidebar] parent sidebar parent
     # @param [Array<String>] classes optional array of classes
     ###
-    constructor: (parent, classes) ->
-      param.required parent
+    constructor: (@ui, options) ->
+      param.required options.parent
 
-      if not parent instanceof Sidebar
-        throw new Error "Sidebar items need a AWidgetSidebar as a parent!"
+      if not options.parent instanceof Sidebar
+        throw new Error "SidebarItem needs a Sidebar as a parent!"
 
-      # Build the containing div
-      super ID.prefID("sidebar-item"), parent, classes
+      options.id = ID.prefID("sidebar-item")
+
+      super @ui, options
 
     ###
     # Returns the Sidebar object for this sidebar item

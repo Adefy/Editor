@@ -1,12 +1,14 @@
 define (require) ->
 
-  #AUtilLog = require "util/log"
   config = require "config"
   param = require "util/param"
-  Renderable = require "mixin/renderable"
-  Dumpable = require "mixin/dumpable"
+
+  AUtilLog = require "util/log"
 
   EditorObject = require "editor_object"
+
+  Renderable = require "mixin/renderable"
+  Dumpable = require "mixin/dumpable"
 
   # Widgets are the building blocks of the editor's interface
   class Widget extends EditorObject
@@ -24,29 +26,16 @@ define (require) ->
     # @param [Array<String>] classes an array containing classes to be applied
     # @param [Boolean] prepend if true, we are prepended to the parent
     ###
-    constructor: (@_id, parent, classes) ->
+    constructor: (@ui, options) ->
+      options   = param.optional options, {}
 
-      ##
-      ## New argument format, all useages need to be migrated to this, then we
-      ## can get rid of the old constructor signature (TODO)
-      ##
-      if typeof @_id == "object"
-        parent = @_id.parent
-        classes = @_id.classes
-        prepend = @_id.prepend
-        @_id = @_id.id
-      ##
-      ##
-      ##
-
-      @_parent = param.optional parent, ".editor"
-      @_classes = param.optional classes, []
+      @_id      = param.required options.id
+      @_parent  = param.optional options.parent, ".editor"
+      @_classes = param.optional options.classes, []
 
       # container selector, defaults to no container
       @_sel = null
-
       if "#{@_id}".length > 0
-
         @_sel = "##{@_id}"
 
       # Bind a pointer to ourselves on the body, under a key matching our @_sel
@@ -135,6 +124,49 @@ define (require) ->
       @getElement(subSelector).replaceWith(content)
       @
 
+    ## rendering
+
+    ###
+    # @return [self]
+    ###
+    render: ->
+      Renderable::render.call(@)
+
+    ###
+    # @return [String]
+    ###
+    renderStub: (options) ->
+      options = param.optional options, {}
+      Renderable::renderStub.call(@) +
+      if options.content
+        @genElement "div", id: @_id, class: @_classes.join(" "), ->
+          options.content
+      else
+        @genElement "div", id: @_id, class: @_classes.join(" ")
+
+    ###
+    # @return [self]
+    ###
+    refresh: ->
+      @getElement().html @render()
+      @
+
+    ###
+    # @return [self]
+    ###
+    refreshStub: ->
+      @removeElement()
+      @getParentElement().append @renderStub()
+      @
+
+    ###
+    # @return [self]
+    ###
+    postRefresh: ->
+      @
+
+    ## Event handling
+
     ###
     # Called by ui.pushEvent
     # @param [String] type
@@ -142,24 +174,6 @@ define (require) ->
     ###
     respondToEvent: (type, params) ->
       #
-
-    ###
-    # @return [String]
-    ###
-    renderStub: ->
-      @genElement "div", id: @_id, class: @_classes.join(" ")
-
-    ###
-    # @return [self]
-    ###
-    refreshStub: ->
-      @removeElement()
-      html = @renderStub()
-      @getParentElement().append html
-      @
-
-    postRefresh: ->
-      @
 
     ## Dumpable
 

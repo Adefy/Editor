@@ -14,19 +14,22 @@ define (require) ->
     ###
     # Make that StatusBar!
     ###
-    constructor: ->
+    constructor: (@ui, options) ->
+      options = param.optional options, {}
+      options.id = ID.prefID("statusbar")
+      options.classes = param.optional options.classes, []
+      options.classes.push "statusbar"
+
       @_items = []
 
-      super
-        id: ID.prefID("statusbar")
-        parent: "footer"
-        classes: [ "statusbar" ]
+      super @ui, options
 
     ###
     # Render that StatusBar! (now with a fancy smancy version number!)
     ###
     render: ->
-      @getElement().html TemplateStatusBar version: Version.STRING
+      super() +
+      TemplateStatusBar version: Version.STRING
 
     ###
     # Update the state of the statusbar

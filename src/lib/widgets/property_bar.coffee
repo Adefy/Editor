@@ -31,10 +31,10 @@ define (require) ->
     ###
     # @param [UI] ui
     ###
-    constructor: (@ui) ->
+    constructor: (@ui, options) ->
       return unless @enforceSingleton()
 
-      super
+      super @ui,
         id: ID.prefID("property-bar")
         classes: ["property-bar"]
         parent: "header"

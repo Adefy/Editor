@@ -24,11 +24,11 @@ define (require) ->
     # @param [String] title
     # @param [Array<String>] extraClasses optional array of extra classes
     ###
-    constructor: (title, extraClasses) ->
-      param.required title
-      extraClasses = param.optional extraClasses, []
+    constructor: (@ui, options) ->
+      title = param.required options.title
+      extraClasses = param.optional options.extraClasses, []
 
-      super
+      super @ui,
         id: ID.prefID("floating-widget")
         classes: _.union ["floating-widget"], extraClasses
 

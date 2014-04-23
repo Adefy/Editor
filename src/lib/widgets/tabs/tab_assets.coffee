@@ -17,11 +17,13 @@ define (require) ->
     # @param [UIManager] ui
     # @param [SidebarPanel] parent
     ###
-    constructor: (@ui, parent) ->
-      super
-        id: ID.prefID("tab-assets")
-        parent: parent
-        classes: ["tab-assets"]
+    constructor: (@ui, options) ->
+      options = param.optional options, {}
+      options.id = ID.prefID("tab-assets")
+      options.classes = param.optional options.classes, []
+      options.classes.push "tab-assets"
+
+      super @ui, options
 
       @_regListeners()
 
@@ -53,12 +55,14 @@ define (require) ->
       $(document).on "contextmenu", ".files .asset", (e) =>
         assetElement = $(e.target).closest(".asset")
         if asset = @ui.editor.project.assets.findByID(assetElement[0].id)
-          new ContextMenu e.pageX, e.pageY, asset.getContextProperties()
+          options = _.extend { x: e.pageX, y: e.pageY }, asset.getContextProperties()
+          new ContextMenu @ui, options
         e.preventDefault()
         false
 
       $(document).on "contextmenu", ".files", (e) =>
-        new ContextMenu e.pageX, e.pageY, @ui.editor.project.assets.getContextProperties()
+        options = _.extend { x: e.pageX, y: e.pageY }, @ui.editor.project.assets.getContextProperties()
+        new ContextMenu @ui, options
         e.preventDefault()
         false
 

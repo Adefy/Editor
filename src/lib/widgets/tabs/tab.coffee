@@ -7,9 +7,6 @@ define (require) ->
 
   class Tab extends Widget
 
-    #constructor: (id, parent, klasses, prepend) ->
-    #  super id, parent, klasses, prepend
-
     ###
     # @return [Boolean] needPanelFooter do we need a panel footer?
     ###
@@ -49,7 +46,7 @@ define (require) ->
     # @return [String]
     ###
     render: ->
-      #
+      super()
 
     ###
     # @return [Void]
@@ -62,6 +59,6 @@ define (require) ->
     ###
     refresh: ->
       #@replaceElement @render()
-      @clearElement()
+      @removeElement()
       @getParentElement().append @render()
       @

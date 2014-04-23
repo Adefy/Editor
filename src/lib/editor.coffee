@@ -14,7 +14,7 @@ define (require) ->
 
   Notification = require "widgets/notification"
 
-  Bezier = require "widgets/timeline/bezier"
+  Bezier = require "handles/bezier"
   Project = require "project"
 
   class Editor

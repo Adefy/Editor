@@ -38,15 +38,16 @@ define (require) ->
     # @param [UIManager] ui
     # @param [Number] duration ad length in ms, can be modified (expensive)
     ###
-    constructor: (@ui, duration) ->
+    constructor: (@ui, options) ->
+      options = param.optional options, {}
       return unless @enforceSingleton()
 
-      super
+      super @ui,
         id: ID.prefID("timeline")
         parent: "footer"
         classes: ["timeline"]
 
-      @_duration = Number param.optional(duration, 5000)
+      @_duration = Number param.optional(options.duration, 5000)
 
       unless @_duration > 0
         return AUtilLog.error "Invalid duration: #{@_duration}"

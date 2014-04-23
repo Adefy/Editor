@@ -39,7 +39,8 @@ define (require) ->
     # @param [Number] color notification color
     # @param [Number] life lifetime length in ms, defaults to 2000
     ###
-    constructor: (msg, color, life) ->
+    constructor: (@ui, options) ->
+      #msg, color, life
       param.required msg
       color = param.optional color, "blue", [ "blue", "red", "green" ]
       life = param.optional life, 2000
@@ -57,7 +58,7 @@ define (require) ->
         Notification._listenersRegistered = true
 
       # Create object
-      super
+      super @ui,
         id: ID.prefID("anotification")
         classes: [ "anotification" ]
 

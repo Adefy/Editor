@@ -19,13 +19,14 @@ define (require) ->
     # @param [UIManager] ui
     # @param [SidebarPanel] parent
     ###
-    constructor: (@ui, parent) ->
+    constructor: (@ui, options) ->
       @_viewMode = "list"
 
-      super
-        id: ID.prefID("tab-textures")
-        parent: parent
-        classes: ["tab-textures"]
+      options.id = ID.prefID("tab-textures")
+      options.classes = param.optional options.classes, []
+      options.classes.push "tab-textures"
+
+      super @ui, options
 
       @_registerFooterListeners()
       @_setupDragging()
@@ -62,7 +63,7 @@ define (require) ->
     # @return [Void]
     ###
     _onClickUpload: ->
-      window.AdefyEditor.ui.modals.showUploadTextures cb: (blob) =>
+      @ui.modals.showUploadTextures cb: (blob) =>
         @refresh()
 
     ###
@@ -78,7 +79,8 @@ define (require) ->
         texture = _.find project.textures, (t) -> t.getID() == textureId
 
         if texture
-          new ContextMenu e.pageX, e.pageY, texture.getContextProperties()
+          options = _.extend { x: e.pageX, y: e.pageY }, texture.getContextProperties()
+          new ContextMenu @ui, options
 
         e.preventDefault()
         false
@@ -96,9 +98,8 @@ define (require) ->
     # @return [String]
     ###
     render: ->
-      return "" unless Project.current
-
-      html = ""
+      html = super()
+      return html unless Project.current
 
       for texture in Project.current.textures
         html += TemplateTabThumb

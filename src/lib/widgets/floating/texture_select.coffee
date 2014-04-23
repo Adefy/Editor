@@ -13,11 +13,11 @@ define (require) ->
     # @param [Array<Texture>] textures list of textures to display
     # @param [BaseActor] targetActor actor to apply textures to
     ###
-    constructor: (textures, targetActor) ->
-      @_textures = param.required textures
-      @_actor = param.required targetActor
+    constructor: (@ui, options) ->
+      @_textures = param.required options.textures
+      @_actor = param.required options.targetActor
 
-      super "Select Texture"
+      super @ui, title: "Select Texture"
 
       @setAnimateSpeed 100
       @makeDraggable "#{@_sel} .header"
@@ -27,7 +27,9 @@ define (require) ->
     registerListeners: ->
       $(document).on "click", "#{@_sel} img", (e) =>
 
-        new ContextMenu e.pageX, e.pageY,
+        new ContextMenu @ui,
+          x: e.pageX
+          y: e.pageY
           name: "Apply Texture?"
           functions:
             ok:
@@ -40,5 +42,6 @@ define (require) ->
               cb: =>
 
     render: ->
-      @getElement().html SelectTextureModal
+      super() +
+      SelectTextureModal
         textures: @_textures

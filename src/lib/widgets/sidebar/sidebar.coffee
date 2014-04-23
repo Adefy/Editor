@@ -28,14 +28,15 @@ define (require) ->
     # @param [UIManager] ui
     # @param [Number] width
     ###
-    constructor: (@ui, width) ->
+    constructor: (@ui, options) ->
+      options = param.optional options, {}
 
       # Sidebar items of class SidebarItem (or implementations)
       @_items = []
 
-      @_width = param.optional width, 300
+      @_width = param.optional options.width, 300
 
-      super
+      super @ui,
         id: ID.prefID("sidebar")
         parent: "section.main"
         classes: ["sidebar"]
@@ -78,19 +79,13 @@ define (require) ->
     addItem: (item) ->
       param.required item
 
-      if item.render == undefined or item.render == null
-        throw new Error "Item must have a render function!"
-
       if item.getID == undefined or item.getID == null
         throw new Error "Item must supply a getID() function!"
 
-      # Test out the render function, ensure it returns a string
-      test = item.render()
-      if typeof test != "string"
-        throw new Error "Item render function must return a string!"
+      if item.render == undefined or item.render == null
+        throw new Error "Item must have a render function!"
 
       @_items.push item
-      @render()
 
     ###
     # Remove item using id. Note that the id can be anything, since we don't
@@ -106,7 +101,6 @@ define (require) ->
         if @_items[i].getID() == i
           if typeof @_items[i].getID() == typeof i # Probably overkill
             @_items.splice i, 1
-            @render()
             return true
 
       false
@@ -115,9 +109,7 @@ define (require) ->
     # Render! Fill the sidebar with html from the items rendered in order.
     ###
     render: ->
-      @getElement().html @_items.map((i) -> i.render()).join ""
-      @refreshVisible()
-      @postRender()
+      @_items.map((i) -> i.render()).join ""
 
     ###
     # postRender! Calls all the child postRender
@@ -130,7 +122,14 @@ define (require) ->
     # Render the HTML content and replace it
     ###
     refresh: ->
-      @render()
+      @getElement().html @render()
+      @refreshVisible()
+      @postRender()
+
+    refreshStub: ->
+      super()
+      for item in @_items
+        item.refreshStub() if item.refreshStub
 
     ###
     # Take the navbar into account, and always position ourselves below it

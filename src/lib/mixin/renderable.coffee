@@ -1,6 +1,9 @@
 define (requre) ->
 
+  config = require "config"
   param = require "util/param"
+
+  AUtilLog = require "util/log"
 
   class Renderable
 
@@ -28,26 +31,12 @@ define (requre) ->
     # @return [String]
     ###
     render: ->
+      AUtilLog.info "#{@.constructor.name}#render"
       ""
 
     ###
     # @return [String]
     ###
     renderStub: ->
+      AUtilLog.info "#{@.constructor.name}#renderStub"
       ""
-
-    ###
-    # refresh virtual function
-    # Refresh will call render and append it to the parent element
-    # @return [self]
-    ###
-    refresh: ->
-      #
-      @
-
-    ###
-    # @return [self]
-    ###
-    refreshStub: ->
-      #
-      @

@@ -38,8 +38,7 @@ define (require) ->
 
       @modals = new ModalManager @
 
-      @refreshStub()
-      #@refresh()
+      @refreshHard()
 
       @onResize()
       window.onresize = @onResize
@@ -78,7 +77,7 @@ define (require) ->
     renderAll: -> widget.render() for widget in @widgets
 
     initializePropertyBar: -> @propertyBar = new PropertyBar @
-    initializeStatusbar: -> @statusbar = new StatusBar @
+    initializeStatusbar: -> @statusbar = new StatusBar @, parent: "footer"
     initializeTimeline: -> @timeline = new Timeline @
 
     initializeWorkspace: ->
@@ -88,7 +87,7 @@ define (require) ->
     initializeSidebar: ->
       @sidebar = new Sidebar @, 310
 
-      panel = new SidebarPanel @sidebar
+      panel = new SidebarPanel @, parent: @sidebar
       panel.newTab "Textures", (tab) => new TexturesTab @, panel
       panel.selectTab 0
 
@@ -248,10 +247,41 @@ define (require) ->
     # @return [self]
     ###
     refresh: ->
-      AUtilLog.info "UI refresh"
+      AUtilLog.info "UI#refresh"
       for widget in @widgets
         widget.refresh() if widget.refresh
 
+      @
+
+    ###
+    # @return [self]
+    ###
+    postInit: ->
+      AUtilLog.info "UI#postInit"
+      for widget in @widgets
+        widget.postInit() if widget.postInit
+
+      @
+
+    ###
+    # @return [self]
+    ###
+    postRefresh: ->
+      AUtilLog.info "UI#postRefresh"
+      for widget in @widgets
+        widget.postRefresh() if widget.postRefresh
+
+      @
+
+    ###
+    # @return [self]
+    ###
+    refreshHard: ->
+      @refreshStub() # create widget stubs
+      @refresh()     # render the widget content
+      @postRefresh() # conduct all post refresh shebang
+      @onResize()    # ensure that all widgets have the correct size
+      @postInit()    # finish initializing the widgets
       @
 
     ###
@@ -304,3 +334,4 @@ define (require) ->
         @_ignoreEventList = []
 
       @_ignoreEventList.push type
+

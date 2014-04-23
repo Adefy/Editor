@@ -10,15 +10,26 @@ define (require) ->
     # Create a new SidebarPanel
     # @param [Sidebar] parent
     ###
-    constructor: (parent, opts) ->
+    constructor: (@ui, options) ->
       @_tabs = []
       @_footerActive = false
 
-      super parent, [ "panel" ]
+      options.classes = param.optional options.classes, []
+      options.classes.push "panel"
+
+      super @ui, options
 
       @_parent.addItem @
 
-      @registerEvents()
+      @_registerEvents()
+
+    ###
+    # @return [Void]
+    ###
+    _registerEvents: ->
+      $(document).on "click", "#{@_sel} .tab", (e) =>
+        @selectTab Number $(e.target).closest(".tab").attr "data-index"
+        @_parent.render()
 
     ###
     # returns the scrollbar selector
@@ -108,18 +119,15 @@ define (require) ->
       tab = _.find @_tabs, (t) -> t.selected
 
       if tab
-        if tab.content instanceof String
-          content = tab.content
-
-        else # probably is a Object
-          tcontent = tab.content
-          content = tcontent.render()
-          contentKlass = tcontent.cssAppendParentClass()
-          contentId = tcontent.appendParentId()
-          usesFooter = tcontent.needPanelFooter()
+        tcontent = tab.content
+        content = tcontent.render()
+        contentKlass = tcontent.cssAppendParentClass()
+        contentId = tcontent.appendParentId()
+        usesFooter = tcontent.needPanelFooter()
 
       @_footerActive = usesFooter
 
+      super() +
       TemplateSidebarPanel
         id: @_id
         sidebarId: @_parent.getID()
@@ -132,22 +140,17 @@ define (require) ->
     ###
     # @return [Void]
     ###
-    registerEvents: ->
-      $(document).on "click", "#{@_sel} .tab", (e) =>
-        @selectTab Number $(e.target).closest(".tab").attr "data-index"
-        @_parent.render()
-
-    ###
-    # @return [Void]
-    ###
     postRender: ->
       @_setupScrollbar()
-      for tab in @_tabs
-        if content = tab.content
-          if content.postRender
-            content.postRender()
-          if @_footerActive && content.renderFooter
-            @getElement(".footer").html content.renderFooter()
+      tab = _.find @_tabs, (t) -> t.selected
+      if content = tab.content
+        if content.postRender
+          content.postRender()
+        if @_footerActive && content.renderFooter
+          @getElement(".footer").html content.renderFooter()
+
+    refreshStub: ->
+      super()
 
     ###
     # When a child element changes size, position, this function is called

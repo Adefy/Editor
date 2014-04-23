@@ -8,4 +8,5 @@ define (require) ->
   ###
   class Overlay extends Widget
 
-    constructor: ->
+    constructor: (@ui, options) ->
+      super @ui, options
