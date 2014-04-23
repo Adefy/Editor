@@ -11,6 +11,8 @@ define (require) ->
   TemplateTabThumb = require "templates/tabs/thumb"
   TemplateTabTexturesFooter = require "templates/tabs/textures_footer"
 
+  Project = require "project"
+
   class TexturesTab extends Tab
 
     ###
@@ -94,9 +96,11 @@ define (require) ->
     # @return [String]
     ###
     render: ->
+      return "" unless Project.current
+
       html = ""
 
-      for texture in @ui.editor.project.textures
+      for texture in Project.current.textures
         html += TemplateTabThumb
           id: texture.getID()
           src: texture.getURL()

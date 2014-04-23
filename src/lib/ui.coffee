@@ -84,11 +84,9 @@ define (require) ->
     initializeSidebar: ->
       @sidebar = new Sidebar @, 310
 
-      setTimeout =>
-        panel = new SidebarPanel @sidebar
-        panel.newTab "Textures", (tab) => new TexturesTab @, panel
-        panel.selectTab 0
-      , 0
+      panel = new SidebarPanel @sidebar
+      panel.newTab "Textures", (tab) => new TexturesTab @, panel
+      panel.selectTab 0
 
       @sidebar
 

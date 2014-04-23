@@ -76,7 +76,7 @@ define (require) ->
     ###
     addTab: (tab) ->
       tab.index = @_tabs.length
-      @_tabs.push(tab)
+      @_tabs.push tab
 
     ###
     # Selects a tab based on index
@@ -92,7 +92,7 @@ define (require) ->
     ###
     newTab: (name, cb) ->
       tab = name: name, selected: ""
-      tab.content = cb() if cb
+      tab.content = cb(tab) if cb
       @addTab tab
       tab
 
