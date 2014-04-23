@@ -4,19 +4,19 @@
 
 // Contains everything interesting, including workspace and sidebars
 .workspace
-  //background-color $col_workspace_bg
+  position absolute
   width 100%
+  height 100%
   overflow hidden
 
-
 .editor-canvas
-
-  canvas
-    position absolute
 
   display block
   margin 0 auto
   position relative
+
+  canvas
+    position relative
 
   .cursor-position
     display inline-block
@@ -39,12 +39,12 @@
   .outline
     border 1px solid #0099cc
     background-color transparent
-    position absolute
+    position relative
     pointer-events none
 
   .outline-text
     color #0099cc
-    position absolute
+    position relative
     font-size 12px
 
   &:hover

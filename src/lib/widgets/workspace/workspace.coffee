@@ -72,6 +72,7 @@ define (require) ->
       @_pickInProgress = false
       @_pickQueue = []
 
+    postInit: ->
       # Inject our canvas container, along with its status bar
       # Although we currently don't add anything else to the container besides
       # the canvas itself, it might prove useful in the future.
@@ -804,20 +805,7 @@ define (require) ->
     # Note that this does NOT resize the canvas
     ###
     onResize: ->
-      @getElement().height $("section.main").height()
-
-      #elm.offset
-      #  top: toolb.position().top + toolb.height()
-      #  left: sideb.position().left + sideb.width()
-
-      #timelineBottom = Number($(".timeline").css("bottom").split("px")[0]) - 16
-      #timelineHeight = ($(".timeline").height() + timelineBottom)
-      ## Our height
-      #@getElement().height $(document).height() - $(".menubar").height() + 2 - \
-      #  timelineHeight
-
-      # Center phone outline
-      # @updateOutline()
+      # workspace now inherits its height from the section.main
 
     ###
     # Dumps the current workspace state

@@ -54,7 +54,6 @@ define (require) ->
       @_control = new TimelineControl @
 
       @_previewFPS = 30
-      @_visible = true
       @_playbackID = null
 
       @controlState =
@@ -67,25 +66,25 @@ define (require) ->
       # Actor array, access through registerActor/removeActor
       @_actors = []
 
-      # Check for any existing padding on the body (and format accordingly)
-      if $("body").css("padding-bottom") == "auto"
-        @_bodyPadding = 0
-      else
-        @_bodyPadding = $("body").css("padding-bottom").split("px").join ""
-
-      @resize 256
-
-      @_renderStructure()
-      @_updateCursorTime()
+      #@resize 256
+      #@_renderStructure()
+      #@_updateCursorTime()
 
       @_regListeners()
-      @_setupDraggableKeyframes()
+
+    ###
+    # @return [self]
+    ###
+    postInit: ->
+      super()
 
       @_visible = Storage.get("timeline.visible") == true
       if @_visible
         @show()
       else
         @hide()
+
+      @
 
     ###
     # Checks if a timeline has already been created, and returns false if one
@@ -379,6 +378,7 @@ define (require) ->
     ###
     _regListeners: ->
 
+      @_setupDraggableKeyframes()
       @_bindContextClick()
 
       $(document).on "click", ".timeline .button.toggle", (e) =>
@@ -614,7 +614,7 @@ define (require) ->
     ###
     # Refreshes the state of the timeline toggle icons and storage
     ###
-    refreshVisible: ->
+    updateVisible: ->
       Storage.set "timeline.visible", @_visible
       @getElement(".button.toggle i").toggleClass config.icon.toggle_down, @_visible
       @getElement(".button.toggle i").toggleClass config.icon.toggle_up, !@_visible
@@ -658,7 +658,7 @@ define (require) ->
         @getElement().height @_height
         @ui.pushEvent "timeline.show"
 
-      @refreshVisible()
+      @updateVisible()
 
     ###
     # Hide the sidebar with an optional animation
@@ -685,7 +685,7 @@ define (require) ->
         @getElement().height @_hiddenHeight
         @ui.pushEvent "timeline.hide"
 
-      @refreshVisible()
+      @updateVisible()
 
     ## CALC
 
@@ -946,7 +946,7 @@ define (require) ->
       @_renderActorList()
       @_renderSpace()
       @_setupScrollbar()
-      @refreshVisible()
+      @updateVisible()
       @
 
     refresh: ->

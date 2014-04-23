@@ -38,12 +38,11 @@ define (require) ->
 
       @modals = new ModalManager @
 
-      @renderAll()
+      @refreshStub()
+      #@refresh()
 
       @onResize()
       window.onresize = @onResize
-
-      @refresh()
 
     ###
     # swiped from:
@@ -68,6 +67,10 @@ define (require) ->
           document.webkitCancelFullScreen()
 
     onResize: =>
+
+      $("section.main").height $(window).height() - \
+                               $("header").height() - \
+                               $("footer").height()
 
       for widget in @widgets
         widget.onResize() if widget.onResize
@@ -231,12 +234,25 @@ define (require) ->
 
       @menu
 
+    ###
+    # @return [self]
+    ###
+    refreshStub: ->
+      AUtilLog.info "UI refreshStub"
+      for widget in @widgets
+        widget.refreshStub() if widget.refreshStub
+
+      @
+
+    ###
+    # @return [self]
+    ###
     refresh: ->
-
       AUtilLog.info "UI refresh"
-
       for widget in @widgets
         widget.refresh() if widget.refresh
+
+      @
 
     ###
     ## UES - UI Event System

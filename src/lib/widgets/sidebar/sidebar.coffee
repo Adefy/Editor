@@ -136,8 +136,8 @@ define (require) ->
     # Take the navbar into account, and always position ourselves below it
     ###
     onResize: ->
-      height = window.innerHeight - $("footer").height() - $("header").height()
-      @getElement().height height
+      #height = window.innerHeight - $("footer").height() - $("header").height()
+      #@getElement().height height
 
       i.onResize() for i in @_items
 

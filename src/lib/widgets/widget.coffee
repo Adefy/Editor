@@ -1,4 +1,4 @@
-define (requre) ->
+define (require) ->
 
   #AUtilLog = require "util/log"
   config = require "config"
@@ -24,7 +24,7 @@ define (requre) ->
     # @param [Array<String>] classes an array containing classes to be applied
     # @param [Boolean] prepend if true, we are prepended to the parent
     ###
-    constructor: (@_id, parent, classes, prepend) ->
+    constructor: (@_id, parent, classes) ->
 
       ##
       ## New argument format, all useages need to be migrated to this, then we
@@ -41,7 +41,6 @@ define (requre) ->
 
       @_parent = param.optional parent, ".editor"
       @_classes = param.optional classes, []
-      prepend = param.optional prepend, false
 
       # container selector, defaults to no container
       @_sel = null
@@ -50,24 +49,15 @@ define (requre) ->
 
         @_sel = "##{@_id}"
 
-        _parent_sel = ""
-        if typeof @_parent == "string"
-          _parent_sel = @_parent
-        else if @_parent.getSel != undefined and @_parent.getSel != null
-          _parent_sel = @_parent.getSel()
-        else
-          throw new Error "Invalid parent specified!"
-
-        elm = @genElement "div", id: @_id
-        if prepend
-          $(_parent_sel).prepend elm
-        else
-          $(_parent_sel).append elm
-
-        @getElement().addClass c for c in classes
-
       # Bind a pointer to ourselves on the body, under a key matching our @_sel
       $("body").data @_sel, @
+
+    ###
+    # @return [self]
+    ###
+    postInit: ->
+      #
+      @
 
     ###
     # Get the classes present on our main element
@@ -84,6 +74,19 @@ define (requre) ->
     getSel: -> @_sel
 
     ###
+    # Retrieve widget's parent selector (typically the id)
+    #
+    # @return [String] sel
+    ###
+    getParentSel: ->
+      if typeof @_parent == "string"
+        return @_parent
+      else if @_parent.getSel != undefined and @_parent.getSel != null
+        return @_parent.getSel()
+      else
+        throw new Error "Invalid parent specified!"
+
+    ###
     # Retrieve widget's element using its own selector, optional a subSelector
     # can be provided to select an element inside the current.
     #
@@ -98,6 +101,12 @@ define (requre) ->
         $(@_sel)
 
     ###
+    # @return [jQuery] element
+    ###
+    getParentElement: ->
+      $(@getParentSel())
+
+    ###
     # Return widget id as a string
     #
     # @return [String] id
@@ -105,11 +114,54 @@ define (requre) ->
     getID: -> "#{@_id}"
 
     ###
+    # Removes the element, if subSelector is provided, removes the element
+    # under the current
+    # @param [String] subSelector
+    #   @optional
+    # @return [self]
+    ###
+    removeElement: (subSelector) ->
+      @getElement(subSelector).remove()
+      @
+
+    ###
+    # Replaces the element, if subSelector is provided, places the element
+    # under the current
+    # @param [String] subSelector
+    #   @optional
+    # @return [self]
+    ###
+    replaceElement: (content, subSelector) ->
+      @getElement(subSelector).replaceWith(content)
+      @
+
+    ###
     # Called by ui.pushEvent
     # @param [String] type
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
+      #
+
+    ###
+    # @return [String]
+    ###
+    renderStub: ->
+      @genElement "div", id: @_id, class: @_classes.join(" ")
+
+    ###
+    # @return [self]
+    ###
+    refreshStub: ->
+      @removeElement()
+      html = @renderStub()
+      @getParentElement().append html
+      @
+
+    postRefresh: ->
+      @
+
+    ## Dumpable
 
     ###
     # @return [Object] data

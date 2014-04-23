@@ -35,6 +35,17 @@ define (require) ->
       @getID()
 
     ###
+    # Iterate through our parents untill we reach our parent sidebar
+    ###
+    getSidebar: ->
+      sidebar = @_parent
+
+      while sidebar.getSidebar
+        sidebar = sidebar.getSidebar()
+
+      sidebar
+
+    ###
     # @return [String]
     ###
     render: ->
@@ -47,18 +58,10 @@ define (require) ->
       #
 
     ###
-    # Iterate through our parents untill we reach our parent sidebar
-    ###
-    getSidebar: ->
-      sidebar = @_parent
-
-      while sidebar.getSidebar
-        sidebar = sidebar.getSidebar()
-
-      sidebar
-
-    ###
-    # Tabs do not refresh themselves sadly, so ask the parents to refresh them
+    # @return [self]
     ###
     refresh: ->
-      @_parent.refresh() if @_parent.refresh
+      #@replaceElement @render()
+      @clearElement()
+      @getParentElement().append @render()
+      @

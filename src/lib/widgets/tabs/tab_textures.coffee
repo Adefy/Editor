@@ -123,10 +123,18 @@ define (require) ->
         listActive: listActive
         thumbsActive: thumbsActive
 
+    updateTexture: (texture) ->
+
+      textureElement = $("##{texture.getID()}")
+      textureElement.find(".img img").attr "src", texture.getURL()
+      textureElement.find(".name img").text texture.getName()
+
     respondToEvent: (type, params) ->
       AUtilEventLog.egot "tab.textures", type
 
       switch type
-        when "rename.texture", "upload.textures", "remove.texture", "update.textures"
+        when "rename.texture", "update.textures"
+          @updateTexture params.texture
+        when "upload.textures", "remove.texture"
           # params.texture
           @refresh()

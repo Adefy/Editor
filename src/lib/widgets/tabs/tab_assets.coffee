@@ -40,7 +40,7 @@ define (require) ->
       asset = @ui.editor.project.assets.findByID(assetElementId)
       if asset
         asset.setExpanded !asset.getExpanded()
-        @refreshAssetState asset
+        @_updateAssetState asset
       else
         throw new Error "could not find asset(id: #{assetElementId})"
 
@@ -74,6 +74,7 @@ define (require) ->
 
     ###
     # @param [Array<Object>] assets
+    # @return [String] html
     # @private
     ###
     _renderAssets: (assets) ->
@@ -99,7 +100,7 @@ define (require) ->
       .join ""
 
     ###
-    # @return [String]
+    # @return [String] html
     ###
     render: ->
       @_renderAssets @ui.editor.project.assets.getEntries()
@@ -107,7 +108,7 @@ define (require) ->
     ###
     # @param [Asset] asset
     ###
-    refreshAssetState: (asset) ->
+    _updateAssetState: (asset) ->
       elementId = asset.getSelector()
 
       expanded = asset.getExpanded()
@@ -121,7 +122,7 @@ define (require) ->
     ###
     # @param [Asset] asset
     ###
-    refreshAsset: (asset) ->
+    _updateAsset: (asset) ->
       elementId = asset.getSelector()
       $("#{elementId}.asset > dd > label.name").text asset.getName()
 
@@ -133,7 +134,7 @@ define (require) ->
       AUtilEventLog.egot "tab.assets", type
       switch type
         when "update.asset", "renamed.asset"
-          @refreshAsset params.asset
+          @updateAsset params.asset
         when "add.asset"
           @refresh()
         when "remove.asset"
