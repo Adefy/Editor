@@ -37,11 +37,12 @@ define (require) ->
       @_animateSpeed = 100
       @_drag = null
 
-      @_registerBaseListeners()
-
       # By default, we are not visible; this just injects our HTML into the DOM
       # ready for showing
-      @render()
+      @refreshStub()
+      @refresh()
+
+      @_registerBaseListeners()
       @registerListeners() if @registerListeners
 
     ###

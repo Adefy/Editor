@@ -30,16 +30,17 @@ define (require) ->
         new ContextMenu @ui,
           x: e.pageX
           y: e.pageY
-          name: "Apply Texture?"
-          functions:
-            ok:
-              name: "Yes"
-              cb: =>
-                @_actor.setTextureByUID $(e.target).attr "data-uid"
-                @kill()
-            cancel:
-              name: "No"
-              cb: =>
+          properties:
+            name: "Apply Texture?"
+            functions:
+              ok:
+                name: "Yes"
+                cb: =>
+                  @_actor.setTextureByUID $(e.target).attr "data-uid"
+                  @kill()
+              cancel:
+                name: "No"
+                cb: =>
 
     render: ->
       super() +

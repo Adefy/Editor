@@ -64,12 +64,10 @@ define (require) ->
         forward: false
         fast_forward: false
 
-      # Actor array, access through registerActor/removeActor
+      # Actor array, access through addActor/removeActor
       @_actors = []
 
-      #@resize 256
-      #@_renderStructure()
-      #@_updateCursorTime()
+      @resize 256
 
       @_regListeners()
 
@@ -369,7 +367,11 @@ define (require) ->
       $(document).on "contextmenu", ".timeline .actor .title", (e) =>
         actorElement = $(e.target).closest ".actor"
         index = $(actorElement).attr "data-index"
-        new ContextMenu e.pageX, e.pageY, @_actors[index].getContextProperties()
+        new ContextMenu @ui,
+          x: e.pageX
+          y: e.pageY
+          properties: @_actors[index].getContextProperties()
+
         e.preventDefault()
         false
 
@@ -546,7 +548,7 @@ define (require) ->
     #
     # @param [BaseActor] actor
     ###
-    registerActor: (actor) ->
+    addActor: (actor) ->
       param.required actor
 
       ## screw it!
@@ -554,8 +556,7 @@ define (require) ->
       #  throw new Error "Actor must be an instance of BaseActor!"
 
       @_actors.push actor
-      @_renderActorTimebar _.last @_actors
-      @_renderActorListEntry _.last @_actors
+      @refresh()
       @_updateScrollbar()
 
       true
@@ -576,8 +577,7 @@ define (require) ->
 
       @_actors.splice actorIndex, 1
 
-      @_renderActorList()
-      @_renderSpace()
+      @refresh()
       @_updateScrollbar()
 
       true
@@ -829,11 +829,10 @@ define (require) ->
     # @param [Boolean] apply optional, if false we only return the render HTML
     # @privvate
     ###
-    _renderActorListEntry: (actor, apply) ->
+    _renderActorListEntry: (actor) ->
       param.required actor
-      apply = param.optional apply, true
 
-      html = TemplateTimelineActor
+      TemplateTimelineActor
         id: "actor-body-#{actor.getID()}"
         actorId: actor.getID()
         index: _.findIndex @_actors, (a) -> a.getID() == actor.getID()
@@ -856,35 +855,28 @@ define (require) ->
           value: aformat.color actor.getColor(), 2
         ]
 
-      if apply
-        $(@_bodySelector()).append html
-        @updateActorBody(actor)
-      else
-        html
-
     ###
     # Render the actor list Should never be called by itself, only by @render()
     #
     # @private
     ###
     _renderActorList: ->
-      entriesHTML = @_actors.map (actor) => @_renderActorListEntry actor, false
-
-      $(@_bodySelector()).html entriesHTML.join ""
+      @_actors.map (actor) =>
+        @_renderActorListEntry actor, false
+      .join ""
 
     ###
     # Renders an individual actor timebar, used when registering new actors,
     # preventing a full re-render of the space. Also called internally by
-    # @_renderSpace.
+    # @_renderActorTimeSpace.
     #
     # @param [BaseActor] actor
     # @param [Boolean] apply optional, if false we only return the render HTML
     # @return [HTML]
     # @private
     ###
-    _renderActorTimebar: (actor, apply) ->
+    _renderActorTimebarEntry: (actor) ->
       param.required actor
-      apply = param.optional apply, true
 
       actorId = actor.getID()
       index = _.findIndex @_actors, (a) -> a.getID() == actorId
@@ -897,19 +889,11 @@ define (require) ->
       ## TODO: Check that something has actually changed before sending the HTML
       ##
 
-      html = TemplateTimelineActorTime
+      TemplateTimelineActorTime
         id: "actor-time-#{actorId}"
         actorid: actorId
         index: index
         properties: properties
-
-      if apply
-        if $("#actor-time-#{actorId}").length
-          $("#actor-time-#{actorId}").html html
-        else
-          $("#{@_spaceSelector()} .time-actors").append html
-      else
-        html
 
     ###
     # Render the timeline space. Should never be called by itself, only by
@@ -917,42 +901,42 @@ define (require) ->
     # @return [Void]
     # @private
     ###
-    _renderSpace: ->
-      entriesHTML = @_actors.map (actor) => @_renderActorTimebar actor, false
-
-      $("#{@_spaceSelector()} .time-actors").html entriesHTML.join ""
-
-    ###
-    # Render initial structure.
-    # Note that calling this clears the timeline visually, and does not render
-    # objects! Objects are not destroyed, call @render to update them.
-    # @return [Void]
-    ###
-    _renderStructure: ->
-      options =
-        id: "timeline-header"
-        timelineId: @getID()
-        currentTime: "0:00.00"
-
-      @getElement().html TemplateTimelineBase options
+    _renderActorTimebar: ->
+      @_actors.map (actor) =>
+        @_renderActorTimebarEntry actor, false
+      .join ""
 
     ###
     # Proper render function, fills in timeline internals. Since we have two
     # distinct sections, each is rendered by a seperate function. This helps
-    # divide the necessary logic, into @_renderActorList() and @_renderSpace().
+    # divide the necessary logic, into @_renderActorList() and @_renderActorTimebar().
     # This function simply calls both.
-    # @return [Void]
+    # @return [String]
     ###
     render: ->
-      @_renderActorList()
-      @_renderSpace()
+      options =
+        id: "timeline-header"
+        timelineId: @getID()
+        currentTime: "0:00.00"
+        contents: @_renderActorList()
+        timeContents: @_renderActorTimebar()
+
+      super() +
+      TemplateTimelineBase options
+
+    ###
+    # @return [self]
+    ###
+    refresh: ->
+      super()
       @_setupScrollbar()
-      @updateVisible()
       @
 
-    refresh: ->
-      @render()
-      @
+    ###
+    # @return [self]
+    ###
+    postRefresh: ->
+      super()
 
     ## UPDATE
 
@@ -1120,7 +1104,7 @@ define (require) ->
     respondToEvent: (type, params) ->
       switch type
         when "workspace.add.actor"
-          @registerActor params.actor
+          @addActor params.actor
         when "workspace.remove.actor"
           @removeActor params.actor
         when "workspace.selected.actor"

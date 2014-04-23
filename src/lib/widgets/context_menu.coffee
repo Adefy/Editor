@@ -40,8 +40,8 @@ define (require) ->
     # @param [Handle] properties context menu property definitions
     ###
     constructor: (@ui, options) ->
-      param.required options.x
-      param.required options.y
+      x = param.required options.x
+      y = param.required options.y
       @properties = param.required options.properties
 
       @name = @properties.name
@@ -61,10 +61,12 @@ define (require) ->
       $("body").data @getID(), @
 
       # Position and inject ourselves
+      @refreshStub() # widget auto refresh was removed
+      @refresh()
+
       @getElement().css
         left: x
         top: y
-      @getElement().html @_buildHTML()
 
       if ContextMenu.animate
         @getElement().slideDown ContextMenu.animateSpeed
@@ -135,6 +137,9 @@ define (require) ->
         ContextMenu._registeredMouseup = true
 
       html
+
+    render: ->
+      super() + @_buildHTML()
 
     ###
     # Shorthand, used in @_buildHTML and @remove

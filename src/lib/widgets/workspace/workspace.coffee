@@ -200,13 +200,18 @@ define (require) ->
       @
 
     ###
-    # Adds an actor to the workspace
-    # @return [self]
+    # Manually register an actor
+    #
+    # @param [BaseActor] handle
     ###
-    addActor: (actor) ->
-      @actorObjects.push actor
-      @ui.pushEvent "workspace.add.actor", actor: actor
+    addActor: (handle) ->
+      param.required handle
+
+      @actorObjects.push handle
+      @ui.pushEvent "workspace.add.actor", actor: handle
       @
+
+    #removeActor: (handle) ->
 
     ###
     # Add a new Particle System to the list
@@ -254,7 +259,9 @@ define (require) ->
       functions =
         newActor:
           name: "New Actor +"
-          cb: => new ContextMenu x, y, @getNewActorCtxMenu x, y
+          cb: =>
+            new ContextMenu @ui,
+              x: x, y: y, properties: @getNewActorCtxMenu(x, y)
 
       if config.use.particle_system
         functions.newParticleSystem =
@@ -379,9 +386,11 @@ define (require) ->
             if actor
               unless _.isEmpty actor.getContextProperties()
                 @dragger.forceDragEnd()
-                new ContextMenu x, y, actor.getContextProperties()
+                new ContextMenu @ui,
+                  x: x , y: y, properties: actor.getContextProperties()
           else
-            new ContextMenu x, y, @getWorkspaceCtxMenu x, y
+            new ContextMenu @ui,
+              x: x , y: y, properties: @getWorkspaceCtxMenu(x, y)
 
         e.preventDefault()
         false
@@ -652,6 +661,12 @@ define (require) ->
         id: config.id.are_canvas
 
     ###
+    # @return [self]
+    ###
+    refresh: ->
+      @
+
+    ###
     # @private
     # Builds the framebuffer and texture needed to preform picking, deleting
     # them if they already exist. This needs to be called whenever AREs' canvas
@@ -702,20 +717,6 @@ define (require) ->
       gl.bindTexture gl.TEXTURE_2D, null
       gl.bindRenderbuffer gl.RENDERBUFFER, null
       gl.bindFramebuffer gl.FRAMEBUFFER, null
-
-    ###
-    # Manually register an actor
-    #
-    # @param [BaseActor] handle
-    ###
-    registerActor: (handle) ->
-      param.required handle
-
-      if not handle.constructor.name.indexOf("Actor") != -1
-        throw new Error "You can only register actors that derive from BaseActor"
-
-      @actorObjects.push handle
-      @ui.timeline.registerActor handle
 
     ###
     # @private

@@ -112,11 +112,12 @@ define (require) ->
       @_items.map((i) -> i.render()).join ""
 
     ###
-    # postRender! Calls all the child postRender
+    # postRefresh! Calls all the child postRefresh
     ###
-    postRender: ->
+    postRefresh: ->
+      super()
       for item in @_items
-        item.postRender() if item.postRender
+        item.postRefresh() if item.postRefresh
 
     ###
     # Render the HTML content and replace it
@@ -124,7 +125,7 @@ define (require) ->
     refresh: ->
       @getElement().html @render()
       @refreshVisible()
-      @postRender()
+      @postRefresh()
 
     refreshStub: ->
       super()

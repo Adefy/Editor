@@ -54,15 +54,20 @@ define (require) ->
     _bindContextClick: ->
       $(document).on "contextmenu", ".files .asset", (e) =>
         assetElement = $(e.target).closest(".asset")
+
         if asset = @ui.editor.project.assets.findByID(assetElement[0].id)
-          options = _.extend { x: e.pageX, y: e.pageY }, asset.getContextProperties()
-          new ContextMenu @ui, options
+          new ContextMenu @ui,
+            x: e.pageX, y: e.pageY, properties: asset.getContextProperties()
+
         e.preventDefault()
         false
 
       $(document).on "contextmenu", ".files", (e) =>
-        options = _.extend { x: e.pageX, y: e.pageY }, @ui.editor.project.assets.getContextProperties()
-        new ContextMenu @ui, options
+        new ContextMenu @ui,
+          x: e.pageX
+          y: e.pageY
+          properties: @ui.editor.project.assets.getContextProperties()
+
         e.preventDefault()
         false
 

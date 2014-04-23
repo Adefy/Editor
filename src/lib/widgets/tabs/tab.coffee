@@ -51,8 +51,8 @@ define (require) ->
     ###
     # @return [Void]
     ###
-    postRender: ->
-      #
+    postRefresh: ->
+      super()
 
     ###
     # @return [self]

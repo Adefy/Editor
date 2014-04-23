@@ -140,12 +140,12 @@ define (require) ->
     ###
     # @return [Void]
     ###
-    postRender: ->
+    postRefresh: ->
+      super()
       @_setupScrollbar()
       tab = _.find @_tabs, (t) -> t.selected
       if content = tab.content
-        if content.postRender
-          content.postRender()
+        content.postRefresh() if content.postRefresh
         if @_footerActive && content.renderFooter
           @getElement(".footer").html content.renderFooter()
 

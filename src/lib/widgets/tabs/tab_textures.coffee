@@ -79,8 +79,8 @@ define (require) ->
         texture = _.find project.textures, (t) -> t.getID() == textureId
 
         if texture
-          options = _.extend { x: e.pageX, y: e.pageY }, texture.getContextProperties()
-          new ContextMenu @ui, options
+          new ContextMenu @ui,
+            x: e.pageX, y: e.pageY, properties: texture.getContextProperties()
 
         e.preventDefault()
         false

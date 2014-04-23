@@ -180,7 +180,9 @@ define (require) ->
 
       viewMenu.createChild
         label: "Refresh"
-        click: => @refresh()
+        click: =>
+          @refresh()
+          @onResize()
         sectionEnd: true
 
       ###
