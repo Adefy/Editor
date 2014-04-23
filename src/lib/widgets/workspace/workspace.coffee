@@ -430,7 +430,6 @@ define (require) ->
           document.body.style.cursor = "pointer"
 
       @draggerRotate.setOnDragEnd (d) =>
-
         document.body.style.cursor = "auto"
 
         if d.getUserData()
