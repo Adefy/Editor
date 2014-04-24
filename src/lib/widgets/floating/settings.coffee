@@ -36,7 +36,7 @@ define (require) ->
       @_settings = param.required options.settings
       @_doneCB = param.required options.cb
 
-      super @ui, title: "", classes: "settings-widget"
+      super @ui, title: "", extraClasses: ["settings-widget"]
 
       @setAnimateSpeed 300
       @setCloseOnFocusLoss()
@@ -105,7 +105,7 @@ define (require) ->
       _.zipObject settings, values
 
     getVisibleY: ->
-      $("#editor > header").height()
+      $("body > header").height()
 
     getHiddenY: ->
       @getVisibleY() - @getElement().height()
