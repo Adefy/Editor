@@ -31,41 +31,40 @@ define (require) ->
     # @param [Vec2]
     # @return [Vec2]
     ###
-    add: (other) ->
-      new Vec2 @x + other.x, @y + other.y
+    add: (other) -> new Vec2 @x + other.x, @y + other.y
 
     ###
     # @param [Vec2]
     # @return [Vec2]
     ###
-    sub: (other) ->
-      new Vec2 @x - other.x, @y - other.y
+    sub: (other) -> new Vec2 @x - other.x, @y - other.y
 
     ###
     # @param [Vec2]
     # @return [Vec2]
     ###
-    mul: (other) ->
-      new Vec2 @x * other.x, @y * other.y
+    mul: (other) -> new Vec2 @x * other.x, @y * other.y
 
     ###
     # @param [Vec2]
     # @return [Vec2]
     ###
-    div: (other) ->
-      new Vec2 @x / other.x, @y / other.y
+    div: (other) -> new Vec2 @x / other.x, @y / other.y
 
     ###
     # @return [Vec2]
     ###
-    floor: ->
-      new Vec2 Math.floor(@x), Math.floor(@y)
+    floor: -> new Vec2 Math.floor(@x), Math.floor(@y)
 
     ###
     # @return [Vec2]
     ###
-    ceil: ->
-      new Vec2 Math.ceil(@x), Math.ceil(@y)
+    ceil: -> new Vec2 Math.ceil(@x), Math.ceil(@y)
+
+    ###
+    # @return [Vec2]
+    ###
+    @zero: -> new Vec2 0, 0
 
     ###
     # Dump the current Vec2 to a basic Object
