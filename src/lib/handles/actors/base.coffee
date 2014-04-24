@@ -551,7 +551,7 @@ define (require) ->
       param.required time
       param.required deltas
 
-      @_propBuffer[Math.floor(time)] = @_serializeProperties deltas
+      _.extend @_propBuffer[Math.floor(time)], @_serializeProperties deltas
 
     ###
     # Helper function to call a cb for each property. Useful to avoid writing
@@ -975,7 +975,6 @@ define (require) ->
     # @private
     ###
     _updatePropBuffer: ->
-      return if @isBirth @_lastTemporalState
 
       # If we have anything to save, ship to our buffer, and create a new
       # animation entry.
@@ -995,8 +994,8 @@ define (require) ->
           deltaEndTime = @_lastTemporalState
 
           ###
-          # Check if there is another animation after us; if so, move its start
-          # position up
+          # Check if there is another animation after us; if so, update its
+          # starting point.
           ###
           if (nextAnim = @findNearestState @_lastTemporalState, true, p) != -1
 
@@ -1005,15 +1004,17 @@ define (require) ->
 
             @setAnimationStart @_animations[nextAnim][p], startTime, startP
 
-          ###
-          # Finally, create new animation
-          ###
-          @_animations[@_lastTemporalState] ||= {}
-          @_animations[@_lastTemporalState][p] = @createNewAnimation
-            start: deltaStartTime
-            end: deltaEndTime
-            startSnapshot: @_propBuffer[deltaStartTime][p]
-            endSnapshot: @_propBuffer[deltaEndTime][p]
+          unless deltaStartTime == -1
+
+            ###
+            # Create a new transition if there is another state to the left
+            ###
+            @_animations[@_lastTemporalState] ||= {}
+            @_animations[@_lastTemporalState][p] = @createNewAnimation
+              start: deltaStartTime
+              end: deltaEndTime
+              startSnapshot: @_propBuffer[deltaStartTime][p]
+              endSnapshot: @_propBuffer[deltaEndTime][p]
 
     ###
     # Return animations array
