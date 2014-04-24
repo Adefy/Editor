@@ -112,20 +112,21 @@ define (require) ->
       @_items.map((i) -> i.render()).join ""
 
     ###
-    # postRefresh! Calls all the child postRefresh
-    ###
-    postRefresh: ->
-      super()
-      for item in @_items
-        item.postRefresh() if item.postRefresh
-
-    ###
     # Render the HTML content and replace it
     ###
     refresh: ->
       @getElement().html @render()
       @refreshVisible()
       @postRefresh()
+
+    ###
+    # postRefresh! Calls all the child postRefresh
+    ###
+    postRefresh: ->
+      super()
+      @setWidth @getElement().width()
+      for item in @_items
+        item.postRefresh() if item.postRefresh
 
     refreshStub: ->
       super()
@@ -147,8 +148,9 @@ define (require) ->
     # @param [Number] width
     ###
     setWidth: (width) ->
-      @getElement().width width
-      @_width = @getElement().width()
+      elem = @getElement()
+      elem.width width
+      @_width = elem.width()
       @_hiddenX = -(@_width - 40)
       @_visibleX = 0
 

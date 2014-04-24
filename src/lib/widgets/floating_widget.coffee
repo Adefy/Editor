@@ -151,7 +151,7 @@ define (require) ->
       @hide()
 
       setTimeout =>
-        @getElement().remove()
+        @removeElement()
       , @_animateSpeed * 2
 
     minimize: ->

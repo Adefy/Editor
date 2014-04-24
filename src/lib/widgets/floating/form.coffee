@@ -91,6 +91,9 @@ define (require) ->
 
       @getElement("*[name=\"#{d}\"]").val v for d, v of delta
 
+    ###
+    # @return [String]
+    ###
     render: ->
       super() +
       TemplateModal
