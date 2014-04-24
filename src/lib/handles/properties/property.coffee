@@ -16,6 +16,7 @@ define (require) ->
 
       @data_type = type
       @data_value = null
+      @visible_in_toolbar = true
 
     ###
     # Fetch type
@@ -24,6 +25,21 @@ define (require) ->
     ###
     getType: ->
       @data_type
+
+    ###
+    # Check if we should be shown in the toolbar
+    #
+    # @return [Boolean] visible
+    ###
+    showInToolbar: -> @visible_in_toolbar
+
+    ###
+    # Set if we should be displayed in the toolbar
+    #
+    # @param [Boolean] visible
+    ###
+    setVisibleInToolbar: (visible) ->
+      @visible_in_toolbar = visible
 
     ###
     # Fetch our value; requests an update before returning

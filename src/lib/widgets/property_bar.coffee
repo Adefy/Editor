@@ -145,8 +145,11 @@ define (require) ->
 
       # Bring together all non-composites and render them under the "Basic"
       # label
-      nonComposites = _.filter properties, (p) -> p[1].getType() != "composite"
-      composites = _.filter properties, (p) -> p[1].getType() == "composite"
+      nonComposites = _.filter properties, (p) ->
+        p[1].getType() != "composite" and p[1].showInToolbar()
+
+      composites = _.filter properties, (p) ->
+        p[1].getType() == "composite" and p[1].showInToolbar()
 
       if nonComposites.length > 0
         fakeControl = new CompositeProperty()

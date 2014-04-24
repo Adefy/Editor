@@ -141,6 +141,7 @@ define (require) ->
         @setValue me._AJSActor.getOpacity() if me._AJSActor
 
       @_properties.rotation = new NumericProperty()
+      @_properties.rotation.setVisibleInToolbar false
       @_properties.rotation.onUpdate = (rotation) =>
         @_AJSActor.setRotation rotation if @_AJSActor
       @_properties.rotation.requestUpdate = ->
