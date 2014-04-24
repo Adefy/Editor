@@ -4,6 +4,8 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
 
+  Storage = require "storage"
+
   Asset = require "handles/asset"
   Texture = require "handles/texture"
   BaseActor = require "handles/actors/base"
@@ -14,6 +16,7 @@ define (require) ->
   FloatingTextureSelect = require "widgets/floating/texture_select"
   Modal = require "widgets/floating/form"
   SettingsWidget = require "widgets/floating/settings"
+
 
   TemplateModalAddTextures = require "templates/modal/add_textures"
   TemplateModalBackgroundColor = require "templates/modal/background_color"
@@ -32,6 +35,7 @@ define (require) ->
   class ModalManager extends EditorObject
 
     constructor: (@ui) ->
+      #
 
     ###
     # @param [Handle] handle
@@ -53,7 +57,7 @@ define (require) ->
         nameId: nameId
         name: handle.getName()
 
-      new Modal
+      new Modal @ui,
         title: "Rename"
         mini: true
         content: _html
@@ -101,7 +105,7 @@ define (require) ->
       # Randomized input name
       name = ID.prefID "_tPreviewRate"
 
-      new Modal
+      new Modal @ui,
         title: "Set Preview Framerate"
         content: TemplateModalSetPreviewFPS
           previewFPS: @ui.timeline.getPreviewFPS()
@@ -123,7 +127,7 @@ define (require) ->
       # Randomized input name
       name = ID.prefID "_tPreviewRate"
 
-      new Modal
+      new Modal @ui,
         title: "Set Export Framerate"
         content: TemplateModalSetPreviewFPS
           previewFPS: @ui.timeline.getPreviewFPS()
@@ -157,7 +161,7 @@ define (require) ->
       if workspace._pOrientation == "land" then chL = "checked=\"checked\""
       else chP = "checked=\"checked\""
 
-      new Modal
+      new Modal @ui,
         title: "Set Screen Properties"
         content: TemplateModalWorkspaceScreenSize
           cSize: cSize
@@ -221,7 +225,7 @@ define (require) ->
 
       _html =
 
-      new Modal
+      new Modal @ui,
         title: "Set Background Color"
         content: TemplateModalBackgroundColor
           hex: hex
@@ -303,7 +307,7 @@ define (require) ->
       textnameID = ID.prefID "_wtexture"
       textpathID = ID.prefID "_wtext"
 
-      new Modal
+      new Modal @ui,
         title: "Add Textures ..."
         content: TemplateModalAddTextures
           textnameID: textnameID
@@ -337,7 +341,7 @@ define (require) ->
           name: texture.getName()
         }
 
-      new FloatingTextureSelect textures, actor
+      new FloatingTextureSelect @ui, textures, actor
 
     ###
     # @return [Void]
@@ -363,7 +367,7 @@ define (require) ->
           textures.push texture
 
         @ui.workspace.loadTextures(textures)
-        @ui.pushEvent "upload.textures"
+        @ui.pushEvent "upload.textures", textures: textures
 
         cb blob if cb = options.cb
 
@@ -372,7 +376,7 @@ define (require) ->
     ###
     showPrefSettings: ->
 
-      new SettingsWidget
+      new SettingsWidget @ui,
         title: "Preferences"
         settings: [
           label: "Autosave Frequency (s)"
@@ -431,7 +435,7 @@ define (require) ->
           actor.getProperty("physics").friction.setValue data.friction / 100
 
     showOpenProject: ->
-      new Modal
+      new Modal @ui,
         title: "Open Project"
         content: TemplateModalOpenProject()
 
@@ -440,7 +444,7 @@ define (require) ->
     ###
     showEditHistory: ->
 
-      new Modal
+      new Modal @ui,
         title: "Edit History"
         content: TemplateModalEditHistory()
 
@@ -449,7 +453,7 @@ define (require) ->
     ###
     showHelpAbout: ->
 
-      new Modal
+      new Modal @ui,
         title: "About"
         content: TemplateModalHelpAbout
           version: Version.STRING
@@ -459,6 +463,6 @@ define (require) ->
     ###
     showHelpChangeLog: ->
 
-      new Modal
+      new Modal @ui,
         title: "Change Log"
         content: TemplateModalHelpChangeLog changes: ChangeLog.changes

@@ -5,7 +5,8 @@ define (require) ->
 
   AUtilLog = require "util/log"
   Handle = require "handles/handle"
-  Bezier = require "widgets/timeline/bezier"
+  Bezier = require "handles/bezier"
+  Project = require "project"
 
   CompositeProperty = require "handles/properties/composite"
   NumericProperty = require "handles/properties/numeric"
@@ -15,20 +16,24 @@ define (require) ->
   window.BaseActor = class BaseActor extends Handle
 
     ###
-    # @property [Number] accuracy the number of digits we round animations to
+    # @property [Number] accuracy the number of digits animations round-off to
     ###
-    ACCURACY: 4
+    ACCURACY: config.precision.animation
 
+    ###
     # Defines a raw actor, with no shape information or any other presets.
     # This serves as the base for the other actor classes
     #
     # @param [UIManager] ui
     # @param [Number] lifetimeStart_ms time at which we are created, in ms
     # @param [Number] lifetimeEnd_ms time we are destroyed, defaults to end of ad
+    ###
     constructor: (@ui, lifetimeStart, lifetimeEnd) ->
       param.required @ui
 
       super()
+
+      @handleType = "BaseActor"
 
       @_AJSActor = null
       @setName "Base Actor #{@_id_n}"
@@ -80,34 +85,98 @@ define (require) ->
 
 
       @_ctx = _.extend @_ctx,
-        "Copy": => @_contextFuncCopy @
-        "Duplicate": => @_contextFuncDuplicate @
-        "Set Texture...": => @_contextFuncSetTexture @
-        "Physics...": => @_contextFuncEditPhysics @
+        copy:
+          name: "Copy"
+          cb: => @_contextFuncCopy @
+        dup:
+          name: "Duplicate"
+          cb: => @_contextFuncDuplicate @
+        setTexture:
+          name: "Set Texture..."
+          cb: => @_contextFuncSetTexture @
+        editPhysics:
+          name: "Physics..."
+          cb: => @_contextFuncEditPhysics @
 
+      @initPropertyOpacity()
+      @initPropertyRotation()
+      @initPropertyPosition()
+      @initPropertyLayer()
+      @initPropertyColor()
+      @initPropertyPhysics()
+
+    ###
+    # Initialize Actor Opacity properties
+    ###
+    initPropertyOpacity: ->
+      me = @
+
+      @_properties.opacity = new NumericProperty()
+      @_properties.opacity.setMin 0.0
+      @_properties.opacity.setMax 1.0
+      @_properties.opacity.setValue 1.0
+      @_properties.opacity.setPlaceholder 1.0
+      @_properties.opacity.setFloat true
+      @_properties.opacity.setPrecision config.precision.opacity
+      @_properties.opacity.onUpdate = (opacity) =>
+        @_AJSActor.setOpacity opacity if @_AJSActor
+      @_properties.opacity.requestUpdate = ->
+        @setValue me._AJSActor.getOpacity() if me._AJSActor
+
+    ###
+    # Initialize Actor Rotation properties
+    ###
+    initPropertyRotation: ->
+      me = @
+
+      @_properties.rotation = new NumericProperty()
+      @_properties.rotation.setMin 0
+      @_properties.rotation.setMax 360
+      @_properties.rotation.setPrecision config.precision.rotation
+      @_properties.rotation.onUpdate = (rotation) =>
+        @_AJSActor.setRotation rotation if @_AJSActor
+      @_properties.rotation.requestUpdate = ->
+        @setValue me._AJSActor.getRotation() if me._AJSActor
+
+    ###
+    # Initialize Actor Position properties
+    ###
+    initPropertyPosition: ->
       me = @
 
       @_properties.position = new CompositeProperty()
+      @_properties.position.icon = config.icon.property_position
       @_properties.position.x = new NumericProperty()
       @_properties.position.y = new NumericProperty()
 
+      @_properties.position.x.setPrecision config.precision.position
       @_properties.position.x.onUpdate = (value) =>
         return unless @_AJSActor
         position = @_AJSActor.getPosition()
         position.x = value
         @_AJSActor.setPosition position
 
+      @_properties.position.y.setPrecision config.precision.position
       @_properties.position.y.onUpdate = (value) =>
         return unless @_AJSActor
         position = @_AJSActor.getPosition()
         position.y = value
         @_AJSActor.setPosition position
 
+      @_properties.position.addProperty "x", @_properties.position.x
+      @_properties.position.addProperty "y", @_properties.position.y
+
+    ###
+    # Initialize Actor Layer properties
+    ###
+    initPropertyLayer: ->
+      me = @
+
       @_properties.layer = new CompositeProperty()
       @_properties.layer.icon = config.icon.property_layer
       @_properties.layer.main = new NumericProperty()
       @_properties.layer.main.setValue 0
-      @_properties.layer.main.setPrecision 0
+      @_properties.layer.main.setPrecision config.precision.layer
 
       @_properties.layer.physics = new NumericProperty()
       @_properties.layer.physics.clone @_properties.layer.main
@@ -128,55 +197,14 @@ define (require) ->
       @_properties.layer.addProperty "physics",
         @_properties.layer.physics
 
-
-      @_properties.opacity = new NumericProperty()
-      @_properties.opacity.setMin 0.0
-      @_properties.opacity.setMax 1.0
-      @_properties.opacity.setValue 1.0
-      @_properties.opacity.setPlaceholder 1.0
-      @_properties.opacity.setFloat true
-      @_properties.opacity.setPrecision 6
-      @_properties.opacity.onUpdate = (opacity) =>
-        @_AJSActor.setOpacity opacity if @_AJSActor
-      @_properties.opacity.requestUpdate = ->
-        @setValue me._AJSActor.getOpacity() if me._AJSActor
-
-      @_properties.rotation = new NumericProperty()
-      @_properties.rotation.setVisibleInToolbar false
-      @_properties.rotation.onUpdate = (rotation) =>
-        @_AJSActor.setRotation rotation if @_AJSActor
-      @_properties.rotation.requestUpdate = ->
-        @setValue me._AJSActor.getRotation() if me._AJSActor
-
-      @_properties.position = new CompositeProperty()
-      @_properties.position.icon = config.icon.property_position
-      @_properties.position.x = new NumericProperty()
-      @_properties.position.y = new NumericProperty()
-
-      @_properties.position.x.setPrecision 0
-      @_properties.position.x.onUpdate = (value) =>
-        return unless @_AJSActor
-        position = @_AJSActor.getPosition()
-        position.x = value
-        @_AJSActor.setPosition position
-
-      @_properties.position.y.setPrecision 0
-      @_properties.position.y.onUpdate = (value) =>
-        return unless @_AJSActor
-        position = @_AJSActor.getPosition()
-        position.y = value
-        @_AJSActor.setPosition position
-
-      @_properties.position.x.requestUpdate = ->
-        @setValue me._AJSActor.getPosition().x if me._AJSActor
-
-      @_properties.position.y.requestUpdate = ->
-        @setValue me._AJSActor.getPosition().y if me._AJSActor
-
-      @_properties.position.addProperty "x", @_properties.position.x
-      @_properties.position.addProperty "y", @_properties.position.y
+    ###
+    # Initialize Actor Color properties
+    ###
+    initPropertyColor: ->
+      me = @
 
       @_properties.color = new CompositeProperty()
+      @_properties.color.icon = config.icon.property_color
 
       ##
       ## Temporary, untill we have a color picker
@@ -192,6 +220,7 @@ define (require) ->
       @_properties.color.r.setFloat false
       @_properties.color.r.setPlaceholder 255
       @_properties.color.r.setValue 255
+      @_properties.color.r.setPrecision config.precision.color
 
       @_properties.color.g = new NumericProperty()
       @_properties.color.b = new NumericProperty()
@@ -229,14 +258,23 @@ define (require) ->
       @_properties.color.addProperty "g", @_properties.color.g
       @_properties.color.addProperty "b", @_properties.color.b
 
+    ###
+    # Initialize Actor Physics properties
+    ###
+    initPropertyPhysics: ->
+      me = @
 
       @_properties.physics = new CompositeProperty()
+      @_properties.physics.icon = config.icon.property_physics
+      @_properties.physics.setVisibleInToolbar false
+
       @_properties.physics.mass = new NumericProperty()
       @_properties.physics.mass.setVisibleInToolbar false
 
       @_properties.physics.mass.setMin 0
       @_properties.physics.mass.setPlaceholder 50
       @_properties.physics.mass.setValue 50
+      @_properties.physics.mass.setPrecision config.precision.physics_mass
 
       @_properties.physics.mass.onUpdate = (mass) =>
         @_AJSActor.setMass mass if @_AJSActor
@@ -245,7 +283,7 @@ define (require) ->
       @_properties.physics.elasticity.setVisibleInToolbar false
       @_properties.physics.elasticity.setMin 0
       @_properties.physics.elasticity.setMax 1
-      @_properties.physics.elasticity.setPrecision 6
+      @_properties.physics.elasticity.setPrecision config.precision.physics_elasticity
       @_properties.physics.elasticity.setPlaceholder 0.3
       @_properties.physics.elasticity.setValue 0.3
 
@@ -256,7 +294,7 @@ define (require) ->
       @_properties.physics.friction.setVisibleInToolbar false
       @_properties.physics.friction.setMin 0
       @_properties.physics.friction.setMax 1
-      @_properties.physics.friction.setPrecision 6
+      @_properties.physics.friction.setPrecision config.precision.physics_friction
       @_properties.physics.friction.setPlaceholder 0.2
       @_properties.physics.friction.setValue 0.2
 
@@ -468,11 +506,8 @@ define (require) ->
     # @param [Texture] texture
     ###
     setTexture: (@_texture) ->
-      if @_texture
-        @_AJSActor.setTexture @_texture.getUID()
-      else
-        @_AJSActor.setTexture null
-
+      @_textureUID = @_texture.getUID()
+      @_AJSActor.setTexture @_texture.getUID() if @_texture
       @updateInTime()
 
     ###
@@ -480,8 +515,10 @@ define (require) ->
     # @param [String] uid
     ###
     setTextureByUID: (uid) ->
-      texture = _.find @ui.editor.getProject().textures, (t) ->
+      texture = _.find Project.current.getTextures(), (t) ->
         t.getUID() == uid
+
+      @_textureUID = uid
 
       try
         @setTexture texture
@@ -496,7 +533,7 @@ define (require) ->
     # @return [String] uid
     ###
     getTextureUID: ->
-      @_AJSActor.getTexture()
+      @_textureUID
 
     ###
     # Used when exporting, executes the corresponding property genAnimationOpts
@@ -1070,20 +1107,26 @@ define (require) ->
     #   @optional
     # @return [Number] time
     ###
-    findPrecedingAnimation: (source, property) ->
+    findPrecedingAnimationTime: (source, property) ->
       times = _.keys @_animations
       times.sort (a, b) -> a - b
 
       index = _.findIndex times, (t) -> Number(t) == source
 
-      if index > 0
-        if property != undefined
+      if property != undefined
+        if (index > 0 && (index < times.length))
           for i in [(index-1)..0]
             time = times[i]
             if @_animations[time] && @_animations[time][property]
               return time
         else
+          return _.find times.reverse(), (t) ->
+            source > Number(t) && (@_animations[t] && @_animations[t][property])
+      else
+        if (index > 0 && (index < times.length))
           return times[index - 1]
+        else
+          return _.find times.reverse(), (t) -> source > Number(t)
 
       null
 
@@ -1095,22 +1138,50 @@ define (require) ->
     #   @optional
     # @return [Number] time
     ###
-    findSucceedingAnimation: (source, property) ->
+    findSucceedingAnimationTime: (source, property) ->
       times = _.keys @_animations
       times.sort (a, b) -> a - b
 
       index = _.findIndex times, (t) -> Number(t) == source
 
-      if index > -1 and index < times.length - 1
-        if property != undefined
+      if property != undefined
+        if (index >= 0 && (index < times.length-1))
           for i in [(index+1)..(times.length-1)]
             time = times[i]
             if @_animations[time] && @_animations[time][property]
               return time
         else
+          return _.find times, (t) ->
+            Number(t) > source && (@_animations[t] && @_animations[t][property])
+      else
+        if (index >= 0 && (index < times.length-1))
           return times[index + 1]
+        else
+          return _.find times, (t) -> Number(t) > source
 
       null
+
+    ###
+    # Retrieve the nearest animation based on a source time
+    # @return [Object] animation
+    ###
+    getNearestAnimationTime: (source, options) ->
+      options = param.optional options, {}
+      time = null
+
+      if options.right
+        time = @findSucceedingAnimationTime(source, options.property)
+      else if options.left
+        time = @findPrecedingAnimationTime(source, options.property)
+      else
+        lefttime = @findPrecedingAnimationTime(source, options.property)
+        righttime = @findSucceedingAnimationTime(source, options.property)
+        if (source - lefttime) < (righttime - source)
+          time = lefttime
+        else
+          time = righttime
+
+      time
 
     ###
     # Find the nearest prop buffer entry to the left/right of the supplied state
@@ -1150,8 +1221,8 @@ define (require) ->
 
       currentAnim = null
 
-      succAnim = @findSucceedingAnimation frametime, property
-      predAnim = @findPrecedingAnimation frametime, property
+      succAnim = @findSucceedingAnimationTime frametime, property
+      predAnim = @findPrecedingAnimationTime frametime, property
 
       # if a current frame exists...
       if @_animations[frametime]
@@ -1285,38 +1356,63 @@ define (require) ->
           @_properties[p]._value = props[p].value
 
     ###
-    # Dump actor into basic Object
-    #
-    # @return [Object] actorJSON
+    # Deletes us, muahahahaha. We notify the workspace, clear the properties
+    # panel if it is targetting us, and destroy our actor.
     ###
-    dump: ->
-      data = super()
+    delete: ->
+      if @_AJSActor != null
 
-      data.propBuffer = @_propBuffer
-      data.birth = @lifetimeStart_ms
-      data.death = @lifetimeEnd_ms
-      data.texture = @getTextureUID()
-      data.animations = {}
+        # Notify the workspace
+        @ui.workspace.notifyDemise @
 
-      for time, properties of @_animations
-        animationSet = {}
+        # Go through and remove ourselves from
+        @_AJSActor.destroy()
+        @_AJSActor = null
 
-        for property, propAnimation of properties
+      super()
 
-          if propAnimation.components
-            animationData = components: {}
+    ###
+    # Make a clone of the current Actor
+    # @return [BaseActor]
+    ###
+    duplicate: ->
 
-            for component, animation of propAnimation.components
-              animationData.components[component] = animation.dump()
+      dumpdata = @dump()
+      window[dumpdata.type].load @ui, dumpdata
 
-          else
-            animationData = propAnimation.dump()
+    ###
+    # Set Texture context menu function
+    # @param [BaseActor] actor
+    ###
+    _contextFuncSetTexture: (actor) ->
+      @ui.modals.showSetTexture actor
+      @
 
-          animationSet[property] = animationData
+    ###
+    # Copy the current actor to the clipboard
+    # @param [BaseActor] actor
+    ###
+    _contextFuncCopy: (actor) ->
+      window.AdefyEditor.clipboard =
+        type: "actor"
+        reason: "copy"
+        data: @
 
-        data.animations[time] = animationSet
+      @
 
-      data
+    ###
+    # Immediately copy and paste the current actor into the workspace
+    # @param [BaseActor] actor
+    ###
+    _contextFuncDuplicate: (actor) ->
+
+      newActor = actor.duplicate()
+      newActor.setName(newActor.getName() + " copy")
+      pos = newActor.getPosition()
+      newActor.setPosition pos.x + 16, pos.y + 16
+
+      @ui.workspace.addActor newActor
+      @
 
     ###
     # Goes through and makes sure that our birth state contains an entry for
@@ -1366,6 +1462,41 @@ define (require) ->
             delete @_propBuffer[entry]
 
     ###
+    # Dump actor into basic Object
+    #
+    # @return [Object] actorJSON
+    ###
+    dump: ->
+      data = super()
+
+      data.actorBaseVersion = "1.0.0"
+      data.propBuffer = @_propBuffer
+      data.birth = @lifetimeStart_ms
+      data.death = @lifetimeEnd_ms
+      data.texture = @getTextureUID()
+      data.animations = {}
+
+      for time, properties of @_animations
+        animationSet = {}
+
+        for property, propAnimation of properties
+
+          if propAnimation.components
+            animationData = components: {}
+
+            for component, animation of propAnimation.components
+              animationData.components[component] = animation.dump()
+
+          else
+            animationData = propAnimation.dump()
+
+          animationSet[property] = animationData
+
+        data.animations[time] = animationSet
+
+      data
+
+    ###
     # Loads properties, animations, and a prop buffer from a saved state
     #
     # @param [Object] data
@@ -1407,40 +1538,6 @@ define (require) ->
       @
 
     ###
-    # Deletes us, muahahahaha. We notify the workspace, clear the properties
-    # panel if it is targetting us, and destroy our actor.
-    ###
-    delete: ->
-      if @_AJSActor != null
-
-        # Notify the workspace
-        @ui.workspace.notifyDemise @
-
-        # Go through and remove ourselves from
-        @_AJSActor.destroy()
-        @_AJSActor = null
-
-      super()
-
-    ###
-    # Make a clone of the current Actor
-    # @return [BaseActor]
-    ###
-    duplicate: ->
-
-      dumpdata = @dump()
-      window[dumpdata.type].load @ui, dumpdata
-
-    ###
-    # Set Texture context menu function
-    # @param [BaseActor] actor
-    ###
-    _contextFuncSetTexture: (actor) ->
-      @ui.modals.showSetTexture actor
-
-      @
-
-    ###
     # Open a settings widget for physics editing
     # @param [BaseActor] actor
     ###
@@ -1448,30 +1545,8 @@ define (require) ->
       @ui.modals.showEditActorPsyx actor
       @
 
-    ###
-    # Copy the current actor to the clipboard
-    # @param [BaseActor] actor
-    ###
-    _contextFuncCopy: (actor) ->
+###
+@Changelog
 
-      window.AdefyEditor.clipboard =
-        type: "actor"
-        reason: "copy"
-        data: @
-
-      @
-
-    ###
-    # Immediately copy and paste the current actor into the workspace
-    # @param [BaseActor] actor
-    ###
-    _contextFuncDuplicate: (actor) ->
-
-      newActor = actor.duplicate()
-      newActor.setName(newActor.getName() + " copy")
-      pos = newActor.getPosition()
-      newActor.setPosition pos.x + 16, pos.y + 16
-
-      @ui.workspace.addActor newActor
-
-      @
+  - "1.0.0": Initial
+###

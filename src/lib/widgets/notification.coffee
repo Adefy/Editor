@@ -39,7 +39,8 @@ define (require) ->
     # @param [Number] color notification color
     # @param [Number] life lifetime length in ms, defaults to 2000
     ###
-    constructor: (msg, color, life) ->
+    constructor: (@ui, options) ->
+      #msg, color, life
       param.required msg
       color = param.optional color, "blue", [ "blue", "red", "green" ]
       life = param.optional life, 2000
@@ -52,12 +53,12 @@ define (require) ->
 
         $(document).on "click", ".anotification .icon-remove", ->
           target = $("body").data("##{$(@).parent().attr("id")}")
-          if target != undefined then target.killMe()
+          if target != undefined then target.remove()
 
         Notification._listenersRegistered = true
 
       # Create object
-      super
+      super @ui,
         id: ID.prefID("anotification")
         classes: [ "anotification" ]
 
@@ -81,7 +82,7 @@ define (require) ->
       # Show
       @getElement().show()
       @getElement().animate { opacity: 1 }, 200, =>
-        @timeout = setTimeout (=> @killMe() ), life
+        @timeout = setTimeout (=> @remove() ), life
 
       # Notify others of our existence
       Notification.count++
@@ -91,7 +92,7 @@ define (require) ->
     # A tad morbid, but descriptive. Hides us, clears out the HTML and decrements
     # the counter
     ###
-    killMe: ->
+    remove: ->
 
       if @timeout != null then clearInterval @timeout
 

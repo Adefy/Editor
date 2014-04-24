@@ -9,7 +9,7 @@ define (require) ->
     ###
     dump: ->
       {
-        dumpVersion: "1.0.0"
+        dumpVersion: "1.1.0"
       }
 
     ###
@@ -38,3 +38,11 @@ define (require) ->
     deserialize: (raw) ->
       param.required raw
       @load JSON.parse raw
+
+###
+@Changlog
+
+  - "1.0.0": Initial
+  - "1.1.0": dumpVersion bump
+
+###

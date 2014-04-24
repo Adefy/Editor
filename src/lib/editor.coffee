@@ -1,8 +1,8 @@
 define (require) ->
 
   config = require "config"
-  AUtilLog = require "util/log"
   param = require "util/param"
+  AUtilLog = require "util/log"
 
   Storage = require "storage"
 
@@ -14,7 +14,7 @@ define (require) ->
 
   Notification = require "widgets/notification"
 
-  Bezier = require "widgets/timeline/bezier"
+  Bezier = require "handles/bezier"
   Project = require "project"
 
   class Editor
@@ -38,8 +38,6 @@ define (require) ->
       return unless @checkForLocalStorage()
       return unless @checkForCreativePayload()
 
-      AUtilLog.info "Adefy Editor created id(#{config.selector})"
-
       @widgets = []
       @ui = new UIManager @
 
@@ -57,10 +55,19 @@ define (require) ->
       @settings = {}
       @refreshSettings()
 
-      @project = new Project @ui, window.ADEFY_EDITOR_CREATIVE_PAYLOAD, =>
-        @project.loadNewestSnapshot()
+      AUtilLog.debug "Adefy Editor created"
+
+    ###
+    # Call after creating the editor, this ensures the top level is set
+    # @return [self]
+    ###
+    init: ->
+      @project = new Project @ui, window.ADEFY_EDITOR_CREATIVE_PAYLOAD, (p) =>
+        p.loadNewestSnapshot()
 
       @startAutosaveTask()
+
+      @
 
     ###
     # Get currently loaded project
@@ -121,14 +128,37 @@ define (require) ->
         maxcount: Number(Storage.get("editor.autosave.maxcount") || 10)
 
     ###
+    # @return [self]
+    ###
+    applySettings: (options) ->
+      restartAutosave = false
+      autosaveData = param.optional options.autosave, null
+      if autosaveData
+        freq = param.optional autosaveData.frequency, \
+                              @settings.autosave.frequency
+        if freq
+          @settings.autosave.frequency = freq
+          restartAutosave = true
+
+        maxcount = param.optional autosaveData.maxcount, \
+                                  @settings.autosave.maxcount
+        @settings.autosave.maxcount = maxcount
+
+      @startAutosaveTask() if restartAutosave
+
+      @saveSettings()
+      @
+
+    ###
     # Saves the settings to Local Storage
     # @return [Void]
     ###
     saveSettings: ->
       Storage.set("editor.autosave.frequency", @settings.autosave.frequency)
       Storage.set("editor.autosave.maxcount", @settings.autosave.maxcount)
+      #Storage.set("are.renderer.mode", @settings.are.rendererMode)
 
-      AUtilLog.info "Saved editor.settings"
+      AUtilLog.debug "Saved editor.settings"
 
       @
 
@@ -142,8 +172,10 @@ define (require) ->
     ###
     ###
     autosave: ->
-      AUtilLog.info "[Editor] auto-saving project"
-      @project.autosave()
+      AUtilLog.debug "[Editor] autosaving current project"
+      AUtilLog.debug "[Editor] autosave is disabled"
+      #@project.autosave()
+      #@project.snapshot()
       @
 
     ###
@@ -398,6 +430,7 @@ define (require) ->
 
     ###
     # Create a new Ad
+    # @return [self]
     ###
     fileNewAd: ->
       @newAd()
@@ -405,6 +438,7 @@ define (require) ->
 
     ###
     # Create a new Ad from Template
+    # @return [self]
     ###
     fileNewFromTemplate: ->
       #
@@ -412,6 +446,7 @@ define (require) ->
 
     ###
     # Open an existing ad
+    # @return [self]
     ###
     fileOpen: ->
       @ui.modals.showOpenProject()
@@ -419,6 +454,7 @@ define (require) ->
 
     ###
     # Save current ad
+    # @return [self]
     ###
     fileSave: ->
       @save()
@@ -426,28 +462,30 @@ define (require) ->
 
     ###
     # Save current ad, with new name
+    # @return [self]
     ###
     fileSaveAs: ->
       @
 
     ###
     # Export the current ad
+    # @return [self]
     ###
     fileExport: ->
       @export()
       @
 
-
     ###
+    # @return [self]
     ###
     startAutosaveTask: ->
-      editor = @
+      AUtilLog.debug "Starting autosave task"
 
-      autosaveTask = =>
-        setTimeout ->
-          editor.project.snapshot()
-          editor.ui.pushEvent "autosave"
-          autosaveTask()
-        , @settings.autosave.frequency
+      clearInterval @autosaveTaskID if @autosaveTaskID
 
-      autosaveTask()
+      @autosaveTaskID = setInterval =>
+        @autosave()
+        @ui.pushEvent "autosave"
+      , @settings.autosave.frequency
+
+      @

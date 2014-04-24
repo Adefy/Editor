@@ -1,8 +1,14 @@
 define (require) ->
 
+  config = require "config"
+  param = require "util/param"
+
   ID = require "util/id"
   AUtilLog = require "util/log"
-  param = require "util/param"
+
+  Storage = require "storage"
+
+  ParticleSystem = require "handles/particle_system"
 
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
@@ -16,35 +22,39 @@ define (require) ->
     ###
     # @type [BaseActor]
     ###
-    @_selectedActor: null
+    @_selectedActorID: null
 
     ###
     # Retrieves the currently selected actor, if any
     # @return [Id] actorId
     ###
-    @getSelectedActor: -> @_selectedActor
+    @getSelectedActorID: -> @_selectedActorID
 
     ###
     # Creates a new workspace if one does not already exist
     #
     # @param [UIManager] ui
     ###
-    constructor: (@ui) ->
+    constructor: (@ui, options) ->
       return unless @enforceSingleton()
       param.required @ui
 
-      super
+      super @ui,
         id: ID.prefID("workspace")
-        parent: "section#main"
+        parent: "section.main"
         classes: ["workspace"]
         prepend: true
 
+      ###
       # Keep track of spawned handle actor objects
+      # @type [Array<Handle>]
+      ###
       @actorObjects = []
 
-      # The canvas is fullscreen, minus the mainbar
-      @_canvasWidth = @getElement().width()
-      @_canvasHeight = $(window).height() - $(".menubar").height()
+      ###
+      # @type [Array<ParticleSystem>]
+      ###
+      @_particleSystems = []
 
       # Starting phone size is 800x480
       @_pWidth = 800
@@ -58,30 +68,29 @@ define (require) ->
       @_pickInProgress = false
       @_pickQueue = []
 
-      # Inject our canvas container, along with its status bar
-      # Although we currently don't add anything else to the container besides
-      # the canvas itself, it might prove useful in the future.
-      @getElement().html TemplateWorkspaceCanvasContainer()
+    postInit: ->
+      ## AJS overrides setting the renderer mode...
+      #mode = Storage.get("are.renderer.mode")
+      #mode = ARERenderer.rendererMode if mode == null
+      #ARERenderer.rendererMode = Number(mode)
+
+      # The canvas is fullscreen, minus the mainbar
+      sectionElement = $("section.main")
+      @_canvasWidth  = sectionElement.width()
+      @_canvasHeight = sectionElement.height()
 
       # Create an ARE instance on ourselves
       AUtilLog.info "Initializing AJS..."
       AJS.init =>
 
-        @_are = window.AdefyRE.Engine()._engine
+        @_are = AdefyRE.Engine()._engine
 
-        # window.AdefyRE.Engine().setLogLevel 4
+        # AdefyRE.Engine().setLogLevel 4
 
         @_engineInit()
         @_applyCanvasSizeUpdate()
 
-      , @_canvasWidth, @_canvasHeight, "aw-canvas-container"
-
-    ###
-    # Internal list of workspace actor objects (Handles)
-    #
-    # @return [Array<Handle>] actors
-    ###
-    getActors: -> @actorObjects
+      , @_canvasWidth, @_canvasHeight, config.id.are_canvas
 
     ###
     # Checks if a workspace has already been created, and returns false if one
@@ -93,6 +102,18 @@ define (require) ->
         return false
 
       Workspace.__exists = true
+
+    ###
+    # Internal list of workspace actor objects (Handles)
+    #
+    # @return [Array<Handle>] actors
+    ###
+    getActors: -> @actorObjects
+
+    ###
+    # @return [Array<ParticleSystem>] particle_systems
+    ###
+    getParticleSystems: -> @_particleSystems
 
     ###
     # Get ARE instance
@@ -137,34 +158,31 @@ define (require) ->
     getPhoneScale: -> @_pScale
 
     ###
-    # Adds an actor to the workspace
-    ###
-    addActor: (actor) ->
-      @actorObjects.push actor
-      @ui.pushEvent "workspace.add.actor", actor: actor
-
-    ###
     # Returns the currently selected actor's id
     # @return [Id] actorId
     ###
-    getSelectedActor: -> Workspace._selectedActor
+    getSelectedActorID: -> Workspace.getSelectedActorID()
 
     ###
     # Sets the selectedActor instance
     # @param [Id] actorId
+    # @return [self]
     ###
     setSelectedActor: (actor) ->
-      Workspace._selectedActor = actor.getID()
+      Workspace._selectedActorID = actor.getID()
 
     ###
     # Loads textures into ARE
     # @param [Array<Texture>] textures
+    # @return [self]
     ###
     loadTextures: (textures) ->
       @loadTexture texture for texture in textures
+      @
 
     ###
     # @param [Texture] texture
+    # @return [self]
     ###
     loadTexture: (texture) ->
       return AUtilLog.error "ARE not loaded, cannot load texture" unless @_are
@@ -172,12 +190,39 @@ define (require) ->
       AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, =>
         AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
 
-        @ui.pushEvent "update.textures"
+        @ui.pushEvent "load.texture", texture: texture
 
         # Refresh any actors that already have the texture assigned
         for actor in @actorObjects
           if actor.getTextureUID() == texture.getUID()
             actor.setTexture texture
+
+      @
+
+    ###
+    # Manually register an actor
+    #
+    # @param [BaseActor] handle
+    ###
+    addActor: (handle) ->
+      param.required handle
+
+      @actorObjects.push handle
+      @ui.pushEvent "workspace.add.actor", actor: handle
+      @
+
+    #removeActor: (handle) ->
+
+    ###
+    # Add a new Particle System to the list
+    # @return [self]
+    ###
+    addParticleSystem: (ps) ->
+      @_particleSystems.push ps
+      @ui.pushEvent "workspace.add.particle_system", ps: ps
+      # ParticleSystems are still a kind of actor.
+      @addActor ps
+      @
 
     ###
     # Converts document-relative coordinates to ARE coordinates
@@ -214,7 +259,9 @@ define (require) ->
       functions =
         newActor:
           name: "New Actor +"
-          cb: => new ContextMenu x, y, @getNewActorCtxMenu x, y
+          cb: =>
+            new ContextMenu @ui,
+              x: x, y: y, properties: @getNewActorCtxMenu(x, y)
 
       if config.use.particle_system
         functions.newParticleSystem =
@@ -229,18 +276,20 @@ define (require) ->
 
             @addParticleSystem ps
 
-      if AdefyEditor.clipboard && AdefyEditor.clipboard.type == "actor"
-        functions["Paste"] = =>
+      if @ui.editor.clipboard && @ui.editor.clipboard.type == "actor"
+        functions.paste =
+          name: "Paste"
+          cb: =>
 
-          pos = @domToGL(x, y)
-          pos.x += ARERenderer.camPos.x
-          pos.y += ARERenderer.camPos.y
+            pos = @domToGL(x, y)
+            pos.x += ARERenderer.camPos.x
+            pos.y += ARERenderer.camPos.y
 
-          newActor = AdefyEditor.clipboard.data.duplicate()
-          newActor.setPosition pos.x, pos.y
-          newActor.setName(newActor.getName() + " copy")
+            newActor = @ui.editor.clipboard.data.duplicate()
+            newActor.setPosition pos.x, pos.y
+            newActor.setName(newActor.getName() + " copy")
 
-          @addActor newActor
+            @addActor newActor
 
       {
         name: "Workspace"
@@ -264,12 +313,15 @@ define (require) ->
       {
         name: "New Actor"
         functions:
-          "Rectangle Actor": =>
-            @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
-          "Polygon Actor": =>
-            @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
-          "Triangle Actor": =>
-            @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
+          rectActor:
+            name: "Rectangle Actor"
+            cb: => @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
+          polyActor:
+            name: "Polygon Actor"
+            cb: => @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
+          trinActor:
+            name: "Triangle Actor"
+            cb: => @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
       }
 
 
@@ -334,9 +386,11 @@ define (require) ->
             if actor
               unless _.isEmpty actor.getContextProperties()
                 @dragger.forceDragEnd()
-                new ContextMenu x, y, actor.getContextProperties()
+                new ContextMenu @ui,
+                  x: x , y: y, properties: actor.getContextProperties()
           else
-            new ContextMenu x, y, @getWorkspaceCtxMenu x, y
+            new ContextMenu @ui,
+              x: x , y: y, properties: @getWorkspaceCtxMenu(x, y)
 
         e.preventDefault()
         false
@@ -347,6 +401,14 @@ define (require) ->
     _regListeners: ->
 
       @_bindContextClick()
+
+      $(document).on "mousemove", ".workspace canvas", (e) =>
+        pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
+
+        pos.x += ARERenderer.camPos.x
+        pos.y += ARERenderer.camPos.y
+
+        $(".workspace .cursor-position").text "x: #{pos.x}, y: #{pos.y}"
 
       ###
       # Workspace drag
@@ -518,11 +580,8 @@ define (require) ->
 
           actor = @getActorFromPick r, g, b
           if actor
-            oldActor = @getSelectedActor()
             @setSelectedActor actor
-            @ui.pushEvent "workspace.selected.actor",
-              actorId: @_selectedActor
-              actor: actor
+            @ui.pushEvent "workspace.selected.actor", actor: actor
 
     ###
     # @private
@@ -550,7 +609,7 @@ define (require) ->
     _applyCanvasSizeUpdate: ->
 
       # Resize canvas container
-      $("#aw-canvas-container").css
+      $("##{config.id.are_canvas}").css
         height: "#{@_canvasHeight}px"
         width: "#{@_canvasWidth}px"
 
@@ -589,6 +648,22 @@ define (require) ->
             @ui.pushEvent "workspace.remove.actor", actor: o
             @actorObjects.splice i, 1
             return
+
+    ###
+    # @param [String]
+    ###
+    renderStub: ->
+      # Inject our canvas container, along with its status bar
+      # Although we currently don't add anything else to the container besides
+      # the canvas itself, it might prove useful in the future.
+      super content: TemplateWorkspaceCanvasContainer
+        id: config.id.are_canvas
+
+    ###
+    # @return [self]
+    ###
+    refresh: ->
+      @
 
     ###
     # @private
@@ -641,20 +716,6 @@ define (require) ->
       gl.bindTexture gl.TEXTURE_2D, null
       gl.bindRenderbuffer gl.RENDERBUFFER, null
       gl.bindFramebuffer gl.FRAMEBUFFER, null
-
-    ###
-    # Manually register an actor
-    #
-    # @param [BaseActor] handle
-    ###
-    registerActor: (handle) ->
-      param.required handle
-
-      if not handle.constructor.name.indexOf("Actor") != -1
-        throw new Error "You can only register actors that derive from BaseActor"
-
-      @actorObjects.push handle
-      @ui.timeline.registerActor handle
 
     ###
     # @private
@@ -749,49 +810,7 @@ define (require) ->
     # Note that this does NOT resize the canvas
     ###
     onResize: ->
-      @getElement().height $("section#main").height()
-
-      #elm.offset
-      #  top: toolb.position().top + toolb.height()
-      #  left: sideb.position().left + sideb.width()
-
-      #timelineBottom = Number($(".timeline").css("bottom").split("px")[0]) - 16
-      #timelineHeight = ($(".timeline").height() + timelineBottom)
-      ## Our height
-      #@getElement().height $(document).height() - $(".menubar").height() + 2 - \
-      #  timelineHeight
-
-      # Center phone outline
-      # @updateOutline()
-
-    ###
-    # Dumps the current workspace state
-    # @return [Object] data
-    ###
-    dump: ->
-      _.extend super(),
-        version: "1.2.0"
-        camPos:
-          x: ARERenderer.camPos.x
-          y: ARERenderer.camPos.y
-        actors: _.map @getActors(), (actor) -> actor.dump()
-
-    ###
-    # Loads the a workspace data state
-    # @param [Object] data
-    ###
-    load: (data) ->
-      super data
-      if data.version >= "1.2.0"
-        ARERenderer.camPos.x = data.camPos.x
-        ARERenderer.camPos.y = data.camPos.y
-
-      #data.version == "1.1.0"
-      for actor in data.actors
-        newActor = window[actor.type].load @ui, actor
-        @addActor newActor
-
-      @ui.timeline.updateAllActorsInTime()
+      # workspace now inherits its height from the section.main
 
     ###
     # @param [String] type
@@ -801,3 +820,59 @@ define (require) ->
       switch type
         when "timeline.selected.actor"
           @setSelectedActor params.actor
+
+    ###
+    # Dumps the current workspace state
+    # @return [Object] data
+    ###
+    dump: ->
+      particleSystems = _.map @getParticleSystems(), (ps) -> ps.dump()
+      actors = _.map @getActors(), (actor) -> actor.dump()
+      actors = _.without actors, (actor) ->
+        actor.handleType == "ParticleSystem"
+
+      _.extend super(),
+        workspaceVersion: "1.3.0"
+        camPos:                                                        # v1.2.0
+          x: ARERenderer.camPos.x
+          y: ARERenderer.camPos.y
+        actors: actors                                                 # v1.1.0
+        particleSystems: particleSystems                               # v1.3.0
+
+    ###
+    # Loads the a workspace data state
+    # @param [Object] data
+    ###
+    load: (data) ->
+      super data
+
+      if (data.workspaceVersion >= "1.2.0") || \
+       ((data.dumpVersion == "1.0.0") && (data.version >= "1.2.0"))
+        ARERenderer.camPos.x = data.camPos.x
+        ARERenderer.camPos.y = data.camPos.y
+
+      if data.workspaceVersion >= "1.3.0"
+        for psData in data.particleSystems
+          @addParticleSystem ParticleSystem.load @ui, psData
+
+      # data.workspaceVersion >= "1.1.0"
+      for actor in data.actors
+        continue if actor.handleType == "ParticleSystem"
+        handleKlass = window[actor.type]
+        if handleKlass
+          newActor = handleKlass.load @ui, actor
+          @addActor newActor
+        else
+          AUtilLog.warn "No such handle class #{actor.type}"
+
+      @ui.timeline.updateAllActorsInTime()
+
+###
+@Changlog
+
+  - "1.0.0": Initial
+  - "1.1.0": Added proper actor exporting
+  - "1.2.0": Added CamPos
+  - "1.3.0": Added ParticleSystems
+
+###

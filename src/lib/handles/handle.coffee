@@ -25,8 +25,12 @@ define (require) ->
 
       # Basic right-click menu functions
       @_ctx =
-        "Rename ...": => window.AdefyEditor.ui.modals.showRename @
-        "Delete": => @delete()
+        rename:
+          name: "Rename ..."
+          cb: => window.AdefyEditor.ui.modals.showRename @
+        del:
+          name: "Delete"
+          cb: => @delete()
 
       # Give ourselves a unique id so we can be discovered on the body
       ido = ID.objID "handle"
@@ -34,6 +38,8 @@ define (require) ->
       @_id = ido.prefix
 
       @name = "handle #{@_id_n}"
+
+      @handleType = "Handle"
 
       # Attach ourselves to the body
       $("body").data @getID(), @
@@ -121,7 +127,8 @@ define (require) ->
     ###
     dump: ->
       data = _.extend Dumpable::dump.call(@),
-        version: "1.0.1"
+        handleVersion: "1.1.0"
+        handleType: @handleType
         type: "#{@.constructor.name}"
         name: @name
         properties: {}
@@ -146,7 +153,10 @@ define (require) ->
       @
 
 ###
-  Changelog:
-    dump: "1.0.1"
-      Added name
+@Changelog
+
+  - "1.0.0": Initial
+  - "1.0.1": Added name
+  - "1.1.0": Added handleType
+
 ###

@@ -1,8 +1,12 @@
 define (require) ->
 
-  AUtilLog = require "util/log"
+  config = require "config"
   param = require "util/param"
+
+  AUtilLog = require "util/log"
+
   ID = require "util/id"
+
   Widget = require "widgets/widget"
   TemplateContextMenu = require "templates/context_menu"
 
@@ -35,10 +39,10 @@ define (require) ->
     # @param [Number] y y coordinate to spawn at
     # @param [Handle] properties context menu property definitions
     ###
-    constructor: (x, y, @properties) ->
-      param.required x
-      param.required y
-      param.required @properties
+    constructor: (@ui, options) ->
+      x = param.required options.x
+      y = param.required options.y
+      @properties = param.required options.properties
 
       @name = @properties.name
       @functions = @properties.functions
@@ -49,7 +53,7 @@ define (require) ->
       if $.isEmptyObject(@functions) then return
 
       # Create object
-      super
+      super @ui,
         id: ID.prefID("context-menu")
         classes: [ "context-menu" ]
 
@@ -57,10 +61,12 @@ define (require) ->
       $("body").data @getID(), @
 
       # Position and inject ourselves
+      @refreshStub() # widget auto refresh was removed
+      @refresh()
+
       @getElement().css
         left: x
         top: y
-      @getElement().html @_buildHTML()
 
       if ContextMenu.animate
         @getElement().slideDown ContextMenu.animateSpeed
@@ -78,13 +84,18 @@ define (require) ->
 
       bindListener = (f) =>
         # Insane in da membrane
-        if typeof @functions[f] != "function"
-          AUtilLog.error "Only methods can be bound to context menu items"
+        if @functions[f].cb
+          if typeof @functions[f].cb != "function"
+            AUtilLog.error "Only methods can be bound to context menu items"
+            return
+        else
+          AUtilLog.error "No callback function was given for #{f}"
           return
+
 
         $(document).on "click", "[data-id=\"#{@functions[f]._ident}\"]", =>
           @remove()
-          @functions[f]()
+          @functions[f].cb()
 
 
       entries = []
@@ -97,7 +108,7 @@ define (require) ->
         @functions[f]._ident = @_convertToIdent(f) + ID.nextID()
 
         entries.push
-          name: f
+          name: @functions[f].name || f
           dataId: @functions[f]._ident
 
       html = TemplateContextMenu name: @name, entries: entries
@@ -127,6 +138,9 @@ define (require) ->
 
       html
 
+    render: ->
+      super() + @_buildHTML()
+
     ###
     # Shorthand, used in @_buildHTML and @remove
     #
@@ -151,6 +165,7 @@ define (require) ->
     remove: ->
       if @alive
 
+        ##
         # Unbind listeners
         for f of @functions
           if @functions[f]._ident != undefined
@@ -163,3 +178,7 @@ define (require) ->
         $("body").removeData @getID()
 
         @alive = false
+
+        return true
+
+      false

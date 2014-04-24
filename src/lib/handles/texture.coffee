@@ -88,17 +88,13 @@ define (require) ->
       {
         name: @getName()
         functions:
-          "Delete": => @contextFuncDelete @
-          "Rename": => @contextFuncRename @
+          del:
+            name: "Delete"
+            cb: => @contextFuncDelete @
+          rename:
+            name: "Rename"
+            cb: => @contextFuncRename @
       }
-
-    dump: ->
-      _.extend Dumpable::dump.call(@),
-        version: "1.1.0"
-        id: @_id
-        uid: @_uid
-        name: @_name
-        key: @_key
 
     ###
     # Set key and update URL
@@ -109,10 +105,26 @@ define (require) ->
       @_key = key
       @_url = "#{@project.getCDNUrl()}/#{key}"
 
+    ###
+    # @return [Object] data
+    ###
+    dump: ->
+      _.extend Dumpable::dump.call(@),
+        textureVersion: "1.2.0"
+        id: @_id
+        uid: @_uid
+        name: @_name
+        key: @_key
+
+    ###
+    # @param [Object] data
+    # @return [self]
+    ###
     load: (data) ->
       Dumpable::load.call @, data
 
-      if data.version > "1.0.0"
+      if data.textureVersion > "1.0.0" || \
+       (data.dumpableVersion == "1.0.0" && data.version > "1.1.0")
         @_uid = data.uid
 
       # we are probably dealing with an old v1.0.0 texture, so we'll
@@ -125,7 +137,21 @@ define (require) ->
 
       @
 
+    ###
+    # @param [Object] data
+    # @return [self]
+    ###
     @load: (project, data) ->
       param.required project
       param.required data
       texture = new Texture project, data
+      texture.load data
+
+###
+@ChangeLog
+
+  - "1.0.0": Initial
+  - "1.1.0": Added uid
+  - "1.2.0": dumpVersion bump changes
+
+###

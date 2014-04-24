@@ -54,71 +54,56 @@ define (require) ->
       @timeline.updateControls()
 
     ###
-    # Backward playback button clicked (prev keyframe)
-    # @friend [Timeline]
-    # @private
-    ###
-    onClickBackward: ->
-      _currentPosition = @timeline.getCursorTime()
-      _newPosition = null
-      _min = Infinity
-      index = Workspace.getSelectedActor()
-
-      # only enter checks if an actor is actually selected
-      if index
-        for actor, i in @timeline._actors
-          if actor.getID() == index then index = i
-
-        _animations = @timeline._actors[index].getAnimations()
-        for anim of _animations
-          if anim < _currentPosition
-            if _currentPosition - anim < _min and _currentPosition - anim > 1
-              _newPosition = anim
-              _min = Math.round(_currentPosition - anim)
-
-        # if no animtaions before this one we go to the beginning of the timeline
-        if _newPosition != null
-          if @timeline._playbackID != null and @timeline._playbackID != undefined
-            @_pausePlayback()
-          @timeline.setCursorTime _newPosition
-        else
-          @timeline.setCursorTime 0
-          @_endPlayback()
-
-    ###
     # Forward playback button clicked (next keyframe)
     # @friend [Timeline]
     # @private
     ###
     onClickForward: ->
-      _currentPosition = @timeline.getCursorTime()
-      _newPosition = null
-      _min = Infinity
-      index = Workspace.getSelectedActor()
+      cursorTime = Number(@timeline.getCursorTime()|0)+1
+      actorID = Workspace.getSelectedActorID()
 
-      # only enter checks if an actor is actually selected
-      if index
-        for actor, i in @timeline._actors
-          if actor.getID() == index then index = i
+      # if an actor is selected, jump to their nearest keyframe
+      if actorID != null and actorID != undefined
+        actor = _.find @timeline.getActors(), (a) -> a.getID() == actorID
+        return unless actor
 
-        _animations = @timeline._actors[index].getAnimations()
-        for anim of _animations
-          if anim > _currentPosition
-            if anim - _currentPosition < _min and anim - _currentPosition > 1
-              _newPosition = anim
-              _min = Math.round(anim - _currentPosition)
+        time = actor.getNearestAnimationTime(cursorTime, right: true)
+        @timeline.setCursorTime time if time
 
-        # if no animations after current position, go to the end of the timeline
-        if _newPosition != null
-          if @timeline._playbackID != null and @timeline._playbackID != undefined
-            @_pausePlayback()
-          @timeline.setCursorTime _newPosition
-        else
-          # If we move cursor to duration, it is not on the screen anymore
-          # maybe an issue with the width, maybe just because of how my
-          # screens are set up. Something to keep an eye on.
-          @timeline.setCursorTime @timeline._duration
-          @_pausePlayback()
+      # else, jump to the nearest keyframe from any actor
+      else
+        pairs = _.map @timeline.getActors(), (actor) ->
+          [actor, actor.getNearestAnimationTime(cursorTime, right: true)]
+
+        if minimum = _.min(pairs, (pair) -> (pair[1] || 0) - cursorTime)
+          if time = minimum[1]
+            @timeline.setCursorTime time
+
+    ###
+    # Backward playback button clicked (prev keyframe)
+    # @friend [Timeline]
+    # @private
+    ###
+    onClickBackward: ->
+      cursorTime = Number(@timeline.getCursorTime()|0)-1
+      actorID = Workspace.getSelectedActorID()
+
+      # if an actor is selected, jump to their nearest keyframe
+      if actorID != null and actorID != undefined
+        actor = _.find @timeline.getActors(), (a) -> a.getID() == actorID
+        return unless actor
+
+        time = actor.getNearestAnimationTime(cursorTime, left: true)
+        @timeline.setCursorTime time if time
+
+      # else, jump to the nearest keyframe from any actor
+      else
+        pairs = _.map @timeline.getActors(), (actor) ->
+          [actor, actor.getNearestAnimationTime(cursorTime, left: true)]
+
+        if minimum = _.min(pairs, (pair) -> cursorTime - (pair[1] || 0))
+          if time = minimum[1]
+            @timeline.setCursorTime time
 
     ###
     # @friend [Timeline]

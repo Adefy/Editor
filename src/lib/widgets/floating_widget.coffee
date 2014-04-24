@@ -24,11 +24,11 @@ define (require) ->
     # @param [String] title
     # @param [Array<String>] extraClasses optional array of extra classes
     ###
-    constructor: (title, extraClasses) ->
-      param.required title
-      extraClasses = param.optional extraClasses, []
+    constructor: (@ui, options) ->
+      title = param.required options.title
+      extraClasses = param.optional options.extraClasses, []
 
-      super
+      super @ui,
         id: ID.prefID("floating-widget")
         classes: _.union ["floating-widget"], extraClasses
 
@@ -37,11 +37,12 @@ define (require) ->
       @_animateSpeed = 100
       @_drag = null
 
-      @_registerBaseListeners()
-
       # By default, we are not visible; this just injects our HTML into the DOM
       # ready for showing
-      @render()
+      @refreshStub()
+      @refresh()
+
+      @_registerBaseListeners()
       @registerListeners() if @registerListeners
 
     ###
@@ -150,7 +151,7 @@ define (require) ->
       @hide()
 
       setTimeout =>
-        @getElement().remove()
+        @removeElement()
       , @_animateSpeed * 2
 
     minimize: ->

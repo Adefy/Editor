@@ -1,7 +1,9 @@
 define (require) ->
 
-  AUtilLog = require "util/log"
+  config = require "config"
   param = require "util/param"
+
+  AUtilLog = require "util/log"
   ID = require "util/id"
   Widget = require "widgets/widget"
   Storage = require "storage"
@@ -27,16 +29,17 @@ define (require) ->
     # @param [UIManager] ui
     # @param [Number] width
     ###
-    constructor: (@ui, width) ->
+    constructor: (@ui, options) ->
+      options = param.optional options, {}
 
       # Sidebar items of class SidebarItem (or implementations)
       @_items = []
 
-      @_width = param.optional width, 300
+      @_width = param.optional options.width, 300
 
-      super
+      super @ui,
         id: ID.prefID("sidebar")
-        parent: "section#main"
+        parent: "section.main"
         classes: ["sidebar"]
 
       @_hiddenX = 0
@@ -47,7 +50,7 @@ define (require) ->
       @onResize()           # Calculate X offsets
       @_bindToggle()        # Bind an event listener for sidebar toggles.
 
-      if Storage.get("sidebar.visible") != false
+      if @_visible
         @show()
       else
         @hide()
@@ -77,19 +80,13 @@ define (require) ->
     addItem: (item) ->
       param.required item
 
-      if item.render == undefined or item.render == null
-        throw new Error "Item must have a render function!"
-
       if item.getID == undefined or item.getID == null
         throw new Error "Item must supply a getID() function!"
 
-      # Test out the render function, ensure it returns a string
-      test = item.render()
-      if typeof test != "string"
-        throw new Error "Item render function must return a string!"
+      if item.render == undefined or item.render == null
+        throw new Error "Item must have a render function!"
 
       @_items.push item
-      @render()
 
     ###
     # Remove item using id. Note that the id can be anything, since we don't
@@ -105,7 +102,6 @@ define (require) ->
         if @_items[i].getID() == i
           if typeof @_items[i].getID() == typeof i # Probably overkill
             @_items.splice i, 1
-            @render()
             return true
 
       false
@@ -114,29 +110,44 @@ define (require) ->
     # Render! Fill the sidebar with html from the items rendered in order.
     ###
     render: ->
-      @getElement().html @_items.map((i) -> i.render()).join ""
-      @refreshVisible()
-      @postRender()
-
-    ###
-    # postRender! Calls all the child postRender
-    ###
-    postRender: ->
-      for item in @_items
-        item.postRender() if item.postRender
+      @_items.map((i) -> i.render()).join ""
 
     ###
     # Render the HTML content and replace it
     ###
     refresh: ->
-      @render()
+      @getElement().html @render()
+      @refreshVisible()
+      @postRefresh()
+      @
+
+    ###
+    # postRefresh! Calls all the child postRefresh
+    ###
+    postRefresh: ->
+      super()
+      @setWidth @getElement().width()
+      for item in @_items
+        item.postRefresh() if item.postRefresh
+
+      @
+
+    ###
+    # @return [self]
+    ###
+    refreshStub: ->
+      super()
+      for item in @_items
+        item.refreshStub() if item.refreshStub
+
+      @
 
     ###
     # Take the navbar into account, and always position ourselves below it
     ###
     onResize: ->
-      height = window.innerHeight - $("footer").height() - $("header").height()
-      @getElement().height height
+      #height = window.innerHeight - $("footer").height() - $("header").height()
+      #@getElement().height height
 
       i.onResize() for i in @_items
 
@@ -146,8 +157,9 @@ define (require) ->
     # @param [Number] width
     ###
     setWidth: (width) ->
-      @getElement().width width
-      @_width = @getElement().width()
+      elem = @getElement()
+      elem.width width
+      @_width = elem.width()
       @_hiddenX = -(@_width - 40)
       @_visibleX = 0
 
@@ -160,7 +172,6 @@ define (require) ->
       @getElement(".button.toggle i").toggleClass config.icon.toggle_right, !@_visible
 
     ###
-
     # Toggle visibility of the sidebar with an optional animation
     #
     # @param [Method] cb callback
@@ -194,14 +205,8 @@ define (require) ->
       else
         @getElement().css left: @_visibleX
 
-      ##
-      # I'm sure jQuery's toggle class can do this, but I still haven't
-      # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-toggle-right")
-      @getElement(".button.toggle i").addClass("fa-toggle-left")
-
-      Storage.set "sidebar.visible", true
       @_visible = true
+      @refreshVisible()
 
     ###
     # Hide the sidebar with an optional animation
@@ -223,22 +228,13 @@ define (require) ->
       else
         @getElement().css left: @_hiddenX
 
-      ##
-      # I'm sure jQuery's toggle class can do this, but I still haven't
-      # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-toggle-left")
-      @getElement(".button.toggle i").addClass("fa-toggle-right")
-
-      Storage.set "sidebar.visible", false
       @_visible = false
+      @refreshVisible()
 
     ###
     # @param [String] type
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      if type == "timeline.show" || type == "timeline.hide"
-        @onResize()
-
       for item in @_items
         item.respondToEvent(type, params) if item.respondToEvent

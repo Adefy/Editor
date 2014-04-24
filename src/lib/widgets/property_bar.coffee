@@ -1,20 +1,21 @@
 define (require) ->
 
+  config = require "config"
   param = require "util/param"
   AUtilLog = require "util/log"
   AUtilEventLog = require "util/event_log"
   ID = require "util/id"
   Widget = require "widgets/widget"
 
+  CompositeProperty = require "handles/properties/composite"
+
+  Dragger = require "util/dragger"
+
   TemplatePropertyBar = require "templates/property_bar"
   TemplateBooleanControl = require "templates/sidebar/controls/boolean"
   TemplateCompositeControl = require "templates/sidebar/controls/composite"
   TemplateNumericControl = require "templates/sidebar/controls/numeric"
   TemplateTextControl = require "templates/sidebar/controls/text"
-
-  CompositeProperty = require "handles/properties/composite"
-
-  Dragger = require "util/dragger"
 
   ###
   # Property bar, breaks out settings and high-level editor controls
@@ -30,10 +31,10 @@ define (require) ->
     ###
     # @param [UI] ui
     ###
-    constructor: (@ui) ->
+    constructor: (@ui, options) ->
       return unless @enforceSingleton()
 
-      super
+      super @ui,
         id: ID.prefID("property-bar")
         classes: ["property-bar"]
         parent: "header"
@@ -132,6 +133,8 @@ define (require) ->
       else
         @targetActor.updateProperties updatePacket
 
+
+
     ###
     # Refresh widget data using a manipulatable, not that this function is
     # not where injection occurs! We request a refresh from our parent for that
@@ -155,22 +158,20 @@ define (require) ->
         fakeControl = new CompositeProperty()
         fakeControl.setProperties _.object nonComposites
 
-        nonCompositeHTML = @generateControl { name: "basic", icon: "fa-cog"}, fakeControl
+        nonCompositeHTML = @generateControl
+          name: "basic"
+          icon: config.icon.property_basic
+        , fakeControl
       else
         nonCompositeHTML = ""
 
       compositeHTML = composites.map (p) =>
-        icn = "fa-cog"
         name = p[0]
+        property = p[1]
+        icn = config.icon.property_default
+        icn = property.icon if property.icon
 
-        # wtf hax
-        switch name
-          when "basic"    then icn = "fa-cog"
-          when "color"    then icn = "fa-adjust"
-          when "physics"  then icn = "fa-anchor"
-          when "position" then icn = "fa-arrows"
-
-        @generateControl { name: name, icon: icn }, p[1]
+        @generateControl { name: name, icon: icn }, property
 
       compositeHTML.unshift nonCompositeHTML
 
@@ -216,29 +217,13 @@ define (require) ->
           for cName, cValue of value.getProperties()
 
             input = $("#{@_sel} #{parent} + div > dl input[name=#{cName}]")
-            value = cValue.getValue()
-
-            if $(input).attr("type") == "number"
-              value = Number value
-
-              if $(input).attr("data-float") == "true"
-                value = value.toFixed 2
-              else
-                value = value.toFixed 0
+            value = cValue.getValueString()
 
             $(input).val value
 
         else
           input = $("#{@_sel} #{parent} + div > dl input[name=#{property}]")
-          value = value.getValue()
-
-          if $(input).attr("type") == "number"
-            value = Number value
-
-            if $(input).attr("data-float") == "true"
-              value = value.toFixed 2
-            else
-              value = value.toFixed 0
+          value = value.getValueString()
 
           $(input).val value
 
@@ -281,7 +266,7 @@ define (require) ->
     generateControl: (data, value) ->
       param.required data
       param.required data.name
-      param.optional data.icon, "fa-cog"
+      param.optional data.icon, config.icon.property_default
       param.required value
       param.required value.getType(), ["composite"]
 
@@ -304,36 +289,53 @@ define (require) ->
 
     renderControl_composite: (data, value) ->
       param.required data
-      param.required data.name
-      param.optional data.icon, "fa-cog"
 
-      displayName = data.name
-      displayIcon = data.icon
+      displayName = param.required data.name
+      displayIcon = param.optional data.icon, config.icon.property_default
 
       param.required value.getType(), ["composite"]
 
       # Build the control by recursing and concating the result
-      contents = _.pairs(value.getProperties()).map (component) =>
-        return "" unless @["renderControl_#{component[1].getType()}"]
-        return "" unless component[1].showInToolbar()
+      properties = value.getProperties()
+      batches = [[]]
+      batch_i = 0
 
-        # Note that we handle the "Basic" composite differently here
-        componentCount = _.keys(value.getProperties()).length
-        if componentCount <= 3 and displayName.toLowerCase() != "basic"
-          width = "#{100 / _.keys(value.getProperties()).length}%"
+      for property in _.pairs(properties)
+        if property[1].getType() == "composite"
+          if batches[batch_i].length > 0
+            batches[++batch_i] = []
+          batches[batch_i].push property
+          batches[++batch_i] = []
         else
-          width = "100%"
+          batches[batch_i].push property
 
-        name = @prepareNameForDisplay component[0]
-        type = component[1].getType()
+      contents = batches.map (batch) =>
+        batch.map (component) =>
+          name = @prepareNameForDisplay component[0]
+          type = component[1].getType()
 
-        unless displayName.toLowerCase() == "basic"
-          parent = displayName.toLowerCase()
-        else
-          parent = ""
+          return "" unless @["renderControl_#{type}"]
+          return "" unless component[1].showInToolbar()
 
-        @["renderControl_#{type}"] name, component[1], width, parent
+          # Note that we handle the "Basic" composite differently here
+          componentCount = batch.length
+          if componentCount <= 3 and displayName.toLowerCase() != "basic"
+            width = "#{100 / batch.length}%"
+          else
+            width = "100%"
 
+          unless displayName.toLowerCase() == "basic"
+            parent = displayName.toLowerCase()
+          else
+            parent = ""
+
+          @["renderControl_#{type}"]
+            name: name
+            width: width
+            parent: parent
+          , component[1]
+
+        .join("")
       .join("")
 
       TemplateCompositeControl
@@ -342,9 +344,11 @@ define (require) ->
         dataName: displayName.toLowerCase()
         contents: contents
 
-    renderControl_number: (displayName, value, width, parent) ->
-      width = param.optional width, "100%"
-      parent = param.optional parent, false
+    renderControl_number: (data, value) ->
+      value = param.required value
+      displayName = param.required data.name
+      width = param.optional data.width, "100%"
+      parent = param.optional data.parent, false
 
       TemplateNumericControl
         displayName: displayName
@@ -353,11 +357,13 @@ define (require) ->
         min: value.getMin()
         float: value.getFloat()
         placeholder: value.getPlaceholder()
-        value: value.getValue()
+        value: value.getValueString()
         width: width
         parent: parent
 
     renderControl_boolean: (displayName, value, width, parent) ->
+      value = param.required value
+      displayName = param.required data.name
       width = param.optional width, "100%"
       parent = param.optional parent, false
 
@@ -368,13 +374,15 @@ define (require) ->
         width: width
         parent: parent
 
-    renderControl_text: (displayName, value, width, parent) ->
-      width = param.optional width, "100%"
-      parent = param.optional parent, false
+    renderControl_text: (data, value) ->
+      value = param.required value
+      displayName = param.required data.name
+      width = param.optional data.width, "100%"
+      parent = param.optional data.parent, false
 
       TemplateTextControl
         displayName: displayName
         name: displayName.toLowerCase()
         placeholder: value.getPlaceholder()
-        value: value.getValue()
+        value: value.getValueString()
         parent: parent

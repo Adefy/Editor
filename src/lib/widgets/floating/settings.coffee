@@ -31,12 +31,12 @@ define (require) ->
     #   @option [Array<Object>] settings
     #   @option [Methind] cb
     ###
-    constructor: (options) ->
+    constructor: (@ui, options) ->
       @_title = param.required options.title
       @_settings = param.required options.settings
       @_doneCB = param.required options.cb
 
-      super "", ["settings-widget"]
+      super @ui, title: "", classes: "settings-widget"
 
       @setAnimateSpeed 300
       @setCloseOnFocusLoss()
@@ -57,7 +57,8 @@ define (require) ->
 
         delete setting.type
 
-      @getElement().html SettingsWidgetTemplate
+      super() +
+      SettingsWidgetTemplate
         settings: settings
         title: @_title
 

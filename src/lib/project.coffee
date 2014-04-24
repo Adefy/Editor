@@ -1,12 +1,3 @@
-###
-Changelog
-
-  - "0.1.0": Array<Object> @textures
-  - "0.2.0": @textures is now an Array<Texture>
-  - "0.4.0": Refactored save architecture to utilize platform API
-
-###
-
 define (require) ->
 
   ID = require "util/id"
@@ -14,7 +5,6 @@ define (require) ->
   AUtilLog = require "util/log"
   Asset = require "handles/asset"
   Texture = require "handles/texture"
-  BaseActor = require "handles/actors/base"
   EditorObject = require "editor_object"
   Dumpable = require "mixin/dumpable"
 
@@ -110,20 +100,15 @@ define (require) ->
       # of execution; otherwise, we won't be tied to objects like the current
       # Editor class
       if creative.activeSave and creative.saves.length > 0
-        setTimeout =>
-          save = _.find creative.saves, (s) ->
-            s.timestamp == new Date(creative.activeSave).getTime()
+        save = _.find creative.saves, (s) ->
+          s.timestamp == new Date(creative.activeSave).getTime()
 
-          if save
-            @load save
-          else
-            AUtilLog.error "Invalid creative payload, active save not found"
+        if save
+          @load save
+        else
+          AUtilLog.error "Invalid creative payload, active save not found"
 
-          onLoad() if onLoad
-
-        , 0
-      else
-        onLoad() if onLoad
+      onLoad(@) if onLoad
 
     ###
     # Get S3 folder prefix
@@ -173,6 +158,13 @@ define (require) ->
     getId: -> @id
 
     ###
+    # Get project texture array
+    #
+    # @return [Array<Texture>] textures
+    ###
+    getTextures: -> @textures or []
+
+    ###
     # Generate a packed save object, ready for sending to a remote, or storing
     # locally. These objects are what we can @load()
     #
@@ -184,58 +176,6 @@ define (require) ->
         version: @version
         dump: JSON.stringify @dump()
       }
-
-    ###
-    # Dumps the current Project state to basic Object for stringify-ing
-    #
-    # @return [Object]
-    ###
-    dump: ->
-      _.extend Dumpable::dump.call(@),
-        textures: _.map @textures, (texture) -> texture.dump() # v0.2.0
-        workspace: @ui.workspace.dump()                        # v0.1.0
-        timeline: @ui.timeline.dump()                          # v0.1.0
-
-    ###
-    # Load the current Project state to basic Object for stringify-ing
-    #
-    # @param [Object] dump raw creative dump, in object form
-    # @return [self]
-    ###
-    load: (data) ->
-      param.required data
-      return unless Project.validateSave data
-
-      try
-        dump = JSON.parse data.dump
-      catch e
-        return AUtilLog.error "Failed to parse save dump [#{e}]"
-
-      # What does this do?
-      # Dumpable::load.call @, data.dump
-
-      @ui.workspace.reset()
-
-      AUtilLog.info "Loading v#{data.version} Project::dump"
-
-      @saveTimestamp = data.timestamp
-      @textures = _.map dump.textures, (texData) => Texture.load @, texData
-      texture.project = @ for texture in @textures
-
-      @ui.workspace.loadTextures @textures
-
-      ##
-      # We reload the workspace state BEFORE the timeline state
-      # that way we update the timeline correctly.
-      @ui.workspace.load dump.workspace
-
-      ##
-      # This is a timeline load, on the instance level,
-      # rather than the class level, I guess we could treat it as
-      # a singleton object in that essence.
-      @ui.timeline.load dump.timeline
-
-      @
 
     ###
     # Save the current project
@@ -313,3 +253,66 @@ define (require) ->
         return AUtilLog.warning "Refusing to load snapshot older than our save"
 
       @loadSnapshot timestamps[0]
+
+    ###
+    # Dumps the current Project state to basic Object for stringify-ing
+    #
+    # @return [Object]
+    ###
+    dump: ->
+      _.extend Dumpable::dump.call(@),
+        textures: _.map @textures, (texture) -> texture.dump() # v0.2.0
+        workspace: @ui.workspace.dump()                        # v0.1.0
+        timeline: @ui.timeline.dump()                          # v0.1.0
+
+    ###
+    # Load the current Project state to basic Object for stringify-ing
+    #
+    # @param [Object] dump raw creative dump, in object form
+    # @return [self]
+    ###
+    load: (data) ->
+      param.required data
+      return unless Project.validateSave data
+
+      try
+        dump = JSON.parse data.dump
+      catch e
+        return AUtilLog.error "Failed to parse save dump [#{e}]"
+
+      # What does this do?
+      # Dumpable::load.call @, data.dump
+
+      @ui.workspace.reset()
+
+      AUtilLog.info "Loading v#{data.version} Project::dump"
+
+      @saveTimestamp = data.timestamp
+      @textures = _.map dump.textures, (texData) => Texture.load @, texData
+      texture.project = @ for texture in @textures
+
+      @ui.workspace.loadTextures @textures
+
+      ##
+      # We reload the workspace state BEFORE the timeline state
+      # that way we update the timeline correctly.
+      @ui.workspace.load dump.workspace
+
+      ##
+      # This is a timeline load, on the instance level,
+      # rather than the class level, I guess we could treat it as
+      # a singleton object in that essence.
+      @ui.timeline.load dump.timeline
+
+      @
+
+###
+@Changelog
+
+  - "0.1.0": Array<Object> @textures
+  - "0.2.0": @textures is now an Array<Texture>
+  - "0.3.0": Added @uid
+  - "0.3.1": Added name, dateDumped, dateStarted and saveCount
+  - "0.4.0": Refactored save architecture to utilize platform API
+
+###

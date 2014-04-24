@@ -1,8 +1,10 @@
 define (require) ->
 
-  AUtilLog = require "util/log"
+  config = require "config"
   param = require "util/param"
+
   ID = require "util/id"
+  AUtilLog = require "util/log"
   aformat = require "util/format"
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
@@ -37,15 +39,16 @@ define (require) ->
     # @param [UIManager] ui
     # @param [Number] duration ad length in ms, can be modified (expensive)
     ###
-    constructor: (@ui, duration) ->
+    constructor: (@ui, options) ->
+      options = param.optional options, {}
       return unless @enforceSingleton()
 
-      super
+      super @ui,
         id: ID.prefID("timeline")
         parent: "footer"
         classes: ["timeline"]
 
-      @_duration = Number param.optional(duration, 5000)
+      @_duration = Number param.optional(options.duration, 5000)
 
       unless @_duration > 0
         return AUtilLog.error "Invalid duration: #{@_duration}"
@@ -53,7 +56,6 @@ define (require) ->
       @_control = new TimelineControl @
 
       @_previewFPS = 30
-      @_visible = true
       @_playbackID = null
 
       @controlState =
@@ -63,22 +65,18 @@ define (require) ->
         forward: false
         fast_forward: false
 
-      # Actor array, access through registerActor/removeActor
+      # Actor array, access through addActor/removeActor
       @_actors = []
-
-      # Check for any existing padding on the body (and format accordingly)
-      if $("body").css("padding-bottom") == "auto"
-        @_bodyPadding = 0
-      else
-        @_bodyPadding = $("body").css("padding-bottom").split("px").join ""
 
       @resize 256
 
-      @_renderStructure()
-      @_updateCursorTime()
-
       @_regListeners()
-      @_setupDraggableKeyframes()
+
+    ###
+    # @return [self]
+    ###
+    postInit: ->
+      super()
 
       @_visible = Storage.get("timeline.visible") == true
 
@@ -86,6 +84,8 @@ define (require) ->
         @show()
       else
         @hide()
+
+      @
 
     ###
     # Checks if a timeline has already been created, and returns false if one
@@ -201,6 +201,11 @@ define (require) ->
       $(@_scrollbarSelector())
 
     ## ATTRIBUTES
+
+    ###
+    # @return [Array<BaseActor>] actors
+    ###
+    getActors: -> @_actors
 
     ###
     # Get timeline duration
@@ -364,7 +369,11 @@ define (require) ->
       $(document).on "contextmenu", ".timeline .actor .title", (e) =>
         actorElement = $(e.target).closest ".actor"
         index = $(actorElement).attr "data-index"
-        new ContextMenu e.pageX, e.pageY, @_actors[index].getContextProperties()
+        new ContextMenu @ui,
+          x: e.pageX
+          y: e.pageY
+          properties: @_actors[index].getContextProperties()
+
         e.preventDefault()
         false
 
@@ -374,6 +383,7 @@ define (require) ->
     ###
     _regListeners: ->
 
+      @_setupDraggableKeyframes()
       @_bindContextClick()
 
       $(document).on "click", ".timeline .button.toggle", (e) =>
@@ -540,15 +550,15 @@ define (require) ->
     #
     # @param [BaseActor] actor
     ###
-    registerActor: (actor) ->
+    addActor: (actor) ->
       param.required actor
 
-      if actor.constructor.name.indexOf("Actor") == -1
-        throw new Error "Actor must be an instance of BaseActor!"
+      ## screw it!
+      #if actor.constructor.name.indexOf("Actor") == -1
+      #  throw new Error "Actor must be an instance of BaseActor!"
 
       @_actors.push actor
-      @_renderActorTimebar _.last @_actors
-      @_renderActorListEntry _.last @_actors
+      @refresh()
       @_updateScrollbar()
 
       true
@@ -569,8 +579,7 @@ define (require) ->
 
       @_actors.splice actorIndex, 1
 
-      @_renderActorList()
-      @_renderSpace()
+      @refresh()
       @_updateScrollbar()
 
       true
@@ -606,9 +615,9 @@ define (require) ->
     switchSelectedActorByIndex: (index) -> @switchSelectedActor @_actors[index]
 
     ###
-    # Refreshes the state of the timeline toggle icons and storage
+    # Updates the state of the timeline toggle icons and storage
     ###
-    refreshVisible: ->
+    updateVisible: ->
       Storage.set "timeline.visible", @_visible
       @getElement(".button.toggle i").toggleClass config.icon.toggle_down, @_visible
       @getElement(".button.toggle i").toggleClass config.icon.toggle_up, !@_visible
@@ -643,21 +652,19 @@ define (require) ->
 
       AUtilLog.info "Showing Timeline"
 
+      @_visible = true
+
       if animate
-        @getElement().animate height: @_height, 300, "swing", =>
-          @ui.pushEvent "timeline.show"
+        @getElement().animate { height: @_height },
+          duration: 300
+          easer: "swing"
+          progress: => @ui.pushEvent "timeline.showing"
+          done: => @ui.pushEvent "timeline.show"
       else
         @getElement().height @_height
         @ui.pushEvent "timeline.show"
 
-      ##
-      # I'm sure jQuery's toggle class can do this, but I still haven't
-      # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-toggle-up")
-      @getElement(".button.toggle i").addClass("fa-toggle-down")
-
-      Storage.set "timeline.visible", true
-      @_visible = true
+      @updateVisible()
 
     ###
     # Hide the sidebar with an optional animation
@@ -675,21 +682,19 @@ define (require) ->
 
       AUtilLog.info "Hiding Timeline"
 
+      @_visible = false
+
       if animate
-        @getElement().animate height: @_hiddenHeight, 300, "swing", =>
-          @ui.pushEvent "timeline.hide"
+        @getElement().animate { height: @_hiddenHeight },
+          duration: 300
+          easer: "swing"
+          progress: => @ui.pushEvent "timeline.hiding"
+          done: => @ui.pushEvent "timeline.hide"
       else
         @getElement().height @_hiddenHeight
         @ui.pushEvent "timeline.hide"
 
-      ##
-      # I'm sure jQuery's toggle class can do this, but I still haven't
-      # figured it out properly
-      @getElement(".button.toggle i").removeClass("fa-toggle-down")
-      @getElement(".button.toggle i").addClass("fa-toggle-up")
-
-      Storage.set "timeline.visible", false
-      @_visible = false
+      @updateVisible()
 
     ## CALC
 
@@ -832,11 +837,10 @@ define (require) ->
     # @param [Boolean] apply optional, if false we only return the render HTML
     # @privvate
     ###
-    _renderActorListEntry: (actor, apply) ->
+    _renderActorListEntry: (actor) ->
       param.required actor
-      apply = param.optional apply, true
 
-      html = TemplateTimelineActor
+      TemplateTimelineActor
         id: "actor-body-#{actor.getID()}"
         actorId: actor.getID()
         index: _.findIndex @_actors, (a) -> a.getID() == actor.getID()
@@ -859,35 +863,28 @@ define (require) ->
           value: aformat.color actor.getColor(), 2
         ]
 
-      if apply
-        $(@_bodySelector()).append html
-        @updateActorBody(actor)
-      else
-        html
-
     ###
     # Render the actor list Should never be called by itself, only by @render()
     #
     # @private
     ###
     _renderActorList: ->
-      entriesHTML = @_actors.map (actor) => @_renderActorListEntry actor, false
-
-      $(@_bodySelector()).html entriesHTML.join ""
+      @_actors.map (actor) =>
+        @_renderActorListEntry actor, false
+      .join ""
 
     ###
     # Renders an individual actor timebar, used when registering new actors,
     # preventing a full re-render of the space. Also called internally by
-    # @_renderSpace.
+    # @_renderActorTimeSpace.
     #
     # @param [BaseActor] actor
     # @param [Boolean] apply optional, if false we only return the render HTML
     # @return [HTML]
     # @private
     ###
-    _renderActorTimebar: (actor, apply) ->
+    _renderActorTimebarEntry: (actor) ->
       param.required actor
-      apply = param.optional apply, true
 
       actorId = actor.getID()
       index = _.findIndex @_actors, (a) -> a.getID() == actorId
@@ -900,19 +897,11 @@ define (require) ->
       ## TODO: Check that something has actually changed before sending the HTML
       ##
 
-      html = TemplateTimelineActorTime
+      TemplateTimelineActorTime
         id: "actor-time-#{actorId}"
         actorid: actorId
         index: index
         properties: properties
-
-      if apply
-        if $("#actor-time-#{actorId}").length
-          $("#actor-time-#{actorId}").html html
-        else
-          $("#{@_spaceSelector()} .time-actors").append html
-      else
-        html
 
     ###
     # Render the timeline space. Should never be called by itself, only by
@@ -920,42 +909,43 @@ define (require) ->
     # @return [Void]
     # @private
     ###
-    _renderSpace: ->
-      entriesHTML = @_actors.map (actor) => @_renderActorTimebar actor, false
-
-      $("#{@_spaceSelector()} .time-actors").html entriesHTML.join ""
-
-    ###
-    # Render initial structure.
-    # Note that calling this clears the timeline visually, and does not render
-    # objects! Objects are not destroyed, call @render to update them.
-    # @return [Void]
-    ###
-    _renderStructure: ->
-      options =
-        id: "timeline-header"
-        timelineId: @getID()
-        currentTime: "0:00.00"
-
-      @getElement().html TemplateTimelineBase options
+    _renderActorTimebar: ->
+      @_actors.map (actor) =>
+        @_renderActorTimebarEntry actor, false
+      .join ""
 
     ###
     # Proper render function, fills in timeline internals. Since we have two
     # distinct sections, each is rendered by a seperate function. This helps
-    # divide the necessary logic, into @_renderActorList() and @_renderSpace().
+    # divide the necessary logic, into @_renderActorList() and @_renderActorTimebar().
     # This function simply calls both.
-    # @return [Void]
+    # @return [String]
     ###
     render: ->
-      @_renderActorList()
-      @_renderSpace()
+      options =
+        id: "timeline-header"
+        timelineId: @getID()
+        currentTime: "0:00.00"
+        contents: @_renderActorList()
+        timeContents: @_renderActorTimebar()
+
+      super() +
+      TemplateTimelineBase options
+
+    ###
+    # @return [self]
+    ###
+    refresh: ->
+      super()
       @_setupScrollbar()
-      @refreshVisible()
+      @updateVisible()
       @
 
-    refresh: ->
-      @render()
-      @
+    ###
+    # @return [self]
+    ###
+    postRefresh: ->
+      super()
 
     ## UPDATE
 
@@ -1123,7 +1113,7 @@ define (require) ->
     respondToEvent: (type, params) ->
       switch type
         when "workspace.add.actor"
-          @registerActor params.actor
+          @addActor params.actor
         when "workspace.remove.actor"
           @removeActor params.actor
         when "workspace.selected.actor"
@@ -1138,14 +1128,31 @@ define (require) ->
         when "selected.actor.update"
           @updateActor params.actor
 
+
+    ## Serialization
+
+    ###
+    # @return [Object] data
+    ###
     dump: ->
-      {
-        version: "1.0.0"
+      _.extend super(),
+        timelineVersion: "1.1.0"
         duration: @getDuration()
         current: @getCursorTime()
-      }
 
+    ###
+    # @param [Object] data
+    ###
     load: (data) ->
-      # data.version == "1.0.0"
+      super data
+      # data.timelineVersion >= "1.0.0"
       @setDuration data.duration
       @setCursorTime data.current
+
+###
+@Changlog
+
+  - "1.0.0": Initial
+  - "1.1.0": ???
+
+###
