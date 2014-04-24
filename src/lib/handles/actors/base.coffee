@@ -6,6 +6,7 @@ define (require) ->
   AUtilLog = require "util/log"
   Handle = require "handles/handle"
   Bezier = require "handles/bezier"
+  Project = require "project"
 
   CompositeProperty = require "handles/properties/composite"
   NumericProperty = require "handles/properties/numeric"
@@ -449,7 +450,7 @@ define (require) ->
     # @param [String] uid
     ###
     setTextureByUID: (uid) ->
-      texture = _.find @ui.editor.getProject().textures, (t) ->
+      texture = _.find Project.current.getTextures(), (t) ->
         t.getUID() == uid
 
       try
