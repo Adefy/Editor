@@ -57,7 +57,6 @@ define (require) ->
 
         delete setting.type
 
-      super() +
       SettingsWidgetTemplate
         settings: settings
         title: @_title
