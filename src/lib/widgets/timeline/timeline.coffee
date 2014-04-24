@@ -45,7 +45,7 @@ define (require) ->
 
       super @ui,
         id: ID.prefID("timeline")
-        parent: "footer"
+        parent: config.selector.footer
         classes: ["timeline"]
 
       @_duration = Number param.optional(options.duration, 5000)

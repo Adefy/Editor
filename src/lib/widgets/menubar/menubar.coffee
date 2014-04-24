@@ -23,9 +23,9 @@ define (require) ->
 
       super @ui,
         id: ID.prefID("menubar")
+        parent: config.selector.header
         classes: ["menubar"]
         prepend: true
-        parent: "header"
 
       # Note that we don't render initially. This gives the engine the freedom
       # to set up initial items, and then render us appropriately

@@ -39,7 +39,7 @@ define (require) ->
 
       super @ui,
         id: ID.prefID("sidebar")
-        parent: "section.main"
+        parent: config.selector.content
         classes: ["sidebar"]
 
       @_hiddenX = 0

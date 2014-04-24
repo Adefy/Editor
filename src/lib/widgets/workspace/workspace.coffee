@@ -41,7 +41,7 @@ define (require) ->
 
       super @ui,
         id: ID.prefID("workspace")
-        parent: "section.main"
+        parent: config.selector.content
         classes: ["workspace"]
         prepend: true
 
@@ -68,6 +68,9 @@ define (require) ->
       @_pickInProgress = false
       @_pickQueue = []
 
+    ###
+    # @return [self]
+    ###
     postInit: ->
       ## AJS overrides setting the renderer mode...
       #mode = Storage.get("are.renderer.mode")
@@ -75,7 +78,7 @@ define (require) ->
       #ARERenderer.rendererMode = Number(mode)
 
       # The canvas is fullscreen, minus the mainbar
-      sectionElement = $("section.main")
+      sectionElement = $(config.selector.content)
       @_canvasWidth  = sectionElement.width()
       @_canvasHeight = sectionElement.height()
 
@@ -91,6 +94,8 @@ define (require) ->
         @_applyCanvasSizeUpdate()
 
       , @_canvasWidth, @_canvasHeight, config.id.are_canvas
+
+      @
 
     ###
     # Checks if a workspace has already been created, and returns false if one
@@ -249,6 +254,40 @@ define (require) ->
       }
 
     ###
+    # Generate the new actor menu options object, opened through the workspace
+    # context menu.
+    #
+    # @param [Number] x x coordinate of click
+    # @param [Number] y y coordinate of click
+    # @return [Object] options
+    ###
+    getNewActorCtxMenu: (x, y) ->
+      time = @ui.timeline.getCursorTime()
+      pos = @domToGL(x, y)
+      pos.x += ARERenderer.camPos.x
+      pos.y += ARERenderer.camPos.y
+
+      {
+        name: config.locale.title.create
+        functions:
+          trinActor:
+            name: config.locale.label.actor_triangle
+            cb: => @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
+          rectActor:
+            name: config.locale.label.actor_rectangle
+            cb: => @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
+          polyActor:
+            name: config.locale.label.actor_polygon
+            cb: => @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
+          circActor:
+            name: config.locale.label.actor_circle
+            cb: => @addActor new PolygonActor @ui, time, 32, 60, pos.x, pos.y
+          ps:
+            name: config.locale.label.particle_system
+            cb: => @addParticleSystem new ParticleSystem @ui, position: pos
+      }
+
+    ###
     # Generate workspace right-click ctx data object
     #
     # @param [Number] x x coordinate of click
@@ -257,28 +296,15 @@ define (require) ->
     ###
     getWorkspaceCtxMenu: (x, y) ->
       functions =
-        newActor:
-          name: "New Actor +"
+        create:
+          name: config.locale.label.create_menu_item
           cb: =>
             new ContextMenu @ui,
               x: x, y: y, properties: @getNewActorCtxMenu(x, y)
 
-      if config.use.particle_system
-        functions.newParticleSystem =
-          name: "New Particle Sys."
-          cb: =>
-            ps = new ParticleSystem @ui
-
-            pos = @domToGL x, y
-            pos.x += ARERenderer.camPos.x
-            pos.y += ARERenderer.camPos.y
-            ps.setPosition pos.x, pos.y
-
-            @addParticleSystem ps
-
       if @ui.editor.clipboard && @ui.editor.clipboard.type == "actor"
         functions.paste =
-          name: "Paste"
+          name: config.locale.paste
           cb: =>
 
             pos = @domToGL(x, y)
@@ -295,35 +321,6 @@ define (require) ->
         name: "Workspace"
         functions: functions
       }
-
-    ###
-    # Generate the new actor menu options object, opened through the workspace
-    # context menu.
-    #
-    # @param [Number] x x coordinate of click
-    # @param [Number] y y coordinate of click
-    # @return [Object] options
-    ###
-    getNewActorCtxMenu: (x, y) ->
-      time = @ui.timeline.getCursorTime()
-      pos = @domToGL(x, y)
-      pos.x += ARERenderer.camPos.x
-      pos.y += ARERenderer.camPos.y
-
-      {
-        name: "New Actor"
-        functions:
-          rectActor:
-            name: "Rectangle Actor"
-            cb: => @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
-          polyActor:
-            name: "Polygon Actor"
-            cb: => @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
-          trinActor:
-            name: "Triangle Actor"
-            cb: => @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
-      }
-
 
     ###
     # Translate the pick values into an ID and fetch the associated actor
@@ -810,7 +807,7 @@ define (require) ->
     # Note that this does NOT resize the canvas
     ###
     onResize: ->
-      # workspace now inherits its height from the section.main
+      # workspace now inherits its height from the config.selector.content
 
     ###
     # @param [String] type

@@ -3,16 +3,22 @@
 ###
 define
   debug:
-    event_log: false
+    event_log:  false
     render_log: false
 
+  # enable and disable certain features
   use:
-    # affects whether or
-    particle_system: false
+    particle_system: true
 
   # html element ids
   id:
     are_canvas: "are-canvas"
+
+  # css selectors
+  selector:
+    header:  "header"
+    content: "section.main"
+    footer:  "footer"
 
   # ui.icons
   icon:
@@ -51,3 +57,21 @@ define
     rotation: 0             # Actor.rotation
     sides: 0                # PolygonActor.sides
     width: 0                # RectangleActor.width
+
+  ##
+  locale:
+    paste:  "Paste"
+    copy:   "Copy"
+    cut:    "Cut"
+    title:
+      create: "Create"
+
+    label:
+      spawn_command:    "Spawn"
+      create_menu_item: "Create +"
+      ##
+      actor_rectangle:  "Rectangle Actor"
+      actor_polygon:    "Polygon Actor"
+      actor_circle:     "Circle Actor"
+      actor_triangle:   "Triangle Actor"
+      particle_system:  "Particle System"
