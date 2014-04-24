@@ -1,7 +1,9 @@
 define (require) ->
 
-  AUtilLog = require "util/log"
+  config = require "config"
   param = require "util/param"
+
+  AUtilLog = require "util/log"
   Handle = require "handles/handle"
   Bezier = require "widgets/timeline/bezier"
 
@@ -100,14 +102,31 @@ define (require) ->
         position.y = value
         @_AJSActor.setPosition position
 
-      @_properties.position.x.requestUpdate = ->
-        @setValue me._AJSActor.getPosition().x if me._AJSActor
+      @_properties.layer = new CompositeProperty()
+      @_properties.layer.icon = config.icon.property_layer
+      @_properties.layer.main = new NumericProperty()
+      @_properties.layer.main.setValue 0
+      @_properties.layer.main.setPrecision 0
 
-      @_properties.position.y.requestUpdate = ->
-        @setValue me._AJSActor.getPosition().y if me._AJSActor
+      @_properties.layer.physics = new NumericProperty()
+      @_properties.layer.physics.clone @_properties.layer.main
 
-      @_properties.position.addProperty "x", @_properties.position.x
-      @_properties.position.addProperty "y", @_properties.position.y
+      @_properties.layer.main.onUpdate = (_layer_) =>
+        @_AJSActor.setLayer _layer_
+      @_properties.layer.main.requestUpdate = ->
+        @setValue me._AJSActor.getLayer() if me._AJSActor
+
+      @_properties.layer.physics.onUpdate (_layer_) =>
+        @_AJSActor.setPhysicsLayer _layer_
+      @_properties.layer.physics.requestUpdate = ->
+        @setValue me._AJSActor.getPhysicsLayer() if me._AJSActor
+
+      @_properties.layer.addProperty "main",
+        @_properties.layer.main
+
+      @_properties.layer.addProperty "physics",
+        @_properties.layer.physics
+
 
       @_properties.opacity = new NumericProperty()
       @_properties.opacity.setMin 0.0
@@ -127,8 +146,36 @@ define (require) ->
       @_properties.rotation.requestUpdate = ->
         @setValue me._AJSActor.getRotation() if me._AJSActor
 
+      @_properties.position = new CompositeProperty()
+      @_properties.position.icon = config.icon.property_position
+      @_properties.position.x = new NumericProperty()
+      @_properties.position.y = new NumericProperty()
+
+      @_properties.position.x.setPrecision 0
+      @_properties.position.x.onUpdate = (value) =>
+        return unless @_AJSActor
+        position = @_AJSActor.getPosition()
+        position.x = value
+        @_AJSActor.setPosition position
+
+      @_properties.position.y.setPrecision 0
+      @_properties.position.y.onUpdate = (value) =>
+        return unless @_AJSActor
+        position = @_AJSActor.getPosition()
+        position.y = value
+        @_AJSActor.setPosition position
+
+      @_properties.position.x.requestUpdate = ->
+        @setValue me._AJSActor.getPosition().x if me._AJSActor
+
+      @_properties.position.y.requestUpdate = ->
+        @setValue me._AJSActor.getPosition().y if me._AJSActor
+
+      @_properties.position.addProperty "x", @_properties.position.x
+      @_properties.position.addProperty "y", @_properties.position.y
 
       @_properties.color = new CompositeProperty()
+
       @_properties.color.r = new NumericProperty()
       @_properties.color.r.setMin 0
       @_properties.color.r.setMax 255
@@ -175,6 +222,7 @@ define (require) ->
 
       @_properties.physics = new CompositeProperty()
       @_properties.physics.mass = new NumericProperty()
+
       @_properties.physics.mass.setMin 0
       @_properties.physics.mass.setPlaceholder 50
       @_properties.physics.mass.setValue 50
