@@ -96,14 +96,6 @@ define (require) ->
             cb: => @contextFuncRename @
       }
 
-    dump: ->
-      _.extend Dumpable::dump.call(@),
-        textureVersion: "1.2.0"
-        id: @_id
-        uid: @_uid
-        name: @_name
-        key: @_key
-
     ###
     # Set key and update URL
     #
@@ -113,6 +105,21 @@ define (require) ->
       @_key = key
       @_url = "#{@project.getCDNUrl()}/#{key}"
 
+    ###
+    # @return [Object] data
+    ###
+    dump: ->
+      _.extend Dumpable::dump.call(@),
+        textureVersion: "1.2.0"
+        id: @_id
+        uid: @_uid
+        name: @_name
+        key: @_key
+
+    ###
+    # @param [Object] data
+    # @return [self]
+    ###
     load: (data) ->
       Dumpable::load.call @, data
 
@@ -130,6 +137,10 @@ define (require) ->
 
       @
 
+    ###
+    # @param [Object] data
+    # @return [self]
+    ###
     @load: (project, data) ->
       param.required project
       param.required data
@@ -137,14 +148,10 @@ define (require) ->
       texture.load data
 
 ###
-  ChangeLog
-    dump: "1.0.0"
-      Initial
+@ChangeLog
 
-    dump: "1.1.0"
-      Added uid
-
-    dump: "1.2.0"
-      dumpVersion bump changes
+  - "1.0.0": Initial
+  - "1.1.0": Added uid
+  - "1.2.0": dumpVersion bump changes
 
 ###

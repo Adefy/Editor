@@ -813,6 +813,15 @@ define (require) ->
       # workspace now inherits its height from the section.main
 
     ###
+    # @param [String] type
+    # @param [Object] params
+    ###
+    respondToEvent: (type, params) ->
+      switch type
+        when "timeline.selected.actor"
+          @setSelectedActor params.actor
+
+    ###
     # Dumps the current workspace state
     # @return [Object] data
     ###
@@ -858,11 +867,12 @@ define (require) ->
 
       @ui.timeline.updateAllActorsInTime()
 
-    ###
-    # @param [String] type
-    # @param [Object] params
-    ###
-    respondToEvent: (type, params) ->
-      switch type
-        when "timeline.selected.actor"
-          @setSelectedActor params.actor
+###
+@Changlog
+
+  - "1.0.0": Initial
+  - "1.1.0": Added proper actor exporting
+  - "1.2.0": Added CamPos
+  - "1.3.0": Added ParticleSystems
+
+###

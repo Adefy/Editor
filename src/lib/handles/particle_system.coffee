@@ -243,7 +243,9 @@ define (require) ->
       ps
 
 ###
-  ChangeLog
-    dump: "1.0.0"
+@ChangeLog
+
+  - "1.0.0": Initial
+  - "1.1.0": Inherited from a RectangleActor
 
 ###

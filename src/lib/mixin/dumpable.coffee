@@ -40,10 +40,9 @@ define (require) ->
       @load JSON.parse raw
 
 ###
-  ChangeLog
-    dump: "1.0.0"
-      Initial
+@Changlog
 
-    dump: "1.1.0"
-      dumpVersion bump
+  - "1.0.0": Initial
+  - "1.1.0": dumpVersion bump
+
 ###

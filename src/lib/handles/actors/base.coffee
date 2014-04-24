@@ -1394,42 +1394,6 @@ define (require) ->
 
       @
 
-
-    ###
-    # Dump actor into basic Object
-    #
-    # @return [Object] actorJSON
-    ###
-    dump: ->
-      data = super()
-
-      data.actorBaseVersion = "1.0.0"
-      data.propBuffer = @_propBuffer
-      data.birth = @lifetimeStart_ms
-      data.death = @lifetimeEnd_ms
-      data.texture = @getTextureUID()
-      data.animations = {}
-
-      for time, properties of @_animations
-        animationSet = {}
-
-        for property, propAnimation of properties
-
-          if propAnimation.components
-            animationData = components: {}
-
-            for component, animation of propAnimation.components
-              animationData.components[component] = animation.dump()
-
-          else
-            animationData = propAnimation.dump()
-
-          animationSet[property] = animationData
-
-        data.animations[time] = animationSet
-
-      data
-
     ###
     # Goes through and makes sure that our birth state contains an entry for
     # each of our properties. Deletes buffer entries if they reference
@@ -1478,6 +1442,41 @@ define (require) ->
             delete @_propBuffer[entry]
 
     ###
+    # Dump actor into basic Object
+    #
+    # @return [Object] actorJSON
+    ###
+    dump: ->
+      data = super()
+
+      data.actorBaseVersion = "1.0.0"
+      data.propBuffer = @_propBuffer
+      data.birth = @lifetimeStart_ms
+      data.death = @lifetimeEnd_ms
+      data.texture = @getTextureUID()
+      data.animations = {}
+
+      for time, properties of @_animations
+        animationSet = {}
+
+        for property, propAnimation of properties
+
+          if propAnimation.components
+            animationData = components: {}
+
+            for component, animation of propAnimation.components
+              animationData.components[component] = animation.dump()
+
+          else
+            animationData = propAnimation.dump()
+
+          animationSet[property] = animationData
+
+        data.animations[time] = animationSet
+
+      data
+
+    ###
     # Loads properties, animations, and a prop buffer from a saved state
     #
     # @param [Object] data
@@ -1517,3 +1516,10 @@ define (require) ->
         @_animations[time] = animationSet
 
       @
+
+###
+@Changelog
+
+  - "1.0.0": Initial
+
+###

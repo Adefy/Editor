@@ -296,8 +296,13 @@ define (require) ->
 
       data
 
+    ###
+    # @param [Object] data
+    # @return [self]
+    ###
     load: (data) ->
       Dumpable::load.call @, data
+      @
 
     @load: (data) ->
 
@@ -310,9 +315,10 @@ define (require) ->
       asset
 
 ###
-  "1.0.0"
+@Changelog
 
-  "1.1.0"
+  - "1.0.0": Initial
+  - "1.1.0":
     version has been renamed to assetVersion this is to prevent name clashes
     with super classes who use "version" for their dumps as well
 

@@ -153,10 +153,10 @@ define (require) ->
       @
 
 ###
-  Changelog:
-    dump: "1.0.1"
-      Added name
+@Changelog
 
-    dump: "1.1.0"
-      Added handleType
+  - "1.0.0": Initial
+  - "1.0.1": Added name
+  - "1.1.0": Added handleType
+
 ###

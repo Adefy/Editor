@@ -1150,12 +1150,9 @@ define (require) ->
       @setCursorTime data.current
 
 ###
+@Changlog
 
-  ChangeLog
-    dump: "1.0.0"
-      Initial
-
-    dump: "1.1.0"
-      Initial
+  - "1.0.0": Initial
+  - "1.1.0": ???
 
 ###

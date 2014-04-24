@@ -168,6 +168,9 @@ define (require) ->
       @_buffer = false
       @_bufferData = {}
 
+    ###
+    # @return [Object] data
+    ###
     dump: ->
       _.extend super(),
         bezierVersion: "1.0.0"
@@ -177,6 +180,10 @@ define (require) ->
         degree: @_degree                                               # v1.0.0
         buffer: @_buffer                                               # v1.0.0
 
+    ###
+    # @param [Object] data
+    # @return [self]
+    ###
     load: (data) ->
       super data
       @_start.x = data.start.x                                         # v1.0.0
@@ -188,14 +195,16 @@ define (require) ->
       @_buffer = data.buffer                                           # v1.0.0
       @
 
+    ###
+    # @param [Object] data
+    ###
     @load: (data) ->
       # data.bezierVersion == "1.0.0"
       new Bezier data.start, data.end, data.degree, data.control, data.buffer
 
 ###
+@Changelog
 
-  Changelog:
-    dump: "1.0.0"
-      Initial
+  - "1.0.0": Initial
 
 ###

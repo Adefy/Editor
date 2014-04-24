@@ -178,58 +178,6 @@ define (require) ->
       }
 
     ###
-    # Dumps the current Project state to basic Object for stringify-ing
-    #
-    # @return [Object]
-    ###
-    dump: ->
-      _.extend Dumpable::dump.call(@),
-        textures: _.map @textures, (texture) -> texture.dump() # v0.2.0
-        workspace: @ui.workspace.dump()                        # v0.1.0
-        timeline: @ui.timeline.dump()                          # v0.1.0
-
-    ###
-    # Load the current Project state to basic Object for stringify-ing
-    #
-    # @param [Object] dump raw creative dump, in object form
-    # @return [self]
-    ###
-    load: (data) ->
-      param.required data
-      return unless Project.validateSave data
-
-      try
-        dump = JSON.parse data.dump
-      catch e
-        return AUtilLog.error "Failed to parse save dump [#{e}]"
-
-      # What does this do?
-      # Dumpable::load.call @, data.dump
-
-      @ui.workspace.reset()
-
-      AUtilLog.info "Loading v#{data.version} Project::dump"
-
-      @saveTimestamp = data.timestamp
-      @textures = _.map dump.textures, (texData) => Texture.load @, texData
-      texture.project = @ for texture in @textures
-
-      @ui.workspace.loadTextures @textures
-
-      ##
-      # We reload the workspace state BEFORE the timeline state
-      # that way we update the timeline correctly.
-      @ui.workspace.load dump.workspace
-
-      ##
-      # This is a timeline load, on the instance level,
-      # rather than the class level, I guess we could treat it as
-      # a singleton object in that essence.
-      @ui.timeline.load dump.timeline
-
-      @
-
-    ###
     # Save the current project
     #
     # @param [Method] cb
@@ -306,8 +254,60 @@ define (require) ->
 
       @loadSnapshot timestamps[0]
 
+    ###
+    # Dumps the current Project state to basic Object for stringify-ing
+    #
+    # @return [Object]
+    ###
+    dump: ->
+      _.extend Dumpable::dump.call(@),
+        textures: _.map @textures, (texture) -> texture.dump() # v0.2.0
+        workspace: @ui.workspace.dump()                        # v0.1.0
+        timeline: @ui.timeline.dump()                          # v0.1.0
+
+    ###
+    # Load the current Project state to basic Object for stringify-ing
+    #
+    # @param [Object] dump raw creative dump, in object form
+    # @return [self]
+    ###
+    load: (data) ->
+      param.required data
+      return unless Project.validateSave data
+
+      try
+        dump = JSON.parse data.dump
+      catch e
+        return AUtilLog.error "Failed to parse save dump [#{e}]"
+
+      # What does this do?
+      # Dumpable::load.call @, data.dump
+
+      @ui.workspace.reset()
+
+      AUtilLog.info "Loading v#{data.version} Project::dump"
+
+      @saveTimestamp = data.timestamp
+      @textures = _.map dump.textures, (texData) => Texture.load @, texData
+      texture.project = @ for texture in @textures
+
+      @ui.workspace.loadTextures @textures
+
+      ##
+      # We reload the workspace state BEFORE the timeline state
+      # that way we update the timeline correctly.
+      @ui.workspace.load dump.workspace
+
+      ##
+      # This is a timeline load, on the instance level,
+      # rather than the class level, I guess we could treat it as
+      # a singleton object in that essence.
+      @ui.timeline.load dump.timeline
+
+      @
+
 ###
-Changelog
+@Changelog
 
   - "0.1.0": Array<Object> @textures
   - "0.2.0": @textures is now an Array<Texture>
