@@ -1101,7 +1101,7 @@ define (require) ->
     ###
     # Updates all actors in the timeline
     ###
-    _updateAll: ->
+    _updateAllActors: ->
       for actor in @_actors
         @updateActor actor
 
@@ -1123,7 +1123,8 @@ define (require) ->
         when "property.bar.update.actor"
           @updateActor params.actor
         when "actor.update.intime"
-          @updateActor params.actor
+          if !@_playbackID
+            @updateActor params.actor
         when "renamed.actor"
           @updateActor params.actor
         when "selected.actor.update"

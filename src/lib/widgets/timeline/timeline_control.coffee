@@ -18,12 +18,14 @@ define (require) ->
     _endPlayback: ->
       @timeline.clearPlaybackID()
       @timeline.setCursorTime 0
+      @timeline._updateAllActors()
 
     ###
     # @private
     ###
     _pausePlayback: ->
       @timeline.clearPlaybackID()
+      @timeline._updateAllActors()
 
     ###
     # Playback toggle button clicked (play/pause)
