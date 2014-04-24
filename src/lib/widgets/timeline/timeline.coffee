@@ -20,6 +20,7 @@ define (require) ->
   TemplateTimelineKeyframe = require "templates/timeline/keyframe"
 
   Storage = require "storage"
+  config = require "config"
 
   # Timeline widget, serving as the main control center for objects.
   class Timeline extends Widget
@@ -78,6 +79,7 @@ define (require) ->
       super()
 
       @_visible = Storage.get("timeline.visible") == true
+
       if @_visible
         @show()
       else
@@ -613,7 +615,7 @@ define (require) ->
     switchSelectedActorByIndex: (index) -> @switchSelectedActor @_actors[index]
 
     ###
-    # Refreshes the state of the timeline toggle icons and storage
+    # Updates the state of the timeline toggle icons and storage
     ###
     updateVisible: ->
       Storage.set "timeline.visible", @_visible
@@ -930,6 +932,7 @@ define (require) ->
     refresh: ->
       super()
       @_setupScrollbar()
+      @refreshVisible()
       @
 
     ###
@@ -1118,6 +1121,9 @@ define (require) ->
           @updateActor params.actor
         when "selected.actor.update"
           @updateActor params.actor
+
+
+    ## Serialization
 
     ###
     # @return [Object] data

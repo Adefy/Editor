@@ -84,6 +84,19 @@ define (require) ->
     processValue: null
 
     ###
+    # Create an object suitable for inclusion in a prop buffer entry
+    #
+    # @return [Object] snapshot
+    ###
+    getBufferSnapshot: ->
+      snapshot = components: {}
+
+      for cName, cValue of @getProperties()
+        snapshot.components[cName] = value: cValue.getValue()
+
+      snapshot
+
+    ###
     # Dumps as a basic Object
     # @return [Object] data
     ###
@@ -120,3 +133,4 @@ define (require) ->
             @addProperty id, newProperty
 
       @
+

@@ -163,14 +163,31 @@ define (require) ->
         position.y = value
         @_AJSActor.setPosition position
 
-      @_properties.position.x.requestUpdate = ->
-        @setValue me._AJSActor.getPosition().x if me._AJSActor
+      @_properties.layer = new CompositeProperty()
+      @_properties.layer.icon = config.icon.property_layer
+      @_properties.layer.main = new NumericProperty()
+      @_properties.layer.main.setValue 0
+      @_properties.layer.main.setPrecision 0
 
-      @_properties.position.y.requestUpdate = ->
-        @setValue me._AJSActor.getPosition().y if me._AJSActor
+      @_properties.layer.physics = new NumericProperty()
+      @_properties.layer.physics.clone @_properties.layer.main
 
-      @_properties.position.addProperty "x", @_properties.position.x
-      @_properties.position.addProperty "y", @_properties.position.y
+      @_properties.layer.main.onUpdate = (_layer_) =>
+        @_AJSActor.setLayer _layer_
+      @_properties.layer.main.requestUpdate = ->
+        @setValue me._AJSActor.getLayer() if me._AJSActor
+
+      @_properties.layer.physics.onUpdate (_layer_) =>
+        @_AJSActor.setPhysicsLayer _layer_
+      @_properties.layer.physics.requestUpdate = ->
+        @setValue me._AJSActor.getPhysicsLayer() if me._AJSActor
+
+      @_properties.layer.addProperty "main",
+        @_properties.layer.main
+
+      @_properties.layer.addProperty "physics",
+        @_properties.layer.physics
+
 
       @_properties.color = new CompositeProperty()
       @_properties.color.icon = config.icon.property_color
@@ -221,7 +238,9 @@ define (require) ->
 
       @_properties.physics = new CompositeProperty()
       @_properties.physics.icon = config.icon.property_physics
+      @_properties.physics.setVisibleInToolbar false
       @_properties.physics.mass = new NumericProperty()
+
       @_properties.physics.mass.setMin 0
       @_properties.physics.mass.setPlaceholder 50
       @_properties.physics.mass.setValue 50
@@ -272,6 +291,14 @@ define (require) ->
     # @return [String] name
     ###
     getName: -> @name
+
+    ###
+    # Helper to get the index into our prop buffer for the birth entry
+    #
+    # @return [Number] index
+    ###
+    getBirthIndex: ->
+      Math.floor @lifetimeStart_ms
 
     ###
     # Get internal actors' id. Note that the actor must exist for this!
@@ -551,6 +578,7 @@ define (require) ->
       param.required time
       param.required deltas
 
+      @_propBuffer[Math.floor(time)] ||= {}
       _.extend @_propBuffer[Math.floor(time)], @_serializeProperties deltas
 
     ###
@@ -1262,17 +1290,7 @@ define (require) ->
         else
           needsSerialization = _.find(delta, (d) -> d == name) != undefined
 
-        if needsSerialization
-          props[name] = {}
-
-          if value.getType() == "composite"
-            props[name].components = {}
-
-            for cName, cValue of value.getProperties()
-              props[name].components[cName] = value: cValue.getValue()
-
-          else
-            props[name].value = value.getValue()
+        props[name] = value.getBufferSnapshot() if needsSerialization
 
       props
 
@@ -1397,6 +1415,53 @@ define (require) ->
       data
 
     ###
+    # Goes through and makes sure that our birth state contains an entry for
+    # each of our properties. Deletes buffer entries if they reference
+    # properties we don't have.
+    #
+    # This makes sure older saves can be loaded by newer actor code.
+    ###
+    _ensureBufferIntegrity: ->
+      @_ensureBirthIntegrity()
+      @_normalizePropBuffer()
+
+    ###
+    # Make sure each of our properties is represented in the prop buffer birth
+    # entry, and delete any foreign ones.
+    #
+    # WARNING: This uses the current values of our properties in case they are
+    #          found to be missing!
+    ###
+    _ensureBirthIntegrity: ->
+      birth = @_propBuffer[@getBirthIndex()]
+
+      for prop, propValue of @_properties
+
+        # Property exists, confirm composite nature if necessary
+        if birth[prop]
+          if birth[prop].components and propValue.getType() != "composite"
+
+            AUtilLog.warning "Invalid birth entry [#{prop}] expected composite"
+            AUtilLog.warning "Repairing birth entry"
+            birth[prop] = propValue.getBufferSnapshot()
+        else
+          AUtilLog.warning "Birth entry not found for [#{prop}], repairing.."
+          birth[prop] = propValue.getBufferSnapshot()
+
+    ###
+    # Go through and delete any entries in our prop buffer that don't exist in
+    # our properties hash. This makes loading old saves safer, in case of them
+    # including entries we no longer support
+    ###
+    _normalizePropBuffer: ->
+      for entry, buffer of @_propBuffer
+        for prop of buffer
+          unless @_properties[prop]
+            AUtilLog.warning "Unsupported property in prop buffer [#{prop}]"
+            AUtilLog.warning "Removing #{prop} from buffer entry #{entry}"
+            delete @_propBuffer[entry]
+
+    ###
     # Loads properties, animations, and a prop buffer from a saved state
     #
     # @param [Object] data
@@ -1409,6 +1474,10 @@ define (require) ->
 
       # Load everything else
       @_propBuffer = data.propBuffer
+
+      # Ensure the prop buffer contains entries for each of our properties (it
+      # won't if we've added something and are loading an older save)
+      @_ensureBufferIntegrity()
 
       @setTextureByUID data.texture if data.texture
 

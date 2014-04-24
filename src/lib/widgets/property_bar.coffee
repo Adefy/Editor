@@ -148,8 +148,11 @@ define (require) ->
 
       # Bring together all non-composites and render them under the "Basic"
       # label
-      nonComposites = _.filter properties, (p) -> p[1].getType() != "composite"
-      composites = _.filter properties, (p) -> p[1].getType() == "composite"
+      nonComposites = _.filter properties, (p) ->
+        p[1].getType() != "composite" and p[1].showInToolbar()
+
+      composites = _.filter properties, (p) ->
+        p[1].getType() == "composite" and p[1].showInToolbar()
 
       if nonComposites.length > 0
         fakeControl = new CompositeProperty()
@@ -163,10 +166,9 @@ define (require) ->
         nonCompositeHTML = ""
 
       compositeHTML = composites.map (p) =>
-        icn = config.icon.property_default
         name = p[0]
         property = p[1]
-
+        icn = config.icon.property_default
         icn = property.icon if property.icon
 
         @generateControl { name: name, icon: icn }, property
