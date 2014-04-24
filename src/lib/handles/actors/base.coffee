@@ -130,6 +130,7 @@ define (require) ->
       me = @
 
       @_properties.rotation = new NumericProperty()
+      @_properties.rotation.setVisibleInToolbar false
       @_properties.rotation.setMin 0
       @_properties.rotation.setMax 360
       @_properties.rotation.setPrecision config.precision.rotation
@@ -266,7 +267,6 @@ define (require) ->
 
       @_properties.physics = new CompositeProperty()
       @_properties.physics.icon = config.icon.property_physics
-      @_properties.physics.setVisibleInToolbar false
 
       @_properties.physics.mass = new NumericProperty()
       @_properties.physics.mass.setVisibleInToolbar false

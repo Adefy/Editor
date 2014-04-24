@@ -361,11 +361,11 @@ define (require) ->
         width: width
         parent: parent
 
-    renderControl_boolean: (displayName, value, width, parent) ->
+    renderControl_boolean: (data, value) ->
       value = param.required value
       displayName = param.required data.name
-      width = param.optional width, "100%"
-      parent = param.optional parent, false
+      width = param.optional data.width, "100%"
+      parent = param.optional data.parent, false
 
       TemplateBooleanControl
         displayName: displayName
