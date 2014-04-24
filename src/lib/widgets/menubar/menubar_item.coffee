@@ -47,7 +47,7 @@ define (require) ->
     ###
     registerHandlers: ->
       if @click
-        AUtilLog.info "registering handler for ##{@_secondaryID}"
+        #AUtilLog.info "registering handler for ##{@_secondaryID}"
         $("##{@_id}")[0].onclick = @click
 
       for child in @_children
