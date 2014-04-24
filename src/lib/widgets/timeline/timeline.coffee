@@ -434,7 +434,7 @@ define (require) ->
 
       @_cursorDraggable = new Draggable "#timeline-cursor"
       @_cursorDraggable.constrainToX()
-      @_cursorDraggable.constrainToParent()
+      @_cursorDraggable.constrainToElement ".timeline .content .time"
 
       # Cancel the drag if we are currently in the middle of playback
       @_cursorDraggable.setCondition => @_playbackID == null
@@ -946,6 +946,7 @@ define (require) ->
     ###
     postRefresh: ->
       super()
+      @
 
     ## UPDATE
 
