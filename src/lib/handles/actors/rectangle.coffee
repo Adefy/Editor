@@ -40,15 +40,25 @@ define (require) ->
 
       @setName "Rectangle #{@_id_n}"
 
+      @initPropertyWidth()
+      @initPropertyHeight()
+
       @_properties.position.setValue x: x, y: y
+      @_properties.width.setValue w
+      @_properties.height.setValue h
       @_properties.rotation.setValue rotation
 
-      me = @
+      @postInit() unless manualInit
 
+    ###
+    # Initialize Actor width property
+    ###
+    initPropertyWidth: ->
+      me = @
       @_properties.width = new NumericProperty()
       @_properties.width.setMin 0
       @_properties.width.setPlaceholder 100
-      @_properties.width.setValue w
+      @_properties.width.setValue 1
       @_properties.width.setPrecision config.precision.width
       @_properties.width.requestUpdate = ->
         @setValue me._AJSActor.getWidth() if me._AJSActor
@@ -60,11 +70,15 @@ define (require) ->
         options.startVal = animation._start.y
         options
 
-
+    ###
+    # Initialize Actor height property
+    ###
+    initPropertyHeight: ->
+      me = @
       @_properties.height = new NumericProperty()
       @_properties.height.setMin 0
       @_properties.height.setPlaceholder 100
-      @_properties.height.setValue h
+      @_properties.height.setValue 1
       @_properties.height.setPrecision config.precision.height
       @_properties.height.requestUpdate = ->
         @setValue me._AJSActor.getHeight() if me._AJSActor
@@ -75,8 +89,6 @@ define (require) ->
       @_properties.height.genAnimationOpts = (animation, options) ->
         options.startVal = animation._start.y
         options
-
-      @postInit() unless manualInit
 
     ###
     # Get rectangle height value

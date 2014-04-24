@@ -40,14 +40,25 @@ define (require) ->
 
       @setName "Polygon #{@_id_n}"
 
+      @initPropertySides()
+      @initPropertyRadius()
+
       @_properties.position.setValue x: x, y: y
+      @_properties.sides.setValue sides
+      @_properties.radius.setValue radius
       @_properties.rotation.setValue rotation
 
+      @postInit() unless manualInit
+
+    ###
+    # Initialize Actor sides property
+    ###
+    initPropertySides: ->
       @_properties.sides = new NumericProperty()
       @_properties.sides.setMin 3
       @_properties.sides.setPlaceholder 5
       @_properties.sides.setFloat false
-      @_properties.sides.setValue sides
+      @_properties.sides.setValue 3
       @_properties.sides.setPrecision config.precision.sides
       @_properties.sides.onUpdate = (sides) =>
         @_AJSActor.setSegments sides if @_AJSActor
@@ -56,10 +67,14 @@ define (require) ->
         options.startVal = animation._start.y
         options
 
+    ###
+    # Initialize Actor radius property
+    ###
+    initPropertyRadius: ->
       @_properties.radius = new NumericProperty()
       @_properties.radius.setMin 0
       @_properties.radius.setPlaceholder 50
-      @_properties.radius.setValue radius
+      @_properties.radius.setValue 10
       @_properties.radius.setPrecision config.precision.radius
       @_properties.radius.onUpdate = (radius) =>
         @_AJSActor.setRadius radius if @_AJSActor
@@ -68,20 +83,25 @@ define (require) ->
         options.startVal = animation._start.y
         options
 
-      @postInit() unless manualInit
 
+    ###
     # Get polygon side count
     #
     # @return [Number] sides
+    ###
     getSides: -> @_properties.sides.getValue()
 
+    ###
     # Get rectangle radius value
     #
     # @return [Number] radius
+    ###
     getRadius: -> @_properties.radius.getValue()
 
+    ###
     # Instantiate our AJS actor
     # @private
+    ###
     _birth: ->
       return if @_alive
       @_alive = true
