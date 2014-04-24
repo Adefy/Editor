@@ -60,15 +60,19 @@ define
 
   ##
   locale:
-    paste:  "Paste"
-    copy:   "Copy"
-    cut:    "Cut"
+    duplicate: "Duplicate"
+    copy:      "Copy"
+    cut:       "Cut"
+    paste:     "Paste"
+
     title:
       create: "Create"
 
     label:
       spawn_command:    "Spawn"
       create_menu_item: "Create +"
+      texture_modal:    "Texture ..."
+      physics_modal:    "Physics ..."
       ##
       actor_rectangle:  "Rectangle Actor"
       actor_polygon:    "Polygon Actor"

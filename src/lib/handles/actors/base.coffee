@@ -86,16 +86,16 @@ define (require) ->
 
       @_ctx = _.extend @_ctx,
         copy:
-          name: "Copy"
+          name: config.locale.copy
           cb: => @_contextFuncCopy @
         dup:
-          name: "Duplicate"
+          name: config.locale.duplicate
           cb: => @_contextFuncDuplicate @
         setTexture:
-          name: "Set Texture..."
+          name: config.locale.label.texture_modal
           cb: => @_contextFuncSetTexture @
         editPhysics:
-          name: "Physics..."
+          name: config.locale.label.physics_modal
           cb: => @_contextFuncEditPhysics @
 
       @initPropertyOpacity()
@@ -192,11 +192,8 @@ define (require) ->
       @_properties.layer.physics.requestUpdate = ->
         @setValue me._AJSActor.getPhysicsLayer() if me._AJSActor
 
-      @_properties.layer.addProperty "main",
-        @_properties.layer.main
-
-      @_properties.layer.addProperty "physics",
-        @_properties.layer.physics
+      @_properties.layer.addProperty "main", @_properties.layer.main
+      @_properties.layer.addProperty "physics", @_properties.layer.physics
 
     ###
     # Initialize Actor Color properties
