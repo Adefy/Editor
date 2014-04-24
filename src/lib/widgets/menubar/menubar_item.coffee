@@ -3,6 +3,8 @@ define (require) ->
   ID = require "util/id"
   param = require "util/param"
 
+  AUtilLog = require "util/log"
+
   Renderable = require "mixin/renderable"
 
   TemplateMenubarItem = require "templates/menubar/item"
@@ -44,7 +46,13 @@ define (require) ->
     # @return [self]
     ###
     registerHandlers: ->
-      $("##{@_id}")[0].onclick = @click if @click
+      if @click
+        AUtilLog.info "registering handler for ##{@_secondaryID}"
+        $("##{@_id}")[0].onclick = @click
+
+      for child in @_children
+        child.registerHandlers()
+
       @
 
     ###

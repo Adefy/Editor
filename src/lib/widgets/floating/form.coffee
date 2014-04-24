@@ -95,7 +95,6 @@ define (require) ->
     # @return [String]
     ###
     render: ->
-      super() +
       TemplateModal
         title: @_title
         content: @_HTMLContent
