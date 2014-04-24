@@ -190,7 +190,7 @@ define (require) ->
       AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, =>
         AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
 
-        @ui.pushEvent "update.textures"
+        @ui.pushEvent "update.texture", texture: texture
 
         # Refresh any actors that already have the texture assigned
         for actor in @actorObjects
@@ -506,7 +506,6 @@ define (require) ->
           document.body.style.cursor = "pointer"
 
       @draggerRotate.setOnDragEnd (d) =>
-
         document.body.style.cursor = "auto"
 
         if d.getUserData()

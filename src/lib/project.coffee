@@ -5,7 +5,6 @@ define (require) ->
   AUtilLog = require "util/log"
   Asset = require "handles/asset"
   Texture = require "handles/texture"
-  BaseActor = require "handles/actors/base"
   EditorObject = require "editor_object"
   Dumpable = require "mixin/dumpable"
 
@@ -157,6 +156,13 @@ define (require) ->
     # @return [String] id
     ###
     getId: -> @id
+
+    ###
+    # Get project texture array
+    #
+    # @return [Array<Texture>] textures
+    ###
+    getTextures: -> @textures or []
 
     ###
     # Generate a packed save object, ready for sending to a remote, or storing
