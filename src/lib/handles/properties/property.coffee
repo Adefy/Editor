@@ -158,3 +158,10 @@ define (require) ->
     ###
     genAnimationOpts: (animation, options) -> options
 
+    ###
+    # Create an object suitable for inclusion in a prop buffer entry
+    #
+    # @return [Object] snapshot
+    ###
+    getBufferSnapshot: ->
+      { value: @getValue() }

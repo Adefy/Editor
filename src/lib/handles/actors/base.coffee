@@ -222,6 +222,7 @@ define (require) ->
 
 
       @_properties.physics = new CompositeProperty()
+      @_properties.physics.setVisibleInToolbar false
       @_properties.physics.mass = new NumericProperty()
 
       @_properties.physics.mass.setMin 0
@@ -273,6 +274,14 @@ define (require) ->
     # @return [String] name
     ###
     getName: -> @name
+
+    ###
+    # Helper to get the index into our prop buffer for the birth entry
+    #
+    # @return [Number] index
+    ###
+    getBirthIndex: ->
+      Math.floor @lifetimeStart_ms
 
     ###
     # Get internal actors' id. Note that the actor must exist for this!
@@ -552,6 +561,7 @@ define (require) ->
       param.required time
       param.required deltas
 
+      @_propBuffer[Math.floor(time)] ||= {}
       _.extend @_propBuffer[Math.floor(time)], @_serializeProperties deltas
 
     ###
@@ -1229,17 +1239,7 @@ define (require) ->
         else
           needsSerialization = _.find(delta, (d) -> d == name) != undefined
 
-        if needsSerialization
-          props[name] = {}
-
-          if value.getType() == "composite"
-            props[name].components = {}
-
-            for cName, cValue of value.getProperties()
-              props[name].components[cName] = value: cValue.getValue()
-
-          else
-            props[name].value = value.getValue()
+        props[name] = value.getBufferSnapshot() if needsSerialization
 
       props
 
@@ -1299,6 +1299,53 @@ define (require) ->
       data
 
     ###
+    # Goes through and makes sure that our birth state contains an entry for
+    # each of our properties. Deletes buffer entries if they reference
+    # properties we don't have.
+    #
+    # This makes sure older saves can be loaded by newer actor code.
+    ###
+    _ensureBufferIntegrity: ->
+      @_ensureBirthIntegrity()
+      @_normalizePropBuffer()
+
+    ###
+    # Make sure each of our properties is represented in the prop buffer birth
+    # entry, and delete any foreign ones.
+    #
+    # WARNING: This uses the current values of our properties in case they are
+    #          found to be missing!
+    ###
+    _ensureBirthIntegrity: ->
+      birth = @_propBuffer[@getBirthIndex()]
+
+      for prop, propValue of @_properties
+
+        # Property exists, confirm composite nature if necessary
+        if birth[prop]
+          if birth[prop].components and propValue.getType() != "composite"
+
+            AUtilLog.warning "Invalid birth entry [#{prop}] expected composite"
+            AUtilLog.warning "Repairing birth entry"
+            birth[prop] = propValue.getBufferSnapshot()
+        else
+          AUtilLog.warning "Birth entry not found for [#{prop}], repairing.."
+          birth[prop] = propValue.getBufferSnapshot()
+
+    ###
+    # Go through and delete any entries in our prop buffer that don't exist in
+    # our properties hash. This makes loading old saves safer, in case of them
+    # including entries we no longer support
+    ###
+    _normalizePropBuffer: ->
+      for entry, buffer of @_propBuffer
+        for prop of buffer
+          unless @_properties[prop]
+            AUtilLog.warning "Unsupported property in prop buffer [#{prop}]"
+            AUtilLog.warning "Removing #{prop} from buffer entry #{entry}"
+            delete @_propBuffer[entry]
+
+    ###
     # Loads properties, animations, and a prop buffer from a saved state
     #
     # @param [Object] data
@@ -1311,6 +1358,10 @@ define (require) ->
 
       # Load everything else
       @_propBuffer = data.propBuffer
+
+      # Ensure the prop buffer contains entries for each of our properties (it
+      # won't if we've added something and are loading an older save)
+      @_ensureBufferIntegrity()
 
       @setTextureByUID data.texture if data.texture
 

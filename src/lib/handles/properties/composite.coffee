@@ -119,3 +119,16 @@ define (require) ->
 
     validateValue: null
     processValue: null
+
+    ###
+    # Create an object suitable for inclusion in a prop buffer entry
+    #
+    # @return [Object] snapshot
+    ###
+    getBufferSnapshot: ->
+      snapshot = components: {}
+
+      for cName, cValue of @getProperties()
+        snapshot.components[cName] = value: cValue.getValue()
+
+      snapshot
