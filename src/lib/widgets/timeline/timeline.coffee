@@ -18,6 +18,7 @@ define (require) ->
   TemplateTimelineKeyframe = require "templates/timeline/keyframe"
 
   Storage = require "storage"
+  config = require "config"
 
   # Timeline widget, serving as the main control center for objects.
   class Timeline extends Widget

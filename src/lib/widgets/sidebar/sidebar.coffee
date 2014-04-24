@@ -5,6 +5,7 @@ define (require) ->
   ID = require "util/id"
   Widget = require "widgets/widget"
   Storage = require "storage"
+  config = require "config"
 
   # Generic sidebar, needs to be specialized to be useful
   #

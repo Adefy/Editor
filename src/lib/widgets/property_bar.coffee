@@ -159,6 +159,7 @@ define (require) ->
       compositeHTML = composites.map (p) =>
         icn = "fa-cog"
         name = p[0]
+
         # wtf hax
         switch name
           when "basic"    then icn = "fa-cog"
