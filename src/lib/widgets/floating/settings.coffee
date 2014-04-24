@@ -55,8 +55,6 @@ define (require) ->
         else
           setting.computedType = "text"
 
-        delete setting.type
-
       SettingsWidgetTemplate
         settings: settings
         title: @_title
@@ -89,9 +87,10 @@ define (require) ->
     ###
     _dumpData: ->
       settings = _.pluck @_settings, "id"
-      inputSel = ".input input[data-id=#{setting.id}]"
 
       values = _.map @_settings, (setting) =>
+
+        inputSel = ".input input[data-id=#{setting.id}]"
 
         if setting.type == Number
           value = Number @getElement(inputSel).val()
