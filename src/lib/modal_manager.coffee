@@ -367,7 +367,7 @@ define (require) ->
           textures.push texture
 
         @ui.workspace.loadTextures(textures)
-        @ui.pushEvent "upload.textures"
+        @ui.pushEvent "upload.textures", textures: textures
 
         cb blob if cb = options.cb
 

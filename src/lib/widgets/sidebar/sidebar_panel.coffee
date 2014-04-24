@@ -120,7 +120,7 @@ define (require) ->
 
       if tab
         tcontent = tab.content
-        content = tcontent.renderStub()
+        content = tcontent.render()
         contentKlass = tcontent.cssAppendParentClass()
         contentId = tcontent.appendParentId()
         usesFooter = tcontent.needPanelFooter()
@@ -168,7 +168,14 @@ define (require) ->
       @
 
     ###
-    # When a child element changes size, position, this function is called
+    # When a child element refreshes
+    # @param [Widget] child
+    ###
+    onChildRefresh: (child) ->
+      @_setupScrollbar()
+
+    ###
+    # When a child element does some form of content update
     # @param [Widget] child
     ###
     onChildUpdate: (child) ->

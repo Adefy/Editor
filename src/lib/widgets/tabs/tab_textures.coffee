@@ -134,6 +134,8 @@ define (require) ->
       textureElement.find(".img img").attr "src", texture.getURL()
       textureElement.find(".name img").text texture.getName()
 
+      @onUpdate()
+
     ###
     # @param [String] type
     # @param [Object] params
@@ -144,6 +146,6 @@ define (require) ->
       switch type
         when "rename.texture", "update.texture"
           @updateTexture params.texture
-        when "upload.textures", "remove.texture"
+        when "load.texture", "upload.texture", "remove.texture"
           # params.texture
           @refresh()

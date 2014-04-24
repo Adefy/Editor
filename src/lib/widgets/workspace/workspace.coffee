@@ -190,7 +190,7 @@ define (require) ->
       AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, =>
         AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
 
-        @ui.pushEvent "update.texture", texture: texture
+        @ui.pushEvent "load.texture", texture: texture
 
         # Refresh any actors that already have the texture assigned
         for actor in @actorObjects

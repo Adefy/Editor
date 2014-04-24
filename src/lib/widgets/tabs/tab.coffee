@@ -58,7 +58,14 @@ define (require) ->
     # @return [self]
     ###
     refresh: ->
-      #@replaceElement @render()
-      @removeElement()
-      @getParentElement().append @render()
+      # tabs replace their content in the parent instead of self managing
+      @getElement().html @render()
+      @_parent.onChildRefresh @ if @_parent
+      @
+
+    ###
+    # @return [self]
+    ###
+    onUpdate: ->
+      @_parent.onChildUpdate @ if @_parent
       @
