@@ -1,13 +1,9 @@
 define ->
 
+  config = require "config"
   AUtilLog = require "util/log"
 
   class AUtilEventLog
-
-    ###
-    # @type [Boolean]
-    ###
-    @enabled: false
 
     ###
     # @param [String] tag
@@ -15,7 +11,7 @@ define ->
     # @param [String] type
     ###
     @elog: (tag, method, type) ->
-      if @enabled
+      if config.debug.event_log
         AUtilLog.debug "[#{tag}] #{method} event(type: \"#{type}\")"
 
     ###

@@ -2,6 +2,10 @@
 # AdefyEditor config
 ###
 define
+  debug:
+    event_log: false
+    render_log: false
+
   use:
     # affects whether or
     particle_system: false

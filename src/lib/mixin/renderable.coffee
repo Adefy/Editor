@@ -31,12 +31,12 @@ define (requre) ->
     # @return [String]
     ###
     render: ->
-      AUtilLog.info "#{@.constructor.name}#render"
+      AUtilLog.info "#{@.constructor.name}#render" if config.debug.render_log
       ""
 
     ###
     # @return [String]
     ###
     renderStub: ->
-      AUtilLog.info "#{@.constructor.name}#renderStub"
+      AUtilLog.info "#{@.constructor.name}#renderStub" if config.debug.render_log
       ""
