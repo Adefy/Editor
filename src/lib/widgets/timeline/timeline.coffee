@@ -655,8 +655,11 @@ define (require) ->
       @_visible = true
 
       if animate
-        @getElement().animate height: @_height, 300, "swing", =>
-          @ui.pushEvent "timeline.show"
+        @getElement().animate { height: @_height },
+          duration: 300
+          easer: "swing"
+          progress: => @ui.pushEvent "timeline.showing"
+          done: => @ui.pushEvent "timeline.show"
       else
         @getElement().height @_height
         @ui.pushEvent "timeline.show"
@@ -682,8 +685,11 @@ define (require) ->
       @_visible = false
 
       if animate
-        @getElement().animate height: @_hiddenHeight, 300, "swing", =>
-          @ui.pushEvent "timeline.hide"
+        @getElement().animate { height: @_hiddenHeight },
+          duration: 300
+          easer: "swing"
+          progress: => @ui.pushEvent "timeline.hiding"
+          done: => @ui.pushEvent "timeline.hide"
       else
         @getElement().height @_hiddenHeight
         @ui.pushEvent "timeline.hide"

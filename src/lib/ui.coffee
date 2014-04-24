@@ -65,11 +65,15 @@ define (require) ->
         else if document.webkitCancelFullScreen
           document.webkitCancelFullScreen()
 
-    onResize: =>
-
+    updateSectionMain: =>
       $("section.main").height $(window).height() - \
                                $("header").height() - \
                                $("footer").height()
+      @
+
+    onResize: =>
+
+      @updateSectionMain()
 
       for widget in @widgets
         widget.onResize() if widget.onResize
@@ -302,6 +306,12 @@ define (require) ->
           return AUtilEventLog.ignore "ui", type
 
       AUtilEventLog.epush "ui", type
+
+      if type == "timeline.hiding" || type == "timeline.showing"
+        @updateSectionMain()
+
+      if type == "timeline.hide" || type == "timeline.show"
+        @onResize()
 
       ## we should probably fine tune this later
       for widget in @widgets
