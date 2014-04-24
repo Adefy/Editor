@@ -119,6 +119,7 @@ define (require) ->
       @getElement().html @render()
       @refreshVisible()
       @postRefresh()
+      @
 
     ###
     # postRefresh! Calls all the child postRefresh
@@ -129,10 +130,17 @@ define (require) ->
       for item in @_items
         item.postRefresh() if item.postRefresh
 
+      @
+
+    ###
+    # @return [self]
+    ###
     refreshStub: ->
       super()
       for item in @_items
         item.refreshStub() if item.refreshStub
+
+      @
 
     ###
     # Take the navbar into account, and always position ourselves below it
@@ -228,8 +236,5 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-      if (type == "timeline.show") || (type == "timeline.hide")
-        @onResize()
-
       for item in @_items
         item.respondToEvent(type, params) if item.respondToEvent
