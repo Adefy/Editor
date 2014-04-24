@@ -8,6 +8,14 @@ define (require) ->
   class Tab extends Widget
 
     ###
+    # @param [UIManager] ui
+    # @param [Object] options
+    ###
+    constructor: (@ui, options) ->
+      param.required options.parent
+      super @ui, options
+
+    ###
     # @return [Boolean] needPanelFooter do we need a panel footer?
     ###
     needPanelFooter: -> false
@@ -33,6 +41,7 @@ define (require) ->
 
     ###
     # Iterate through our parents untill we reach our parent sidebar
+    # @return []
     ###
     getSidebar: ->
       sidebar = @_parent

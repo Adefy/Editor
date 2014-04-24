@@ -11,8 +11,10 @@ define (require) ->
     ###
     # Creates a new base sidebar item.
     #
-    # @param [Sidebar] parent sidebar parent
-    # @param [Array<String>] classes optional array of classes
+    # @param [UIManager] ui
+    # @param [Object] options
+    #   @option [Sidebar] parent sidebar parent
+    #   @option [Array<String>] classes optional array of classes
     ###
     constructor: (@ui, options) ->
       param.required options.parent

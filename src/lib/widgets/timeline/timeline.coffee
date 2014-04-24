@@ -938,7 +938,7 @@ define (require) ->
     refresh: ->
       super()
       @_setupScrollbar()
-      @refreshVisible()
+      @updateVisible()
       @
 
     ###

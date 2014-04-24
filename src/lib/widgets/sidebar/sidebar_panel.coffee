@@ -11,6 +11,8 @@ define (require) ->
     # @param [Sidebar] parent
     ###
     constructor: (@ui, options) ->
+      param.required options.parent
+
       @_tabs = []
       @_footerActive = false
 

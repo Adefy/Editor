@@ -92,7 +92,7 @@ define (require) ->
       @sidebar = new Sidebar @, 310
 
       panel = new SidebarPanel @, parent: @sidebar
-      panel.newTab "Textures", (tab) => new TexturesTab @, panel
+      panel.newTab "Textures", (tab) => new TexturesTab @, parent: panel
       panel.selectTab 0
 
       @sidebar

@@ -21,10 +21,11 @@ define (require) ->
     # the widget. The parent is either a string selector, or an object offering
     # a getSel() method.
     #
-    # @param [String] id container id
-    # @param [Object] parent container parent, defaults to "body"
-    # @param [Array<String>] classes an array containing classes to be applied
-    # @param [Boolean] prepend if true, we are prepended to the parent
+    # @param [UIManager] ui
+    # @param [Object] options
+    #   @option [ID] id
+    #   @option [Object] parent
+    #   @option [Array<String>] classes
     ###
     constructor: (@ui, options) ->
       options   = param.optional options, {}
