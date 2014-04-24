@@ -404,7 +404,7 @@ define (require) ->
     ###
     showEditActorPsyx: (actor) ->
 
-      new SettingsWidget
+      new SettingsWidget @ui,
         title: "Actor Physics"
         settings: [
           label: "Mass"
