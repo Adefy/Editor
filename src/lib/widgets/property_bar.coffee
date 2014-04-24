@@ -87,7 +87,7 @@ define (require) ->
     ###
     registerInputListener: ->
 
-      $(document).on "input", "dl > dd > input", (e) =>
+      $(document).on "change", "#{@_sel} .control > input", (e) =>
         @saveControl e.target
         @ui.pushEvent "property.bar.update.actor", actor: @targetActor
 
@@ -315,6 +315,7 @@ define (require) ->
           type = component[1].getType()
 
           return "" unless @["renderControl_#{type}"]
+          return "" unless component[1].showInToolbar()
 
           # Note that we handle the "Basic" composite differently here
           componentCount = batch.length
@@ -360,11 +361,11 @@ define (require) ->
         width: width
         parent: parent
 
-    renderControl_bool: (data, value) ->
+    renderControl_boolean: (displayName, value, width, parent) ->
       value = param.required value
       displayName = param.required data.name
-      width = param.optional data.width, "100%"
-      parent = param.optional data.parent, false
+      width = param.optional width, "100%"
+      parent = param.optional parent, false
 
       TemplateBooleanControl
         displayName: displayName

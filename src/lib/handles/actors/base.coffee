@@ -92,8 +92,11 @@ define (require) ->
           name: "Duplicate"
           cb: => @_contextFuncDuplicate @
         setTexture:
-          name: "Set Texture ..."
+          name: "Set Texture..."
           cb: => @_contextFuncSetTexture @
+        editPhysics:
+          name: "Physics..."
+          cb: => @_contextFuncEditPhysics @
 
       @initPropertyOpacity()
       @initPropertyRotation()
@@ -202,6 +205,15 @@ define (require) ->
 
       @_properties.color = new CompositeProperty()
       @_properties.color.icon = config.icon.property_color
+
+      ##
+      ## Temporary, untill we have a color picker
+      ##
+      @_properties.color.setVisibleInToolbar false
+      ##
+      ##
+      ##
+
       @_properties.color.r = new NumericProperty()
       @_properties.color.r.setMin 0
       @_properties.color.r.setMax 255
@@ -255,7 +267,9 @@ define (require) ->
       @_properties.physics = new CompositeProperty()
       @_properties.physics.icon = config.icon.property_physics
       @_properties.physics.setVisibleInToolbar false
+
       @_properties.physics.mass = new NumericProperty()
+      @_properties.physics.mass.setVisibleInToolbar false
 
       @_properties.physics.mass.setMin 0
       @_properties.physics.mass.setPlaceholder 50
@@ -266,6 +280,7 @@ define (require) ->
         @_AJSActor.setMass mass if @_AJSActor
 
       @_properties.physics.elasticity = new NumericProperty()
+      @_properties.physics.elasticity.setVisibleInToolbar false
       @_properties.physics.elasticity.setMin 0
       @_properties.physics.elasticity.setMax 1
       @_properties.physics.elasticity.setPrecision config.precision.physics_elasticity
@@ -276,6 +291,7 @@ define (require) ->
         @_AJSActor.setElasticity elasticity if @_AJSActor
 
       @_properties.physics.friction = new NumericProperty()
+      @_properties.physics.friction.setVisibleInToolbar false
       @_properties.physics.friction.setMin 0
       @_properties.physics.friction.setMax 1
       @_properties.physics.friction.setPrecision config.precision.physics_friction
@@ -301,6 +317,15 @@ define (require) ->
       @_properties.physics.addProperty "elasticity", @_properties.physics.elasticity
       @_properties.physics.addProperty "friction", @_properties.physics.friction
       @_properties.physics.addProperty "enabled", @_properties.physics.enabled
+
+    ###
+    # Get actor property by name
+    #
+    # @param [String] name
+    # @return [Property] property
+    ###
+    getProperty: (name) ->
+      @_properties[name]
 
     ###
     # Get the actor's name
@@ -481,11 +506,8 @@ define (require) ->
     # @param [Texture] texture
     ###
     setTexture: (@_texture) ->
-      if @_texture
-        @_AJSActor.setTexture @_texture.getUID()
-      else
-        @_AJSActor.setTexture null
-
+      @_textureUID = @_texture.getUID()
+      @_AJSActor.setTexture @_texture.getUID() if @_texture
       @updateInTime()
 
     ###
@@ -495,6 +517,8 @@ define (require) ->
     setTextureByUID: (uid) ->
       texture = _.find Project.current.getTextures(), (t) ->
         t.getUID() == uid
+
+      @_textureUID = uid
 
       try
         @setTexture texture
@@ -509,7 +533,7 @@ define (require) ->
     # @return [String] uid
     ###
     getTextureUID: ->
-      @_AJSActor.getTexture()
+      @_textureUID
 
     ###
     # Used when exporting, executes the corresponding property genAnimationOpts
@@ -1361,9 +1385,7 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     _contextFuncSetTexture: (actor) ->
-
       @ui.modals.showSetTexture actor
-
       @
 
     ###
@@ -1371,7 +1393,6 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     _contextFuncCopy: (actor) ->
-
       window.AdefyEditor.clipboard =
         type: "actor"
         reason: "copy"
@@ -1391,7 +1412,6 @@ define (require) ->
       newActor.setPosition pos.x + 16, pos.y + 16
 
       @ui.workspace.addActor newActor
-
       @
 
     ###
@@ -1517,9 +1537,16 @@ define (require) ->
 
       @
 
+    ###
+    # Open a settings widget for physics editing
+    # @param [BaseActor] actor
+    ###
+    _contextFuncEditPhysics: (actor) ->
+      @ui.modals.showEditActorPsyx actor
+      @
+
 ###
 @Changelog
 
   - "1.0.0": Initial
-
 ###
