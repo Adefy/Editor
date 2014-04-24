@@ -145,6 +145,12 @@ define (require) ->
         @genElement "div", id: @_id, class: @_classes.join(" ")
 
     ###
+    # @return [String]
+    ###
+    renderWithStub: ->
+      @renderStub content: @render()
+
+    ###
     # @return [self]
     ###
     refresh: ->

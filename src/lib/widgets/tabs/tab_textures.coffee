@@ -124,12 +124,20 @@ define (require) ->
         listActive: listActive
         thumbsActive: thumbsActive
 
+    ###
+    #
+    # @param [Texture] texture
+    ###
     updateTexture: (texture) ->
 
       textureElement = $("##{texture.getID()}")
       textureElement.find(".img img").attr "src", texture.getURL()
       textureElement.find(".name img").text texture.getName()
 
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
     respondToEvent: (type, params) ->
       AUtilEventLog.egot "tab.textures", type
 

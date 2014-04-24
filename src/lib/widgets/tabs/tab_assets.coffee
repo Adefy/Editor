@@ -112,6 +112,7 @@ define (require) ->
     # @return [String] html
     ###
     render: ->
+      super() +
       @_renderAssets @ui.editor.project.assets.getEntries()
 
     ###

@@ -120,7 +120,7 @@ define (require) ->
 
       if tab
         tcontent = tab.content
-        content = tcontent.render()
+        content = tcontent.renderStub()
         contentKlass = tcontent.cssAppendParentClass()
         contentId = tcontent.appendParentId()
         usesFooter = tcontent.needPanelFooter()
@@ -138,7 +138,23 @@ define (require) ->
         usesFooter: @_footerActive
 
     ###
-    # @return [Void]
+    # @return [self]
+    ###
+    refresh: ->
+      super()
+      tab = _.find @_tabs, (t) -> t.selected
+      tab.refresh() if tab
+
+      @
+
+    ###
+    # @return [self]
+    ###
+    refreshStub: ->
+      super()
+
+    ###
+    # @return [self]
     ###
     postRefresh: ->
       super()
@@ -149,8 +165,7 @@ define (require) ->
         if @_footerActive && content.renderFooter
           @getElement(".footer").html content.renderFooter()
 
-    refreshStub: ->
-      super()
+      @
 
     ###
     # When a child element changes size, position, this function is called
@@ -167,9 +182,3 @@ define (require) ->
       for tab in @_tabs
         if tab.content
           tab.content.respondToEvent type, params if tab.content.respondToEvent
-
-    ###
-    # Panels don't refresh themselves
-    ###
-    refresh: ->
-      @_parent.refresh() if @_parent.refresh
