@@ -395,6 +395,41 @@ define (require) ->
 
           @ui.timeline.setPreviewFPS data.preview_fps
 
+    ###
+    # @return [Modal]
+    ###
+    showEditActorPsyx: (actor) ->
+
+      new SettingsWidget
+        title: "Actor Physics"
+        settings: [
+          label: "Mass"
+          type: Number
+          placeholder: "Enter an actor mass, 0 is static"
+          value: actor.getProperty("physics").mass.getValue()
+          id: "mass"
+          min: 0
+        ,
+          label: "Elasticity %"
+          type: Number
+          placeholder: "Enter actor elasticity"
+          value: actor.getProperty("physics").elasticity.getValue() * 100
+          id: "elasticity"
+          min: 0
+        ,
+          label: "Friction %"
+          type: Number
+          placeholder: "Enter actor friction"
+          value: actor.getProperty("physics").friction.getValue() * 100
+          id: "friction"
+          min: 0
+        ]
+
+        cb: (data) =>
+          actor.getProperty("physics").mass.setValue data.mass
+          actor.getProperty("physics").elasticity.setValue data.elasticity / 100
+          actor.getProperty("physics").friction.setValue data.friction / 100
+
     showOpenProject: ->
       new Modal
         title: "Open Project"

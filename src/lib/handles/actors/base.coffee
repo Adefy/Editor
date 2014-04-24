@@ -82,7 +82,8 @@ define (require) ->
       @_ctx = _.extend @_ctx,
         "Copy": => @_contextFuncCopy @
         "Duplicate": => @_contextFuncDuplicate @
-        "Set Texture ...": => @_contextFuncSetTexture @
+        "Set Texture...": => @_contextFuncSetTexture @
+        "Physics...": => @_contextFuncEditPhysics @
 
       me = @
 
@@ -177,6 +178,14 @@ define (require) ->
 
       @_properties.color = new CompositeProperty()
 
+      ##
+      ## Temporary, untill we have a color picker
+      ##
+      @_properties.color.setVisibleInToolbar false
+      ##
+      ##
+      ##
+
       @_properties.color.r = new NumericProperty()
       @_properties.color.r.setMin 0
       @_properties.color.r.setMax 255
@@ -222,8 +231,8 @@ define (require) ->
 
 
       @_properties.physics = new CompositeProperty()
-      @_properties.physics.setVisibleInToolbar false
       @_properties.physics.mass = new NumericProperty()
+      @_properties.physics.mass.setVisibleInToolbar false
 
       @_properties.physics.mass.setMin 0
       @_properties.physics.mass.setPlaceholder 50
@@ -233,6 +242,7 @@ define (require) ->
         @_AJSActor.setMass mass if @_AJSActor
 
       @_properties.physics.elasticity = new NumericProperty()
+      @_properties.physics.elasticity.setVisibleInToolbar false
       @_properties.physics.elasticity.setMin 0
       @_properties.physics.elasticity.setMax 1
       @_properties.physics.elasticity.setPrecision 6
@@ -243,6 +253,7 @@ define (require) ->
         @_AJSActor.setElasticity elasticity if @_AJSActor
 
       @_properties.physics.friction = new NumericProperty()
+      @_properties.physics.friction.setVisibleInToolbar false
       @_properties.physics.friction.setMin 0
       @_properties.physics.friction.setMax 1
       @_properties.physics.friction.setPrecision 6
@@ -268,6 +279,15 @@ define (require) ->
       @_properties.physics.addProperty "elasticity", @_properties.physics.elasticity
       @_properties.physics.addProperty "friction", @_properties.physics.friction
       @_properties.physics.addProperty "enabled", @_properties.physics.enabled
+
+    ###
+    # Get actor property by name
+    #
+    # @param [String] name
+    # @return [Property] property
+    ###
+    getProperty: (name) ->
+      @_properties[name]
 
     ###
     # Get the actor's name
@@ -1416,9 +1436,16 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     _contextFuncSetTexture: (actor) ->
-
       @ui.modals.showSetTexture actor
 
+      @
+
+    ###
+    # Open a settings widget for physics editing
+    # @param [BaseActor] actor
+    ###
+    _contextFuncEditPhysics: (actor) ->
+      @ui.modals.showEditActorPsyx actor
       @
 
     ###

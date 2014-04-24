@@ -50,6 +50,8 @@ define (require) ->
       for setting in settings
         if setting.type == Number
           setting.computedType = "number"
+        else if setting.type == Boolean
+          setting.computedType = "checkbox"
         else
           setting.computedType = "text"
 
@@ -87,9 +89,17 @@ define (require) ->
     ###
     _dumpData: ->
       settings = _.pluck @_settings, "id"
+      inputSel = ".input input[data-id=#{setting.id}]"
+
       values = _.map @_settings, (setting) =>
-        value = @getElement(".input input[data-id=#{setting.id}]").val()
-        value = Number value if setting.type == Number
+
+        if setting.type == Number
+          value = Number @getElement(inputSel).val()
+        else if setting.type == Boolean
+          value = @getElement(inputSel).is(":checked")
+        else
+          value = @getElement(inputSel).val()
+
         value
 
       _.zipObject settings, values

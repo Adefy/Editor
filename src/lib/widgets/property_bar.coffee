@@ -86,7 +86,7 @@ define (require) ->
     ###
     registerInputListener: ->
 
-      $(document).on "input", "dl > dd > input", (e) =>
+      $(document).on "change", "#{@_sel} .control > input", (e) =>
         @saveControl e.target
         @ui.pushEvent "property.bar.update.actor", actor: @targetActor
 
@@ -315,6 +315,7 @@ define (require) ->
       # Build the control by recursing and concating the result
       contents = _.pairs(value.getProperties()).map (component) =>
         return "" unless @["renderControl_#{component[1].getType()}"]
+        return "" unless component[1].showInToolbar()
 
         # Note that we handle the "Basic" composite differently here
         componentCount = _.keys(value.getProperties()).length
@@ -356,7 +357,7 @@ define (require) ->
         width: width
         parent: parent
 
-    renderControl_bool: (displayName, value, width, parent) ->
+    renderControl_boolean: (displayName, value, width, parent) ->
       width = param.optional width, "100%"
       parent = param.optional parent, false
 
