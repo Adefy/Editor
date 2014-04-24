@@ -1120,7 +1120,7 @@ define (require) ->
             if @_animations[time] && @_animations[time][property]
               return time
         else
-          return _.find times.reverse(), (t) ->
+          return _.find times.reverse(), (t) =>
             source > Number(t) && (@_animations[t] && @_animations[t][property])
       else
         if (index > 0 && (index < times.length))
@@ -1151,7 +1151,7 @@ define (require) ->
             if @_animations[time] && @_animations[time][property]
               return time
         else
-          return _.find times, (t) ->
+          return _.find times, (t) =>
             Number(t) > source && (@_animations[t] && @_animations[t][property])
       else
         if (index >= 0 && (index < times.length-1))
