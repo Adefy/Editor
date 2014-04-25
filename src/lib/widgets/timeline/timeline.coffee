@@ -70,7 +70,7 @@ define (require) ->
 
       @resize 256
 
-      @_regListeners()
+      @_bindListeners()
 
     ###
     # @return [self]
@@ -97,69 +97,6 @@ define (require) ->
         return false
 
       Timeline.__exists = true
-
-    ###
-    # Setup keyframe Dragger
-    ###
-    _setupDraggableKeyframes: ->
-      return if @keyframeDragger
-
-      @keyframeDragger = new Dragger ".actor .keyframes > .keyframe"
-
-      @keyframeDragger.setOnDragStart (d) ->
-        d.setUserData "startTime": Number $(d.getTarget()).attr "data-time"
-
-      # Vertical component is ignored
-      @keyframeDragger.setOnDrag (d, deltaX, deltaY) =>
-
-        id = $(d.getTarget()).attr "id"
-
-        keyframeTime = d.getUserDataValue "startTime"
-        property = $(d.getTarget()).parent().attr("data-property")
-
-        targetTime = keyframeTime + (deltaX * @getTimePerPixel())
-
-        # Cache the actor to speed things up
-        unless d.getUserDataValue "actor"
-          actorId = $(d.getTarget()).closest(".actor").attr "data-actorid"
-          actor = _.find @_actors, (a) -> a.getID() == actorId
-
-          return AUtilLog.error "Invalid actor: #{actorId}" unless actor
-
-          d.setUserDataValue "actor", actor
-        else
-          actor = d.getUserDataValue "actor"
-
-        # Cache keyframe boundary information
-        unless d.getUserDataValue "boundaries"
-
-          boundaries =
-            left: actor.findNearestState keyframeTime, false, property
-            right: actor.findNearestState keyframeTime, true, property
-
-          boundaries.right = @getDuration() if boundaries.right == -1
-
-          d.setUserDataValue "boundaries", boundaries
-        else
-          boundaries = d.getUserDataValue "boundaries"
-
-        return if targetTime > boundaries.right or targetTime < boundaries.left
-
-        source = d.getUserDataValue("lastUpdate") or keyframeTime
-
-        window.a = actor
-
-        actor.transplantKeyframe property, source, targetTime
-        actor.updateInTime()
-
-        d.setUserDataValue "lastUpdate", Math.floor targetTime
-
-        # Update target
-        d.setTarget $("##{id}")
-
-        # Update keyframe
-        $(d.getTarget()).attr "data-time", Math.floor targetTime
-        $(d.getTarget()).css "left", "#{@getOffsetForTime targetTime}px"
 
     ###
     # Returns the time space css selector
@@ -363,6 +300,69 @@ define (require) ->
       @ui.pushEvent "timeline.selected.actor", actor: @_actors[index]
 
     ###
+    # Setup keyframe Dragger
+    # @private
+    ###
+    _bindKeyframeDragging: ->
+      return if @keyframeDragger
+
+      @keyframeDragger = new Dragger ".actor .keyframes > .keyframe"
+
+      @keyframeDragger.setOnDragStart (d) ->
+        d.setUserData "startTime": Number $(d.getTarget()).attr "data-time"
+
+      # Vertical component is ignored
+      @keyframeDragger.setOnDrag (d, deltaX, deltaY) =>
+
+        id = $(d.getTarget()).attr "id"
+
+        keyframeTime = d.getUserDataValue "startTime"
+        property = $(d.getTarget()).parent().attr("data-property")
+
+        targetTime = keyframeTime + (deltaX * @getTimePerPixel())
+
+        # Cache the actor to speed things up
+        unless d.getUserDataValue "actor"
+          actorId = $(d.getTarget()).closest(".actor").attr "data-actorid"
+          actor = _.find @_actors, (a) -> a.getID() == actorId
+
+          return AUtilLog.error "Invalid actor: #{actorId}" unless actor
+
+          d.setUserDataValue "actor", actor
+        else
+          actor = d.getUserDataValue "actor"
+
+        # Cache keyframe boundary information
+        unless d.getUserDataValue "boundaries"
+
+          boundaries =
+            left: actor.findNearestState keyframeTime, false, property
+            right: actor.findNearestState keyframeTime, true, property
+
+          boundaries.right = @getDuration() if boundaries.right == -1
+
+          d.setUserDataValue "boundaries", boundaries
+        else
+          boundaries = d.getUserDataValue "boundaries"
+
+        return if targetTime > boundaries.right or targetTime < boundaries.left
+
+        source = d.getUserDataValue("lastUpdate") or keyframeTime
+
+        window.a = actor
+
+        actor.transplantKeyframe property, source, targetTime
+        actor.updateInTime()
+
+        d.setUserDataValue "lastUpdate", Math.floor targetTime
+
+        # Update target
+        d.setTarget $("##{id}")
+
+        # Update keyframe
+        $(d.getTarget()).attr "data-time", Math.floor targetTime
+        $(d.getTarget()).css "left", "#{@getOffsetForTime targetTime}px"
+
     # @private
     ###
     _bindContextClick: ->
@@ -381,10 +381,10 @@ define (require) ->
     # Registers event listeners
     # @private
     ###
-    _regListeners: ->
+    _bindListeners: ->
 
-      @_setupDraggableKeyframes()
       @_bindContextClick()
+      @_bindKeyframeDragging()
 
       $(document).on "click", ".timeline .button.toggle", (e) =>
         @toggle()

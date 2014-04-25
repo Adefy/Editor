@@ -25,7 +25,7 @@ define (require) ->
 
       super @ui, options
 
-      @_regListeners()
+      @_bindListeners()
 
     ###
     # @return [String]
@@ -74,7 +74,7 @@ define (require) ->
     ###
     # @private
     ###
-    _regListeners: ->
+    _bindListeners: ->
 
       @_bindContextClick()
 

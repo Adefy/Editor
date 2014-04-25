@@ -391,82 +391,9 @@ define (require) ->
         false
 
     ###
-    # Register listeners
-    ###
-    _regListeners: ->
-
-      @_bindContextClick()
-
-      $(document).on "mousemove", ".workspace canvas", (e) =>
-        pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
-
-        pos.x += ARERenderer.camPos.x
-        pos.y += ARERenderer.camPos.y
-
-        $(".workspace .cursor-position").text "x: #{pos.x}, y: #{pos.y}"
-
-      ###
-      # Workspace drag
-      ###
-      $(document).mousemove (e) =>
-        return unless @_workspaceDrag
-
-        x = @_workspaceDrag.x
-        y = @_workspaceDrag.y
-        ARERenderer.camPos.x += x - e.pageX
-        ARERenderer.camPos.y += y - e.pageY
-
-        @_workspaceDrag =
-          x: e.pageX
-          y: e.pageY
-
-      $(document).mouseup (e) =>
-        return unless @_workspaceDrag
-
-        @_workspaceDrag = null
-
-      $(document).on "mousedown", ".workspace canvas", (e) =>
-        if e.shiftKey && !e.ctrlKey && !@_workspaceDrag
-          @_workspaceDrag =
-            x: e.pageX
-            y: e.pageY
-
-      ###
-      # Setup texture drops
-      ###
-      $(@_sel).on "dragover", (e) ->
-        if _.contains e.originalEvent.dataTransfer.types, "image/texture"
-          e.preventDefault()
-          false
-
-      $(@_sel).on "drop", (e) =>
-        texID = e.originalEvent.dataTransfer.getData "image/texture"
-        texture = _.find @ui.editor.project.textures, (t) -> t.getID() == texID
-
-        @pickActor e.originalEvent.pageX, e.originalEvent.pageY, (actor) ->
-          actor.setTexture texture
-        , =>
-          time = @ui.timeline.getCursorTime()
-          pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
-
-          pos.x += ARERenderer.camPos.x
-          pos.y += ARERenderer.camPos.y
-
-          texSize = ARERenderer.getTextureSize texture.getUID()
-          w = texSize.w
-          h = texSize.h
-
-          actor = new RectangleActor @ui, time, w, h, pos.x, pos.y
-          actor.setTexture texture
-          @addActor actor
-
-        e.preventDefault()
-        false
-
-    ###
     # Initializes dragging settings and attaches listeners
     ###
-    _setupActorDragging: ->
+    _bindActorDragging: ->
 
       toggleActorPhysics = (d, handle) ->
 
@@ -579,6 +506,80 @@ define (require) ->
             @ui.pushEvent "workspace.selected.actor", actor: actor
 
     ###
+    # Register listeners
+    ###
+    _bindListeners: ->
+
+      @_bindActorDragging()
+      @_bindContextClick()
+
+      $(document).on "mousemove", ".workspace canvas", (e) =>
+        pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
+
+        pos.x += ARERenderer.camPos.x
+        pos.y += ARERenderer.camPos.y
+
+        $(".workspace .cursor-position").text "x: #{pos.x}, y: #{pos.y}"
+
+      ###
+      # Workspace drag
+      ###
+      $(document).mousemove (e) =>
+        return unless @_workspaceDrag
+
+        x = @_workspaceDrag.x
+        y = @_workspaceDrag.y
+        ARERenderer.camPos.x += x - e.pageX
+        ARERenderer.camPos.y += y - e.pageY
+
+        @_workspaceDrag =
+          x: e.pageX
+          y: e.pageY
+
+      $(document).mouseup (e) =>
+        return unless @_workspaceDrag
+
+        @_workspaceDrag = null
+
+      $(document).on "mousedown", ".workspace canvas", (e) =>
+        if e.shiftKey && !e.ctrlKey && !@_workspaceDrag
+          @_workspaceDrag =
+            x: e.pageX
+            y: e.pageY
+
+      ###
+      # Setup texture drops
+      ###
+      $(@_sel).on "dragover", (e) ->
+        if _.contains e.originalEvent.dataTransfer.types, "image/texture"
+          e.preventDefault()
+          false
+
+      $(@_sel).on "drop", (e) =>
+        texID = e.originalEvent.dataTransfer.getData "image/texture"
+        texture = _.find @ui.editor.project.textures, (t) -> t.getID() == texID
+
+        @pickActor e.originalEvent.pageX, e.originalEvent.pageY, (actor) ->
+          actor.setTexture texture
+        , =>
+          time = @ui.timeline.getCursorTime()
+          pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
+
+          pos.x += ARERenderer.camPos.x
+          pos.y += ARERenderer.camPos.y
+
+          texSize = ARERenderer.getTextureSize texture.getUID()
+          w = texSize.w
+          h = texSize.h
+
+          actor = new RectangleActor @ui, time, w, h, pos.x, pos.y
+          actor.setTexture texture
+          @addActor actor
+
+        e.preventDefault()
+        false
+
+    ###
     # @private
     # Called by AREEngine as soon as it's up and running, we continue our own
     # init from here.
@@ -588,9 +589,7 @@ define (require) ->
 
       @_are.setClearColor 240, 240, 240
 
-      @_regListeners()
-
-      @_setupActorDragging()
+      @_bindListeners()
 
       # Start rendering
       @_are.startRendering()
