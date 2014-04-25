@@ -203,6 +203,10 @@ define (require) ->
       actor.setPosition pos.x, pos.y
       actor.isParticle = true
 
+      # spawned actors are not listed in the Timeline, so no need to spawn
+      # events for them when updating
+      actor._silentUpdate = true
+
       @_actors.push actor
       @
 
@@ -228,6 +232,7 @@ define (require) ->
 
     ###
     # Pop open our settings dialog
+    # @return [SettingsWidget] settingsWidget
     ###
     openConfigureDialog: ->
 
@@ -289,7 +294,7 @@ define (require) ->
     # Load a Spawner from a dump
     #
     # @param [Object] data
-    # @return [Spawner] self
+    # @return [Spawner] spawner
     ###
     @load: (ui, data) ->
       ps = new Spawner ui

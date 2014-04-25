@@ -89,6 +89,8 @@ define (require) ->
       # moved. Note that this starts at our birth!
       @_lastTemporalState = Math.floor @lifetimeStart_ms
 
+      # should this actor not spawn events when updating?
+      @_silentUpdate = false
 
       @_ctx = _.extend @_ctx,
         copy:
@@ -684,7 +686,8 @@ define (require) ->
       # Save state
       @_lastTemporalState = Number Math.floor(cursor)
 
-      @ui.pushEvent "actor.update.intime", actor: @
+      unless @_silentUpdate
+        @ui.pushEvent "actor.update.intime", actor: @
 
     ###
     # Generates a new snapshot from our current properties
