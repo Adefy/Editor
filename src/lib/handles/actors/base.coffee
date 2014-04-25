@@ -36,7 +36,7 @@ define (require) ->
       @handleType = "BaseActor"
 
       @_AJSActor = null
-      @setName "Base Actor #{@_id_n}"
+      @setName "Base Actor #{@_id_numeric}"
       @_alive = false
       @_initialized = false # True after postInit() is called
 

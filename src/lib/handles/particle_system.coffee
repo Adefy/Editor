@@ -11,6 +11,7 @@ define (require) ->
   config = require "config"
   param = require "util/param"
 
+  AUtilLog = require "util/log"
   ID = require "util/id"
   seedrand = require "util/seedrandom"
 
@@ -34,7 +35,7 @@ define (require) ->
       super @ui, 0, 32, 32, pos.x, pos.y
 
       @handleType = "ParticleSystem"
-      @setName "#{@handleType} #{@_id_n}"
+      @setName "#{@handleType} #{@_id_numeric}"
 
       @_uid = ID.uID()
 
@@ -209,15 +210,13 @@ define (require) ->
     # @return [ParticleSystem] self
     ###
     spawn: ->
-      @_seedIncrement++ # increment the iSeed
+      @_seedIncrement++
 
-      # we have no actor data, forget about spawning
       return @ unless @canSpawn()
 
-      spawnData = @getSpawnableDump()
+      unless spawnData = @getSpawnableDump()
 
-      unless spawnData
-        throw new Error "null spawn data!"
+        AUtilLog.error "Invalid spawn data on particle system #{@_}"
 
       actor = window[spawnData.type].load @ui, spawnData
 

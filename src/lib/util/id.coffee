@@ -20,12 +20,13 @@ define
 
   ###
   # Randomly generates a UUID
+  #
   # @return [String] id
   ###
   uID: ->
     ##
     # http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
-    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace /[xy]/g, (c) ->
+    "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace /[xy]/g, (c) ->
       r = Math.random() * 16 | 0
       v = r
       v = r & 0x3 |0x8 if c == "y"
@@ -33,6 +34,7 @@ define
 
   ###
   # Returns both a prefix id and Number
+  #
   # @param [String] prefix
   # @return [Object]
   #   @property [Number] id
@@ -42,5 +44,5 @@ define
     id = @__nextID++
     {
       id: id
-      prefix: "#{prefix}-#{id}"
+      prefixed: "#{prefix}-#{id}"
     }

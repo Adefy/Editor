@@ -38,7 +38,7 @@ define (require) ->
 
       @handleType = "PolygonActor"
 
-      @setName "Polygon #{@_id_n}"
+      @setName "Polygon #{@_id_numeric}"
 
       @initPropertySides()
       @initPropertyRadius()

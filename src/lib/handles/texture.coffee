@@ -20,8 +20,7 @@ define (require) ->
       param.required options.key
       param.required options.name
 
-      @__id = ID.objID "texture"
-      @_id = @__id.prefix
+      @_id = ID.objID("texture").prefixed
 
       @_uid = param.optional options.uid, ID.uID()
       @_name = options.name

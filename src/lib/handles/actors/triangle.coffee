@@ -38,7 +38,7 @@ define (require) ->
 
       @handleType = "TriangleActor"
 
-      @name = "Triangle #{@_id_n}"
+      @name = "Triangle #{@_id_numeric}"
 
       @initPropertyBase()
       @initPropertyHeight()

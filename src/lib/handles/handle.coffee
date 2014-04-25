@@ -33,11 +33,11 @@ define (require) ->
           cb: => @delete()
 
       # Give ourselves a unique id so we can be discovered on the body
-      ido = ID.objID "handle"
-      @_id_n = ido.id
-      @_id = ido.prefix
+      generatedID = ID.objID "handle"
+      @_id_numeric = generatedID.id
+      @_id = generatedID.prefixed
 
-      @name = "handle #{@_id_n}"
+      @name = "handle #{@_id_numeric}"
 
       @handleType = "Handle"
 
@@ -145,7 +145,7 @@ define (require) ->
     ###
     load: (data) ->
       Dumpable::load.call @, data
-      @name = data.name || "handle #{@_id_n}"
+      @name = data.name || "handle #{@_id_numeric}"
       for name, property of data.properties
         if @_properties[name]
           @_properties[name].load property

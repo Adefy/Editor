@@ -38,7 +38,7 @@ define (require) ->
 
       @handleType = "RectangleActor"
 
-      @setName "Rectangle #{@_id_n}"
+      @setName "Rectangle #{@_id_numeric}"
 
       @initPropertyWidth()
       @initPropertyHeight()
