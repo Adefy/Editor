@@ -17,7 +17,6 @@ define (require) ->
   Modal = require "widgets/floating/form"
   SettingsWidget = require "widgets/floating/settings"
 
-
   TemplateModalAddTextures = require "templates/modal/add_textures"
   TemplateModalBackgroundColor = require "templates/modal/background_color"
   TemplateModalEditHistory = require "templates/modal/edit_history"

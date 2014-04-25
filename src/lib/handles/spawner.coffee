@@ -8,23 +8,23 @@
 
 define (require) ->
 
+  AUtilLog = require "util/log"
   config = require "config"
   param = require "util/param"
-
-  AUtilLog = require "util/log"
   ID = require "util/id"
   seedrand = require "util/seedrandom"
+  Vec2 = require "core/vec2"
 
   Handle = require "handles/handle"
   RectangleActor = require "handles/actors/rectangle"
-
-  Vec2 = require "core/vec2"
 
   CompositeProperty = require "handles/properties/composite"
   NumericProperty = require "handles/properties/numeric"
   BooleanProperty = require "handles/properties/boolean"
 
-  class ParticleSystem extends RectangleActor
+  SettingsWidget = require "widgets/floating/settings"
+
+  class Spawner extends RectangleActor
 
     ###
     # @param [UIManager] ui
@@ -34,7 +34,7 @@ define (require) ->
       pos = param.optional options.position, Vec2.zero()
       super @ui, 0, 32, 32, pos.x, pos.y
 
-      @handleType = "ParticleSystem"
+      @handleType = "Spawner"
       @setName "#{@handleType} #{@_id_numeric}"
 
       @_uid = ID.uID()
@@ -45,13 +45,17 @@ define (require) ->
       @_spawnDumpList = []
       @_seedIncrement = 0
 
-      # ParticleSystems do not need a texture.
+      # Spawners do not need a texture.
       delete @_ctx.setTexture
 
       ## for testing
       @_ctx.spawn =
-        name: config.locale.label.spawn_command
+        name: config.locale.ctx.spawner.spawn
         cb: => @spawn()
+
+      @_ctx.configure =
+        name: config.locale.ctx.spawner.configure
+        cb: => @openConfigureDialog()
 
       @initPropertyParticles()
       @initPropertySpawn()
@@ -73,7 +77,7 @@ define (require) ->
     ###
     # Initialize our particles property
     #
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     initPropertyParticles: ->
       @_properties.particles = new CompositeProperty()
@@ -89,8 +93,9 @@ define (require) ->
       @_properties.particles.max.setValue 20
 
       @_properties.particles.frequency = new NumericProperty()
+      @_properties.particles.frequency.setMin 50
       @_properties.particles.frequency.setPrecision 0
-      @_properties.particles.frequency.setValue 0
+      @_properties.particles.frequency.setValue 250
 
       @_properties.particles.addProperty "seed", @_properties.particles.seed
       @_properties.particles.addProperty "max", @_properties.particles.max
@@ -99,9 +104,9 @@ define (require) ->
       @
 
     ###
-    # Initialize ParticleSystem spawn property
+    # Initialize Spawner spawn property
     #
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     initPropertySpawn: ->
       @_properties.spawn = new CompositeProperty()
@@ -125,7 +130,7 @@ define (require) ->
 
     ###
     # @param [Number] seed
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     setSeed: (seed) ->
       @_properties.particles.seed.setValue seed
@@ -139,7 +144,7 @@ define (require) ->
 
     ###
     # @param [Number] freq
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     setFrequency: (freq) ->
       @_properties.particles.frequency.setValue freq
@@ -158,7 +163,7 @@ define (require) ->
     addSpawnData: (data) ->
       param.required data
 
-      if data.handleType == "ParticleSystem"
+      if data.handleType == "Spawner"
         throw new Error "A particle system can't spawn another particle system"
 
       @_spawnDumpList.push data
@@ -168,7 +173,7 @@ define (require) ->
     # Remove an actor from the actors list
     # NOTE* This does not destroy the actor, use killActor instead
     #
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     removeActor: (actor) ->
       @_actors = _.without @_actors, (a) -> a.getId() == actor.getId()
@@ -177,7 +182,7 @@ define (require) ->
     ###
     # Removes all actively spawned Actors
     #
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     killActor: (actor) ->
       @removeActor actor
@@ -187,7 +192,7 @@ define (require) ->
     ###
     # Removes all actively spawned Actors
     #
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     killActors: ->
       @_actors.map (a) -> a.destroy()
@@ -197,7 +202,7 @@ define (require) ->
     ###
     # Reset the particle system to its original state
     #
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     reset: ->
       @_seedIncrement = 0
@@ -207,19 +212,17 @@ define (require) ->
     ###
     # Spawn a new actor and add it to the internal list
     #
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     spawn: ->
       @_seedIncrement++
-
       return @ unless @canSpawn()
 
       unless spawnData = @getSpawnableDump()
-
-        AUtilLog.error "Invalid spawn data on particle system #{@_}"
+        AUtilLog.error "Invalid spawn data on particle system [#{spawnData}]"
+        return
 
       actor = window[spawnData.type].load @ui, spawnData
-
       seed = @_properties.particles.seed.getValue()
 
       pos = @_properties.spawn.getValue()
@@ -231,14 +234,13 @@ define (require) ->
       actor.isParticle = true
 
       @_actors.push actor
-
       @
 
     ###
     # Callback during playback
     #
     # @param [Number] time current time
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     tick: (time) ->
       return unless @canSpawn()
@@ -255,7 +257,33 @@ define (require) ->
       @
 
     ###
-    # Dumps the ParticleSystem to a basic Object
+    # Pop open our settings dialog
+    ###
+    openConfigureDialog: ->
+
+      new SettingsWidget @ui,
+        title: "Particle System"
+        settings: [
+          label: "Max particle count"
+          type: Number
+          placeholder: "Enter a particle limit"
+          value: @_properties.particles.max.getValue()
+          id: "max"
+          min: 0
+        ,
+          label: "Spawn frequency (ms)"
+          type: Number
+          placeholder: "Enter spawn frequency, minimum 50"
+          value: @_properties.particles.frequency.getValue()
+          id: "frequency"
+          min: 50
+        ]
+
+        cb: (data) =>
+          console.log data
+
+    ###
+    # Dumps the Spawner to a basic Object
     #
     # @return [Object] data
     ###
@@ -272,7 +300,7 @@ define (require) ->
     # Load the state of a dumped particle system into the current
     #
     # @param [Object] data
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     load: (data) ->
       super data
@@ -288,12 +316,12 @@ define (require) ->
       @
 
     ###
-    # Load a ParticleSystem from a dump
+    # Load a Spawner from a dump
     #
     # @param [Object] data
-    # @return [ParticleSystem] self
+    # @return [Spawner] self
     ###
     @load: (ui, data) ->
-      ps = new ParticleSystem ui
+      ps = new Spawner ui
       ps.load data
       ps

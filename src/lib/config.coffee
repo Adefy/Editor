@@ -8,7 +8,7 @@ define
 
   # enable and disable certain features
   use:
-    particle_system: true
+    spawner: true
 
   # html element ids
   id:
@@ -69,7 +69,6 @@ define
       create: "Create"
 
     label:
-      spawn_command:    "Spawn"
       create_menu_item: "Create +"
       texture_modal:    "Texture ..."
       physics_modal:    "Physics ..."
@@ -78,4 +77,8 @@ define
       actor_polygon:    "Polygon Actor"
       actor_circle:     "Circle Actor"
       actor_triangle:   "Triangle Actor"
-      particle_system:  "Particle System"
+
+    ctx:
+      spawner:
+        configure: "Configure..."
+        spawn: "Spawn"

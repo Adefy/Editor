@@ -8,7 +8,7 @@ define (require) ->
 
   Storage = require "storage"
 
-  ParticleSystem = require "handles/particle_system"
+  Spawner = require "handles/spawner"
 
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
@@ -52,9 +52,9 @@ define (require) ->
       @actorObjects = []
 
       ###
-      # @type [Array<ParticleSystem>]
+      # @type [Array<Spawner>]
       ###
-      @_particleSystems = []
+      @_spawners = []
 
       # Starting phone size is 800x480
       @_pWidth = 800
@@ -69,7 +69,7 @@ define (require) ->
       @_pickQueue = []
 
     ###
-    # @return [self]
+    # @return [Workspace] self
     ###
     postInit: ->
       ## AJS overrides setting the renderer mode...
@@ -116,9 +116,9 @@ define (require) ->
     getActors: -> @actorObjects
 
     ###
-    # @return [Array<ParticleSystem>] particle_systems
+    # @return [Array<Spawner>] spawners
     ###
-    getParticleSystems: -> @_particleSystems
+    getSpawners: -> @_spawners
 
     ###
     # Get ARE instance
@@ -171,7 +171,7 @@ define (require) ->
     ###
     # Sets the selectedActor instance
     # @param [Id] actorId
-    # @return [self]
+    # @return [Workspace] self
     ###
     setSelectedActor: (actor) ->
       Workspace._selectedActorID = actor.getID()
@@ -179,7 +179,7 @@ define (require) ->
     ###
     # Loads textures into ARE
     # @param [Array<Texture>] textures
-    # @return [self]
+    # @return [Workspace] self
     ###
     loadTextures: (textures) ->
       @loadTexture texture for texture in textures
@@ -187,7 +187,7 @@ define (require) ->
 
     ###
     # @param [Texture] texture
-    # @return [self]
+    # @return [Workspace] self
     ###
     loadTexture: (texture) ->
       return AUtilLog.error "ARE not loaded, cannot load texture" unless @_are
@@ -220,13 +220,14 @@ define (require) ->
 
     ###
     # Add a new Particle System to the list
-    # @return [self]
+    # @return [Workspace] self
     ###
-    addParticleSystem: (ps) ->
-      @_particleSystems.push ps
-      @ui.pushEvent "workspace.add.particle_system", ps: ps
-      # ParticleSystems are still a kind of actor.
-      @addActor ps
+    addSpawner: (spawner) ->
+      @_spawners.push spawner
+      @ui.pushEvent "workspace.add.spawner", spawner: spawner
+
+      # Spawners are still a kind of actor.
+      @addActor spawner
       @
 
     ###
@@ -282,9 +283,6 @@ define (require) ->
           circActor:
             name: config.locale.label.actor_circle
             cb: => @addActor new PolygonActor @ui, time, 32, 60, pos.x, pos.y
-          ps:
-            name: config.locale.label.particle_system
-            cb: => @addParticleSystem new ParticleSystem @ui, position: pos
       }
 
     ###
@@ -657,7 +655,7 @@ define (require) ->
         id: config.id.are_canvas
 
     ###
-    # @return [self]
+    # @return [Workspace] self
     ###
     refresh: ->
       @
@@ -823,10 +821,10 @@ define (require) ->
     # @return [Object] data
     ###
     dump: ->
-      particleSystems = _.map @getParticleSystems(), (ps) -> ps.dump()
+      spawners = _.map @getSpawners(), (spawner) -> spawner.dump()
       actors = _.map @getActors(), (actor) -> actor.dump()
       actors = _.without actors, (actor) ->
-        actor.handleType == "ParticleSystem"
+        actor.handleType == "Spawner"
 
       _.extend super(),
         workspaceVersion: "1.3.0"
@@ -834,7 +832,7 @@ define (require) ->
           x: ARERenderer.camPos.x
           y: ARERenderer.camPos.y
         actors: actors                                                 # v1.1.0
-        particleSystems: particleSystems                               # v1.3.0
+        spawners: spawners                                             # v1.3.0
 
     ###
     # Loads the a workspace data state
@@ -849,12 +847,12 @@ define (require) ->
         ARERenderer.camPos.y = data.camPos.y
 
       if data.workspaceVersion >= "1.3.0"
-        for psData in data.particleSystems
-          @addParticleSystem ParticleSystem.load @ui, psData
+        for spawnerData in data.spawners
+          @addSpawner Spawner.load @ui, spawnerData
 
       # data.workspaceVersion >= "1.1.0"
       for actor in data.actors
-        continue if actor.handleType == "ParticleSystem"
+        continue if actor.handleType == "Spawner"
         handleKlass = window[actor.type]
         if handleKlass
           newActor = handleKlass.load @ui, actor
@@ -870,6 +868,6 @@ define (require) ->
   - "1.0.0": Initial
   - "1.1.0": Added proper actor exporting
   - "1.2.0": Added CamPos
-  - "1.3.0": Added ParticleSystems
+  - "1.3.0": Added Spawners
 
 ###

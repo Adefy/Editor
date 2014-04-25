@@ -1,3 +1,9 @@
+###
+@Changelog
+
+  - "1.0.0": Initial
+###
+
 define (require) ->
 
   config = require "config"
@@ -531,6 +537,16 @@ define (require) ->
     ###
     getTextureUID: ->
       @_textureUID
+
+    ###
+    # Create a new spawner with a base object definition cloned from our own,
+    # then commit suicide.
+    #
+    # NOTE: This deletes our AJS actor, and signals our deaths to the workspace
+    #       and timeline! Do NOT use an actor object after this method has been
+    #       called on it.
+    ###
+    transformIntoSpawner: ->
 
     ###
     # Used when exporting, executes the corresponding property genAnimationOpts
@@ -1541,9 +1557,3 @@ define (require) ->
     _contextFuncEditPhysics: (actor) ->
       @ui.modals.showEditActorPsyx actor
       @
-
-###
-@Changelog
-
-  - "1.0.0": Initial
-###

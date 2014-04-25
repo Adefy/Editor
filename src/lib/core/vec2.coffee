@@ -12,15 +12,16 @@ define (require) ->
 
     ###
     # @param [Boolean] bipolar should randomization occur in all directions?
-    # @return [Vec2]
+    # @return [Vec2] randomizedVector
     ###
     random: (options) ->
       options = param.optional options, {}
-      bipolar = options.bipolar
+      bipolar = param.optional options.bipolar, false
       seed = param.optional options.seed, Math.random() * 0xFFFF
 
       x = Math.random() * @x
       y = Math.random() * @y
+
       if bipolar
         x = -x if Math.random() < 0.5
         y = -y if Math.random() < 0.5
