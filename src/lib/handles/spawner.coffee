@@ -24,6 +24,56 @@ define (require) ->
 
   class Spawner extends BaseActor
 
+    @UPDATE_RESOLUTION: 10 # ms
+    @UPDATE_INTERVAL: null
+    @SPAWNERS: []
+
+    ###
+    # Static helper to setup the update interval for all spawners
+    ###
+    @setupUpdateInterval: ->
+      return if Spawner.UPDATE_INTERVAL
+
+      Spawner.UPDATE_INTERVAL = setInterval ->
+        now = Date.now()
+
+        spawner.previewTick(now) for spawner in Spawner.SPAWNERS
+
+      , Spawner.UPDATE_RESOLUTION
+
+    ###
+    # This prevents all spawners from updating!
+    ###
+    @clearUpdateInterval: ->
+      return unless Spawner.UPDATE_INTERVAL
+
+      clearInterval Spawner.UPDATE_INTERVAL
+      Spawner.UPDATE_INTERVAL = null
+
+    ###
+    # Adds a spawner to the list of spawners that we update
+    #
+    # @param [Spawner] spawner
+    ###
+    @registerSpawner: (spawner) ->
+      unless spawner instanceof Spawner
+        AUtilLog.error "Provided object is not a spawner, refusing to register!"
+        return
+
+      Spawner.SPAWNERS.push spawner
+
+    ###
+    # Removes a spanwer from the list of those we update
+    #
+    # @param [Spawner] spawner
+    ###
+    @unregisterSpawner: (spawner) ->
+      unless spawner instanceof Spawner
+        AUtilLog.error "Provided object is not a spawner, refusing to register!"
+        return
+
+      _.remove Spawner.SPAWNERS, (s) -> s.getId() == spawner.getId()
+
     ###
     # @param [UIManager] ui
     # @param [Object] options
@@ -45,7 +95,12 @@ define (require) ->
       @_uid = ID.uID()
 
       @_actorRandomSpawnDelta = new Vec2(0, 0)
-      @_actors = []
+
+      @_spawns = []
+      @_previewSpawns = []
+      @_lastSpawnTime = Date.now()
+      @_lastPreviewSpawnTime = Date.now()
+      @_lastPreviewUpdateTime = Date.now()
 
       @_seedIncrement = 0
 
@@ -62,12 +117,18 @@ define (require) ->
 
       @hideAllProperties()
       @initPropertyParticles()
-      @initPropertySpawn()
+      @initPropertyDirection()
+      @initPropertyVelocity()
+      @initPropertyVelocityRange()
 
       @_properties.position.setVisibleInToolbar true
       @_properties.layer.setVisibleInToolbar true
 
       @postInit()
+
+      # Ensure the spawner update cycle is both running, and includes us
+      Spawner.setupUpdateInterval()
+      Spawner.registerSpawner @
 
     ###
     # Copy over all unique properties of the provided handle. This essentially
@@ -123,64 +184,71 @@ define (require) ->
 
       @_properties.particles.max = new NumericProperty()
       @_properties.particles.max.setPrecision 0
-      @_properties.particles.max.setValue 20
+      @_properties.particles.max.setValue 50
 
       @_properties.particles.frequency = new NumericProperty()
       @_properties.particles.frequency.setMin 50
       @_properties.particles.frequency.setPrecision 0
-      @_properties.particles.frequency.setValue 250
+      @_properties.particles.frequency.setValue 50
+
+      @_properties.particles.lifetime = new NumericProperty()
+      @_properties.particles.lifetime.setMin 100
+      @_properties.particles.lifetime.setPrecision 0
+      @_properties.particles.lifetime.setValue 700
 
       @_properties.particles.addProperty "seed", @_properties.particles.seed
       @_properties.particles.addProperty "max", @_properties.particles.max
       @_properties.particles.addProperty "frequency", @_properties.particles.frequency
+      @_properties.particles.addProperty "lifetime", @_properties.particles.lifetime
 
       @
 
     ###
-    # Initialize Spawner spawn property
-    #
-    # @return [Spawner] self
+    # Set up the property that specifies the end of a vector starting at our
+    # origin, representing the direction of initial spawns
     ###
-    initPropertySpawn: ->
-      @_properties.spawn = new CompositeProperty()
-      @_properties.spawn.setVisibleInToolbar false
-      @_properties.spawn.x = new NumericProperty()
-      @_properties.spawn.x.setValue 0
-      @_properties.spawn.y = new NumericProperty()
-      @_properties.spawn.y.setValue 0
+    initPropertyDirection: ->
+      @_properties.direction = new CompositeProperty()
+      @_properties.direction.setVisibleInToolbar false
 
-      @_properties.spawn.addProperty "x", @_properties.spawn.x
-      @_properties.spawn.addProperty "y", @_properties.spawn.y
+      @_properties.direction.x = new NumericProperty()
+      @_properties.direction.x.setValue 0
+      @_properties.direction.y = new NumericProperty()
+      @_properties.direction.y.setValue 10
 
-      @
+      @_properties.direction.addProperty "x", @_properties.direction.x
+      @_properties.direction.addProperty "y", @_properties.direction.y
 
     ###
-    # @return [Number] seed
+    # Set up the property responsible for the initial velocity of spawns.
+    # Units are pixels/s
     ###
-    getSeed: ->
-      @_properties.particles.seed.getValue()
+    initPropertyVelocity: ->
+      @_properties.velocity = new CompositeProperty()
+      @_properties.velocity.setVisibleInToolbar false
+
+      @_properties.velocity.x = new NumericProperty()
+      @_properties.velocity.x.setValue 0
+      @_properties.velocity.y = new NumericProperty()
+      @_properties.velocity.y.setValue 0
+
+      @_properties.velocity.addProperty "x", @_properties.velocity.x
+      @_properties.velocity.addProperty "y", @_properties.velocity.y
 
     ###
-    # @param [Number] seed
-    # @return [Spawner] self
+    # Set up the property by which spawn velocity is randomly offset
     ###
-    setSeed: (seed) ->
-      @_properties.particles.seed.setValue seed
-      @
+    initPropertyVelocityRange: ->
+      @_properties.velocityRange = new CompositeProperty()
+      @_properties.velocityRange.setVisibleInToolbar false
 
-    ###
-    # @return [Number]
-    ###
-    getFrequency: ->
-      @_properties.particles.frequency.getValue()
+      @_properties.velocityRange.x = new NumericProperty()
+      @_properties.velocityRange.x.setValue 2
+      @_properties.velocityRange.y = new NumericProperty()
+      @_properties.velocityRange.y.setValue 2
 
-    ###
-    # @param [Number] freq
-    # @return [Spawner] self
-    ###
-    setFrequency: (freq) ->
-      @_properties.particles.frequency.setValue freq
-      @
+      @_properties.velocityRange.addProperty "x", @_properties.velocityRange.x
+      @_properties.velocityRange.addProperty "y", @_properties.velocityRange.y
 
     ###
     # Remove an actor from the actors list
@@ -189,7 +257,7 @@ define (require) ->
     # @return [Spawner] self
     ###
     removeActor: (actor) ->
-      @_actors = _.without @_actors, (a) -> a.getId() == actor.getId()
+      @_spawns = _.without @_spawns, (a) -> a.getId() == actor.getId()
       @
 
     ###
@@ -208,8 +276,8 @@ define (require) ->
     # @return [Spawner] self
     ###
     killActors: ->
-      @_actors.map (a) -> a.destroy()
-      @_actors = []
+      @_spawns.map (a) -> a.destroy()
+      @_spawns = []
       @
 
     ###
@@ -225,28 +293,73 @@ define (require) ->
     ###
     # Spawn a new actor and add it to the internal list
     #
+    # @param [Number] time time of spawn (used with lifetime to expire spawn)
     # @return [Spawner] self
     ###
-    spawn: ->
+    spawn: (time) ->
+      param.required time
+
+      @_spawns.push @_generateSpawn time
+      @
+
+    ###
+    # Spawn a new preview actor; This actor has a lower opacity and is displayed
+    # on a high layer (999)
+    #
+    # @param [Number] time time of spawn (used with lifetime to expire spawn)
+    # @return [Spawner] self
+    ###
+    spawnPreview: (time) ->
+      param.required time
+
+      spawn = @_generateSpawn time
+      spawn.getProperty("layer").main.setValue 999
+      spawn.getProperty("opacity").setValue 0.5
+
+      # Attach velocity
+      velocityRange = @_properties.velocityRange.getValue()
+      velocity = @_properties.velocity.getValue()
+
+      spawn._velocity =
+        x: velocity.x + (Math.random() * velocityRange.x)
+        y: velocity.y + (Math.random() * velocityRange.y)
+
+      @_previewSpawns.push spawn
+      @
+
+    ###
+    # Generate a spawned actor. This actor is not tracked by the workspace or
+    # timeline!
+    #
+    # @param [Number] time time of spawn (used with lifetime to expire spawn)
+    # @return [BaseActor] actor
+    ###
+    _generateSpawn: (time) ->
+      param.required time
       @_seedIncrement++
 
       actor = window[@getSpawnableClassName()].load @ui, @dump()
+      actor.disableTemporalUpdates()
+
       seed = @_properties.particles.seed.getValue()
 
-      pos = @_properties.spawn.getValue()
-      pos = new Vec2(pos.x, pos.y)
-        .random(seed: seed + @_seedIncrement)
-        .add(@_properties.position.getValue())
+      position = @_properties.position.getValue()
+      direction = @_properties.direction.getValue()
 
-      actor.setPosition pos.x, pos.y
+      finalX = position.x + (Math.random() * direction.x)
+      finalY = position.y + (Math.random() * direction.y)
+
       actor.isParticle = true
+      actor.getProperty("position").setValue
+        x: finalX
+        y: finalY
 
-      # spawned actors are not listed in the Timeline, so no need to spawn
+      actor._spawnTime = time
+
+      # Spawned actors are not listed in the Timeline, so no need to spawn
       # events for them when updating
       actor._silentUpdate = true
-
-      @_actors.push actor
-      @
+      actor
 
     ###
     # Callback during playback
@@ -255,18 +368,59 @@ define (require) ->
     # @return [Spawner] self
     ###
     tick: (time) ->
-      return unless @canSpawn()
-
       max = @particles.particles.max.getValue()
       freq = @getFrequency()
 
-      if (freq == 0)
-        while @_actors.length < max
+      if freq == 0
+        while @_spawns.length < max
           @spawn()
 
       else
         # determine if we need to spawn an actor or not
       @
+
+    ###
+    # Called by our own preview interval, updates our preview visuals
+    #
+    # @param [Number] now time returned by Date.now()
+    ###
+    previewTick: (now) ->
+      max = @_properties.particles.max.getValue()
+      freq = @_properties.particles.frequency.getValue()
+
+      if now - @_lastPreviewSpawnTime >= freq and @_previewSpawns.length <= max
+        @_lastPreviewSpawnTime = now
+        @spawnPreview now
+
+      @updatePreview now
+
+    ###
+    # Update our preview actors in time. Velocity is pixels/second
+    #
+    # @param [Number] now time returned by Date.now()
+    ###
+    updatePreview: (now) ->
+      dt = (now - @_lastPreviewUpdateTime) / 1000
+      @_lastPreviewUpdateTime = now
+
+      return unless @_previewSpawns.length > 0
+
+      # Iterate backwards so we can safely splice expired actors
+      for i in [@_previewSpawns.length - 1..0]
+        spawn = @_previewSpawns[i]
+
+        # Expire if we need to
+        if (now - spawn._spawnTime) > @_properties.particles.lifetime.getValue()
+          spawn.delete()
+          @_previewSpawns.splice i, 1
+        else
+          pos = spawn.getProperty("position")
+
+          currentPosition = pos.getValue()
+
+          pos.setValue
+            x: currentPosition.x + spawn._velocity.x
+            y: currentPosition.y + spawn._velocity.y
 
     ###
     # Pop open our settings dialog

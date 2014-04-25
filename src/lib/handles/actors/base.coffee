@@ -89,6 +89,8 @@ define (require) ->
       # moved. Note that this starts at our birth!
       @_lastTemporalState = Math.floor @lifetimeStart_ms
 
+      @enableTemporalUpdates()
+
       # should this actor not spawn events when updating?
       @_silentUpdate = false
 
@@ -464,16 +466,6 @@ define (require) ->
       @updateInTime()
 
     ###
-    # @param [Number] opacity
-    ###
-    setOpacity: (opacity) ->
-      opacity = Number (param.required opacity).toFixed(@ACCURACY)
-
-      AUtilLog.warn "AJS does not support actor with an opacity, yet."
-      # @_AJSActor.setOpacity opacity if @_AJSActor
-      @updateInTime()
-
-    ###
     # Set actor position, relative to the GL world!
     #
     # @param [Number] x x coordinate
@@ -668,12 +660,31 @@ define (require) ->
       @updateInTime()
 
     ###
+    # @return [BaseActor] self
+    ###
+    disableTemporalUpdates: ->
+      @_temporalUpdatesEnabled = false
+
+    ###
+    # @return [BaseActor] self
+    ###
+    enableTemporalUpdates: ->
+      @_temporalUpdatesEnabled = true
+
+    ###
+    # @return [Boolean] enabled
+    ###
+    areTemporalUpdatesEnabled: ->
+      @_temporalUpdatesEnabled
+
+    ###
     # Materialize the actor from various stored value deltas (woah, that sounds
     # epic). Essentially, update our prop buffer, and then the actors' current
     # state
     ###
     updateInTime: ->
       @_birth() unless @_alive
+      return unless @_temporalUpdatesEnabled
 
       cursor = @ui.timeline.getCursorTime()
 
@@ -1474,7 +1485,7 @@ define (require) ->
           unless @_properties[prop]
             AUtilLog.warning "Unsupported property in prop buffer [#{prop}]"
             AUtilLog.warning "Removing #{prop} from buffer entry #{entry}"
-            delete @_propBuffer[entry]
+            delete @_propBuffer[entry][prop]
 
     ###
     # Dump actor into basic Object
