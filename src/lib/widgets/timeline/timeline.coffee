@@ -363,6 +363,7 @@ define (require) ->
         $(d.getTarget()).attr "data-time", Math.floor targetTime
         $(d.getTarget()).css "left", "#{@getOffsetForTime targetTime}px"
 
+    ###
     # @private
     ###
     _bindContextClick: ->
