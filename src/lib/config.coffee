@@ -47,7 +47,7 @@ define
     base: 0                 # TriangleActor.base
     color: 0                # Actor.color
     height: 0               # TriangleActor.height and RectangleActor.height
-    layer: 0                # Actor.layer and Actor.physicsLayer
+    layer: 1                # Actor.layer and Actor.physicsLayer
     opacity: 2              # Actor.opacity
     physics_elasticity: 6   # Actor.physics.elasticity
     physics_friction: 6     # Actor.physics.friction

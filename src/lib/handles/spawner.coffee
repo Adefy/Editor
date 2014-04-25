@@ -140,20 +140,33 @@ define (require) ->
     _imitateHandle: (handle) ->
 
       # Copy over unique methods
-      for name of handle.constructor.prototype
-        unless "#{@[name]}" == "#{handle[name]}" or name == "constructor"
-          @[name] = _.clone handle[name], true
+      for name, method of window[handle.constructor.name].constructor.prototype
+        unless "#{@[name]}" == "#{method}" or name == "constructor"
+          @[name] = _.clone method, true
 
       # Update our own properties to match
       for name, property of handle._properties
 
         if @_properties[name]
-          @_properties[name].clone property
+          if property.dump
+            @_properties[name].clone property
+          else
+            @_properties[name].load property
         else
 
           # Copy over unique properties
           # NOTE: This assigns them by reference!
-          @_properties[name] = property
+          if property.dump
+            @_properties[name] = property
+          else
+            if property.type == "composite"
+              @_properties[name] = new CompositeProperty()
+            else if property.type == "number"
+              @_properties[name] = new NumericProperty()
+            else if property.type == "boolean"
+              @_properties[name] = new BooleanProperty()
+
+            @_properties[name].load property if @_properties[name]
 
       @_propBuffer = _.clone handle._propBuffer, true
       @_animations = _.clone handle._animations, true
@@ -303,8 +316,7 @@ define (require) ->
       @
 
     ###
-    # Spawn a new preview actor; This actor has a lower opacity and is displayed
-    # on a high layer (999)
+    # Spawn a new preview actor; This actor has a lower opacity
     #
     # @param [Number] time time of spawn (used with lifetime to expire spawn)
     # @return [Spawner] self
@@ -313,7 +325,7 @@ define (require) ->
       param.required time
 
       spawn = @_generateSpawn time
-      spawn.getProperty("layer").main.setValue 999
+      spawn.getProperty("layer").main.setValue @_properties.layer.main.getValue() - 0.1
       spawn.getProperty("opacity").setValue 0.5
 
       # Attach velocity
@@ -488,6 +500,18 @@ define (require) ->
     # @return [Spawner] spawner
     ###
     @load: (ui, data) ->
-      ps = new Spawner ui
-      ps.load data
-      ps
+      spawnerInitOptions =
+        position:
+          x: data.properties.position.x.value
+          y: data.properties.position.y.value
+        templateHandle:
+          constructor: name: data.spawnableClassName
+          lifetimeStart_ms: data.birth
+          lifetimeEnd_ms: data.death
+          _properties: data.properties
+          _propBuffer: data.propBuffer
+          getTextureUID: -> data.texture
+
+      spawner = new Spawner ui, spawnerInitOptions
+      spawner.load data
+      spawner

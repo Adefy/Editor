@@ -509,7 +509,7 @@ define (require) ->
     ###
     setTexture: (@_texture) ->
       @_textureUID = @_texture.getUID()
-      @_AJSActor.setTexture @_texture.getUID() if @_texture
+      @_AJSActor.setTexture @_texture.getUID() if @_texture and @_AJSActor
       @updateInTime()
 
     ###

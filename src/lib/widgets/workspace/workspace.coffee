@@ -841,7 +841,7 @@ define (require) ->
       actors = _.without actors, (actor) -> actor.handleType == "Spawner"
 
       _.extend super(),
-        workspaceVersion: "1.3.0"
+        workspaceVersion: "1.4.0"
         camPos:                                                        # v1.2.0
           x: ARERenderer.camPos.x
           y: ARERenderer.camPos.y
