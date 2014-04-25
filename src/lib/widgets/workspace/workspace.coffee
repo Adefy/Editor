@@ -832,7 +832,7 @@ define (require) ->
           x: ARERenderer.camPos.x
           y: ARERenderer.camPos.y
         actors: actors                                                 # v1.1.0
-        spawners: spawners                                             # v1.3.0
+        spawners: spawners                                             # v1.4.0
 
     ###
     # Loads the a workspace data state
@@ -846,7 +846,7 @@ define (require) ->
         ARERenderer.camPos.x = data.camPos.x
         ARERenderer.camPos.y = data.camPos.y
 
-      if data.workspaceVersion >= "1.3.0"
+      if data.workspaceVersion >= "1.4.0"
         for spawnerData in data.spawners
           @addSpawner Spawner.load @ui, spawnerData
 
