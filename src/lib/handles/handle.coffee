@@ -45,6 +45,13 @@ define (require) ->
       $("body").data @getID(), @
 
     ###
+    # Helper that hides all of our properties from toolbar rendering
+    ###
+    hideAllProperties: ->
+      for name, property of @_properties
+        property.setVisibleInToolbar false
+
+    ###
     # Get our id. TODO: Consider giving us a base class, possible giving doing
     # the same to Widget
     #

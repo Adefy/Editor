@@ -79,6 +79,9 @@ define
       actor_triangle:   "Triangle Actor"
 
     ctx:
+      base_actor:
+        make_spawner: "Make Spawner"
+
       spawner:
         configure: "Configure..."
         spawn: "Spawn"

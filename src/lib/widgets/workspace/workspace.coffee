@@ -799,6 +799,22 @@ define (require) ->
       $("#awcc-outline-text").text "#{width}x#{height}"
 
     ###
+    # Create a new spawner with a base object definition cloned from an actor,
+    # then kill the actor.
+    #
+    # NOTE: This deletes the AJS actor, and signals it's death to the rest of
+    #       the editor! Do NOT use an actor object after this method has been
+    #       called on it.
+    ###
+    transformActorIntoSpawner: (actor) ->
+
+      @addSpawner new Spawner @ui,
+        position: actor.getProperty("position").getValue()
+        templateHandle: actor
+
+      actor.delete()
+
+    ###
     # Takes other widgets into account, and sets the height accordingly. Also
     # centers the phone outline
     #
@@ -823,8 +839,7 @@ define (require) ->
     dump: ->
       spawners = _.map @getSpawners(), (spawner) -> spawner.dump()
       actors = _.map @getActors(), (actor) -> actor.dump()
-      actors = _.without actors, (actor) ->
-        actor.handleType == "Spawner"
+      actors = _.without actors, (actor) -> actor.handleType == "Spawner"
 
       _.extend super(),
         workspaceVersion: "1.3.0"

@@ -14,9 +14,7 @@ define (require) ->
   ID = require "util/id"
   seedrand = require "util/seedrandom"
   Vec2 = require "core/vec2"
-
-  Handle = require "handles/handle"
-  RectangleActor = require "handles/actors/rectangle"
+  BaseActor = require "handles/actors/base"
 
   CompositeProperty = require "handles/properties/composite"
   NumericProperty = require "handles/properties/numeric"
@@ -24,15 +22,25 @@ define (require) ->
 
   SettingsWidget = require "widgets/floating/settings"
 
-  class Spawner extends RectangleActor
+  class Spawner extends BaseActor
 
     ###
     # @param [UIManager] ui
     # @param [Object] options
     ###
     constructor: (@ui, options) ->
+      param.required options
       pos = param.optional options.position, Vec2.zero()
-      super @ui, 0, 32, 32, pos.x, pos.y
+
+      # Don't save this, as it is volatile (likely immediately deleted)
+      template = param.required options.templateHandle
+
+      super @ui, template.lifetimeStart_ms, template.lifetimeEnd_ms
+
+      # Copy over everything that differs
+      for name, property of template.constructor.prototype
+        unless "#{@[name]}" == "#{template[name]}" or name == "constructor"
+          @[name] = template[name]
 
       @handleType = "Spawner"
       @setName "#{@handleType} #{@_id_numeric}"
@@ -42,11 +50,7 @@ define (require) ->
       @_actorRandomSpawnDelta = new Vec2(0, 0)
       @_actors = []
 
-      @_spawnDumpList = []
       @_seedIncrement = 0
-
-      # Spawners do not need a texture.
-      delete @_ctx.setTexture
 
       ## for testing
       @_ctx.spawn =
@@ -57,22 +61,14 @@ define (require) ->
         name: config.locale.ctx.spawner.configure
         cb: => @openConfigureDialog()
 
+      @hideAllProperties()
       @initPropertyParticles()
       @initPropertySpawn()
 
-      @_properties.color.setValue r: 255, g: 110, b: 48
-      @_properties.width.setVisibleInToolbar false
-      @_properties.height.setVisibleInToolbar false
-      @_properties.rotation.setVisibleInToolbar false
-      @_properties.opacity.setVisibleInToolbar false
+      @_properties.position.setVisibleInToolbar true
+      @_properties.layer.setVisibleInToolbar true
 
-    ###
-    # Get a random dump from our spawn list
-    #
-    # @return [Object]
-    ###
-    getSpawnableDump: ->
-      @_spawnDumpList[Math.floor(Math.random() * @_spawnDumpList.length)]
+      @postInit()
 
     ###
     # Initialize our particles property
@@ -82,7 +78,6 @@ define (require) ->
     initPropertyParticles: ->
       @_properties.particles = new CompositeProperty()
       @_properties.particles.setVisibleInToolbar false
-      @_properties.particles.icon = config.icon.property_particles
 
       @_properties.particles.seed = new NumericProperty()
       @_properties.particles.seed.setPrecision 0
@@ -111,7 +106,6 @@ define (require) ->
     initPropertySpawn: ->
       @_properties.spawn = new CompositeProperty()
       @_properties.spawn.setVisibleInToolbar false
-      @_properties.spawn.icon = config.icon.property_spawn
       @_properties.spawn.x = new NumericProperty()
       @_properties.spawn.x.setValue 0
       @_properties.spawn.y = new NumericProperty()
@@ -148,25 +142,6 @@ define (require) ->
     ###
     setFrequency: (freq) ->
       @_properties.particles.frequency.setValue freq
-      @
-
-    ###
-    # @return [Boolean] canSpawn
-    ###
-    canSpawn: ->
-      max = @particles.particles.max.getValue()
-      (@_spawnDumpList.length > 0) && (max > @_actors.length)
-
-    ###
-    # @return [Object] data actor dump used for spawning
-    ###
-    addSpawnData: (data) ->
-      param.required data
-
-      if data.handleType == "Spawner"
-        throw new Error "A particle system can't spawn another particle system"
-
-      @_spawnDumpList.push data
       @
 
     ###
@@ -216,11 +191,6 @@ define (require) ->
     ###
     spawn: ->
       @_seedIncrement++
-      return @ unless @canSpawn()
-
-      unless spawnData = @getSpawnableDump()
-        AUtilLog.error "Invalid spawn data on particle system [#{spawnData}]"
-        return
 
       actor = window[spawnData.type].load @ui, spawnData
       seed = @_properties.particles.seed.getValue()

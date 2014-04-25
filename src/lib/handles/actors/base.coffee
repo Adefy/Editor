@@ -103,6 +103,9 @@ define (require) ->
         editPhysics:
           name: config.locale.label.physics_modal
           cb: => @_contextFuncEditPhysics @
+        makeSpawner:
+          name: config.locale.ctx.base_actor.make_spawner
+          cb: => @ui.workspace.transformActorIntoSpawner @
 
       @initPropertyOpacity()
       @initPropertyRotation()
@@ -537,16 +540,6 @@ define (require) ->
     ###
     getTextureUID: ->
       @_textureUID
-
-    ###
-    # Create a new spawner with a base object definition cloned from our own,
-    # then commit suicide.
-    #
-    # NOTE: This deletes our AJS actor, and signals our deaths to the workspace
-    #       and timeline! Do NOT use an actor object after this method has been
-    #       called on it.
-    ###
-    transformIntoSpawner: ->
 
     ###
     # Used when exporting, executes the corresponding property genAnimationOpts
