@@ -16,7 +16,10 @@ define ->
       {{/if}}
 
       name="{{ name }}"
-      {{bindAttr checked="value"}}
+
+      {{#if value}}
+        checked="checked"
+      {{/if}}
     />
   </div>
   """.split("\n").join " "
