@@ -58,6 +58,8 @@ define (require) ->
         name: config.locale.ctx.spawner.configure
         cb: => @openConfigureDialog()
 
+      delete @_ctx.makeSpawner
+
       @hideAllProperties()
       @initPropertyParticles()
       @initPropertySpawn()
@@ -96,6 +98,15 @@ define (require) ->
       @_animations = _.clone handle._animations, true
 
       @setTextureByUID handle.getTextureUID()
+      @_imitationActorType = handle.constructor.name
+
+    ###
+    # Get the name of the class we spawn
+    #
+    # @return [String] name
+    ###
+    getSpawnableClassName: ->
+      @_imitationActorType
 
     ###
     # Initialize our particles property
@@ -219,7 +230,7 @@ define (require) ->
     spawn: ->
       @_seedIncrement++
 
-      actor = window[spawnData.type].load @ui, spawnData
+      actor = window[@getSpawnableClassName()].load @ui, @dump()
       seed = @_properties.particles.seed.getValue()
 
       pos = @_properties.spawn.getValue()
@@ -291,12 +302,13 @@ define (require) ->
     ###
     dump: ->
       _.extend super(),
-        psVersion: "1.2.0"
+        psVersion: "1.3.0"
         uid: @_uid                                                     # v1.1.0
+        spawnableClassName: @getSpawnableClassName()                   # v1.3.0
         #actorRandomSpawnDelta: @_actorRandomSpawnDelta.dump()         # v1.1.0
         #position: @_position.dump()                                   # v1.0.0
         #spawnCap: @_spawnCap                                          # v1.0.0
-        spawnDumpList: @_spawnDumpList                                 # v1.0.0
+        #spawnDumpList: @_spawnDumpList                                # v1.0.0
 
     ###
     # Load the state of a dumped particle system into the current
@@ -308,12 +320,10 @@ define (require) ->
       super data
 
       if data.psVersion >= "1.1.0"
-        @_uid = data.uid                                               # v1.1.0
-       #@_actorRandomSpawnDelta = Vec2.load data.actorRandomSpawnDelta # v1.1.0
+        @_uid = data.uid
 
-      #@_position = Vec2.load data.position                            # v1.0.0
-      #@_spawnCap = data.spawnCap                                      # v1.0.0
-      @_spawnDumpList = data.spawnDumpList                             # v1.0.0
+      if data.psVersion >= "1.3.0"
+        @_imitationActorType = data.spawnableClassName
 
       @
 
