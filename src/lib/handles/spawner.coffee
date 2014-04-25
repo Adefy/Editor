@@ -80,7 +80,6 @@ define (require) ->
     ###
     constructor: (@ui, options) ->
       param.required options
-      pos = param.optional options.position, Vec2.zero()
 
       # Don't save this, as it is volatile (likely immediately deleted)
       template = param.required options.templateHandle
