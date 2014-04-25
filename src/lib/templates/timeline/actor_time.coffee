@@ -26,13 +26,21 @@ define ->
         <div id="{{ id }}" data-property="{{name}}" class="row property keyframes">
 
          {{#each keyframes}}
-          <div id="{{ id }}" data-property="{{../name}}" data-time="{{ time }}" style="left: {{ left }}px" class="keyframe"></div>
+          <div id="{{ id }}"
+               style="left: {{ left }}"
+               data-index="{{index}}"
+               data-property="{{../name}}"
+               data-time="{{ time }}"  class="keyframe"></div>
          {{/each}}
 
         </div>
        {{else}}
         <div class="row">
-          <div style="left: {{ left }}px; width: {{ width }}px" class="bar"></div>
+          <div id="{{ id }}"
+               style="left: {{ left }}; width: {{ width }}"
+               data-start="{{start}}"
+               data-end="{{end}}"
+               class="bar"></div>
         </div>
        {{/if}}
       {{/each}}

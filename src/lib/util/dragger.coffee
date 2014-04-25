@@ -20,6 +20,7 @@ define (require) ->
 
       @bindListeners()
 
+      @modifiers = {}
       @checkDrag = (e) -> true
 
     ###
@@ -33,6 +34,11 @@ define (require) ->
     bindListeners: ->
       $(document).on "mousedown", @_sel, (e) =>
         return unless @checkDrag e
+
+        @modifiers.shiftKey = e.shiftKey
+        @modifiers.ctrlKey = e.ctrlKey
+        @modifiers.altKey = e.altKey
+        @modifiers.superKey = e.superKey
 
         @_delta = x: 0, y: 0
         @_start = x: e.pageX, y: e.pageY

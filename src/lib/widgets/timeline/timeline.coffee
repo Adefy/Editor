@@ -201,7 +201,7 @@ define (require) ->
     # @return [Number] offset
     ###
     getOffsetForTime: (time) ->
-      (time / @_duration) * $(@_spaceSelector()).width()
+      100 * (time / @_duration)
 
     ###
     # Set an arbitrary cursor time
@@ -211,7 +211,7 @@ define (require) ->
     setCursorTime: (time) ->
       param.required time
 
-      $("#timeline-cursor").css "left", $(@_spaceSelector()).width() * (time / @_duration)
+      $("#timeline-cursor").css "left", "#{(100 * (time / @_duration))}%"
 
       setTimeout =>
         @_updateCursorTime()
@@ -349,8 +349,6 @@ define (require) ->
 
         source = d.getUserDataValue("lastUpdate") or keyframeTime
 
-        window.a = actor
-
         actor.transplantKeyframe property, source, targetTime
         actor.updateInTime()
 
@@ -361,7 +359,82 @@ define (require) ->
 
         # Update keyframe
         $(d.getTarget()).attr "data-time", Math.floor targetTime
-        $(d.getTarget()).css "left", "#{@getOffsetForTime targetTime}px"
+        $(d.getTarget()).css left: "#{@getOffsetForTime targetTime}%"
+
+    ###
+    # Setup keyframe Dragger
+    # @private
+    ###
+    _bindTimebarDragging: ->
+      @timebarDragger = new Dragger ".time .actor .bar"
+
+      @timebarDragger.setCheckDrag (e) -> e.shiftKey
+
+      @timebarDragger.setOnDragStart (d) ->
+        target = $(d.getTarget())
+        startTime = Number(target.attr "data-start")
+        endTime = Number(target.attr "data-end")
+        d.setUserData "startTime": startTime, "endTime": endTime
+
+      # Vertical component is ignored
+      @timebarDragger.setOnDrag (d, deltaX, deltaY) =>
+
+        target = $(d.getTarget())
+        id = target.attr "id"
+
+        # Cache the actor to speed things up
+        if d.getUserDataValue "actor"
+          actor = d.getUserDataValue "actor"
+        else
+          actorId = target.closest(".actor").attr "data-actorid"
+          actor = _.find @_actors, (a) -> a.getID() == actorId
+
+          return AUtilLog.error "Invalid actor: #{actorId}" unless actor
+
+          d.setUserDataValue "actor", actor
+
+        # Cache keyframe boundary information
+        if d.getUserDataValue "boundaries"
+          boundaries = d.getUserDataValue "boundaries"
+        else
+          boundaries =
+            left: 0
+            right: @getDuration()
+
+          d.setUserDataValue "boundaries", boundaries
+
+        startTime = d.getUserDataValue "startTime"
+        endTime = d.getUserDataValue "endTime"
+        property = target.parent().attr("data-property")
+        targetTime = startTime
+        targetTimeEnd = endTime
+
+        # adjust starting point only
+        if d.modifiers.ctrlKey
+          targetTime = startTime + (deltaX * @getTimePerPixel())
+        # adjust ending point only
+        else if d.modifiers.altKey
+          targetTimeEnd = endTime + (deltaX * @getTimePerPixel())
+        # move timebar
+        else
+          targetTime = startTime + (deltaX * @getTimePerPixel())
+          targetTimeEnd = targetTime + (endTime - startTime)
+          return if targetTimeEnd > boundaries.right or targetTime < boundaries.left
+
+        # Update keyframe
+        target.attr "data-start", Math.floor targetTime
+        target.attr "data-end", Math.floor targetTimeEnd
+        target.css
+          left: "#{@getOffsetForTime targetTime}%"
+          width: "#{@getOffsetForTime targetTimeEnd - targetTime}%"
+
+      @timebarDragger.setOnDragEnd (d) =>
+        actor = d.getUserDataValue "actor"
+        elem = $(d.getTarget())
+        startTime = Number elem.attr "data-start"
+        endTime = Number elem.attr "data-end"
+        actor.adjustLifetime(start: startTime, end: endTime)
+        actor.updateInTime()
 
     ###
     # @private
@@ -386,6 +459,7 @@ define (require) ->
 
       @_bindContextClick()
       @_bindKeyframeDragging()
+      @_bindTimebarDragging()
 
       $(document).on "click", ".timeline .button.toggle", (e) =>
         @toggle()
@@ -709,11 +783,13 @@ define (require) ->
     ###
     _calcActorTimebar: (actor) ->
       param.required actor
-      spaceW = $(@_spaceSelector()).width()
+      #spaceW = $(@_spaceSelector()).width()
       {
-        spaceW: spaceW
-        start: spaceW * (actor.lifetimeStart_ms / @_duration)
-        length: spaceW * ((actor.lifetimeEnd_ms - actor.lifetimeStart_ms) / @_duration)
+        #spaceW: spaceW
+        start: actor.lifetimeStart_ms
+        end: actor.lifetimeEnd_ms
+        left: "#{100 * (actor.lifetimeStart_ms / @_duration)}%"
+        length: "#{100 * ((actor.lifetimeEnd_ms - actor.lifetimeStart_ms) / @_duration)}%"
       }
 
     ###
@@ -739,8 +815,11 @@ define (require) ->
       _animations = actor.getAnimations()
 
       for time, anim of _animations
-        offset = timebarData.spaceW *
-                 ((Number(time) - actor.lifetimeStart_ms) / @_duration)
+        # relative to actor start position
+        #offset = 100 * (actor.lifetimeStart_ms + Number(time)) / @_duration
+        # absolute
+        offset = 100 * Number(time) / @_duration
+        offset = "#{offset}%"
 
         if anim.opacity
           keyframes["opacity"].push
@@ -794,8 +873,10 @@ define (require) ->
       properties.push
         id: "actor-time-bar-#{actorId}"
         isProperty: false
-        left: timebarData.start
+        left: timebarData.left
         width: timebarData.length
+        start: timebarData.start
+        end: timebarData.end
 
       properties.push
         id: "actor-time-property-opacity-#{actorId}"
@@ -974,7 +1055,7 @@ define (require) ->
 
     ###
     # Update the state of the controls bar
-    # @return [Void]
+    # @return [self]
     ###
     updateControls: ->
       @getElement("#timeline-control-fast-backward")
@@ -988,9 +1069,11 @@ define (require) ->
       @getElement("#timeline-control-fast-forward")
         .toggleClass("active", @controlState.fast_forward)
 
+      @
+
     ###
     # Update the state of the actor body
-    # @return [Void]
+    # @return [self]
     ###
     updateActorBody: (actor) ->
       actor = param.optional actor, @_lastSelectedActor
@@ -1023,9 +1106,12 @@ define (require) ->
       rotationElement.find(".live .button").toggleClass "active", true
       colorElement.find(".live .button").toggleClass "active", true
 
+      @
+
     ###
     # Update the state of the actor timebar
-    # @return [Void]
+    # @param [BaseActor] actor
+    # @return [self]
     ###
     updateActorTime: (actor) ->
       actor = param.optional actor, @_lastSelectedActor
@@ -1035,54 +1121,60 @@ define (require) ->
       properties = @_calcActorTimeProperties actor
 
       for property in properties
+        baseElement = $("#{timeSelector} ##{property.id}")
         if property.isProperty
           keyframes = property.keyframes
 
           ## hard refresh
-          elem = $("#{timeSelector} ##{property.id}")
-          elem.empty()
+          #elem = $("#{timeSelector} ##{property.id}")
+          #elem.empty()
+          #for keyframe in keyframes
+          #  elem.append TemplateTimelineKeyframe
+          #    id: keyframe.id
+          #    index: keyframe.index
+          #    property: property.name
+          #    time: keyframe.time
+          #    left: keyframe.left
 
-          for keyframe in keyframes
-            elem.append TemplateTimelineKeyframe
-              id: keyframe.id
-              index: keyframe.index
-              property: property.name
-              time: keyframe.time
-              left: keyframe.left
+          # soft refresh
 
-          ## soft refresh (and it doesnt work)
-          #elems = $("#{timeSelector} ##{property.id} keyframe")
-          ## adjust the size of the keyframes container
-          #if keyframes.length < elems.length
-          #  diff = elems.length - keyframes.length
-          #  for i in [0...diff]
-          #    elems.remove(elems[0])
-          #else if keyframes.length > elems.length
-          #  diff = keyframes.length - elems.length
-          #  for i in [0...diff]
-          #    elems.append TemplateTimelineKeyframe
-          #      id: "placeholder"
-          #      left: 0
-          #$("#{timeSelector} ##{property.id} keyframe").each (index, e) ->
-          #  keyframe = keyframes[index]
-          #  e.attr "id", keyframe.id
-          #  e.css left: keyframe.left
+          elements = baseElement.find(".keyframe")
+
+          elementsLength = elements.length
+          keyframesLength = keyframes.length
+
+          # adjust the size of the keyframes container
+          if keyframesLength < elementsLength
+            diff = elementsLength - keyframes.length
+            elements[i].remove() for i in [0...diff]
+
+          elements = baseElement.find(".keyframe")
+          for i in [0...keyframes.length]
+            keyframe = keyframes[i]
+            element = $(elements[i])
+            if element.length > 0
+              element.attr "id",            keyframe.id
+              element.attr "data-index",    keyframe.index
+              element.attr "data-property", keyframe.property
+              element.attr "data-time",     keyframe.time
+              element.css left: keyframe.left
+            else
+              baseElement.append TemplateTimelineKeyframe
+                id: keyframe.id
+                index: keyframe.index
+                property: keyframe.property
+                time: keyframe.time
+                left: keyframe.left
 
         else
-          $("#{timeSelector} ##{property.id} .bar").css
-            left: "#{property.left}px"
-            width: "#{property.width}px"
+          element = baseElement.find(".bar")
+          element.css
+            left: property.left
+            width: property.width
+          element.attr "data-start", property.start
+          element.attr "data-end",   property.end
 
-      ###
-      ## Hard Refresh
-      ###
-      #@_renderActorTimebar actor
-      ####
-      ## Sadly, when a refresh takes place the timebar's expanded state
-      ## is reset, so we need to update it, in a rather crude way...
-      ####
-      #bodySelector = @_actorBodySelector actor
-      #@toggleActorExpand actor, $(bodySelector).hasClass("expanded")
+      @
 
     ###
     # Called by actors, for updating its Timeline state
@@ -1124,8 +1216,7 @@ define (require) ->
         when "property.bar.update.actor"
           @updateActor params.actor
         when "actor.update.intime"
-          if !@_playbackID
-            @updateActor params.actor
+          @updateActor params.actor unless @_playbackID
         when "renamed.actor"
           @updateActor params.actor
         when "selected.actor.update"

@@ -812,6 +812,51 @@ define (require) ->
             @_properties[name].setValue property.value
 
     ###
+    # @param [Object]
+    #   @property [Number] start
+    #   @property [Number] end
+    #   @property [Boolean] scaleToFit
+    #     @optional
+    # @return [self]
+    ###
+    adjustLifetime: (options) ->
+      start = param.required options.start
+      end = param.required options.end
+      scaleToFit = param.optional options.scaleToFit, false
+
+      oldStart = @lifetimeStart_ms
+      oldEnd = @lifetimeEnd_ms
+
+      # nothing has changed
+      return if (oldStart == start) && (oldEnd == end)
+
+      @lifetimeStart_ms = start
+      @lifetimeEnd_ms = end
+
+      animKeys = _.keys @_animations
+      propKeys = _.keys @_propBuffer
+
+      newAnimations = {}
+      newPropBuffer = {}
+
+      ratio = 1.0
+      if scaleToFit
+        ratio = (@lifetimeEnd_ms - @lifetimeStart_ms) / (oldEnd - oldStart)
+
+      for time in propKeys
+        newPropBuffer[Math.floor(start + (time - oldStart) * ratio)] = @_propBuffer[time]
+
+      for time in animKeys
+        newAnimations[Math.floor(start + (time - oldStart) * ratio)] = @_animations[time]
+
+      @_propBuffer = newPropBuffer
+      @_animations = newAnimations
+
+      for key, animation of @_animations
+        for property of animation
+          @updateKeyframeTime property, key
+
+    ###
     # Checks if the specified time is within our lifetime
     #
     # @param [Number] time
@@ -1255,13 +1300,15 @@ define (require) ->
         currentAnim = frametime
 
       # is there a current frame
-      if currentAnim != null && @_animations[currentAnim][property]
+      if currentAnim != null && currentAnim != undefined && \
+       @_animations[currentAnim][property]
         @mutatePropertyAnimation @_animations[currentAnim][property], (a) =>
           a.setStartTime predAnim || Math.floor @lifetimeStart_ms
           a.setEndTime currentAnim
 
       # is there a succeeding frame?
-      if succAnim != null and @_animations[succAnim][property]
+      if succAnim != null && succAnim != undefined && \
+       @_animations[succAnim][property]
         @mutatePropertyAnimation @_animations[succAnim][property], (a) =>
           a.setStartTime currentAnim || predAnim || Math.floor @lifetimeStart_ms
           a.setEndTime succAnim
