@@ -198,9 +198,9 @@ define (require) ->
         @ui.pushEvent "load.texture", texture: texture
 
         # Refresh any actors that already have the texture assigned
-        for actor in @actorObjects
-          if actor.getTextureUID() == texture.getUID()
-            actor.setTexture texture
+        for handle in _.union @actorObjects, @_spawners
+          if handle.getTextureUID() == texture.getUID()
+            handle.setTexture texture
 
       @
 

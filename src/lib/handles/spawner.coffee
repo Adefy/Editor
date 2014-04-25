@@ -500,18 +500,9 @@ define (require) ->
     # @return [Spawner] spawner
     ###
     @load: (ui, data) ->
-      spawnerInitOptions =
-        position:
-          x: data.properties.position.x.value
-          y: data.properties.position.y.value
-        templateHandle:
-          constructor: name: data.spawnableClassName
-          lifetimeStart_ms: data.birth
-          lifetimeEnd_ms: data.death
-          _properties: data.properties
-          _propBuffer: data.propBuffer
-          getTextureUID: -> data.texture
-
-      spawner = new Spawner ui, spawnerInitOptions
+      templateHandle = window[data.spawnableClassName].load ui, data
+      spawner = new Spawner ui, templateHandle: templateHandle
       spawner.load data
+      templateHandle.delete()
+
       spawner
