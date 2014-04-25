@@ -193,13 +193,15 @@ define (require) ->
       @_properties.layer.physics = new NumericProperty()
       @_properties.layer.physics.clone @_properties.layer.main
 
-      @_properties.layer.main.onUpdate = (_layer_) =>
-        @_AJSActor.setLayer _layer_
+      @_properties.layer.main.onUpdate = (layer) =>
+        @_AJSActor.setLayer layer if @_AJSActor
+
       @_properties.layer.main.requestUpdate = ->
         @setValue me._AJSActor.getLayer() if me._AJSActor
 
-      @_properties.layer.physics.onUpdate (_layer_) =>
-        @_AJSActor.setPhysicsLayer _layer_
+      @_properties.layer.physics.onUpdate (layer) =>
+        @_AJSActor.setPhysicsLayer layer if @_AJSActor
+
       @_properties.layer.physics.requestUpdate = ->
         @setValue me._AJSActor.getPhysicsLayer() if me._AJSActor
 
@@ -606,6 +608,10 @@ define (require) ->
 
       # Set up properties by grabbing initial values
       @_properties[p].getValue() for p of @_properties
+
+      # Make sure we have our texture (this lets us set the texture in the
+      # constructor)
+      @setTextureByUID @_textureUID if @_textureUID
 
       @updateInTime()
 

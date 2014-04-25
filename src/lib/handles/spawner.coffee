@@ -37,10 +37,7 @@ define (require) ->
 
       super @ui, template.lifetimeStart_ms, template.lifetimeEnd_ms
 
-      # Copy over everything that differs
-      for name, property of template.constructor.prototype
-        unless "#{@[name]}" == "#{template[name]}" or name == "constructor"
-          @[name] = template[name]
+      @_imitateHandle template
 
       @handleType = "Spawner"
       @setName "#{@handleType} #{@_id_numeric}"
@@ -69,6 +66,36 @@ define (require) ->
       @_properties.layer.setVisibleInToolbar true
 
       @postInit()
+
+    ###
+    # Copy over all unique properties of the provided handle. This essentially
+    # turns us into a base for our own spawns.
+    #
+    # NOTE: This should probably only be called once! Preferably in our
+    #       constructor
+    ###
+    _imitateHandle: (handle) ->
+
+      # Copy over unique methods
+      for name of handle.constructor.prototype
+        unless "#{@[name]}" == "#{handle[name]}" or name == "constructor"
+          @[name] = _.clone handle[name], true
+
+      # Update our own properties to match
+      for name, property of handle._properties
+
+        if @_properties[name]
+          @_properties[name].clone property
+        else
+
+          # Copy over unique properties
+          # NOTE: This assigns them by reference!
+          @_properties[name] = property
+
+      @_propBuffer = _.clone handle._propBuffer, true
+      @_animations = _.clone handle._animations, true
+
+      @setTextureByUID handle.getTextureUID()
 
     ###
     # Initialize our particles property
