@@ -682,11 +682,11 @@ define (require) ->
     # epic). Essentially, update our prop buffer, and then the actors' current
     # state
     ###
-    updateInTime: ->
+    updateInTime: (time) ->
       @_birth() unless @_alive
       return unless @_temporalUpdatesEnabled
 
-      cursor = @ui.timeline.getCursorTime()
+      time = Math.floor(param.optional time, @ui.timeline.getCursorTime())
 
       if @_propSnapshot == null
         @seedBirth()
@@ -695,16 +695,18 @@ define (require) ->
         seededBirth = false
 
       @_updatePropBuffer()
-      @_updateActorState()
+      @_updateActorState time
       @_genSnapshot()
 
-      @seedBirth() if @isBirth(Math.floor cursor) and !seededBirth
+      @seedBirth() if @isBirth(time) and !seededBirth
 
       # Save state
-      @_lastTemporalState = Number Math.floor(cursor)
+      @_lastTemporalState = Number time
 
       unless @_silentUpdate
         @ui.pushEvent "actor.update.intime", actor: @
+
+      @
 
     ###
     # Generates a new snapshot from our current properties
@@ -899,8 +901,8 @@ define (require) ->
     #
     # @private
     ###
-    _updateActorState: ->
-      cursor = Math.floor @ui.timeline.getCursorTime()
+    _updateActorState: (time) ->
+      cursor = param.required time
       return unless @inLifetime cursor
 
       # If it's our birth state, take a shortcut and just apply it directly
