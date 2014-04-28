@@ -141,6 +141,8 @@ define (require) ->
       keepMethods = [
         "constructor"
         "delete"
+        "load"
+        "dump"
       ]
 
       unless window[handle.constructor.name]
@@ -458,7 +460,8 @@ define (require) ->
         ]
 
         cb: (data) =>
-          console.log data
+          @_properties.particles.max.setValue data.max
+          @_properties.particles.frequency.setValue data.frequency
 
     ###
     # Dumps the Spawner to a basic Object
