@@ -280,32 +280,36 @@ define (require) ->
         functions:
           trinActor:
             name: config.locale.label.actor_triangle
-            cb: => @addActor new TriangleActor @ui,
-              lifetimeStart: time
-              base: 100
-              height: 100
-              position: pos
+            cb: =>
+              @addActor new TriangleActor @ui,
+                lifetimeStart: time
+                base: 100
+                height: 100
+                position: pos
           rectActor:
             name: config.locale.label.actor_rectangle
-            cb: => @addActor new RectangleActor @ui,
-              lifetimeStart: time
-              width: 100
-              height: 100
-              position: pos
+            cb: =>
+              @addActor new RectangleActor @ui,
+                lifetimeStart: time
+                width: 100
+                height: 100
+                position: pos
           polyActor:
             name: config.locale.label.actor_polygon
-            cb: => @addActor new PolygonActor @ui,
-              lifestartStart: time
-              sides: 5
-              radius: 60
-              position: pos
+            cb: =>
+              @addActor new PolygonActor @ui,
+                lifetimeStart: time
+                sides: 5
+                radius: 60
+                position: pos
           circActor:
             name: config.locale.label.actor_circle
-            cb: => @addActor new PolygonActor @ui,
-            lifetimeStart: time
-            sides: 32
-            radius: 60
-            position: pos
+            cb: =>
+              @addActor new PolygonActor @ui,
+                lifetimeStart: time
+                sides: 32
+                radius: 60
+                position: pos
       }
 
     ###

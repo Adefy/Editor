@@ -26,15 +26,16 @@ define (require) ->
     ###
     constructor: (@ui, options) ->
       param.required @ui
-      param.required options.base
-      param.required options.height
-      param.required options.position
+      param.required options
+
+      b = param.required options.base
+      h = param.required options.height
 
       manualInit = param.optional manualInit, false
 
       if b <= 0 or h <= 0 then throw new Error "Base/Height must be >0!"
 
-      super @ui, birth, death
+      super @ui, options
 
       @handleType = "TriangleActor"
 
@@ -43,10 +44,8 @@ define (require) ->
       @initPropertyBase()
       @initPropertyHeight()
 
-      @_properties.position.setValue x: x, y: y
       @_properties.base.setValue b
       @_properties.height.setValue h
-      @_properties.rotation.setValue rotation
 
       @postInit() unless manualInit
 

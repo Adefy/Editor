@@ -46,7 +46,6 @@ define (require) ->
 
       @_properties.width.setValue w
       @_properties.height.setValue h
-      @_properties.rotation.setValue rotation
 
       @postInit() unless manualInit
 
