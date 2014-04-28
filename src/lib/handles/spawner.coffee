@@ -72,7 +72,7 @@ define (require) ->
         AUtilLog.error "Provided object is not a spawner, refusing to register!"
         return
 
-      _.remove Spawner.SPAWNERS, (s) -> s.getId() == spawner.getId()
+      _.remove Spawner.SPAWNERS, (s) -> s.getID() == spawner.getID()
 
     ###
     # @param [UIManager] ui
@@ -138,12 +138,17 @@ define (require) ->
     ###
     _imitateHandle: (handle) ->
 
+      keepMethods = [
+        "constructor"
+        "delete"
+      ]
+
       unless window[handle.constructor.name]
         throw new Error "Unkown handle class #{handle.constructor.name}!"
 
       # Copy over unique methods
       for name, method of window[handle.constructor.name].prototype
-        unless "#{@[name]}" == "#{method}" or name == "constructor"
+        unless "#{@[name]}" == "#{method}" or _.contains keepMethods, name
           @[name] = _.clone method, true
 
       # Update our own properties to match
@@ -276,24 +281,16 @@ define (require) ->
       @
 
     ###
-    # Removes all actively spawned Actors
-    #
-    # @return [Spawner] self
+    # Deletes us, and all of our spawns
     ###
-    killActor: (actor) ->
-      @removeActor actor
-      actor.destroy()
-      @
+    delete: ->
+      Spawner.unregisterSpawner @
 
-    ###
-    # Removes all actively spawned Actors
-    #
-    # @return [Spawner] self
-    ###
-    killActors: ->
-      @_spawns.map (a) -> a.destroy()
-      @_spawns = []
-      @
+      for spawn in @_previewSpawns
+        spawn.delete()
+        @_previewSpawns = []
+
+      super()
 
     ###
     # Reset the particle system to its original state
