@@ -312,6 +312,8 @@ define (require) ->
     # only those handles that support them
     ###
     overridePhysicsProperty: ->
+      @_properties.physics.enabled.setValue false
+
       @_properties.physics.mass.onUpdate = (mass) =>
         _.union(@_spawns, @_previewSpawns).map (handle) ->
           handle.setMass mass if handle.setMass
@@ -348,7 +350,7 @@ define (require) ->
       Spawner.unregisterSpawner @
 
       _.union(@_previewSpawns, @_spawns).map (spawn) -> spawn.delete()
-      
+
       @_previewSpawns = []
       @_spawns = []
 
@@ -444,7 +446,6 @@ define (require) ->
       actor.disableTemporalUpdates()
 
       seed = @_properties.particles.seed.getValue()
-
       position = @_properties.position.getValue()
       direction = @_properties.direction.getValue()
 
