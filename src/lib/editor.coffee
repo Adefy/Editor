@@ -5,9 +5,10 @@ define (require) ->
   AUtilLog = require "util/log"
 
   ## forward requires, because
-  #Effects = require "effects"
+  Effects = require "effects"
 
-  Storage = require "storage"
+  Storage = require "core/storage"
+  Project = require "core/project"
 
   PolygonActor = require "handles/actors/polygon"
   RectangleActor = require "handles/actors/rectangle"
@@ -18,7 +19,6 @@ define (require) ->
   Notification = require "widgets/notification"
 
   Bezier = require "handles/bezier"
-  Project = require "project"
 
   class Editor
 

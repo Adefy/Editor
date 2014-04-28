@@ -3,7 +3,7 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
 
-  EditorObject = require "editor_object"
+  EditorObject = require "core/editor_object"
   Dumpable = require "mixin/dumpable"
 
   class Texture extends EditorObject

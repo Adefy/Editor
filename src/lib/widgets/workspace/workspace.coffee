@@ -6,10 +6,10 @@ define (require) ->
   ID = require "util/id"
   AUtilLog = require "util/log"
 
-  Storage = require "storage"
+  Storage = require "core/storage"
 
   Actors = require "handles/actors"
-  Spawner = require "handles/actors/spawner"
+  Spawner = require "handles/spawner"
   PolygonActor = require "handles/actors/polygon"
   RectangleActor = require "handles/actors/rectangle"
   TriangleActor = require "handles/actors/triangle"

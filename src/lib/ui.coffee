@@ -1,8 +1,10 @@
 define (require) ->
 
+  config = require "config"
+  param = require "util/param"
+
   AUtilLog = require "util/log"
   AUtilEventLog = require "util/event_log"
-  param = require "util/param"
 
   PropertyBar = require "widgets/property_bar"
   MenuBar = require "widgets/menubar/menubar"

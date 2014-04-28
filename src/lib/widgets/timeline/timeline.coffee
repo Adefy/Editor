@@ -1,11 +1,15 @@
 define (require) ->
 
   config = require "config"
-  param = require "util/param"
 
+
+  param = require "util/param"
   ID = require "util/id"
   AUtilLog = require "util/log"
   aformat = require "util/format"
+
+  Storage = require "core/storage"
+
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
   TimelineControl = require "widgets/timeline/timeline_control"
@@ -19,8 +23,6 @@ define (require) ->
   TemplateTimelineActorTime = require "templates/timeline/actor_time"
   TemplateTimelineKeyframe = require "templates/timeline/keyframe"
 
-  Storage = require "storage"
-  config = require "config"
 
   # Timeline widget, serving as the main control center for objects.
   class Timeline extends Widget

@@ -5,7 +5,7 @@ define (require) ->
 
   Actors = require "handles/actors"
 
-  EditorObject = require "editor_object"
+  EditorObject = require "core/editor_object"
   Dumpable = require "mixin/dumpable"
 
   # Base class for all elements that can be manipulated by the editor

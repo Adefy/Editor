@@ -5,7 +5,7 @@ define (require) ->
 
   AUtilLog = require "util/log"
 
-  EditorObject = require "editor_object"
+  EditorObject = require "core/editor_object"
 
   Renderable = require "mixin/renderable"
   Dumpable = require "mixin/dumpable"

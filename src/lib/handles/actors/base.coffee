@@ -7,12 +7,14 @@
 define (require) ->
 
   config = require "config"
-  param = require "util/param"
 
+  param = require "util/param"
   AUtilLog = require "util/log"
+
+  Project = require "core/project"
+
   Handle = require "handles/handle"
   Bezier = require "handles/bezier"
-  Project = require "project"
 
   Actors = require "handles/actors"
 

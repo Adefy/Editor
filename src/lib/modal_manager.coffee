@@ -1,17 +1,16 @@
 define (require) ->
 
-  Project = require "project"
   param = require "util/param"
   ID = require "util/id"
 
-  Storage = require "storage"
+  EditorObject = require "core/editor_object"
+  Storage = require "core/storage"
+  Project = require "core/project"
 
   Asset = require "handles/asset"
   Texture = require "handles/texture"
   BaseActor = require "handles/actors/base"
   Handle = require "handles/handle"
-
-  EditorObject = require "editor_object"
 
   FloatingTextureSelect = require "widgets/floating/texture_select"
   Modal = require "widgets/floating/form"
