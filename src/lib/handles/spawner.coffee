@@ -444,7 +444,6 @@ define (require) ->
       actor.disableTemporalUpdates()
 
       seed = @_properties.particles.seed.getValue()
-
       position = @_properties.position.getValue()
       direction = @_properties.direction.getValue()
 
