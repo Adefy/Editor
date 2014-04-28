@@ -4,11 +4,14 @@ define (require) ->
   param = require "util/param"
   AUtilLog = require "util/log"
 
+  ## forward requires, because
+  #Effects = require "effects"
+
   Storage = require "storage"
 
   PolygonActor = require "handles/actors/polygon"
-  TriangleActor = require "handles/actors/triangle"
   RectangleActor = require "handles/actors/rectangle"
+  TriangleActor = require "handles/actors/triangle"
 
   UIManager = require "ui"
 

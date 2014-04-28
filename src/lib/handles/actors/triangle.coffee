@@ -3,12 +3,13 @@ define (require) ->
   config = require "config"
   param = require "util/param"
 
+  Actors = require "handles/actors"
   BaseActor = require "handles/actors/base"
 
   NumericProperty = require "handles/properties/numeric"
 
   # Trianglular actor
-  window.TriangleActor = class TriangleActor extends BaseActor
+  Actors.TriangleActor = class TriangleActor extends BaseActor
 
     ###
     # Creates an AJSTriangle and keeps track of it
@@ -23,14 +24,13 @@ define (require) ->
     # @param [Number] death optional death time specification
     # @param [Boolean] manualInit optional, postInit() not called if true
     ###
-    constructor: (@ui, birth, b, h, x, y, rotation, death, manualInit) ->
+    constructor: (@ui, options) ->
       param.required @ui
-      param.required b
-      param.required h
-      param.required x
-      param.required y
+      param.required options.base
+      param.required options.height
+      param.required options.position
+
       manualInit = param.optional manualInit, false
-      rotation = param.optional rotation, 0
 
       if b <= 0 or h <= 0 then throw new Error "Base/Height must be >0!"
 
@@ -153,6 +153,13 @@ define (require) ->
       y = position.y.value
       rotation = data.properties.rotation.value
 
-      actor = new TriangleActor ui, birth, b, h, x, y, rotation, death
+      actor = new TriangleActor ui,
+        lifetimeStart: birth
+        lifetimeEnd: death
+        base: b
+        height: h
+        position: x: x, y: y
+        rotation: rotation
+
       actor.load data
       actor

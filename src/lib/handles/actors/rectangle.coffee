@@ -3,12 +3,13 @@ define (require) ->
   config = require "config"
   param = require "util/param"
 
+  Actors = require "handles/actors"
   BaseActor = require "handles/actors/base"
 
   NumericProperty = require "handles/properties/numeric"
 
   # Rectangular actor
-  window.RectangleActor = class RectangleActor extends BaseActor
+  Actors.RectangleActor = class RectangleActor extends BaseActor
 
     ###
     # Instantiates an AJSRectangle and keeps track of it
@@ -23,18 +24,18 @@ define (require) ->
     # @param [Number] death optional death time specification
     # @param [Boolean] manualInit optional, postInit() not called if true
     ###
-    constructor: (@ui, birth, w, h, x, y, rotation, death, manualInit) ->
+    constructor: (@ui, options) ->
       param.required @ui
-      param.required w
-      param.required h
-      param.required x
-      param.required y
-      manualInit = param.optional manualInit, false
-      rotation = param.optional rotation, 0
+      param.required options
+      w = param.required options.width
+      h = param.required options.height
+
+      manualInit = param.optional options.manualInit, false
+      rotation = param.optional options.rotation, 0
 
       if w <= 0 or h <= 0 then throw new Error "Width/Height must be >0!"
 
-      super @ui, birth, death
+      super @ui, options
 
       @handleType = "RectangleActor"
 
@@ -43,7 +44,6 @@ define (require) ->
       @initPropertyWidth()
       @initPropertyHeight()
 
-      @_properties.position.setValue x: x, y: y
       @_properties.width.setValue w
       @_properties.height.setValue h
       @_properties.rotation.setValue rotation
@@ -154,6 +154,13 @@ define (require) ->
       y = position.y.value
       rotation = data.properties.rotation.value
 
-      actor = new RectangleActor ui, birth, w, h, x, y, rotation, death
+      actor = new RectangleActor ui,
+        lifetimeStart: birth
+        lifetimeEnd: death
+        width: w
+        height: h
+        position: x: x, y: y
+        rotation: rotation
+
       actor.load data
       actor

@@ -14,6 +14,8 @@ define (require) ->
   ID = require "util/id"
   seedrand = require "util/seedrandom"
   Vec2 = require "core/vec2"
+
+  Actors = require "handles/actors"
   BaseActor = require "handles/actors/base"
 
   CompositeProperty = require "handles/properties/composite"
@@ -22,7 +24,7 @@ define (require) ->
 
   SettingsWidget = require "widgets/floating/settings"
 
-  class Spawner extends BaseActor
+  Actors.Spawner = class Spawner extends BaseActor
 
     @UPDATE_RESOLUTION: 10 # ms
     @UPDATE_INTERVAL: null
@@ -84,7 +86,9 @@ define (require) ->
       # Don't save this, as it is volatile (likely immediately deleted)
       template = param.required options.templateHandle
 
-      super @ui, template.lifetimeStart_ms, template.lifetimeEnd_ms
+      super @ui,
+        lifetimeStart: template.lifetimeStart_ms
+        lifetimeEnd: template.lifetimeEnd_ms
 
       @_imitateHandle template
 
@@ -143,11 +147,12 @@ define (require) ->
         "delete"
       ]
 
-      unless window[handle.constructor.name]
-        throw new Error "Unkown handle class #{handle.constructor.name}!"
+      constructor_name = handle.constructor.name
+      unless Actors[constructor_name]
+        throw new Error "Unkown handle class #{constructor_name}!"
 
       # Copy over unique methods
-      for name, method of window[handle.constructor.name].prototype
+      for name, method of Actors[constructor_name].prototype
         unless "#{@[name]}" == "#{method}" or _.contains keepMethods, name
           @[name] = _.clone method, true
 
@@ -349,7 +354,7 @@ define (require) ->
       param.required time
       @_seedIncrement++
 
-      actor = window[@getSpawnableClassName()].load @ui, @dump()
+      actor = Actors[@getSpawnableClassName()].load @ui, @dump()
       actor.disableTemporalUpdates()
 
       seed = @_properties.particles.seed.getValue()
@@ -499,7 +504,7 @@ define (require) ->
     # @return [Spawner] spawner
     ###
     @load: (ui, data) ->
-      templateHandle = window[data.spawnableClassName].load ui, data
+      templateHandle = Actors[data.spawnableClassName].load ui, data
       spawner = new Spawner ui, templateHandle: templateHandle
       spawner.load data
       templateHandle.delete()
