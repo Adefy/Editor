@@ -37,7 +37,9 @@ define (require) ->
       Spawner.UPDATE_INTERVAL = setInterval ->
         now = Date.now()
 
-        spawner.previewTick(now) for spawner in Spawner.SPAWNERS
+        for spawner in Spawner.SPAWNERS
+          spawner.tick(now)
+          spawner.previewTick(now)
 
       , Spawner.UPDATE_RESOLUTION
 
@@ -98,10 +100,14 @@ define (require) ->
       @_spawns = []
       @_previewSpawns = []
       @_lastSpawnTime = Date.now()
+      @_lastSpawnUpdateTime = Date.now()
       @_lastPreviewSpawnTime = Date.now()
       @_lastPreviewUpdateTime = Date.now()
 
       @_seedIncrement = 0
+
+      @_active = false
+      @_previewActive = true
 
       ## for testing
       @_ctx.spawn =
@@ -119,6 +125,7 @@ define (require) ->
       @initPropertyDirection()
       @initPropertyVelocity()
       @initPropertyVelocityRange()
+      @overridePhysicsProperty()
 
       @_properties.position.setVisibleInToolbar true
       @_properties.layer.setVisibleInToolbar true
@@ -128,6 +135,34 @@ define (require) ->
       # Ensure the spawner update cycle is both running, and includes us
       Spawner.setupUpdateInterval()
       Spawner.registerSpawner @
+
+    ###
+    # Check if the preview spawns are active
+    #
+    # @return [Boolean] active
+    ###
+    isPreviewActive: -> @_previewActive
+
+    ###
+    # Check if the spawner is active
+    #
+    # @return [Boolean] active
+    ###
+    isActive: -> @_active
+
+    ###
+    # Set the active state of the spawner
+    #
+    # @param [Boolean] active
+    ###
+    setActive: (active) -> @_active = active
+
+    ###
+    # Set the active state of the preview spawns
+    #
+    # @param [Boolean] active
+    ###
+    setPreviewActive: (active) -> @_previewActive = active
 
     ###
     # Copy over all unique properties of the provided handle. This essentially
@@ -273,6 +308,30 @@ define (require) ->
       @_properties.velocityRange.addProperty "y", @_properties.velocityRange.y
 
     ###
+    # Replace the generic physics property handling. Maps property updates to
+    # only those handles that support them
+    ###
+    overridePhysicsProperty: ->
+      @_properties.physics.mass.onUpdate = (mass) =>
+        _.union(@_spawns, @_previewSpawns).map (handle) ->
+          handle.setMass mass if handle.setMass
+
+      @_properties.physics.elasticity.onUpdate = (elasticity) =>
+        _.union(@_spawns, @_previewSpawns).map (handle) ->
+          handle.setElasticity elasticity if handle.setElasticity
+
+      @_properties.physics.friction.onUpdate = (friction) =>
+        _.union(@_spawns, @_previewSpawns).map (handle) ->
+          handle.setFriction friction if handle.setFriction
+
+      @_properties.physics.enabled.onUpdate = (enabled) =>
+        _.union(@_spawns, @_previewSpawns).map (handle) ->
+          if enabled
+            handle.enablePsyx() if handle.enablePsyx
+          else
+            handle.disablePsyx() if handle.disablePsyx
+
+    ###
     # Remove an actor from the actors list
     # NOTE* This does not destroy the actor, use killActor instead
     #
@@ -288,9 +347,10 @@ define (require) ->
     delete: ->
       Spawner.unregisterSpawner @
 
-      for spawn in @_previewSpawns
-        spawn.delete()
-        @_previewSpawns = []
+      _.union(@_previewSpawns, @_spawns).map (spawn) -> spawn.delete()
+      
+      @_previewSpawns = []
+      @_spawns = []
 
       super()
 
@@ -311,9 +371,13 @@ define (require) ->
     # @return [Spawner] self
     ###
     spawn: (time) ->
-      param.required time
+      time = param.optional time, Date.now()
 
-      @_spawns.push @_generateSpawn time
+      spawn = @_generateSpawn time
+
+      @initializeSpawn spawn
+
+      @_spawns.push spawn
       @
 
     ###
@@ -323,22 +387,47 @@ define (require) ->
     # @return [Spawner] self
     ###
     spawnPreview: (time) ->
-      param.required time
+      time = param.optional time, Date.now()
 
       spawn = @_generateSpawn time
+      spawn.getProperty("opacity").setValue 0.25
+
+      @initializeSpawn spawn
+
+      @_previewSpawns.push spawn
+      @
+
+    ###
+    # Initialize spawn actor and properties
+    #
+    # @param [Handle] spawn
+    ###
+    initializeSpawn: (spawn) ->
+
       spawn.getProperty("layer").main.setValue @_properties.layer.main.getValue() - 0.1
-      spawn.getProperty("opacity").setValue 0.5
 
       # Attach velocity
       velocityRange = @_properties.velocityRange.getValue()
       velocity = @_properties.velocity.getValue()
+      pos = @_properties.position.getValue()
 
-      spawn._velocity =
+      finalVel =
         x: velocity.x + (Math.random() * velocityRange.x)
         y: velocity.y + (Math.random() * velocityRange.y)
 
-      @_previewSpawns.push spawn
-      @
+      spawn._velocity = finalVel
+
+      # Apply physics impulse directly on ARE actor (low-level, hacky)
+      if @_properties.physics.enabled.getValue()
+        ARE_id = spawn.getActor().getId()
+        ARE_actor = _.find ARERenderer.actors, (a) -> a.getId() == ARE_id
+
+        if ARE_actor and ARE_actor._body
+          impulse = ARERenderer.screenToWorld
+            x: (pos.x + finalVel.x) * 10
+            y: (pos.y + finalVel.y) * 10
+
+          ARE_actor._body.applyImpulse impulse, new cp.v(0, 0)
 
     ###
     # Generate a spawned actor. This actor is not tracked by the workspace or
@@ -377,42 +466,45 @@ define (require) ->
     ###
     # Callback during playback
     #
-    # @param [Number] time current time
+    # @param [Number] now time returned by Date.now()
     # @return [Spawner] self
     ###
-    tick: (time) ->
-      max = @particles.particles.max.getValue()
-      freq = @getFrequency()
+    tick: (now) ->
+      max = @_properties.particles.max.getValue()
+      freq = @_properties.particles.frequency.getValue()
 
-      if freq == 0
-        while @_spawns.length < max
-          @spawn()
+      if @_active
+        if now - @_lastSpawnTime >= freq and @_spawns.length <= max
+          @_lastSpawnTime = now
+          @spawn now
 
-      else
-        # determine if we need to spawn an actor or not
+      @preformUpdate now
       @
 
     ###
     # Called by our own preview interval, updates our preview visuals
     #
     # @param [Number] now time returned by Date.now()
+    # @return [Spawner] self
     ###
     previewTick: (now) ->
       max = @_properties.particles.max.getValue()
       freq = @_properties.particles.frequency.getValue()
 
-      if now - @_lastPreviewSpawnTime >= freq and @_previewSpawns.length <= max
-        @_lastPreviewSpawnTime = now
-        @spawnPreview now
+      if @_previewActive
+        if now - @_lastPreviewSpawnTime >= freq and @_previewSpawns.length <= max
+          @_lastPreviewSpawnTime = now
+          @spawnPreview now
 
-      @updatePreview now
+      @preformPreviewUpdate now
+      @
 
     ###
     # Update our preview actors in time. Velocity is pixels/second
     #
     # @param [Number] now time returned by Date.now()
     ###
-    updatePreview: (now) ->
+    preformPreviewUpdate: (now) ->
       dt = (now - @_lastPreviewUpdateTime) / 1000
       @_lastPreviewUpdateTime = now
 
@@ -427,13 +519,44 @@ define (require) ->
           spawn.delete()
           @_previewSpawns.splice i, 1
         else
-          pos = spawn.getProperty("position")
+          @updateSpawn spawn
 
-          currentPosition = pos.getValue()
+    ###
+    # Update our spawns in time. Velocity is pixels/second
+    #
+    # @param [Number] now time returned by Date.now()
+    ###
+    preformUpdate: (now) ->
+      dt = (now - @_lastSpawnUpdateTime) / 1000
+      @_lastSpawnUpdateTime = now
 
-          pos.setValue
-            x: currentPosition.x + spawn._velocity.x
-            y: currentPosition.y + spawn._velocity.y
+      return unless @_spawns.length > 0
+
+      # Iterate backwards so we can safely splice expired actors
+      for i in [@_spawns.length - 1..0]
+        spawn = @_spawns[i]
+
+        # Expire if we need to
+        if (now - spawn._spawnTime) > @_properties.particles.lifetime.getValue()
+          spawn.delete()
+          @_spawns.splice i, 1
+        else
+          @updateSpawn spawn
+
+    ###
+    # Update spawned object, both preview and not
+    #
+    # @param [Handle] spawn
+    ###
+    updateSpawn: (spawn) ->
+      unless spawn.getProperty("physics").enabled.getValue()
+        pos = spawn.getProperty("position")
+
+        currentPosition = pos.getValue()
+
+        pos.setValue
+          x: currentPosition.x + spawn._velocity.x
+          y: currentPosition.y + spawn._velocity.y
 
     ###
     # Pop open our settings dialog
@@ -444,6 +567,13 @@ define (require) ->
       new SettingsWidget @ui,
         title: "Particle System"
         settings: [
+          label: "Lifetime"
+          type: Number
+          placeholder: "Enter lifetime in ms"
+          value: @_properties.particles.lifetime.getValue()
+          id: "lifetime"
+          min: 0
+        ,
           label: "Max particle count"
           type: Number
           placeholder: "Enter a particle limit"
@@ -457,11 +587,95 @@ define (require) ->
           value: @_properties.particles.frequency.getValue()
           id: "frequency"
           min: 50
+        ,
+          label: "Target X"
+          type: Number
+          placeholder: "Enter target x"
+          value: @_properties.direction.x.getValue()
+          id: "direction_x"
+          halfw: true
+        ,
+          label: "Target Y"
+          type: Number
+          placeholder: "Enter target y"
+          value: @_properties.direction.y.getValue()
+          id: "direction_y"
+          halfw: true
+        ,
+          label: "Velocity min X"
+          type: Number
+          placeholder: "Enter velocity min x"
+          value: @_properties.velocity.x.getValue()
+          id: "velocity_min_x"
+          halfw: true
+        ,
+          label: "Velocity min Y"
+          type: Number
+          placeholder: "Enter velocity min y"
+          value: @_properties.velocity.y.getValue()
+          id: "velocity_min_y"
+          halfw: true
+        ,
+          label: "Velocity max X"
+          type: Number
+          placeholder: "Enter velocity max x"
+          value: @_properties.velocityRange.x.getValue()
+          id: "velocity_max_x"
+          halfw: true
+        ,
+          label: "Velocity max Y"
+          type: Number
+          placeholder: "Enter velocity max y"
+          value: @_properties.velocityRange.y.getValue()
+          id: "velocity_max_y"
+          halfw: true
+        ,
+          label: "Physics"
+          type: Boolean
+          placeholder: "Enabled"
+          value: @_properties.physics.enabled.getValue()
+          id: "physics_enabled"
+          halfw: true
+        ,
+          label: "Mass"
+          type: Number
+          placeholder: "Enter physics mass"
+          value: @_properties.physics.mass.getValue()
+          id: "physics_mass"
+          halfw: true
+        ,
+          label: "Friction"
+          type: Number
+          placeholder: "Enter physics friction"
+          value: @_properties.physics.friction.getValue()
+          id: "physics_friction"
+          halfw: true
+        ,
+          label: "Elasticity"
+          type: Number
+          placeholder: "Enter physics elasticity"
+          value: @_properties.physics.elasticity.getValue()
+          id: "physics_elasticity"
+          halfw: true
         ]
 
         cb: (data) =>
           @_properties.particles.max.setValue data.max
           @_properties.particles.frequency.setValue data.frequency
+          @_properties.particles.lifetime.setValue data.lifetime
+
+          @_properties.direction.x.setValue data.direction_x
+          @_properties.direction.y.setValue data.direction_y
+
+          @_properties.velocity.x.setValue data.velocity_min_x
+          @_properties.velocity.y.setValue data.velocity_min_y
+          @_properties.velocityRange.x.setValue data.velocity_max_x
+          @_properties.velocityRange.y.setValue data.velocity_max_y
+
+          @_properties.physics.enabled.setValue data.physics_enabled
+          @_properties.physics.mass.setValue data.physics_mass
+          @_properties.physics.friction.setValue data.physics_friction
+          @_properties.physics.elasticity.setValue data.physics_elasticity
 
     ###
     # Dumps the Spawner to a basic Object
