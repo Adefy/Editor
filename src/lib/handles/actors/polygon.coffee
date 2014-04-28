@@ -15,14 +15,17 @@ define (require) ->
     # Defines a variable-sided actor, psicktually
     #
     # @param [UIManager] ui
-    # @param [Number] birth time in ms at which we are to be created
-    # @param [Number] sides the n in ngon
-    # @param [Number] radius ngon radius
-    # @param [Number] x x starting coordinate
-    # @param [Number] y y starting coordinate
-    # @param [Number] rotation optional, angle in degrees
-    # @param [Number] death optional death time specification
-    # @param [Boolean] manualInit optional, postInit() not called if true
+    # @param [Object] options
+    #   @option [Number] lifetimeStart  time in ms at which we are to be created
+    #   @option [Number] lifetimeEnd  death time specification
+    #     @optional
+    #   @option [Number] sides  the n in ngon
+    #   @option [Number] radius  ngon radius
+    #   @option [Vec2] position  x starting coordinates
+    #   @option [Number] rotation  angle in degrees
+    #     @optional
+    #   @option [Boolean] manualInit  postInit() not called if true
+    #     @optional
     ###
     constructor: (@ui, options) ->
       param.required @ui

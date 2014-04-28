@@ -35,8 +35,12 @@ define (require) ->
     # This serves as the base for the other actor classes
     #
     # @param [UIManager] ui
-    # @param [Number] lifetimeStart_ms time at which we are created, in ms
-    # @param [Number] lifetimeEnd_ms time we are destroyed, defaults to end of ad
+    # @param [Object] options
+    #   @option [Number] lifetimeStart_ms  time at which we are created, in ms
+    #   @option [Number] lifetimeEnd_ms  time we are destroyed, defaults to end of ad
+    #   @option [Vec2] position  x starting coordinates
+    #   @option [Number] rotation  angle in degrees
+    #     @optional
     ###
     constructor: (@ui, options) ->
       param.required @ui
