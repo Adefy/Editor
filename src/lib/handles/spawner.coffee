@@ -138,8 +138,11 @@ define (require) ->
     ###
     _imitateHandle: (handle) ->
 
+      unless window[handle.constructor.name]
+        throw new Error "Unkown handle class #{handle.constructor.name}!"
+
       # Copy over unique methods
-      for name, method of window[handle.constructor.name].constructor.prototype
+      for name, method of window[handle.constructor.name].prototype
         unless "#{@[name]}" == "#{method}" or name == "constructor"
           @[name] = _.clone method, true
 
