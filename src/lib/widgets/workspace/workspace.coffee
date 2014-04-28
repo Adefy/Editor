@@ -1,3 +1,14 @@
+###
+@Changlog
+
+  - "1.0.0": Initial
+  - "1.1.0": Added proper actor exporting
+  - "1.2.0": Added CamPos
+  - "1.3.0": Added Spawners
+  - "1.4.0": Added Spawners
+  - "1.5.0": Clear Color is now saved
+
+###
 define (require) ->
 
   config = require "config"
@@ -167,6 +178,27 @@ define (require) ->
     # @return [Id] actorId
     ###
     getSelectedActorID: -> Workspace.getSelectedActorID()
+
+    ###
+    # Get the ARE Clear Color
+    #
+    # @return [Color]
+    ###
+    getClearColor: ->
+      @_are.getClearColor()
+
+    ###
+    # Set the ARE Clear Color
+    #
+    # @param [Number] r
+    # @param [Number] g
+    # @param [Number] b
+    # @return [self]
+    ###
+    setClearColor: (r, g, b) ->
+      AUtilLog.debug "Setting ClearColor #{r} #{g} #{b}"
+      @_are.setClearColor r, g, b
+      @
 
     ###
     # Sets the selectedActor instance
@@ -840,13 +872,21 @@ define (require) ->
       actors = _.map @getActors(), (actor) -> actor.dump()
       actors = _.without actors, (actor) -> actor.handleType == "Spawner"
 
+      c = @getClearColor()
+      clearColor =
+        r: c.getR()
+        g: c.getG()
+        b: c.getB()
+
       _.extend super(),
-        workspaceVersion: "1.4.0"
+        workspaceVersion: "1.5.0"
         camPos:                                                        # v1.2.0
           x: ARERenderer.camPos.x
           y: ARERenderer.camPos.y
         actors: actors                                                 # v1.1.0
         spawners: spawners                                             # v1.4.0
+        clearColor: clearColor                                         # v1.5.0
+
 
     ###
     # Loads the a workspace data state
@@ -859,6 +899,10 @@ define (require) ->
        ((data.dumpVersion == "1.0.0") && (data.version >= "1.2.0"))
         ARERenderer.camPos.x = data.camPos.x
         ARERenderer.camPos.y = data.camPos.y
+
+      if data.workspaceVersion >= "1.5.0"
+        col = data.clearColor
+        @setClearColor col.r, col.g, col.b
 
       if data.workspaceVersion >= "1.4.0"
         for spawnerData in data.spawners
@@ -875,13 +919,3 @@ define (require) ->
           AUtilLog.warn "No such handle class #{actor.type}"
 
       @ui.timeline.updateAllActorsInTime()
-
-###
-@Changlog
-
-  - "1.0.0": Initial
-  - "1.1.0": Added proper actor exporting
-  - "1.2.0": Added CamPos
-  - "1.3.0": Added Spawners
-
-###
