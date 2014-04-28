@@ -715,7 +715,7 @@ define (require) ->
       @_lastTemporalState = Number time
 
       unless @_silentUpdate
-        @ui.pushEvent "actor.update.intime", actor: @
+        @ui.events.push "actor", "update.intime", actor: @
 
       @
 

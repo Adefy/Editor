@@ -46,6 +46,7 @@ define (require) ->
     # @return [self]
     ###
     postInit: ->
+      @initEventListen()
       #
       @
 
@@ -175,12 +176,20 @@ define (require) ->
     ## Event handling
 
     ###
-    # Called by ui.pushEvent
+    # @return [self]
+    ###
+    initEventListen: ->
+      #
+      @
+
+    ###
+    # Called by ui.events.push
     # @param [String] type
     # @param [Object] params
     ###
-    respondToEvent: (type, params) ->
+    respondToEvent: (g, type, params) ->
       #
+      @
 
     ## Dumpable
 

@@ -140,15 +140,24 @@ define (require) ->
       @onUpdate()
 
     ###
+    # @return [self]
+    ###
+    initEventListen: ->
+      super()
+      @ui.events.listen @, "texture"
+      @
+
+    ###
     # @param [String] type
     # @param [Object] params
     ###
-    respondToEvent: (type, params) ->
-      AUtilEventLog.egot "tab.textures", type
+    respondToEvent: (groupname, type, params) ->
+      AUtilEventLog.egot "tab.textures", groupname, type
 
+      return unless groupname == "texture"
       switch type
-        when "rename.texture", "update.texture"
+        when "rename", "update"
           @updateTexture params.texture
-        when "load.texture", "upload.texture", "remove.texture"
+        when "load", "upload", "remove"
           # params.texture
           @refresh()

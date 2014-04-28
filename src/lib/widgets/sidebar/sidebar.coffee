@@ -56,6 +56,16 @@ define (require) ->
         @hide()
 
     ###
+    # @return [self]
+    ###
+    postInit: ->
+      super()
+      for item in @_items
+        item.postInit()
+
+      @
+
+    ###
     # @private
     ###
     _bindToggle: ->
@@ -230,11 +240,3 @@ define (require) ->
 
       @_visible = false
       @refreshVisible()
-
-    ###
-    # @param [String] type
-    # @param [Object] params
-    ###
-    respondToEvent: (type, params) ->
-      for item in @_items
-        item.respondToEvent(type, params) if item.respondToEvent

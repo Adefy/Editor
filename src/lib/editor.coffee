@@ -488,7 +488,7 @@ define (require) ->
 
       @autosaveTaskID = setInterval =>
         @autosave()
-        @ui.pushEvent "autosave"
+        @ui.events.push "editor", "autosave"
       , @settings.autosave.frequency
 
       @

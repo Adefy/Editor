@@ -76,6 +76,8 @@ define (require) ->
     # @return [Workspace] self
     ###
     postInit: ->
+      super()
+
       ## AJS overrides setting the renderer mode...
       #mode = Storage.get("are.renderer.mode")
       #mode = ARERenderer.rendererMode if mode == null
@@ -98,6 +100,7 @@ define (require) ->
         @_applyCanvasSizeUpdate()
 
       , @_canvasWidth, @_canvasHeight, config.id.are_canvas
+
 
       @
 
@@ -199,7 +202,7 @@ define (require) ->
       AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, =>
         AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
 
-        @ui.pushEvent "load.texture", texture: texture
+        @ui.events.push "texture", "load", texture: texture
 
         # Refresh any actors that already have the texture assigned
         for handle in _.union @actorObjects, @_spawners
@@ -217,7 +220,7 @@ define (require) ->
       param.required handle
 
       @actorObjects.push handle
-      @ui.pushEvent "workspace.add.actor", actor: handle
+      @ui.events.push "workspace", "add.actor", actor: handle
       @
 
     #removeActor: (handle) ->
@@ -228,10 +231,10 @@ define (require) ->
     ###
     addSpawner: (spawner) ->
       @_spawners.push spawner
-      @ui.pushEvent "workspace.add.spawner", spawner: spawner
-
       # Spawners are still a kind of actor.
       @addActor spawner
+
+      @ui.events.push "workspace", "add.spawner", spawner: spawner
       @
 
     ###
@@ -464,7 +467,7 @@ define (require) ->
 
           d.getTarget().setRotation n
 
-          @ui.pushEvent "selected.actor.update", actor: d.getTarget()
+          @ui.events.push "workspace", "selected.actor.update", actor: d.getTarget()
 
       ###
       # Move actor
@@ -505,7 +508,7 @@ define (require) ->
           newY = d.getUserData().original.y + deltaY
 
           d.getTarget().setPosition newX, newY
-          @ui.pushEvent "selected.actor.update", actor: d.getTarget()
+          @ui.events.push "workspace", "selected.actor.update", actor: d.getTarget()
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
@@ -523,7 +526,7 @@ define (require) ->
           actor = @getActorFromPick r, g, b
           if actor
             @setSelectedActor actor
-            @ui.pushEvent "workspace.selected.actor", actor: actor
+            @ui.events.push "workspace", "selected.actor", actor: actor
 
     ###
     # Register listeners
@@ -637,7 +640,7 @@ define (require) ->
     reset: ->
 
       for o in @actorObjects
-        @ui.pushEvent "workspace.remove.actor", actor: o
+        @ui.events.push "workspace", "remove.actor", actor: o
         o.timelineDeath()
         o.delete()
 
@@ -659,7 +662,7 @@ define (require) ->
       if obj.constructor.name.indexOf("Actor") != -1
         for o, i in @actorObjects
           if o.getID() == obj.getID()
-            @ui.pushEvent "workspace.remove.actor", actor: o
+            @ui.events.push "workspace", "remove.actor", actor: o
             @actorObjects.splice i, 1
             return
 
@@ -843,12 +846,24 @@ define (require) ->
       # workspace now inherits its height from the config.selector.content
 
     ###
+    # Initialize the event listener
+    #
+    # @return [self]
+    ###
+    initEventListen: ->
+      super()
+      @ui.events.listen @, "timeline"
+      @
+
+    ###
     # @param [String] type
     # @param [Object] params
     ###
-    respondToEvent: (type, params) ->
+    respondToEvent: (groupname, type, params) ->
+      return unless groupname == "timeline"
+
       switch type
-        when "timeline.selected.actor"
+        when "selected.actor"
           @setSelectedActor params.actor
 
     ###

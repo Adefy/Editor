@@ -6,6 +6,8 @@ define (require) ->
   AUtilLog = require "util/log"
   AUtilEventLog = require "util/event_log"
 
+  EventSystem = require "core/event_system"
+
   PropertyBar = require "widgets/property_bar"
   MenuBar = require "widgets/menubar/menubar"
   StatusBar = require "widgets/statusbar/statusbar"
@@ -28,6 +30,9 @@ define (require) ->
         throw new Error "UIManager already instantiated!"
       else
         UIManager.instance = @
+
+      @events = new EventSystem
+      @events.listen @, "timeline"
 
       @widgets = []
 
@@ -94,7 +99,8 @@ define (require) ->
       @sidebar = new Sidebar @, 310
 
       panel = new SidebarPanel @, parent: @sidebar
-      panel.newTab "Textures", (tab) => new TexturesTab @, parent: panel
+      panel.newTab "Textures", =>
+        new TexturesTab @, parent: panel
       panel.selectTab 0
 
       @sidebar
@@ -293,59 +299,13 @@ define (require) ->
       @
 
     ###
-    ## UES - UI Event System
+    # @return [self]
     ###
+    respondToEvent: (groupname, type, params) ->
+      return unless groupname == "timeline"
 
-    ###
-    # Adds a new event
-    # @param [String] type
-    # @param [Object] params
-    ###
-    pushEvent: (type, params) ->
-
-      unless @_ignoreEventList == null || @_ignoreEventList == undefined
-        if _.include @_ignoreEventList, type
-          return AUtilEventLog.ignore "ui", type
-
-      AUtilEventLog.epush "ui", type
-
-      if type == "timeline.hiding" || type == "timeline.showing"
-        @updateSectionMain()
-
-      if type == "timeline.hide" || type == "timeline.show"
-        @onResize()
-
-      ## we should probably fine tune this later
-      for widget in @widgets
-        widget.respondToEvent type, params if widget.respondToEvent
-
-      ##
-      # more debugging stuff
-      @_eventStats ||= {}
-      if @_eventStats[type] == null || @_eventStats[type] == undefined
-        @_eventStats[type] = 0
-      @_eventStats[type]++
-
-    ###
-    # Allows incoming event of (type)
-    # @param [String] type
-    ###
-    allowEvent: (type) ->
-
-      if @_ignoreEventList == null || @_ignoreEventList == undefined
-        return
-
-      index = @_ignoreEventList.indexOf(type)
-      @_ignoreEventList.splice index, 1
-
-    ###
-    # Blocks incoming event of (type)
-    # @param [String] type
-    ###
-    ignoreEvent: (type) ->
-
-      if @_ignoreEventList == null || @_ignoreEventList == undefined
-        @_ignoreEventList = []
-
-      @_ignoreEventList.push type
-
+      switch type
+        when "showing", "hiding"
+          @updateSectionMain()
+        when "show", "hide"
+          @onResize()

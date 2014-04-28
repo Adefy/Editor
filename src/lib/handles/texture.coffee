@@ -54,7 +54,7 @@ define (require) ->
     contextFuncDelete: (texture) ->
       _.remove @project.textures, (t) -> t.getID() == texture.getID()
 
-      AdefyEditor.ui.pushEvent "remove.texture",
+      AdefyEditor.ui.events.push "texture", "remove",
         texture: texture
 
       @
@@ -68,7 +68,7 @@ define (require) ->
       AdefyEditor.ui.modals.showRename texture,
         cb: (t, name) =>
           t.setName(name)
-          AdefyEditor.ui.pushEvent "rename.texture", texture: t
+          AdefyEditor.ui.events.push "texture", "rename", texture: t
 
         validate: (t, name) =>
           return "Name must be longer than 3 characters" if name.length <= 3

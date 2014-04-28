@@ -13,6 +13,9 @@ define (require) ->
     ###
     constructor: (@ui, options) ->
       param.required options.parent
+      @tabindex = 0
+      @tabname = ""
+
       super @ui, options
 
     ###

@@ -26,6 +26,16 @@ define (require) ->
       @_registerEvents()
 
     ###
+    # @return [self]
+    ###
+    postInit: ->
+      super()
+      for tab in @_tabs
+        tab.postInit()
+
+      @
+
+    ###
     # @return [Void]
     ###
     _registerEvents: ->
@@ -81,22 +91,22 @@ define (require) ->
     ###
     reindexTabs: ->
       for i in [0...@_tabs.length]
-        @_tabs[i].index = i
+        @_tabs[i].tabindex = i
 
     ###
     # Add a new tab to the panel, this will also automagically assign
     # an index to the tab
     ###
     addTab: (tab) ->
-      tab.index = @_tabs.length
+      tab.tabindex = @_tabs.length
       @_tabs.push tab
 
     ###
     # Selects a tab based on index
     ###
     selectTab: (index) ->
-      tab.selected = false for tab in @_tabs
-      @_tabs[index].selected = true
+      tab.tabselected = false for tab in @_tabs
+      @_tabs[index].tabselected = true
 
     ###
     # @param [String] name The name of this tab
@@ -104,8 +114,9 @@ define (require) ->
     #   @optional
     ###
     newTab: (name, cb) ->
-      tab = name: name, selected: ""
-      tab.content = cb(tab) if cb
+      tab = cb()
+      tab.tabname = name
+      tab.tabselected = false
       @addTab tab
       tab
 
@@ -118,14 +129,13 @@ define (require) ->
       contentId = ""
       usesFooter = false
 
-      tab = _.find @_tabs, (t) -> t.selected
+      tab = _.find @_tabs, (t) -> t.tabselected
 
       if tab
-        tcontent = tab.content
-        content = tcontent.render()
-        contentKlass = tcontent.cssAppendParentClass()
-        contentId = tcontent.appendParentId()
-        usesFooter = tcontent.needPanelFooter()
+        content = tab.render()
+        contentKlass = tab.cssAppendParentClass()
+        contentId = tab.appendParentId()
+        usesFooter = tab.needPanelFooter()
 
       @_footerActive = usesFooter
 
@@ -144,7 +154,7 @@ define (require) ->
     ###
     refresh: ->
       super()
-      tab = _.find @_tabs, (t) -> t.selected
+      tab = _.find @_tabs, (t) -> t.tabselected
       tab.refresh() if tab
 
       @
@@ -161,11 +171,11 @@ define (require) ->
     postRefresh: ->
       super()
       @_setupScrollbar()
-      tab = _.find @_tabs, (t) -> t.selected
-      if content = tab.content
-        content.postRefresh() if content.postRefresh
-        if @_footerActive && content.renderFooter
-          @getElement(".footer").html content.renderFooter()
+      tab = _.find @_tabs, (t) -> t.tabselected
+      if tab
+        tab.postRefresh() if tab.postRefresh
+        if @_footerActive && tab.renderFooter
+          @getElement(".footer").html tab.renderFooter()
 
       @
 
@@ -182,12 +192,3 @@ define (require) ->
     ###
     onChildUpdate: (child) ->
       @_updateScrollbar()
-
-    ###
-    # @param [String] type
-    # @param [Object] params
-    ###
-    respondToEvent: (type, params) ->
-      for tab in @_tabs
-        if tab.content
-          tab.content.respondToEvent type, params if tab.content.respondToEvent

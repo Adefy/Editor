@@ -87,6 +87,7 @@ define (require) ->
       else
         @hide()
 
+
       @
 
     ###
@@ -299,7 +300,7 @@ define (require) ->
       index = Number $(element).attr "data-index"
 
       @switchSelectedActorByIndex index
-      @ui.pushEvent "timeline.selected.actor", actor: @_actors[index]
+      @ui.events.push "timeline", "selected.actor", actor: @_actors[index]
 
     ###
     # Setup keyframe Dragger
@@ -735,11 +736,11 @@ define (require) ->
         @getElement().animate { height: @_height },
           duration: 300
           easer: "swing"
-          progress: => @ui.pushEvent "timeline.showing"
-          done: => @ui.pushEvent "timeline.show"
+          progress: => @ui.events.push "timeline", "showing"
+          done: => @ui.events.push "timeline", "show"
       else
         @getElement().height @_height
-        @ui.pushEvent "timeline.show"
+        @ui.events.push "timeline", "show"
 
       @updateVisible()
 
@@ -765,11 +766,11 @@ define (require) ->
         @getElement().animate { height: @_hiddenHeight },
           duration: 300
           easer: "swing"
-          progress: => @ui.pushEvent "timeline.hiding"
-          done: => @ui.pushEvent "timeline.hide"
+          progress: => @ui.events.push "timeline", "hiding"
+          done: => @ui.events.push "timeline", "hide"
       else
         @getElement().height @_hiddenHeight
-        @ui.pushEvent "timeline.hide"
+        @ui.events.push "timeline", "hide"
 
       @updateVisible()
 
@@ -1203,27 +1204,42 @@ define (require) ->
     ## EVENTS
 
     ###
+    # @return [self]
+    ###
+    initEventListen: ->
+      super()
+      @ui.events.listen @, "workspace"
+      @ui.events.listen @, "property_bar"
+      @ui.events.listen @, "actor"
+      @
+
+    ###
+    # @param [String] groupname
     # @param [String] type
     # @param [Object] params
     ###
-    respondToEvent: (type, params) ->
-      switch type
-        when "workspace.add.actor"
-          @addActor params.actor
-        when "workspace.remove.actor"
-          @removeActor params.actor
-        when "workspace.selected.actor"
-          @switchSelectedActor params.actor
-          @updateActor params.actor
-        when "property.bar.update.actor"
-          @updateActor params.actor
-        when "actor.update.intime"
-          @updateActor params.actor unless @_playbackID
-        when "renamed.actor"
-          @updateActor params.actor
-        when "selected.actor.update"
-          @updateActor params.actor
-
+    respondToEvent: (groupname, type, params) ->
+      if groupname == "workspace"
+        switch type
+          when "add.actor"
+            @addActor params.actor
+          when "remove.actor"
+            @removeActor params.actor
+          when "selected.actor"
+            @switchSelectedActor params.actor
+            @updateActor params.actor
+          when "selected.actor.update"
+            @updateActor params.actor
+      else if groupname == "property_bar"
+        switch type
+          when "update.actor"
+            @updateActor params.actor
+      else if groupname == "actor"
+        switch type
+          when "update.intime"
+            @updateActor params.actor unless @_playbackID
+          when "rename"
+            @updateActor params.actor
 
     ## Serialization
 

@@ -69,11 +69,11 @@ define (require) ->
           else
             handle.setName name
             if handle instanceof Asset
-              @ui.pushEvent "renamed.asset", asset: handle
+              @ui.events.push "asset", "rename", asset: handle
             else if handle instanceof BaseActor
-              @ui.pushEvent "renamed.actor", actor: handle
+              @ui.events.push "actor", "rename", actor: handle
             else if handle instanceof Handle
-              @ui.pushEvent "renamed.handle", handle: handle
+              @ui.events.push "handle", "rename", handle: handle
 
         validation: (data) =>
           # Validation
@@ -365,7 +365,7 @@ define (require) ->
           textures.push texture
 
         @ui.workspace.loadTextures(textures)
-        @ui.pushEvent "upload.textures", textures: textures
+        @ui.events.push "texture", "upload", textures: textures
 
         cb blob if cb = options.cb
 
