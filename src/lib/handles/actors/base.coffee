@@ -1439,6 +1439,7 @@ define (require) ->
         @ui.workspace.notifyDemise @
 
         # Go through and remove ourselves from
+        @_AJSActor.disablePsyx()
         @_AJSActor.destroy()
         @_AJSActor = null
 
