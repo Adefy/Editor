@@ -204,7 +204,7 @@ define (require) ->
 
       workspace = @ui.workspace
 
-      col = workspace._are.getClearColor()
+      col = workspace.getClearColor()
 
       _colR = col.getR()
       _colG = col.getG()
@@ -239,7 +239,10 @@ define (require) ->
 
         cb: (data) =>
           # Submission
-          workspace._are.setClearColor data[r], data[g], data[b]
+          cr = Math.floor data[r]
+          cg = Math.floor data[g]
+          cb = Math.floor data[b]
+          workspace.setClearColor cr, cg, cb
 
         validation: (data) =>
           # Validation
