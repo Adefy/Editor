@@ -23,18 +23,17 @@ define (require) ->
     # @param [Number] death optional death time specification
     # @param [Boolean] manualInit optional, postInit() not called if true
     ###
-    constructor: (@ui, birth, sides, radius, x, y, rotation, death, manualInit) ->
+    constructor: (@ui, options) ->
       param.required @ui
-      param.required sides
-      radius = Math.abs param.required radius
-      param.required x
-      param.required y
-      manualInit = param.optional manualInit, false
-      rotation = param.optional rotation, 0
+      param.required options
+
+      sides      = param.required options.sides
+      radius     = Math.abs param.required options.radius
+      manualInit = param.optional options.manualInit, false
 
       throw new Error "Can't create an ngon with less than 3 sides" if sides < 3
 
-      super @ui, birth, death
+      super @ui, options
 
       @handleType = "PolygonActor"
 
@@ -43,10 +42,8 @@ define (require) ->
       @initPropertySides()
       @initPropertyRadius()
 
-      @_properties.position.setValue x: x, y: y
       @_properties.sides.setValue sides
       @_properties.radius.setValue radius
-      @_properties.rotation.setValue rotation
 
       @postInit() unless manualInit
 

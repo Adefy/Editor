@@ -34,10 +34,14 @@ define (require) ->
     # @param [Number] lifetimeStart_ms time at which we are created, in ms
     # @param [Number] lifetimeEnd_ms time we are destroyed, defaults to end of ad
     ###
-    constructor: (@ui, lifetimeStart, lifetimeEnd) ->
+    constructor: (@ui, options) ->
       param.required @ui
+      param.required options
 
       super()
+
+      position = param.optional options.position, { x: 0, y: 0 }
+      rotation = param.optional options.rotation, 0
 
       @handleType = "BaseActor"
 
@@ -46,8 +50,8 @@ define (require) ->
       @_alive = false
       @_initialized = false # True after postInit() is called
 
-      @lifetimeStart_ms = param.required lifetimeStart
-      @lifetimeEnd_ms = param.optional lifetimeEnd, @ui.timeline.getDuration()
+      @lifetimeStart_ms = param.required options.lifetimeStart
+      @lifetimeEnd_ms = param.optional options.lifetimeEnd, @ui.timeline.getDuration()
 
       ###
       # Property buffer, holds values at different points in time. Current
@@ -117,6 +121,9 @@ define (require) ->
       @initPropertyLayer()
       @initPropertyColor()
       @initPropertyPhysics()
+
+      @_properties.position.setValue position
+      @_properties.rotation.setValue rotation
 
     ###
     # Initialize Actor Opacity properties
@@ -1488,6 +1495,14 @@ define (require) ->
       @
 
     ###
+    # Open a settings widget for physics editing
+    # @param [BaseActor] actor
+    ###
+    _contextFuncEditPhysics: (actor) ->
+      @ui.modals.showEditActorPsyx actor
+      @
+
+    ###
     # Goes through and makes sure that our birth state contains an entry for
     # each of our properties. Deletes buffer entries if they reference
     # properties we don't have.
@@ -1608,12 +1623,4 @@ define (require) ->
 
         @_animations[time] = animationSet
 
-      @
-
-    ###
-    # Open a settings widget for physics editing
-    # @param [BaseActor] actor
-    ###
-    _contextFuncEditPhysics: (actor) ->
-      @ui.modals.showEditActorPsyx actor
       @

@@ -8,7 +8,10 @@ define (require) ->
 
   Storage = require "storage"
 
-  Spawner = require "handles/spawner"
+  Spawner = require "handles/actors/spawner"
+  PolygonActor = require "handles/actors/polygon"
+  RectangleActor = require "handles/actors/rectangle"
+  TriangleActor = require "handles/actors/triangle"
 
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
@@ -273,16 +276,32 @@ define (require) ->
         functions:
           trinActor:
             name: config.locale.label.actor_triangle
-            cb: => @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
+            cb: => @addActor new TriangleActor @ui,
+              lifetimeStart: time
+              base: 100
+              height: 100
+              position: pos
           rectActor:
             name: config.locale.label.actor_rectangle
-            cb: => @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
+            cb: => @addActor new RectangleActor @ui,
+              lifetimeStart: time
+              width: 100
+              height: 100
+              position: pos
           polyActor:
             name: config.locale.label.actor_polygon
-            cb: => @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
+            cb: => @addActor new PolygonActor @ui,
+              lifestartStart: time
+              sides: 5
+              radius: 60
+              position: pos
           circActor:
             name: config.locale.label.actor_circle
-            cb: => @addActor new PolygonActor @ui, time, 32, 60, pos.x, pos.y
+            cb: => @addActor new PolygonActor @ui,
+            lifetimeStart: time
+            sides: 32
+            radius: 60
+            position: pos
       }
 
     ###

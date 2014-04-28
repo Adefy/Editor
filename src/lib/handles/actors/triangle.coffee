@@ -23,14 +23,13 @@ define (require) ->
     # @param [Number] death optional death time specification
     # @param [Boolean] manualInit optional, postInit() not called if true
     ###
-    constructor: (@ui, birth, b, h, x, y, rotation, death, manualInit) ->
+    constructor: (@ui, options) ->
       param.required @ui
-      param.required b
-      param.required h
-      param.required x
-      param.required y
+      param.required options.base
+      param.required options.height
+      param.required options.position
+
       manualInit = param.optional manualInit, false
-      rotation = param.optional rotation, 0
 
       if b <= 0 or h <= 0 then throw new Error "Base/Height must be >0!"
 
