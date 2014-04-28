@@ -17,15 +17,15 @@ define (require) ->
     constructor: (@project, options) ->
       param.required project
       param.required options
-      param.required options.key
-      param.required options.name
+      key  = param.required options.key
+      name = param.required options.name
 
       @_id = ID.objID("texture").prefixed
 
       @_uid = param.optional options.uid, ID.uID()
-      @_name = options.name
+      @_name = name
 
-      @setKey options.key
+      @setKey key
 
     ###
     # This is the ID used by handles inside the editor
@@ -54,7 +54,7 @@ define (require) ->
     contextFuncDelete: (texture) ->
       _.remove @project.textures, (t) -> t.getID() == texture.getID()
 
-      window.AdefyEditor.ui.pushEvent "remove.texture",
+      AdefyEditor.ui.pushEvent "remove.texture",
         texture: texture
 
       @
@@ -65,10 +65,10 @@ define (require) ->
     # @return [self]
     ###
     contextFuncRename: (texture) ->
-      window.AdefyEditor.ui.modals.showRename texture,
+      AdefyEditor.ui.modals.showRename texture,
         cb: (t, name) =>
           t.setName(name)
-          window.AdefyEditor.ui.pushEvent "rename.texture", texture: t
+          AdefyEditor.ui.pushEvent "rename.texture", texture: t
 
         validate: (t, name) =>
           return "Name must be longer than 3 characters" if name.length <= 3

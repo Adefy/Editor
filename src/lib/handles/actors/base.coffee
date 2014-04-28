@@ -14,12 +14,14 @@ define (require) ->
   Bezier = require "handles/bezier"
   Project = require "project"
 
+  Actors = require "handles/actors"
+
   CompositeProperty = require "handles/properties/composite"
   NumericProperty = require "handles/properties/numeric"
   BooleanProperty = require "handles/properties/boolean"
 
   # Base manipulateable class for actors
-  window.BaseActor = class BaseActor extends Handle
+  Actors.BaseActor = class BaseActor extends Handle
 
     ###
     # @property [Number] accuracy the number of digits animations round-off to
@@ -1458,7 +1460,7 @@ define (require) ->
     duplicate: ->
 
       dumpdata = @dump()
-      window[dumpdata.type].load @ui, dumpdata
+      Actors[dumpdata.type].load @ui, dumpdata
 
     ###
     # Set Texture context menu function
@@ -1473,7 +1475,7 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     _contextFuncCopy: (actor) ->
-      window.AdefyEditor.clipboard =
+      AdefyEditor.clipboard =
         type: "actor"
         reason: "copy"
         data: @

@@ -8,6 +8,7 @@ define (require) ->
 
   Storage = require "storage"
 
+  Actors = require "handles/actors"
   Spawner = require "handles/actors/spawner"
   PolygonActor = require "handles/actors/polygon"
   RectangleActor = require "handles/actors/rectangle"
@@ -886,7 +887,7 @@ define (require) ->
       # data.workspaceVersion >= "1.1.0"
       for actor in data.actors
         continue if actor.handleType == "Spawner"
-        handleKlass = window[actor.type]
+        handleKlass = Actors[actor.type]
         if handleKlass
           newActor = handleKlass.load @ui, actor
           @addActor newActor

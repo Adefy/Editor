@@ -3,12 +3,13 @@ define (require) ->
   config = require "config"
   param = require "util/param"
 
+  Actors = require "handles/actors"
   BaseActor = require "handles/actors/base"
 
   NumericProperty = require "handles/properties/numeric"
 
   # Trianglular actor
-  window.TriangleActor = class TriangleActor extends BaseActor
+  Actors.TriangleActor = class TriangleActor extends BaseActor
 
     ###
     # Creates an AJSTriangle and keeps track of it
@@ -152,6 +153,13 @@ define (require) ->
       y = position.y.value
       rotation = data.properties.rotation.value
 
-      actor = new TriangleActor ui, birth, b, h, x, y, rotation, death
+      actor = new TriangleActor ui,
+        lifetimeStart: birth
+        lifetimeEnd: death
+        base: b
+        height: h
+        position: x: x, y: y
+        rotation: rotation
+
       actor.load data
       actor

@@ -3,12 +3,13 @@ define (require) ->
   config = require "config"
   param = require "util/param"
 
+  Actors = require "handles/actors"
   BaseActor = require "handles/actors/base"
 
   NumericProperty = require "handles/properties/numeric"
 
   # Rectangular actor
-  window.RectangleActor = class RectangleActor extends BaseActor
+  Actors.RectangleActor = class RectangleActor extends BaseActor
 
     ###
     # Instantiates an AJSRectangle and keeps track of it
@@ -153,6 +154,13 @@ define (require) ->
       y = position.y.value
       rotation = data.properties.rotation.value
 
-      actor = new RectangleActor ui, birth, w, h, x, y, rotation, death
+      actor = new RectangleActor ui,
+        lifetimeStart: birth
+        lifetimeEnd: death
+        width: w
+        height: h
+        position: x: x, y: y
+        rotation: rotation
+
       actor.load data
       actor

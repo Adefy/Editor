@@ -3,12 +3,13 @@ define (require) ->
   config = require "config"
   param = require "util/param"
 
+  Actors = require "handles/actors"
   BaseActor = require "handles/actors/base"
 
   NumericProperty = require "handles/properties/numeric"
 
   # N-sided actor
-  window.PolygonActor = class PolygonActor extends BaseActor
+  Actors.PolygonActor = class PolygonActor extends BaseActor
 
     ###
     # Defines a variable-sided actor, psicktually
@@ -145,6 +146,12 @@ define (require) ->
       y = position.y.value
       rotation = data.properties.rotation.value
 
-      actor = new PolygonActor ui, birth, sides, radius, x, y, rotation, death
+      actor = new PolygonActor ui,
+        lifetimeStart: birth
+        lifetimeEnd: death
+        sides: sides
+        radius: radius
+        position: x: x, y: y
+        rotation: rotation
       actor.load data
       actor
