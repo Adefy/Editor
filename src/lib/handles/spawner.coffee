@@ -130,7 +130,7 @@ define (require) ->
       @_properties.position.setVisibleInToolbar true
       @_properties.layer.setVisibleInToolbar true
 
-      @postInit()
+      # @postInit()
 
       # Ensure the spawner update cycle is both running, and includes us
       Spawner.setupUpdateInterval()
