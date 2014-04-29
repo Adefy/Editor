@@ -106,9 +106,6 @@ define (require) ->
 
       @_seedIncrement = 0
 
-      @_active = false
-      @_previewActive = true
-
       ## for testing
       @_ctx.spawn =
         name: config.locale.ctx.spawner.spawn
@@ -121,11 +118,12 @@ define (require) ->
       delete @_ctx.makeSpawner
 
       @hideAllProperties()
-      @initPropertyParticles()
-      @initPropertyDirection()
-      @initPropertyVelocity()
-      @initPropertyVelocityRange()
-      @overridePhysicsProperty()
+      @_initPropertyState()
+      @_initPropertyParticles()
+      @_initPropertyDirection()
+      @_initPropertyVelocity()
+      @_initPropertyVelocityRange()
+      @_overridePhysicsProperty()
 
       @_properties.position.setVisibleInToolbar true
       @_properties.layer.setVisibleInToolbar true
@@ -141,28 +139,32 @@ define (require) ->
     #
     # @return [Boolean] active
     ###
-    isPreviewActive: -> @_previewActive
+    isPreviewActive: ->
+      @_properties.state.preview.getValue()
 
     ###
     # Check if the spawner is active
     #
     # @return [Boolean] active
     ###
-    isActive: -> @_active
+    isActive: ->
+      @_properties.state.active.getValue()
 
     ###
     # Set the active state of the spawner
     #
     # @param [Boolean] active
     ###
-    setActive: (active) -> @_active = active
+    setActive: (active) ->
+      @_properties.state.active.setValue active
 
     ###
     # Set the active state of the preview spawns
     #
     # @param [Boolean] active
     ###
-    setPreviewActive: (active) -> @_previewActive = active
+    setPreviewActive: (active) ->
+      @_properties.state.preview.setValue active
 
     ###
     # Copy over all unique properties of the provided handle. This essentially
@@ -228,10 +230,8 @@ define (require) ->
 
     ###
     # Initialize our particles property
-    #
-    # @return [Spawner] self
     ###
-    initPropertyParticles: ->
+    _initPropertyParticles: ->
       @_properties.particles = new CompositeProperty()
       @_properties.particles.setVisibleInToolbar false
 
@@ -258,13 +258,25 @@ define (require) ->
       @_properties.particles.addProperty "frequency", @_properties.particles.frequency
       @_properties.particles.addProperty "lifetime", @_properties.particles.lifetime
 
-      @
+    ###
+    # Setup properties in charge of enabling us throughout time
+    ###
+    _initPropertyState: ->
+      @_properties.state = new CompositeProperty()
+      @_properties.state.active = new BooleanProperty()
+      @_properties.state.preview = new BooleanProperty()
+
+      @_properties.state.active.setValue false
+      @_properties.state.preview.setValue false
+
+      @_properties.state.addProperty "active", @_properties.state.active
+      @_properties.state.addProperty "preview", @_properties.state.preview
 
     ###
     # Set up the property that specifies the end of a vector starting at our
     # origin, representing the direction of initial spawns
     ###
-    initPropertyDirection: ->
+    _initPropertyDirection: ->
       @_properties.direction = new CompositeProperty()
       @_properties.direction.setVisibleInToolbar false
 
@@ -280,7 +292,7 @@ define (require) ->
     # Set up the property responsible for the initial velocity of spawns.
     # Units are pixels/s
     ###
-    initPropertyVelocity: ->
+    _initPropertyVelocity: ->
       @_properties.velocity = new CompositeProperty()
       @_properties.velocity.setVisibleInToolbar false
 
@@ -295,7 +307,7 @@ define (require) ->
     ###
     # Set up the property by which spawn velocity is randomly offset
     ###
-    initPropertyVelocityRange: ->
+    _initPropertyVelocityRange: ->
       @_properties.velocityRange = new CompositeProperty()
       @_properties.velocityRange.setVisibleInToolbar false
 
@@ -311,7 +323,7 @@ define (require) ->
     # Replace the generic physics property handling. Maps property updates to
     # only those handles that support them
     ###
-    overridePhysicsProperty: ->
+    _overridePhysicsProperty: ->
       @_properties.physics.enabled.setValue false
 
       @_properties.physics.mass.onUpdate = (mass) =>
@@ -474,7 +486,7 @@ define (require) ->
       max = @_properties.particles.max.getValue()
       freq = @_properties.particles.frequency.getValue()
 
-      if @_active
+      if @isActive()
         if now - @_lastSpawnTime >= freq and @_spawns.length <= max
           @_lastSpawnTime = now
           @spawn now
@@ -492,7 +504,7 @@ define (require) ->
       max = @_properties.particles.max.getValue()
       freq = @_properties.particles.frequency.getValue()
 
-      if @_previewActive
+      if @isPreviewActive()
         if now - @_lastPreviewSpawnTime >= freq and @_previewSpawns.length <= max
           @_lastPreviewSpawnTime = now
           @spawnPreview now
