@@ -133,8 +133,6 @@ define (require) ->
       else
         @targetActor.updateProperties updatePacket
 
-
-
     ###
     # Refresh widget data using a manipulatable, not that this function is
     # not where injection occurs! We request a refresh from our parent for that

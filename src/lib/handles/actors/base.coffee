@@ -994,14 +994,15 @@ define (require) ->
 
         # Sanity checks
         # TODO: Refactor these into log messages + returns
-        if _prop == undefined
-          throw new Error "We don't have the property #{v.name}!"
+        unless _prop
+          AUtilLog.error "Expected actor to have prop #{v.name}!"
+          continue
 
-        if anim == undefined
-          throw new Error "Animation does not exist for #{v.end}!"
+        unless anim
+          AUtilLog.error "Expected animation @ to exist #{v.end}!"
+          continue
 
-        if anim[v.name] == undefined
-          throw new Error "Animation doesn't effect #{v.name}!"
+        continue unless anim[v.name]
 
         # The property to be animated is composite. Apply the state change
         # to each component individually.
@@ -1590,7 +1591,7 @@ define (require) ->
       data = super()
 
       data.actorBaseVersion = "1.0.0"
-      data.propBuffer = @_propBuffer
+      data.propBuffer = _.clone @_propBuffer, true
       data.birth = @lifetimeStart_ms
       data.death = @lifetimeEnd_ms
       data.texture = @getTextureUID()
