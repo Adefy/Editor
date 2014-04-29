@@ -741,7 +741,6 @@ define (require) ->
     ###
     _applyKnownState: (state) ->
       state = Number param.required state
-
       return if state == @_lastTemporalState
 
       # Apply saved state. Find all stored states between our previous state
@@ -913,7 +912,8 @@ define (require) ->
       else
         nearestState = @findNearestState cursor
 
-      @_applyKnownState nearestState
+      @_applyKnownState nearestState if nearestState != @_lastAppliedState
+      @_lastAppliedState = nearestState
 
       # Return if we have nothing else to do (cursor is at a known state)
       return if nearestState == cursor
@@ -1136,7 +1136,7 @@ define (require) ->
           # Check if there is another animation after us; if so, update its
           # starting point.
           ###
-          if (nextAnim = @findNearestState @_lastTemporalState, true, p) != -1
+          if (nextAnim = @findNearestState(@_lastTemporalState, true, p)) != -1
 
             startTime = @_lastTemporalState
             startP = @_propBuffer[@_lastTemporalState][p]
