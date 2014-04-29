@@ -673,7 +673,14 @@ define (require) ->
           if o.getID() == obj.getID()
             @ui.pushEvent "workspace.remove.actor", actor: o
             @actorObjects.splice i, 1
-            return
+            break
+
+      else if obj.constructor.name.indexOf("Spawner") != -1
+        for o, i in @_spawners
+          if o.getID() == obj.getID()
+            @ui.pushEvent "workspace.remove.actor", actor: o
+            @_spawners.splice i, 1
+            break
 
     ###
     # @param [String]
