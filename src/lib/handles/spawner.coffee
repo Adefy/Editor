@@ -350,7 +350,7 @@ define (require) ->
       Spawner.unregisterSpawner @
 
       _.union(@_previewSpawns, @_spawns).map (spawn) -> spawn.delete()
-      
+
       @_previewSpawns = []
       @_spawns = []
 

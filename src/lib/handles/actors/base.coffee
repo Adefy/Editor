@@ -104,6 +104,9 @@ define (require) ->
         setTexture:
           name: config.locale.label.texture_modal
           cb: => @_contextFuncSetTexture @
+        setTextureRepeat:
+          name: config.locale.label.texture_repeat_modal
+          cb: => @_contextFuncSetTextureRepeat @
         editPhysics:
           name: config.locale.label.physics_modal
           cb: => @_contextFuncEditPhysics @
@@ -117,9 +120,10 @@ define (require) ->
       @initPropertyLayer()
       @initPropertyColor()
       @initPropertyPhysics()
+      @initPropertyTextureRepeat()
 
     ###
-    # Initialize Actor Opacity properties
+    # Initialize Actor opacity properties
     ###
     initPropertyOpacity: ->
       me = @
@@ -137,7 +141,7 @@ define (require) ->
         @setValue me._AJSActor.getOpacity() if me._AJSActor
 
     ###
-    # Initialize Actor Rotation properties
+    # Initialize Actor rotation properties
     ###
     initPropertyRotation: ->
       me = @
@@ -153,7 +157,7 @@ define (require) ->
         @setValue me._AJSActor.getRotation() if me._AJSActor
 
     ###
-    # Initialize Actor Position properties
+    # Initialize Actor position properties
     ###
     initPropertyPosition: ->
       me = @
@@ -181,7 +185,7 @@ define (require) ->
       @_properties.position.addProperty "y", @_properties.position.y
 
     ###
-    # Initialize Actor Layer properties
+    # Initialize Actor layer properties
     ###
     initPropertyLayer: ->
       me = @
@@ -211,7 +215,7 @@ define (require) ->
       @_properties.layer.addProperty "physics", @_properties.layer.physics
 
     ###
-    # Initialize Actor Color properties
+    # Initialize Actor color properties
     ###
     initPropertyColor: ->
       me = @
@@ -272,7 +276,7 @@ define (require) ->
       @_properties.color.addProperty "b", @_properties.color.b
 
     ###
-    # Initialize Actor Physics properties
+    # Initialize Actor physics properties
     ###
     initPropertyPhysics: ->
       me = @
@@ -329,6 +333,40 @@ define (require) ->
       @_properties.physics.addProperty "elasticity", @_properties.physics.elasticity
       @_properties.physics.addProperty "friction", @_properties.physics.friction
       @_properties.physics.addProperty "enabled", @_properties.physics.enabled
+
+    ###
+    # Initialize Actor texture_repeat properties
+    ###
+    initPropertyTextureRepeat: ->
+      me = @
+
+      @_properties.textureRepeat = new CompositeProperty()
+      @_properties.textureRepeat.x = new NumericProperty()
+      @_properties.textureRepeat.x.setValue 1.0
+      @_properties.textureRepeat.x.setPlaceholder 1.0
+      @_properties.textureRepeat.x.setFloat true
+      @_properties.textureRepeat.x.setPrecision config.precision.texture_repeat
+      @_properties.textureRepeat.y = new NumericProperty()
+      @_properties.textureRepeat.y.clone @_properties.textureRepeat.x
+
+      @_properties.textureRepeat.x.onUpdate = (xRepeat) =>
+        if @_AJSActor
+          texRep = @_AJSActor.getTextureRepeat()
+          @_AJSActor.setTextureRepeat xRepeat, texRep.y
+
+      @_properties.textureRepeat.y.onUpdate = (yRepeat) =>
+        if @_AJSActor
+          texRep = @_AJSActor.getTextureRepeat()
+          @_AJSActor.setTextureRepeat texRep.x, yRepeat
+
+      @_properties.textureRepeat.x.requestUpdate = ->
+        @setValue me._AJSActor.getTextureRepeat().x if me._AJSActor
+
+      @_properties.textureRepeat.y.requestUpdate = ->
+        @setValue me._AJSActor.getTextureRepeat().y if me._AJSActor
+
+      @_properties.textureRepeat.addProperty "x", @_properties.textureRepeat.x
+      @_properties.textureRepeat.addProperty "y", @_properties.textureRepeat.y
 
     ###
     # Get actor property by name
@@ -1460,6 +1498,14 @@ define (require) ->
     ###
     _contextFuncSetTexture: (actor) ->
       @ui.modals.showSetTexture actor
+      @
+
+    ###
+    # Open a settings widget for texture repeat editing
+    # @param [BaseActor] actor
+    ###
+    _contextFuncSetTextureRepeat: (actor) ->
+      @ui.modals.showActorTextureRepeatSettings actor
       @
 
     ###

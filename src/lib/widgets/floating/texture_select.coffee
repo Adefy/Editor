@@ -15,7 +15,7 @@ define (require) ->
     ###
     constructor: (@ui, options) ->
       @_textures = param.required options.textures
-      @_actor = param.required options.targetActor
+      @_actor = param.required options.actor
 
       super @ui, title: "Select Texture"
 
@@ -43,6 +43,5 @@ define (require) ->
                 cb: =>
 
     render: ->
-      super() +
       SelectTextureModal
         textures: @_textures
