@@ -22,7 +22,7 @@ define (require) ->
 
   SettingsWidget = require "widgets/floating/settings"
 
-  class Spawner extends BaseActor
+  window.Spawner = class Spawner extends BaseActor
 
     @UPDATE_RESOLUTION: 10 # ms
     @UPDATE_INTERVAL: null
