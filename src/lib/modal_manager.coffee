@@ -354,6 +354,7 @@ define (require) ->
 
       filepicker.pickAndStore
         mimetype: "image/*"
+        multiple: true
       ,
         location: "S3"
         path: Project.getS3Prefix()
