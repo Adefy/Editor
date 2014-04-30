@@ -12,24 +12,14 @@ define (require) ->
       @id = ID.objID "EventSystem"
       @name = @id.prefixed
 
-      @init()
-
-    ###
-    # Sets the current EventSystem as the current
-    # NOTE* this does not affect the internals, only external callers to
-    # the EventSystem.current
-    #
-    # @return [self]
-    ###
-    setAsCurrent: ->
-      EventSystem.current = @
-      @
+      @_init()
 
     ###
     # Initializes the system's internals
     # @return [self]
+    # @private
     ###
-    init: ->
+    _init: ->
       @listenerID = 0
       @listeners = {}
       @
