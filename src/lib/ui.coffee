@@ -4,7 +4,7 @@ define (require) ->
   AUtilEventLog = require "util/event_log"
   param = require "util/param"
 
-  Toolbar = require "widgets/toolbar/toolbar"
+  PropertyBar = require "widgets/property_bar"
   MenuBar = require "widgets/menubar/menubar"
   StatusBar = require "widgets/statusbar/statusbar"
   Timeline = require "widgets/timeline/timeline"
@@ -13,7 +13,6 @@ define (require) ->
   Sidebar = require "widgets/sidebar/sidebar"
   SidebarPanel = require "widgets/sidebar/sidebar_panel"
 
-  PropertiesTab = require "widgets/tabs/tab_properties"
   AssetsTab = require "widgets/tabs/tab_assets"
   TexturesTab = require "widgets/tabs/tab_textures"
 
@@ -31,7 +30,7 @@ define (require) ->
       @widgets = []
 
       @widgets.push @initializeMenu()
-      @widgets.push @initializeToolbar()
+      @widgets.push @initializePropertyBar()
       @widgets.push @initializeTimeline()
       @widgets.push @initializeWorkspace()
       @widgets.push @initializeStatusbar()
@@ -39,7 +38,7 @@ define (require) ->
 
       @modals = new ModalManager @
 
-      @renderAll()
+      @refreshHard()
 
       @onResize()
       window.onresize = @onResize
@@ -66,40 +65,35 @@ define (require) ->
         else if document.webkitCancelFullScreen
           document.webkitCancelFullScreen()
 
+    updateSectionMain: =>
+      $("section.main").height $(window).height() - \
+                               $("header").height() - \
+                               $("footer").height()
+      @
+
     onResize: =>
+
+      @updateSectionMain()
 
       for widget in @widgets
         widget.onResize() if widget.onResize
 
     renderAll: -> widget.render() for widget in @widgets
 
-    initializeToolbar: -> @toolbar = new Toolbar @
-
-    initializeStatusbar: -> @statusbar = new StatusBar @
-
+    initializePropertyBar: -> @propertyBar = new PropertyBar @
+    initializeStatusbar: -> @statusbar = new StatusBar @, parent: "footer"
     initializeTimeline: -> @timeline = new Timeline @
 
     initializeWorkspace: ->
-
       throw new Error "Timeline required for workspace" unless @timeline
       @workspace = new Workspace @
 
     initializeSidebar: ->
-
       @sidebar = new Sidebar @, 310
 
-      propertiesPanel = new SidebarPanel @sidebar
-
-      propertiesPanel.newTab "Properties", (tab) =>
-        new PropertiesTab @, propertiesPanel
-
-      #propertiesPanel.newTab "Assets", (tab) =>
-      #  new AssetsTab @, propertiesPanel
-
-      propertiesPanel.newTab "Textures", (tab) =>
-        new TexturesTab @, propertiesPanel
-
-      propertiesPanel.selectTab 0
+      panel = new SidebarPanel @, parent: @sidebar
+      panel.newTab "Textures", (tab) => new TexturesTab @, parent: panel
+      panel.selectTab 0
 
       @sidebar
 
@@ -111,14 +105,9 @@ define (require) ->
       fileMenu = @menu.addItem "File"
       editMenu = @menu.addItem "Edit"
       viewMenu = @menu.addItem "View"
-      timelineMenu = @menu.addItem "Timeline"
       canvasMenu = @menu.addItem "Canvas"
       toolsMenu = @menu.addItem "Tools"
-      prefMenu = @menu.addItem "Preferences"
       helpMenu = @menu.addItem "Help"
-
-      editor = "window.AdefyEditor"
-      editorUI = "#{editor}.ui"
 
       ###
       #
@@ -126,66 +115,53 @@ define (require) ->
       #
       ###
       fileMenu.createChild
-        label: "New Ad ..."
-        click: "#{editor}.fileNewAd()"
+        label: "New Creative..."
+        click: => @editor.fileNewAd()
 
       fileMenu.createChild
-        label: "New From Template ..."
-        click: "#{editor}.fileNewFromTemplate()"
-        sectionEnd: true
-
-      fileMenu.createChild
-        label: "Open"
-        click: "#{editor}.fileOpen()"
+        label: "Open..."
+        click: => @editor.fileOpen()
         sectionEnd: true
 
       fileMenu.createChild
         label: "Save"
-        click: "#{editor}.fileSave()"
+        click: => @editor.fileSave()
 
       fileMenu.createChild
         label: "Save As..."
-        click: "#{editor}.fileSaveAs()"
-        sectionEnd: true
+        click: => @editor.fileSaveAs()
 
       fileMenu.createChild
         label: "Export..."
-        click: "#{editor}.fileExport()"
+        click: => @editor.fileExport()
         sectionEnd: true
 
-      # and why would we even need this...
-      #fileMenu.createChild
-      #  label: "Quit"
+      fileMenu.createChild
+        label: "Preferences"
+        click: => @modals.showPrefSettings()
+        sectionEnd: true
+
+      fileMenu.createChild
+        label: "Quit"
+        click: =>
+          window.location.pathname = "/creatives/#{@editor.getProject().getId()}"
 
       ###
       #
       # Edit menu options
       #
       ###
-      editMenu.createChild
-        label: "Undo"
-
-      editMenu.createChild
-        label: "Redo"
+      editMenu.createChild label: "Undo"
+      editMenu.createChild label: "Redo"
 
       editMenu.createChild
         label: "History ..."
         sectionEnd: true
-        click: "#{editorUI}.modals.showEditHistory()"
+        click: => @modals.showEditHistory()
 
-      editMenu.createChild
-        label: "Copy"
-
-      editMenu.createChild
-        label: "Cut"
-
-      editMenu.createChild
-        label: "Paste"
-        sectionEnd: true
-
-      editMenu.createChild
-        label: "Project ..."
-        sectionEnd: true
+      editMenu.createChild label: "Copy"
+      editMenu.createChild label: "Cut"
+      editMenu.createChild label: "Paste", sectionEnd: true
 
       ###
       #
@@ -194,31 +170,24 @@ define (require) ->
       ###
       viewMenu.createChild
         label: "Toggle Sidebar"
-        click: "#{editorUI}.sidebar.toggle()"
+        click: => @sidebar.toggle()
 
       viewMenu.createChild
         label: "Toggle Timeline"
-        click: "#{editorUI}.timeline.toggle()"
+        click: => @timeline.toggle()
         sectionEnd: true
 
       viewMenu.createChild
         label: "Fullscreen"
-        click: "#{editorUI}.toggleFullScreen()"
+        click: => @toggleFullScreen()
         sectionEnd: true
 
       viewMenu.createChild
         label: "Refresh"
-        click: "#{editorUI}.refresh()"
+        click: =>
+          @refresh()
+          @onResize()
         sectionEnd: true
-
-      ###
-      #
-      # Timeline menu options
-      #
-      ###
-      timelineMenu.createChild
-        label: "Set Preview Framerate ..."
-        click: "#{editorUI}.modals.showSetPreviewRate()"
 
       ###
       #
@@ -227,39 +196,27 @@ define (require) ->
       ###
       canvasMenu.createChild
         label: "Set Screen Properties ..."
-        click: "#{editorUI}.modals.showSetScreenProperties()"
+        click: => @modals.showSetScreenProperties()
 
       canvasMenu.createChild
         label: "Set Background Color ..."
-        click: "#{editorUI}.modals.showSetBackgroundColor()"
+        click: => @modals.showSetBackgroundColor()
 
       ###
       #
       # Tools menu options
       #
       ###
-      toolsMenu.createChild
-        label: "Preview ..."
-
-      toolsMenu.createChild
-        label: "Calculate device support ..."
+      toolsMenu.createChild label: "Preview ..."
+      toolsMenu.createChild label: "Calculate device support ..."
 
       toolsMenu.createChild
         label: "Set Export Framerate ..."
-        click: "#{editorUI}.modals.showSetExportRate()"
+        click: => @modals.showSetExportRate()
 
       toolsMenu.createChild
         label: "Upload textures ..."
-        click: "#{editorUI}.modals.showUploadTextures()"
-
-      ###
-      #
-      # Preferences menu options
-      #
-      ###
-      prefMenu.createChild
-        label: "Settings"
-        click: "#{editorUI}.modals.showPrefSettings()"
+        click: => @modals.showUploadTextures()
 
       ###
       #
@@ -268,33 +225,70 @@ define (require) ->
       ###
       helpMenu.createChild
         label: "About Editor"
-        click: "#{editorUI}.modals.showHelpAbout()"
+        click: => @modals.showHelpAbout()
 
       helpMenu.createChild
         label: "Changelog"
-        click: "#{editorUI}.modals.showHelpChangeLog()"
+        click: => @modals.showHelpChangeLog()
         sectionEnd: true
 
-      helpMenu.createChild
-        label: "Take a Guided Tour"
-
-      helpMenu.createChild
-        label: "Quick Start"
-
-      helpMenu.createChild
-        label: "Tutorials"
-
-      helpMenu.createChild
-        label: "Documentation"
+      helpMenu.createChild label: "Take a Guided Tour"
+      helpMenu.createChild label: "Quick Start"
+      helpMenu.createChild label: "Tutorials"
+      helpMenu.createChild label: "Documentation"
 
       @menu
 
+    ###
+    # @return [self]
+    ###
+    refreshStub: ->
+      AUtilLog.info "UI refreshStub"
+      for widget in @widgets
+        widget.refreshStub() if widget.refreshStub
+
+      @
+
+    ###
+    # @return [self]
+    ###
     refresh: ->
-
-      AUtilLog.info "UI refresh"
-
+      AUtilLog.info "UI#refresh"
       for widget in @widgets
         widget.refresh() if widget.refresh
+
+      @
+
+    ###
+    # @return [self]
+    ###
+    postInit: ->
+      AUtilLog.info "UI#postInit"
+      for widget in @widgets
+        widget.postInit() if widget.postInit
+
+      @
+
+    ###
+    # @return [self]
+    ###
+    postRefresh: ->
+      AUtilLog.info "UI#postRefresh"
+      for widget in @widgets
+        widget.postRefresh() if widget.postRefresh
+
+      @
+
+    ###
+    # @return [self]
+    ###
+    refreshHard: ->
+      @refreshStub() # create widget stubs
+      @refresh()     # render the widget content
+      @postRefresh() # conduct all post refresh shebang
+      @onResize()    # ensure that all widgets have the correct size
+      @postInit()    # finish initializing the widgets
+      @
 
     ###
     ## UES - UI Event System
@@ -312,6 +306,12 @@ define (require) ->
           return AUtilEventLog.ignore "ui", type
 
       AUtilEventLog.epush "ui", type
+
+      if type == "timeline.hiding" || type == "timeline.showing"
+        @updateSectionMain()
+
+      if type == "timeline.hide" || type == "timeline.show"
+        @onResize()
 
       ## we should probably fine tune this later
       for widget in @widgets
@@ -346,3 +346,4 @@ define (require) ->
         @_ignoreEventList = []
 
       @_ignoreEventList.push type
+

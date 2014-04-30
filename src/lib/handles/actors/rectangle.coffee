@@ -1,6 +1,8 @@
 define (require) ->
 
+  config = require "config"
   param = require "util/param"
+
   BaseActor = require "handles/actors/base"
 
   NumericProperty = require "handles/properties/numeric"
@@ -8,6 +10,7 @@ define (require) ->
   # Rectangular actor
   window.RectangleActor = class RectangleActor extends BaseActor
 
+    ###
     # Instantiates an AJSRectangle and keeps track of it
     #
     # @param [UIManager] ui
@@ -19,6 +22,7 @@ define (require) ->
     # @param [Number] rotation optional, angle in degrees
     # @param [Number] death optional death time specification
     # @param [Boolean] manualInit optional, postInit() not called if true
+    ###
     constructor: (@ui, birth, w, h, x, y, rotation, death, manualInit) ->
       param.required @ui
       param.required w
@@ -31,17 +35,31 @@ define (require) ->
       if w <= 0 or h <= 0 then throw new Error "Width/Height must be >0!"
 
       super @ui, birth, death
-      @setName "Rectangle #{@_id_n}"
+
+      @handleType = "RectangleActor"
+
+      @setName "Rectangle #{@_id_numeric}"
+
+      @initPropertyWidth()
+      @initPropertyHeight()
 
       @_properties.position.setValue x: x, y: y
+      @_properties.width.setValue w
+      @_properties.height.setValue h
       @_properties.rotation.setValue rotation
 
-      me = @
+      @postInit() unless manualInit
 
+    ###
+    # Initialize Actor width property
+    ###
+    initPropertyWidth: ->
+      me = @
       @_properties.width = new NumericProperty()
       @_properties.width.setMin 0
       @_properties.width.setPlaceholder 100
-      @_properties.width.setValue w
+      @_properties.width.setValue 1
+      @_properties.width.setPrecision config.precision.width
       @_properties.width.requestUpdate = ->
         @setValue me._AJSActor.getWidth() if me._AJSActor
 
@@ -52,11 +70,16 @@ define (require) ->
         options.startVal = animation._start.y
         options
 
-
+    ###
+    # Initialize Actor height property
+    ###
+    initPropertyHeight: ->
+      me = @
       @_properties.height = new NumericProperty()
       @_properties.height.setMin 0
       @_properties.height.setPlaceholder 100
-      @_properties.height.setValue h
+      @_properties.height.setValue 1
+      @_properties.height.setPrecision config.precision.height
       @_properties.height.requestUpdate = ->
         @setValue me._AJSActor.getHeight() if me._AJSActor
 
@@ -67,20 +90,24 @@ define (require) ->
         options.startVal = animation._start.y
         options
 
-      @postInit() unless manualInit
-
+    ###
     # Get rectangle height value
     #
     # @return [Number] height
+    ###
     getHeight: -> @_properties.height.getValue()
 
+    ###
     # Get rectangle width value
     #
     # @return [Number] width
+    ###
     getWidth: -> @_properties.width.getValue()
 
+    ###
     # Instantiate our AJS actor
     # @private
+    ###
     _birth: ->
       return if @_alive
       @_alive = true
@@ -107,6 +134,8 @@ define (require) ->
         position: new AJSVector2 x, y
         color: new AJSColor3 r, g, b
         rotation: @_properties.rotation.getValue()
+
+      super()
 
     ###
     # Initializes a new RectangleActor using serialized data

@@ -21,11 +21,11 @@
     "handlebars": "~1.3.0",
     "jquery": "~2.1.0",
     "jquery.mousewheel": "*",
-    "perfect-scrollbar": "~0.4.9",
+    "perfect-scrollbar": "~0.4.10",
     "pace": "~0.5.1",
     "lodash": "~2.4.1",
-    "adefyjs": "git@github.com:Adefy/AdefyJS.git#v1.0.4",
-    "adefyre": "git@github.com:Adefy/AdefyRE.git#v1.0.5",
+    "adefyjs": "git@github.com:Adefy/AdefyJS.git#v1.0.10",
+    "adefyre": "git@github.com:Adefy/AdefyRE.git#v1.0.12",
     "fontawesome": "~4.0.3",
     "typekit-load": "~0.1.2"
   }

@@ -1,6 +1,6 @@
 define (require) ->
 
-  param = require "util/id"
+  param = require "util/param"
 
   Dumpable = require "mixin/dumpable"
 
@@ -10,17 +10,62 @@ define (require) ->
       @x = param.optional x, 0
       @y = param.optional y, 0
 
-    add: (other) ->
-      new Vec2 @x + other.x, @y + other.y
+    ###
+    # @param [Boolean] bipolar should randomization occur in all directions?
+    # @return [Vec2] randomizedVector
+    ###
+    random: (options) ->
+      options = param.optional options, {}
+      bipolar = param.optional options.bipolar, false
+      seed = param.optional options.seed, Math.random() * 0xFFFF
 
-    sub: (other) ->
-      new Vec2 @x - other.x, @y - other.y
+      x = Math.random() * @x
+      y = Math.random() * @y
 
-    mul: (other) ->
-      new Vec2 @x * other.x, @y * other.y
+      if bipolar
+        x = -x if Math.random() < 0.5
+        y = -y if Math.random() < 0.5
 
-    div: (other) ->
-      new Vec2 @x / other.x, @y / other.y
+      new Vec2 x, y
+
+    ###
+    # @param [Vec2]
+    # @return [Vec2]
+    ###
+    add: (other) -> new Vec2 @x + other.x, @y + other.y
+
+    ###
+    # @param [Vec2]
+    # @return [Vec2]
+    ###
+    sub: (other) -> new Vec2 @x - other.x, @y - other.y
+
+    ###
+    # @param [Vec2]
+    # @return [Vec2]
+    ###
+    mul: (other) -> new Vec2 @x * other.x, @y * other.y
+
+    ###
+    # @param [Vec2]
+    # @return [Vec2]
+    ###
+    div: (other) -> new Vec2 @x / other.x, @y / other.y
+
+    ###
+    # @return [Vec2]
+    ###
+    floor: -> new Vec2 Math.floor(@x), Math.floor(@y)
+
+    ###
+    # @return [Vec2]
+    ###
+    ceil: -> new Vec2 Math.ceil(@x), Math.ceil(@y)
+
+    ###
+    # @return [Vec2]
+    ###
+    @zero: -> new Vec2 0, 0
 
     ###
     # Dump the current Vec2 to a basic Object
@@ -28,8 +73,8 @@ define (require) ->
     ###
     dump: ->
       _.extend super(),
-        x: @x
-        y: @y
+        x: @x                                                          # v1.0.0
+        y: @y                                                          # v1.0.0
 
     ###
     # Load a Vec2 from a dump
@@ -39,8 +84,8 @@ define (require) ->
     load: (data) ->
       super data
 
-      @x = data.x
-      @y = data.y
+      @x = data.x                                                      # v1.0.0
+      @y = data.y                                                      # v1.0.0
 
       @
 

@@ -5,8 +5,8 @@ define ->
   # @property [String] id
   # @property [String] timlineId
   # @property [Time] currentTime
-  # -property [HTML] contents Actors will go here
-  # -property [HTML] timecontents Actor time & keyframes will go here
+  # @property [HTML] contents Actors will go here
+  # @property [HTML] timeContents Actor time & keyframes will go here
   ###
   Handlebars.compile """
     <div id="{{ id }}" class="header timeline-control-bar">
@@ -33,13 +33,15 @@ define ->
     <div class="content">
       <div class="list">
         {{! <div class="timebar"></div> }}
-        {{! contents }}
+        <div class="timeline-actor-list">
+          {{{ contents }}}
+        </div>
       </div>
       <div class="time">
         <div id="timeline-cursor" class="cursor"></div>
         {{! <div class="timebar"></div> }}
         <div class="time-actors">
-          {{! timeContents }}
+          {{{ timeContents }}}
         </div>
       </div>
     </div>

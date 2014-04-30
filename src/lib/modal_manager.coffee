@@ -1,11 +1,13 @@
 define (require) ->
 
+  Project = require "project"
   param = require "util/param"
   ID = require "util/id"
 
+  Storage = require "storage"
+
   Asset = require "handles/asset"
   Texture = require "handles/texture"
-
   BaseActor = require "handles/actors/base"
   Handle = require "handles/handle"
 
@@ -13,6 +15,7 @@ define (require) ->
 
   FloatingTextureSelect = require "widgets/floating/texture_select"
   Modal = require "widgets/floating/form"
+  SettingsWidget = require "widgets/floating/settings"
 
   TemplateModalAddTextures = require "templates/modal/add_textures"
   TemplateModalBackgroundColor = require "templates/modal/background_color"
@@ -23,15 +26,41 @@ define (require) ->
   TemplateModalRename = require "templates/modal/rename"
   TemplateModalSetPreviewFPS = require "templates/modal/set_preview_fps"
   TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
+  TemplateModalOpenProject = require "templates/modal/open_project"
 
   ChangeLog = require "info_change_log"
-
   Version = require "version"
 
   class ModalManager extends EditorObject
 
     constructor: (@ui) ->
       #
+
+    ###
+    # Shows the Texture Repeat settings modal
+    # @return [SettingsWidget] settings
+    ###
+    showActorTextureRepeatSettings: (actor) ->
+
+      texRep = actor.getProperty("textureRepeat")
+
+      new SettingsWidget @ui,
+        title: "Texture Repeat"
+        settings: [
+          label: "X-Repeat"
+          type: Number
+          value: texRep.x.getValue()
+          id: "x_rep"
+          min: 0
+        ,
+          label: "Y-Repeat"
+          type: Number
+          value: texRep.y.getValue()
+          id: "y_rep"
+          min: 0
+        ]
+        cb: (data) =>
+          texRep.setValue x: data.x_rep, y: data.y_rep
 
     ###
     # @param [Handle] handle
@@ -53,7 +82,7 @@ define (require) ->
         nameId: nameId
         name: handle.getName()
 
-      new Modal
+      new Modal @ui,
         title: "Rename"
         mini: true
         content: _html
@@ -101,7 +130,7 @@ define (require) ->
       # Randomized input name
       name = ID.prefID "_tPreviewRate"
 
-      new Modal
+      new Modal @ui,
         title: "Set Preview Framerate"
         content: TemplateModalSetPreviewFPS
           previewFPS: @ui.timeline.getPreviewFPS()
@@ -123,7 +152,7 @@ define (require) ->
       # Randomized input name
       name = ID.prefID "_tPreviewRate"
 
-      new Modal
+      new Modal @ui,
         title: "Set Export Framerate"
         content: TemplateModalSetPreviewFPS
           previewFPS: @ui.timeline.getPreviewFPS()
@@ -157,7 +186,7 @@ define (require) ->
       if workspace._pOrientation == "land" then chL = "checked=\"checked\""
       else chP = "checked=\"checked\""
 
-      new Modal
+      new Modal @ui,
         title: "Set Screen Properties"
         content: TemplateModalWorkspaceScreenSize
           cSize: cSize
@@ -202,7 +231,7 @@ define (require) ->
 
       workspace = @ui.workspace
 
-      col = workspace._are.getClearColor()
+      col = workspace.getClearColor()
 
       _colR = col.getR()
       _colG = col.getG()
@@ -221,7 +250,7 @@ define (require) ->
 
       _html =
 
-      new Modal
+      new Modal @ui,
         title: "Set Background Color"
         content: TemplateModalBackgroundColor
           hex: hex
@@ -237,7 +266,10 @@ define (require) ->
 
         cb: (data) =>
           # Submission
-          workspace._are.setClearColor data[r], data[g], data[b]
+          cr = Math.floor data[r]
+          cg = Math.floor data[g]
+          cb = Math.floor data[b]
+          workspace.setClearColor cr, cg, cb
 
         validation: (data) =>
           # Validation
@@ -303,7 +335,7 @@ define (require) ->
       textnameID = ID.prefID "_wtexture"
       textpathID = ID.prefID "_wtext"
 
-      new Modal
+      new Modal @ui,
         title: "Add Textures ..."
         content: TemplateModalAddTextures
           textnameID: textnameID
@@ -337,7 +369,7 @@ define (require) ->
           name: texture.getName()
         }
 
-      new FloatingTextureSelect textures, actor
+      new FloatingTextureSelect @ui, textures: textures, actor: actor
 
     ###
     # @return [Void]
@@ -348,61 +380,100 @@ define (require) ->
 
       filepicker.pickAndStore
         mimetype: "image/*"
+        multiple: true
       ,
         location: "S3"
-        path: "/ads/assets/"
+        path: Project.getS3Prefix()
       , (blob) =>
         textures = []
+
         for obj in blob
-          texture = new Texture
-            url: "//d3r6kqp8brgiqm.cloudfront.net/#{obj.key}"
+          texture = new Texture Project.current,
+            key: obj.key
             name: obj.filename
 
           @ui.editor.project.textures.push texture
           textures.push texture
 
         @ui.workspace.loadTextures(textures)
+        @ui.pushEvent "upload.textures", textures: textures
 
-        @ui.pushEvent "upload.textures"
+        cb blob if cb = options.cb
 
-        if cb = options.cb
-          cb blob
+    ###
+    # @return [SettingsWidget] settings
+    ###
+    showPrefSettings: ->
+
+      new SettingsWidget @ui,
+        title: "Preferences"
+        settings: [
+          label: "Autosave Frequency (s)"
+          type: Number
+          placeholder: "Enter an autosave frequency (s)"
+          value: @ui.editor.settings.autosave.frequency / 1000
+          id: "freq"
+          min: 0
+        ,
+          label: "Preview Framerate"
+          type: Number
+          placeholder: "Enter a framerate (FPS)"
+          value: @ui.timeline.getPreviewFPS()
+          id: "preview_fps"
+          min: 0
+        ]
+        cb: (data) =>
+          @ui.editor.settings.autosave.frequency = data.freq * 1000
+          @ui.editor.saveSettings()
+
+          @ui.timeline.setPreviewFPS data.preview_fps
 
     ###
     # @return [Modal]
     ###
-    showPrefSettings: ->
+    showEditActorPsyx: (actor) ->
 
-      autosaveFreqID = ID.prefID "autosave-frequency"
+      new SettingsWidget @ui,
+        title: "Actor Physics"
+        settings: [
+          label: "Mass"
+          type: Number
+          placeholder: "Enter an actor mass, 0 is static"
+          value: actor.getProperty("physics").mass.getValue()
+          id: "mass"
+          min: 0
+        ,
+          label: "Elasticity %"
+          type: Number
+          placeholder: "Enter actor elasticity"
+          value: actor.getProperty("physics").elasticity.getValue() * 100
+          id: "elasticity"
+          min: 0
+        ,
+          label: "Friction %"
+          type: Number
+          placeholder: "Enter actor friction"
+          value: actor.getProperty("physics").friction.getValue() * 100
+          id: "friction"
+          min: 0
+        ]
 
-      contents = TemplateModalPrefSettings
-        autosaveFreq: @ui.editor.settings.autosave.frequency
-        autosaveFreqID: autosaveFreqID
-
-      new Modal
-        title: "Settings"
-        content: contents
         cb: (data) =>
+          actor.getProperty("physics").mass.setValue data.mass
+          actor.getProperty("physics").elasticity.setValue data.elasticity / 100
+          actor.getProperty("physics").friction.setValue data.friction / 100
 
-          freq = Number(data[autosaveFreqID])
-          @ui.editor.settings.autosave.frequency = freq
-          @ui.editor.saveSettings()
-
-        validation: (data) =>
-
-          freq = Number(data[autosaveFreqID])
-
-          unless freq >= 0
-            return "Autosave Frequency must be 0 or more"
-
-          true
+    showOpenProject: ->
+      new Modal @ui,
+        title: "Open Project"
+        content: TemplateModalOpenProject()
 
     ###
     # @return [Modal]
     ###
     showEditHistory: ->
 
-      new Modal
+      new Modal @ui,
         title: "Edit History"
         content: TemplateModalEditHistory()
 
@@ -411,7 +482,7 @@ define (require) ->
     ###
     showHelpAbout: ->
 
-      new Modal
+      new Modal @ui,
         title: "About"
         content: TemplateModalHelpAbout
           version: Version.STRING
@@ -421,6 +492,6 @@ define (require) ->
     ###
     showHelpChangeLog: ->
 
-      new Modal
+      new Modal @ui,
         title: "Change Log"
         content: TemplateModalHelpChangeLog changes: ChangeLog.changes

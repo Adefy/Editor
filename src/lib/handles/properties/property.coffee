@@ -16,6 +16,7 @@ define (require) ->
 
       @data_type = type
       @data_value = null
+      @visible_in_toolbar = true
 
     ###
     # Fetch type
@@ -26,6 +27,21 @@ define (require) ->
       @data_type
 
     ###
+    # Check if we should be shown in the toolbar
+    #
+    # @return [Boolean] visible
+    ###
+    showInToolbar: -> @visible_in_toolbar
+
+    ###
+    # Set if we should be displayed in the toolbar
+    #
+    # @param [Boolean] visible
+    ###
+    setVisibleInToolbar: (visible) ->
+      @visible_in_toolbar = visible
+
+    ###
     # Fetch our value; requests an update before returning
     #
     # @return [Object] value
@@ -33,6 +49,12 @@ define (require) ->
     getValue: ->
       @requestUpdate()
       @data_value
+
+    ###
+    # @return [String]
+    ###
+    getValueString: ->
+      String @getValue()
 
     ###
     # Sets our type, used by deserialization (loading state)
@@ -65,35 +87,6 @@ define (require) ->
     # of getValue()
     ###
     requestUpdate: ->
-
-    ###
-    # Dumps the property as a basic Object
-    #
-    # @return [Object] data
-    ###
-    dump: ->
-      data = super()
-
-      for key, value of @
-        splitKey = key.split("get")
-
-        if splitKey.length == 2
-          data[splitKey[1].trim().toLowerCase()] = @[key]()
-
-      data
-
-    ###
-    # Loads the property from a basic Object
-    #
-    # @param [Object] data
-    ###
-    load: (data) ->
-      super data
-      for key, value of data
-        setter = "set#{@capitalize key}"
-        @[setter] value if @[setter]
-
-      @
 
     ###
     # Ensure that the provided value is valid for useage
@@ -142,3 +135,50 @@ define (require) ->
     ###
     genAnimationOpts: (animation, options) -> options
 
+    ###
+    # Create an object suitable for inclusion in a prop buffer entry
+    #
+    # @return [Object] snapshot
+    ###
+    getBufferSnapshot: ->
+      { value: @getValue() }
+
+    ###
+    # Dumps the property as a basic Object
+    #
+    # @return [Object] data
+    ###
+    dump: ->
+      data = super()
+
+      data.propertyVersion = "1.0.0"
+
+      for key, value of @
+        splitKey = key.split("get")
+
+        if splitKey.length == 2
+          data[splitKey[1].trim().toLowerCase()] = @[key]()
+
+      data
+
+    ###
+    # Loads the property from a basic Object
+    #
+    # @param [Object] data
+    ###
+    load: (data) ->
+      super data
+
+      # data.propertyVersion >= "1.0.0"
+      for key, value of data
+        setter = "set#{@capitalize key}"
+        @[setter] value if @[setter]
+
+      @
+
+###
+@Changlog
+
+  - "1.0.0": Initial
+
+###

@@ -1,6 +1,8 @@
 define (require) ->
 
+  config = require "config"
   param = require "util/param"
+
   BaseActor = require "handles/actors/base"
 
   NumericProperty = require "handles/properties/numeric"
@@ -8,6 +10,7 @@ define (require) ->
   # N-sided actor
   window.PolygonActor = class PolygonActor extends BaseActor
 
+    ###
     # Defines a variable-sided actor, psicktually
     #
     # @param [UIManager] ui
@@ -19,6 +22,7 @@ define (require) ->
     # @param [Number] rotation optional, angle in degrees
     # @param [Number] death optional death time specification
     # @param [Boolean] manualInit optional, postInit() not called if true
+    ###
     constructor: (@ui, birth, sides, radius, x, y, rotation, death, manualInit) ->
       param.required @ui
       param.required sides
@@ -31,16 +35,31 @@ define (require) ->
       throw new Error "Can't create an ngon with less than 3 sides" if sides < 3
 
       super @ui, birth, death
-      @setName "Polygon #{@_id_n}"
+
+      @handleType = "PolygonActor"
+
+      @setName "Polygon #{@_id_numeric}"
+
+      @initPropertySides()
+      @initPropertyRadius()
 
       @_properties.position.setValue x: x, y: y
+      @_properties.sides.setValue sides
+      @_properties.radius.setValue radius
       @_properties.rotation.setValue rotation
 
+      @postInit() unless manualInit
+
+    ###
+    # Initialize Actor sides property
+    ###
+    initPropertySides: ->
       @_properties.sides = new NumericProperty()
       @_properties.sides.setMin 3
       @_properties.sides.setPlaceholder 5
       @_properties.sides.setFloat false
-      @_properties.sides.setValue sides
+      @_properties.sides.setValue 3
+      @_properties.sides.setPrecision config.precision.sides
       @_properties.sides.onUpdate = (sides) =>
         @_AJSActor.setSegments sides if @_AJSActor
 
@@ -48,10 +67,15 @@ define (require) ->
         options.startVal = animation._start.y
         options
 
+    ###
+    # Initialize Actor radius property
+    ###
+    initPropertyRadius: ->
       @_properties.radius = new NumericProperty()
       @_properties.radius.setMin 0
       @_properties.radius.setPlaceholder 50
-      @_properties.radius.setValue radius
+      @_properties.radius.setValue 10
+      @_properties.radius.setPrecision config.precision.radius
       @_properties.radius.onUpdate = (radius) =>
         @_AJSActor.setRadius radius if @_AJSActor
 
@@ -59,20 +83,25 @@ define (require) ->
         options.startVal = animation._start.y
         options
 
-      @postInit() unless manualInit
 
+    ###
     # Get polygon side count
     #
     # @return [Number] sides
+    ###
     getSides: -> @_properties.sides.getValue()
 
+    ###
     # Get rectangle radius value
     #
     # @return [Number] radius
+    ###
     getRadius: -> @_properties.radius.getValue()
 
+    ###
     # Instantiate our AJS actor
     # @private
+    ###
     _birth: ->
       return if @_alive
       @_alive = true
@@ -99,6 +128,8 @@ define (require) ->
         position: new AJSVector2 x, y
         color: new AJSColor3 r, g, b
         rotation: @_properties.rotation.getValue()
+
+      super()
 
     ###
     # Initializes a new PolygonActor using serialized data

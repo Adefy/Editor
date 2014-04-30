@@ -19,14 +19,14 @@ define (require) ->
     #   @option [Method] validation optional, called to validate with cb data
     #   @option [Method] change optional, called on input change with delta and data
     ###
-    constructor: (options) ->
+    constructor: (@ui, options) ->
       @_title = param.required options.title
       @_HTMLContent = param.required options.content
       @_submitCB = param.optional options.cb, null
       @_changeCB = param.optional options.change, null
       @_validationCB = param.optional options.validation, null
 
-      super @_title
+      super @ui, options
 
       @setAnimateSpeed 100
       @makeDraggable "#{@_sel} .header"
@@ -91,8 +91,11 @@ define (require) ->
 
       @getElement("*[name=\"#{d}\"]").val v for d, v of delta
 
+    ###
+    # @return [String]
+    ###
     render: ->
-      @getElement().html TemplateModal
+      TemplateModal
         title: @_title
         content: @_HTMLContent
         cb: !!@_submitCB

@@ -11,19 +11,22 @@ define (require) ->
   TemplateTabThumb = require "templates/tabs/thumb"
   TemplateTabTexturesFooter = require "templates/tabs/textures_footer"
 
+  Project = require "project"
+
   class TexturesTab extends Tab
 
     ###
     # @param [UIManager] ui
     # @param [SidebarPanel] parent
     ###
-    constructor: (@ui, parent) ->
+    constructor: (@ui, options) ->
       @_viewMode = "list"
 
-      super
-        id: ID.prefID("tab-textures")
-        parent: parent
-        classes: ["tab-textures"]
+      options.id = ID.prefID("tab-textures")
+      options.classes = param.optional options.classes, []
+      options.classes.push "tab-textures"
+
+      super @ui, options
 
       @_registerFooterListeners()
       @_setupDragging()
@@ -60,7 +63,7 @@ define (require) ->
     # @return [Void]
     ###
     _onClickUpload: ->
-      window.AdefyEditor.ui.modals.showUploadTextures cb: (blob) =>
+      @ui.modals.showUploadTextures cb: (blob) =>
         @refresh()
 
     ###
@@ -76,7 +79,8 @@ define (require) ->
         texture = _.find project.textures, (t) -> t.getID() == textureId
 
         if texture
-          new ContextMenu e.pageX, e.pageY, texture.getContextProperties()
+          new ContextMenu @ui,
+            x: e.pageX, y: e.pageY, properties: texture.getContextProperties()
 
         e.preventDefault()
         false
@@ -94,9 +98,10 @@ define (require) ->
     # @return [String]
     ###
     render: ->
-      html = ""
+      html = super()
+      return html unless Project.current
 
-      for texture in @ui.editor.project.textures
+      for texture in Project.current.textures
         html += TemplateTabThumb
           id: texture.getID()
           src: texture.getURL()
@@ -119,10 +124,28 @@ define (require) ->
         listActive: listActive
         thumbsActive: thumbsActive
 
+    ###
+    #
+    # @param [Texture] texture
+    ###
+    updateTexture: (texture) ->
+
+      textureElement = $("##{texture.getID()}")
+      textureElement.find(".img img").attr "src", texture.getURL()
+      textureElement.find(".name img").text texture.getName()
+
+      @onUpdate()
+
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
     respondToEvent: (type, params) ->
       AUtilEventLog.egot "tab.textures", type
 
       switch type
-        when "rename.texture", "upload.textures"
+        when "rename.texture", "update.texture"
+          @updateTexture params.texture
+        when "load.texture", "upload.texture", "remove.texture"
           # params.texture
           @refresh()

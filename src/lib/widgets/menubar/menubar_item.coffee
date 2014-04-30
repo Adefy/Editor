@@ -3,7 +3,11 @@ define (require) ->
   ID = require "util/id"
   param = require "util/param"
 
+  AUtilLog = require "util/log"
+
   Renderable = require "mixin/renderable"
+
+  TemplateMenubarItem = require "templates/menubar/item"
 
   # Menubar item class
   #
@@ -30,11 +34,26 @@ define (require) ->
       param.required @_menubar
       param.required @_role, [ "primary", "secondary" ]
 
+      @_secondaryID = ID.prefID "#{@_id}-secondary"
+
       @label = param.optional label, ""
       @href = param.optional href, "#"
       @sectionEnd = param.optional sectionEnd, false
 
       @_children = []
+
+    ###
+    # @return [self]
+    ###
+    registerHandlers: ->
+      if @click
+        #AUtilLog.info "registering handler for ##{@_secondaryID}"
+        $("##{@_id}")[0].onclick = @click
+
+      for child in @_children
+        child.registerHandlers()
+
+      @
 
     ###
     # Render function, returns HTML representing the item.
@@ -43,18 +62,22 @@ define (require) ->
     # @return [String] html rendered item
     ###
     render: ->
-      opts = id: @_id, href: @href
-      opts.onclick = @click if @click
+      klass = ""
 
       if @_role == "primary" and @_children.length > 0
-        opts.class = "mb-primary-has-children"
+        klass = "mb-primary-has-children"
 
       # The last secondary item in a section gets a special divider class
       else if @_role == "secondary" and @sectionEnd
-        opts.class = "mb-section-end"
+        klass = "mb-section-end"
 
-      @genElement "a", opts, =>
-        @genElement "li", {}, => @label
+      super() +
+      TemplateMenubarItem
+        id:    @_id
+        icon:  null
+        name:  @label
+        href:  @href
+        klass: klass
 
     ###
     # Create a child item if possible. A unique id and correct tree-level is
@@ -102,3 +125,4 @@ define (require) ->
     # @return [Number] id
     ###
     getID: -> @_id
+    getSecondaryID: -> @_secondaryID

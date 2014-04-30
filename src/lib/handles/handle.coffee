@@ -25,18 +25,31 @@ define (require) ->
 
       # Basic right-click menu functions
       @_ctx =
-        "Rename ...": => window.AdefyEditor.ui.modals.showRename @
-        "Delete": => @delete()
+        rename:
+          name: "Rename ..."
+          cb: => window.AdefyEditor.ui.modals.showRename @
+        del:
+          name: "Delete"
+          cb: => @delete()
 
       # Give ourselves a unique id so we can be discovered on the body
-      ido = ID.objID "handle"
-      @_id_n = ido.id
-      @_id = ido.prefix
+      generatedID = ID.objID "handle"
+      @_id_numeric = generatedID.id
+      @_id = generatedID.prefixed
 
-      @name = "handle #{@_id_n}"
+      @name = "handle #{@_id_numeric}"
+
+      @handleType = "Handle"
 
       # Attach ourselves to the body
       $("body").data @getID(), @
+
+    ###
+    # Helper that hides all of our properties from toolbar rendering
+    ###
+    hideAllProperties: ->
+      for name, property of @_properties
+        property.setVisibleInToolbar false
 
     ###
     # Get our id. TODO: Consider giving us a base class, possible giving doing
@@ -121,7 +134,8 @@ define (require) ->
     ###
     dump: ->
       data = _.extend Dumpable::dump.call(@),
-        version: "1.0.1"
+        handleVersion: "1.1.0"
+        handleType: @handleType
         type: "#{@.constructor.name}"
         name: @name
         properties: {}
@@ -138,15 +152,18 @@ define (require) ->
     ###
     load: (data) ->
       Dumpable::load.call @, data
-      @name = data.name || "handle #{@_id_n}"
+      @name = data.name || "handle #{@_id_numeric}"
+
       for name, property of data.properties
-        if @_properties[name]
-          @_properties[name].load property
+        @_properties[name].load property if @_properties[name]
 
       @
 
 ###
-  Changelog:
-    dump: "1.0.1"
-      Added name
+@Changelog
+
+  - "1.0.0": Initial
+  - "1.0.1": Added name
+  - "1.1.0": Added handleType
+
 ###

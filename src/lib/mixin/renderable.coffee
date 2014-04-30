@@ -1,13 +1,11 @@
 define (requre) ->
 
+  config = require "config"
   param = require "util/param"
 
-  class Renderable
+  AUtilLog = require "util/log"
 
-    ###
-    # render stub function
-    ###
-    render: ->
+  class Renderable
 
     ###
     # For cases where templates don't really make sense
@@ -21,10 +19,24 @@ define (requre) ->
       attributes = param.optional attributes, {}
       cb = param.optional cb, -> ""
 
-      attributes_s = _.pairs(attributes).map (a) -> "#{a[0]}=\"#{a[1]}\""
+      attributes_s = _.pairs(attributes).map (a) ->
+        "#{a[0]}=\"#{a[1]}\""
+      .join " "
 
-      """
-        <#{type} #{attributes_s.join " "}>
-          #{cb()}
-        </#{type}>
-      """
+      """<#{type} #{attributes_s}>#{cb()}</#{type}>"""
+
+    ###
+    # render virtual function
+    # A render function must create the proper HTML String and return it
+    # @return [String]
+    ###
+    render: ->
+      AUtilLog.info "#{@.constructor.name}#render" if config.debug.render_log
+      ""
+
+    ###
+    # @return [String]
+    ###
+    renderStub: ->
+      AUtilLog.info "#{@.constructor.name}#renderStub" if config.debug.render_log
+      ""

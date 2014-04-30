@@ -20,7 +20,11 @@ define (require) ->
     # change.
     #
     # @param [Object] start start point
+    #   @property [Number] x
+    #   @property [Number] y
     # @param [Object] end end point
+    #   @property [Number] x
+    #   @property [Number] y
     # @param [Number] degree 1st or 2nd degree (or 0th for linear interpolation)
     # @param [Array<Object>] control control points
     # @param [Boolean] buffer optionally enables eval buffering
@@ -164,14 +168,43 @@ define (require) ->
       @_buffer = false
       @_bufferData = {}
 
+    ###
+    # @return [Object] data
+    ###
     dump: ->
-      {
-        start: @_start
-        end: @_end
-        control: @_control
-        degree: @_degree
-        buffer: @_buffer
-      }
+      _.extend super(),
+        bezierVersion: "1.0.0"
+        start: @_start                                                 # v1.0.0
+        end: @_end                                                     # v1.0.0
+        control: @_control                                             # v1.0.0
+        degree: @_degree                                               # v1.0.0
+        buffer: @_buffer                                               # v1.0.0
 
+    ###
+    # @param [Object] data
+    # @return [self]
+    ###
+    load: (data) ->
+      super data
+      @_start.x = data.start.x                                         # v1.0.0
+      @_start.y = data.start.y                                         # v1.0.0
+      @_end.x = data.end.x                                             # v1.0.0
+      @_end.y = data.end.y                                             # v1.0.0
+      @_degree = data.degree                                           # v1.0.0
+      @_control = data.control                                         # v1.0.0
+      @_buffer = data.buffer                                           # v1.0.0
+      @
+
+    ###
+    # @param [Object] data
+    ###
     @load: (data) ->
+      # data.bezierVersion == "1.0.0"
       new Bezier data.start, data.end, data.degree, data.control, data.buffer
+
+###
+@Changelog
+
+  - "1.0.0": Initial
+
+###

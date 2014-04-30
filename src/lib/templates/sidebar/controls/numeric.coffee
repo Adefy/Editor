@@ -9,23 +9,22 @@ define ->
   # @property [Number] value
   ###
   Handlebars.compile """
-    <dl style="width: {{ width }}" class="control">
-      <dt>{{ displayName }}</dt>
-      <dd>
-        <input type="number"
-          data-control="number"
+  <div class="control">
+    <label>{{displayName}}</label>
 
-          {{#if parent}}
-          data-parent="{{ parent }}"
-          {{/if}}
+    <input type="number"
+      data-control="number"
 
-          name="{{ name }}"
-          data-max="{{ max }}"
-          data-min="{{ min }}"
-          data-float="{{ float }}"
-          placeholder="{{ placeholder }}"
-          value="{{ value }}"
-        />
-      </dd>
-    </dl>
+      {{#if parent}}
+      data-parent="{{ parent }}"
+      {{/if}}
+
+      name="{{ name }}"
+      data-max="{{ max }}"
+      data-min="{{ min }}"
+      data-float="{{ float }}"
+      placeholder="{{ placeholder }}"
+      value="{{ value }}"
+    />
+  </div>
   """.split("\n").join " "

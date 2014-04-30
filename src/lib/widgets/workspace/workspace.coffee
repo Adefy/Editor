@@ -1,9 +1,24 @@
+###
+@Changlog
+
+  - "1.0.0": Initial
+  - "1.1.0": Added proper actor exporting
+  - "1.2.0": Added CamPos
+  - "1.3.0": Added Spawners
+  - "1.4.0": Added Spawners
+  - "1.5.0": Clear Color is now saved
+
+###
 define (require) ->
+
+  config = require "config"
+  param = require "util/param"
 
   ID = require "util/id"
   AUtilLog = require "util/log"
-  param = require "util/param"
 
+  Storage = require "storage"
+  Spawner = require "handles/spawner"
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
   TemplateWorkspaceCanvasContainer = require "templates/workspace/canvas_container"
@@ -16,35 +31,34 @@ define (require) ->
     ###
     # @type [BaseActor]
     ###
-    @_selectedActor: null
+    @_selectedActorID: null
 
     ###
     # Retrieves the currently selected actor, if any
     # @return [Id] actorId
     ###
-    @getSelectedActor: -> @_selectedActor
+    @getSelectedActorID: -> @_selectedActorID
 
     ###
     # Creates a new workspace if one does not already exist
     #
     # @param [UIManager] ui
     ###
-    constructor: (@ui) ->
+    constructor: (@ui, options) ->
       return unless @enforceSingleton()
       param.required @ui
 
-      super
+      super @ui,
         id: ID.prefID("workspace")
-        parent: "section#main"
+        parent: config.selector.content
         classes: ["workspace"]
         prepend: true
 
+      ###
       # Keep track of spawned handle actor objects
+      # @type [Array<Handle>]
+      ###
       @actorObjects = []
-
-      # The canvas is fullscreen, minus the mainbar
-      @_canvasWidth = @getElement().width()
-      @_canvasHeight = $(window).height() - $(".menubar").height()
 
       # Starting phone size is 800x480
       @_pWidth = 800
@@ -58,30 +72,34 @@ define (require) ->
       @_pickInProgress = false
       @_pickQueue = []
 
-      # Inject our canvas container, along with its status bar
-      # Although we currently don't add anything else to the container besides
-      # the canvas itself, it might prove useful in the future.
-      @getElement().html TemplateWorkspaceCanvasContainer()
+    ###
+    # @return [Workspace] self
+    ###
+    postInit: ->
+      ## AJS overrides setting the renderer mode...
+      #mode = Storage.get("are.renderer.mode")
+      #mode = ARERenderer.rendererMode if mode == null
+      #ARERenderer.rendererMode = Number(mode)
+
+      # The canvas is fullscreen, minus the mainbar
+      sectionElement = $(config.selector.content)
+      @_canvasWidth  = sectionElement.width()
+      @_canvasHeight = sectionElement.height()
 
       # Create an ARE instance on ourselves
       AUtilLog.info "Initializing AJS..."
       AJS.init =>
 
-        @_are = window.AdefyRE.Engine()._engine
+        @_are = AdefyRE.Engine()._engine
 
-        # window.AdefyRE.Engine().setLogLevel 4
+        # AdefyRE.Engine().setLogLevel 4
 
         @_engineInit()
         @_applyCanvasSizeUpdate()
 
-      , @_canvasWidth, @_canvasHeight, "aw-canvas-container"
+      , @_canvasWidth, @_canvasHeight, config.id.are_canvas
 
-    ###
-    # Internal list of workspace actor objects (Handles)
-    #
-    # @return [Array<Handle>] actors
-    ###
-    getActors: -> @actorObjects
+      @
 
     ###
     # Checks if a workspace has already been created, and returns false if one
@@ -93,6 +111,13 @@ define (require) ->
         return false
 
       Workspace.__exists = true
+
+    ###
+    # Internal list of workspace actor objects (Handles)
+    #
+    # @return [Array<Handle>] actors
+    ###
+    getActors: -> @actorObjects
 
     ###
     # Get ARE instance
@@ -137,40 +162,79 @@ define (require) ->
     getPhoneScale: -> @_pScale
 
     ###
-    # Adds an actor to the workspace
-    ###
-    addActor: (actor) ->
-      @actorObjects.push actor
-      @ui.pushEvent "workspace.add.actor", actor: actor
-
-    ###
     # Returns the currently selected actor's id
     # @return [Id] actorId
     ###
-    getSelectedActor: -> Workspace._selectedActor
+    getSelectedActorID: -> Workspace.getSelectedActorID()
+
+    ###
+    # Get the ARE Clear Color
+    #
+    # @return [Color]
+    ###
+    getClearColor: ->
+      @_are.getClearColor()
+
+    ###
+    # Set the ARE Clear Color
+    #
+    # @param [Number] r
+    # @param [Number] g
+    # @param [Number] b
+    # @return [self]
+    ###
+    setClearColor: (r, g, b) ->
+      AUtilLog.debug "Setting ClearColor #{r} #{g} #{b}"
+      @_are.setClearColor r, g, b
+      @
 
     ###
     # Sets the selectedActor instance
     # @param [Id] actorId
+    # @return [Workspace] self
     ###
     setSelectedActor: (actor) ->
-      Workspace._selectedActor = actor.getID()
+      Workspace._selectedActorID = actor.getID()
 
     ###
     # Loads textures into ARE
     # @param [Array<Texture>] textures
+    # @return [Workspace] self
     ###
     loadTextures: (textures) ->
       @loadTexture texture for texture in textures
+      @
 
     ###
     # @param [Texture] texture
+    # @return [Workspace] self
     ###
     loadTexture: (texture) ->
       return AUtilLog.error "ARE not loaded, cannot load texture" unless @_are
 
-      AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, ->
+      AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, =>
         AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
+
+        @ui.pushEvent "load.texture", texture: texture
+
+        # Refresh any actors that already have the texture assigned
+        for handle in @actorObjects
+          if handle.getTextureUID() == texture.getUID()
+            handle.setTexture texture
+
+      @
+
+    ###
+    # Manually register an actor
+    #
+    # @param [BaseActor] handle
+    ###
+    addActor: (handle) ->
+      param.required handle
+
+      @actorObjects.push handle
+      @ui.pushEvent "workspace.add.actor", actor: handle
+      @
 
     ###
     # Converts document-relative coordinates to ARE coordinates
@@ -197,36 +261,6 @@ define (require) ->
       }
 
     ###
-    # Generate workspace right-click ctx data object
-    #
-    # @param [Number] x x coordinate of click
-    # @param [Number] y y coordinate of click
-    # @return [Object] options
-    ###
-    getWorkspaceCtxMenu: (x, y) ->
-      functions =
-        "New Actor +": =>
-            new ContextMenu x, y, @getNewActorCtxMenu x, y
-
-      if AdefyEditor.clipboard && AdefyEditor.clipboard.type == "actor"
-        functions["Paste"] = =>
-
-          pos = @domToGL(x, y)
-          pos.x += ARERenderer.camPos.x
-          pos.y += ARERenderer.camPos.y
-
-          newActor = AdefyEditor.clipboard.data.duplicate()
-          newActor.setPosition pos.x, pos.y
-          newActor.setName(newActor.getName() + " copy")
-
-          @addActor newActor
-
-      {
-        name: "Workspace"
-        functions: functions
-      }
-
-    ###
     # Generate the new actor menu options object, opened through the workspace
     # context menu.
     #
@@ -241,16 +275,56 @@ define (require) ->
       pos.y += ARERenderer.camPos.y
 
       {
-        name: "New Actor"
+        name: config.locale.title.create
         functions:
-          "Rectangle Actor": =>
-            @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
-          "Polygon Actor": =>
-            @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
-          "Triangle Actor": =>
-            @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
+          trinActor:
+            name: config.locale.label.actor_triangle
+            cb: => @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
+          rectActor:
+            name: config.locale.label.actor_rectangle
+            cb: => @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
+          polyActor:
+            name: config.locale.label.actor_polygon
+            cb: => @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
+          circActor:
+            name: config.locale.label.actor_circle
+            cb: => @addActor new PolygonActor @ui, time, 32, 60, pos.x, pos.y
       }
 
+    ###
+    # Generate workspace right-click ctx data object
+    #
+    # @param [Number] x x coordinate of click
+    # @param [Number] y y coordinate of click
+    # @return [Object] options
+    ###
+    getWorkspaceCtxMenu: (x, y) ->
+      functions =
+        create:
+          name: config.locale.label.create_menu_item
+          cb: =>
+            new ContextMenu @ui,
+              x: x, y: y, properties: @getNewActorCtxMenu(x, y)
+
+      if @ui.editor.clipboard && @ui.editor.clipboard.type == "actor"
+        functions.paste =
+          name: config.locale.paste
+          cb: =>
+
+            pos = @domToGL(x, y)
+            pos.x += ARERenderer.camPos.x
+            pos.y += ARERenderer.camPos.y
+
+            newActor = @ui.editor.clipboard.data.duplicate()
+            newActor.setPosition pos.x, pos.y
+            newActor.setName(newActor.getName() + " copy")
+
+            @addActor newActor
+
+      {
+        name: "Workspace"
+        functions: functions
+      }
 
     ###
     # Translate the pick values into an ID and fetch the associated actor
@@ -313,74 +387,11 @@ define (require) ->
             if actor
               unless _.isEmpty actor.getContextProperties()
                 @dragger.forceDragEnd()
-                new ContextMenu x, y, actor.getContextProperties()
+                new ContextMenu @ui,
+                  x: x , y: y, properties: actor.getContextProperties()
           else
-            new ContextMenu x, y, @getWorkspaceCtxMenu x, y
-
-        e.preventDefault()
-        false
-
-    ###
-    # Register listeners
-    ###
-    _regListeners: ->
-
-      @_bindContextClick()
-
-      ###
-      # Workspace drag
-      ###
-      $(document).mousemove (e) =>
-        return unless @_workspaceDrag
-
-        x = @_workspaceDrag.x
-        y = @_workspaceDrag.y
-        ARERenderer.camPos.x += x - e.pageX
-        ARERenderer.camPos.y += y - e.pageY
-
-        @_workspaceDrag =
-          x: e.pageX
-          y: e.pageY
-
-      $(document).mouseup (e) =>
-        return unless @_workspaceDrag
-
-        @_workspaceDrag = null
-
-      $(document).on "mousedown", ".workspace canvas", (e) =>
-        if e.shiftKey && !e.ctrlKey && !@_workspaceDrag
-          @_workspaceDrag =
-            x: e.pageX
-            y: e.pageY
-
-      ###
-      # Setup texture drops
-      ###
-      $(@_sel).on "dragover", (e) ->
-        if _.contains e.originalEvent.dataTransfer.types, "image/texture"
-          e.preventDefault()
-          false
-
-      $(@_sel).on "drop", (e) =>
-        texID = e.originalEvent.dataTransfer.getData "image/texture"
-        texture = _.find @ui.editor.project.textures, (t) -> t.getID() == texID
-
-        @pickActor e.originalEvent.pageX, e.originalEvent.pageY, (actor) ->
-          actor.setTexture texture
-        , =>
-          time = @ui.timeline.getCursorTime()
-          pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
-
-          pos.x += ARERenderer.camPos.x
-          pos.y += ARERenderer.camPos.y
-
-          texSize = ARERenderer.getTextureSize texture.getUID()
-          w = texSize.w
-          h = texSize.h
-
-          actor = new RectangleActor @ui, time, w, h, pos.x, pos.y
-          actor.setTexture texture
-          @addActor actor
+            new ContextMenu @ui,
+              x: x , y: y, properties: @getWorkspaceCtxMenu(x, y)
 
         e.preventDefault()
         false
@@ -388,7 +399,7 @@ define (require) ->
     ###
     # Initializes dragging settings and attaches listeners
     ###
-    _setupActorDragging: ->
+    _bindActorDragging: ->
 
       toggleActorPhysics = (d, handle) ->
 
@@ -423,7 +434,6 @@ define (require) ->
           document.body.style.cursor = "pointer"
 
       @draggerRotate.setOnDragEnd (d) =>
-
         document.body.style.cursor = "auto"
 
         if d.getUserData()
@@ -498,11 +508,82 @@ define (require) ->
 
           actor = @getActorFromPick r, g, b
           if actor
-            oldActor = @getSelectedActor()
             @setSelectedActor actor
-            @ui.pushEvent "workspace.selected.actor",
-              actorId: @_selectedActor
-              actor: actor
+            @ui.pushEvent "workspace.selected.actor", actor: actor
+
+    ###
+    # Register listeners
+    ###
+    _bindListeners: ->
+
+      @_bindActorDragging()
+      @_bindContextClick()
+
+      $(document).on "mousemove", ".workspace canvas", (e) =>
+        pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
+
+        pos.x += ARERenderer.camPos.x
+        pos.y += ARERenderer.camPos.y
+
+        $(".workspace .cursor-position").text "x: #{pos.x}, y: #{pos.y}"
+
+      ###
+      # Workspace drag
+      ###
+      $(document).mousemove (e) =>
+        return unless @_workspaceDrag
+
+        x = @_workspaceDrag.x
+        y = @_workspaceDrag.y
+        ARERenderer.camPos.x += x - e.pageX
+        ARERenderer.camPos.y += y - e.pageY
+
+        @_workspaceDrag =
+          x: e.pageX
+          y: e.pageY
+
+      $(document).mouseup (e) =>
+        return unless @_workspaceDrag
+
+        @_workspaceDrag = null
+
+      $(document).on "mousedown", ".workspace canvas", (e) =>
+        if e.shiftKey && !e.ctrlKey && !@_workspaceDrag
+          @_workspaceDrag =
+            x: e.pageX
+            y: e.pageY
+
+      ###
+      # Setup texture drops
+      ###
+      $(@_sel).on "dragover", (e) ->
+        if _.contains e.originalEvent.dataTransfer.types, "image/texture"
+          e.preventDefault()
+          false
+
+      $(@_sel).on "drop", (e) =>
+        texID = e.originalEvent.dataTransfer.getData "image/texture"
+        texture = _.find @ui.editor.project.textures, (t) -> t.getID() == texID
+
+        @pickActor e.originalEvent.pageX, e.originalEvent.pageY, (actor) ->
+          actor.setTexture texture
+        , =>
+          time = @ui.timeline.getCursorTime()
+          pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
+
+          pos.x += ARERenderer.camPos.x
+          pos.y += ARERenderer.camPos.y
+
+          texSize = ARERenderer.getTextureSize texture.getUID()
+          w = texSize.w
+          h = texSize.h
+
+          actor = new RectangleActor @ui, time, w, h, pos.x, pos.y
+          actor.setTexture texture
+          @addActor actor
+
+        e.preventDefault()
+        false
 
     ###
     # @private
@@ -514,9 +595,7 @@ define (require) ->
 
       @_are.setClearColor 240, 240, 240
 
-      @_regListeners()
-
-      @_setupActorDragging()
+      @_bindListeners()
 
       # Start rendering
       @_are.startRendering()
@@ -530,7 +609,7 @@ define (require) ->
     _applyCanvasSizeUpdate: ->
 
       # Resize canvas container
-      $("#aw-canvas-container").css
+      $("##{config.id.are_canvas}").css
         height: "#{@_canvasHeight}px"
         width: "#{@_canvasWidth}px"
 
@@ -562,13 +641,31 @@ define (require) ->
     ###
     notifyDemise: (obj) ->
 
+      ctorName = obj.constructor.name
+
       # We keep track of actors internally, splice them out of our array
-      if obj.constructor.name.indexOf("Actor") != -1
+      if ctorName.indexOf("Actor") != -1 or ctorName.indexOf("Spawner") != -1
         for o, i in @actorObjects
           if o.getID() == obj.getID()
             @ui.pushEvent "workspace.remove.actor", actor: o
             @actorObjects.splice i, 1
-            return
+            break
+
+    ###
+    # @param [String]
+    ###
+    renderStub: ->
+      # Inject our canvas container, along with its status bar
+      # Although we currently don't add anything else to the container besides
+      # the canvas itself, it might prove useful in the future.
+      super content: TemplateWorkspaceCanvasContainer
+        id: config.id.are_canvas
+
+    ###
+    # @return [Workspace] self
+    ###
+    refresh: ->
+      @
 
     ###
     # @private
@@ -621,20 +718,6 @@ define (require) ->
       gl.bindTexture gl.TEXTURE_2D, null
       gl.bindRenderbuffer gl.RENDERBUFFER, null
       gl.bindFramebuffer gl.FRAMEBUFFER, null
-
-    ###
-    # Manually register an actor
-    #
-    # @param [BaseActor] handle
-    ###
-    registerActor: (handle) ->
-      param.required handle
-
-      if not handle.constructor.name.indexOf("Actor") != -1
-        throw new Error "You can only register actors that derive from BaseActor"
-
-      @actorObjects.push handle
-      @ui.timeline.registerActor handle
 
     ###
     # @private
@@ -723,38 +806,61 @@ define (require) ->
       $("#awcc-outline-text").text "#{width}x#{height}"
 
     ###
+    # Create a new spawner with a base object definition cloned from an actor,
+    # then kill the actor.
+    #
+    # NOTE: This deletes the AJS actor, and signals it's death to the rest of
+    #       the editor! Do NOT use an actor object after this method has been
+    #       called on it.
+    ###
+    transformActorIntoSpawner: (actor) ->
+
+      @addActor new Spawner @ui,
+        position: actor.getProperty("position").getValue()
+        templateHandle: actor
+
+      actor.delete()
+
+    ###
     # Takes other widgets into account, and sets the height accordingly. Also
     # centers the phone outline
     #
     # Note that this does NOT resize the canvas
     ###
     onResize: ->
-      @getElement().height $("section#main").height()
+      # workspace now inherits its height from the config.selector.content
 
-      #elm.offset
-      #  top: toolb.position().top + toolb.height()
-      #  left: sideb.position().left + sideb.width()
-
-      #timelineBottom = Number($(".timeline").css("bottom").split("px")[0]) - 16
-      #timelineHeight = ($(".timeline").height() + timelineBottom)
-      ## Our height
-      #@getElement().height $(document).height() - $(".menubar").height() + 2 - \
-      #  timelineHeight
-
-      # Center phone outline
-      # @updateOutline()
+    ###
+    # @param [String] type
+    # @param [Object] params
+    ###
+    respondToEvent: (type, params) ->
+      switch type
+        when "timeline.selected.actor"
+          @setSelectedActor params.actor
 
     ###
     # Dumps the current workspace state
     # @return [Object] data
     ###
     dump: ->
+      actors = _.map @getActors(), (actor) -> actor.dump()
+      actors = _.without actors, (actor) -> actor.handleType == "Spawner"
+
+      c = @getClearColor()
+      clearColor =
+        r: c.getR()
+        g: c.getG()
+        b: c.getB()
+
       _.extend super(),
-        version: "1.2.0"
-        camPos:
+        workspaceVersion: "1.5.1"
+        camPos:                                                        # v1.2.0
           x: ARERenderer.camPos.x
           y: ARERenderer.camPos.y
-        actors: _.map @getActors(), (actor) -> actor.dump()
+        actors: actors                                                 # v1.1.0
+        #spawners: spawners                                             # v1.4.0
+        clearColor: clearColor                                         # v1.5.0
 
     ###
     # Loads the a workspace data state
@@ -762,13 +868,28 @@ define (require) ->
     ###
     load: (data) ->
       super data
-      if data.version >= "1.2.0"
+
+      if (data.workspaceVersion >= "1.2.0") || \
+       ((data.dumpVersion == "1.0.0") && (data.version >= "1.2.0"))
         ARERenderer.camPos.x = data.camPos.x
         ARERenderer.camPos.y = data.camPos.y
 
-      #data.version == "1.1.0"
-      for actor in data.actors
-        newActor = window[actor.type].load @ui, actor
-        @addActor newActor
+      if data.workspaceVersion >= "1.5.0"
+        col = data.clearColor
+        @setClearColor col.r, col.g, col.b
+
+      # We merged actor and spawner collections after 1.4.0
+      actors = data.actors
+      if data.workspaceVersion == "1.4.0" and data.spawners.length > 0
+        actors = _.union data.spawners, actors
+
+      # data.workspaceVersion >= "1.1.0"
+      for actor in actors
+        actorClass = window[actor.handleType]
+
+        if actorClass
+          @addActor actorClass.load @ui, actor
+        else
+          AUtilLog.warn "No such handle class #{actor.type}, can't load"
 
       @ui.timeline.updateAllActorsInTime()

@@ -66,7 +66,13 @@ define (require) ->
     ###
     # Returns formatted value (enforcing precision)
     #
-    # @return [Object] value
+    # @return [Number] value
     ###
     getValue: ->
-      Number super().toFixed @data_precision
+      Number super()
+
+    ###
+    # @return [String]
+    ###
+    getValueString: ->
+      Number(@getValue()).toFixed @data_precision

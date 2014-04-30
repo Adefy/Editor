@@ -1,8 +1,10 @@
 define (require) ->
 
-  AUtilLog = require "util/log"
+  config = require "config"
   param = require "util/param"
   ID = require "util/id"
+
+  AUtilLog = require "util/log"
   Widget = require "widgets/widget"
   MenuBarItem = require "widgets/menubar/menubar_item"
 
@@ -14,16 +16,16 @@ define (require) ->
     #
     # @param [UIManager] ui
     ###
-    constructor: (@ui) ->
+    constructor: (@ui, options) ->
       return unless @enforceSingleton()
 
       @_items = []
 
-      super
+      super @ui,
         id: ID.prefID("menubar")
+        parent: config.selector.header
         classes: ["menubar"]
         prepend: true
-        parent: "header"
 
       # Note that we don't render initially. This gives the engine the freedom
       # to set up initial items, and then render us appropriately
@@ -134,37 +136,40 @@ define (require) ->
       @
 
     ###
-    #
-    # Renders the menu
-    #
+    # @return [String]
     ###
     render: ->
-      @getElement().html ""
+      html = super()
 
       # Render our decorator
-      _html = @genElement "div", class: "menubar-decorater"
+      html += @genElement "div", class: "menubar-decorater"
 
       # Menu items
-      _html += @genElement "ul", class: "bar", =>
+      html += @genElement "ul", class: "bar", =>
         primaries = _.filter @_items, (i) -> i._role == "primary"
         primaries.map((i) -> i.render()).join ""
 
-      @getElement().html _html
-
-      # Now render secondary items, and append them to our selector
-      # Note that this places them OUTSIDE the previous list!
       for item in _.filter(@_items, (i) -> i._children.length > 0)
         secondaries = _.filter item._children, (c) -> c._role == "secondary"
 
         attrs =
-          id: ID.nextID()
-          class: "menu"
+          "id":         item.getSecondaryID()
+          "class":      "menu"
           "data-owner": item.getID()
 
         # Append all secondary children
-        @getElement().append @genElement "ul", attrs, =>
+        html += super() + @genElement "ul", attrs, =>
           secondaries.map((c) -> c.render()).join ""
 
-        # Position us on the same left edge as our parents
-        $("##{attrs.id}").css
-          left: $("##{item.getID()}").offset().left
+      html
+
+    ###
+    # @return [self]
+    ###
+    postRefresh: ->
+      super()
+      for item in @_items
+        item.registerHandlers()
+        $("##{item.getSecondaryID()}").css left: $("##{item.getID()}").offset().left
+
+      @

@@ -235,16 +235,22 @@ define (require) ->
       functions = {}
 
       if @_isDirectory
-        functions["Add Directory"] = =>
-          @contextFuncAddDirectory @, "New Folder"
-        functions["Add File"] = =>
-          @contextFuncAddFile @, "New File"
+        functions.addDir =
+          name: "Add Directory"
+          cb: => @contextFuncAddDirectory @, "New Folder"
+        functions.addFile =
+          name: "Add File"
+          cb: => @contextFuncAddFile @, "New File"
 
       unless _.contains @_disabled, "delete"
-        functions["Delete"] = => @contextFuncRemoveAsset @
+        functions.del =
+          name: "Delete"
+          cb: => @contextFuncRemoveAsset @
 
       unless _.contains @_disabled, "rename"
-        functions["Rename ..."] = => @contextFuncRenameAsset @
+        functions.rename =
+          name: "Rename ..."
+          cb: => @contextFuncRenameAsset @
 
       {
         name: @getName()
@@ -275,7 +281,7 @@ define (require) ->
     ###
     dump: ->
       data = _.extend Dumpable::dump.call(@),
-        version: "1.0.0"
+        assetVersion: "1.1.0"
         id: @_id # will be ignored on load though
         name: @_name
         isDirectory: @_isDirectory
@@ -290,12 +296,17 @@ define (require) ->
 
       data
 
+    ###
+    # @param [Object] data
+    # @return [self]
+    ###
     load: (data) ->
       Dumpable::load.call @, data
+      @
 
     @load: (data) ->
 
-      # data.version
+      # data.assetVersion
       # for now we don't have to handle different project versions
       # since assets remain relatively the same
       asset = new Asset null, data
@@ -303,3 +314,12 @@ define (require) ->
       asset.load data
       asset
 
+###
+@Changelog
+
+  - "1.0.0": Initial
+  - "1.1.0":
+    version has been renamed to assetVersion this is to prevent name clashes
+    with super classes who use "version" for their dumps as well
+
+###

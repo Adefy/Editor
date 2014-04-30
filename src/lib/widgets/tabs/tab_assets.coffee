@@ -17,13 +17,15 @@ define (require) ->
     # @param [UIManager] ui
     # @param [SidebarPanel] parent
     ###
-    constructor: (@ui, parent) ->
-      super
-        id: ID.prefID("tab-assets")
-        parent: parent
-        classes: ["tab-assets"]
+    constructor: (@ui, options) ->
+      options = param.optional options, {}
+      options.id = ID.prefID("tab-assets")
+      options.classes = param.optional options.classes, []
+      options.classes.push "tab-assets"
 
-      @_regListeners()
+      super @ui, options
+
+      @_bindListeners()
 
     ###
     # @return [String]
@@ -40,7 +42,7 @@ define (require) ->
       asset = @ui.editor.project.assets.findByID(assetElementId)
       if asset
         asset.setExpanded !asset.getExpanded()
-        @refreshAssetState asset
+        @_updateAssetState asset
       else
         throw new Error "could not find asset(id: #{assetElementId})"
 
@@ -52,20 +54,27 @@ define (require) ->
     _bindContextClick: ->
       $(document).on "contextmenu", ".files .asset", (e) =>
         assetElement = $(e.target).closest(".asset")
+
         if asset = @ui.editor.project.assets.findByID(assetElement[0].id)
-          new ContextMenu e.pageX, e.pageY, asset.getContextProperties()
+          new ContextMenu @ui,
+            x: e.pageX, y: e.pageY, properties: asset.getContextProperties()
+
         e.preventDefault()
         false
 
       $(document).on "contextmenu", ".files", (e) =>
-        new ContextMenu e.pageX, e.pageY, @ui.editor.project.assets.getContextProperties()
+        new ContextMenu @ui,
+          x: e.pageX
+          y: e.pageY
+          properties: @ui.editor.project.assets.getContextProperties()
+
         e.preventDefault()
         false
 
     ###
     # @private
     ###
-    _regListeners: ->
+    _bindListeners: ->
 
       @_bindContextClick()
 
@@ -74,6 +83,7 @@ define (require) ->
 
     ###
     # @param [Array<Object>] assets
+    # @return [String] html
     # @private
     ###
     _renderAssets: (assets) ->
@@ -99,15 +109,16 @@ define (require) ->
       .join ""
 
     ###
-    # @return [String]
+    # @return [String] html
     ###
     render: ->
+      super() +
       @_renderAssets @ui.editor.project.assets.getEntries()
 
     ###
     # @param [Asset] asset
     ###
-    refreshAssetState: (asset) ->
+    _updateAssetState: (asset) ->
       elementId = asset.getSelector()
 
       expanded = asset.getExpanded()
@@ -121,7 +132,7 @@ define (require) ->
     ###
     # @param [Asset] asset
     ###
-    refreshAsset: (asset) ->
+    _updateAsset: (asset) ->
       elementId = asset.getSelector()
       $("#{elementId}.asset > dd > label.name").text asset.getName()
 
@@ -133,7 +144,7 @@ define (require) ->
       AUtilEventLog.egot "tab.assets", type
       switch type
         when "update.asset", "renamed.asset"
-          @refreshAsset params.asset
+          @updateAsset params.asset
         when "add.asset"
           @refresh()
         when "remove.asset"

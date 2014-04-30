@@ -1,5 +1,6 @@
 define ->
 
+  ###
   # Tiny logging class created to be able to selectively
   # silence all logging in production, or by level. Also supports tags
   # similar to the 'spew' npm module
@@ -10,9 +11,12 @@ define ->
   # 2 - Warning
   # 3 - Debug
   # 4 - Info
+  ###
   class AUtilLog
 
+    ###
     # @property [Array<String>] tags, editable by the user
+    ###
     @tags: [
       "",
       "[Error]> ",
@@ -21,13 +25,17 @@ define ->
       "[Info]> "
     ]
 
+    ###
     # @property [Number] logging level
+    ###
     @level: 4
 
+    ###
     # Generic logging function
     #
     # @param [Number] level logging level to log on
     # @param [String] str log message
+    ###
     @w: (level, str) ->
 
       me = AUtilLog
@@ -55,22 +63,37 @@ define ->
         console.log str
       return
 
+    ###
     # Specialized, sets level to error directly
     #
     # @param [String] str log message
+    ###
     @error: (str) -> AUtilLog.w 1, str
 
+    ###
     # Specialized, sets level to warning directly
     #
     # @param [String] str log message
+    ###
     @warn: (str) -> AUtilLog.w 2, str
 
+    ###
+    # Alias for @warn
+    #
+    # @param [String] str log message
+    ###
+    @warning: (str) -> AUtilLog.warn str
+
+    ###
     # Specialized, sets level to debug directly
     #
     # @param [String] str log message
+    ###
     @debug: (str) -> AUtilLog.w 3, str
 
+    ###
     # Specialized, sets level to info directly
     #
     # @param [String] str log message
+    ###
     @info: (str) -> AUtilLog.w 4, str

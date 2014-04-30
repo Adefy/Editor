@@ -1,8 +1,8 @@
 define (require) ->
 
   config = require "config"
-  AUtilLog = require "util/log"
   param = require "util/param"
+  AUtilLog = require "util/log"
 
   Storage = require "storage"
 
@@ -14,7 +14,7 @@ define (require) ->
 
   Notification = require "widgets/notification"
 
-  Bezier = require "widgets/timeline/bezier"
+  Bezier = require "handles/bezier"
   Project = require "project"
 
   class Editor
@@ -32,17 +32,14 @@ define (require) ->
     # @param [String] sel container selector, created if non-existent
     ###
     constructor: (sel) ->
-
       Editor.current = @
 
-      @checkForOpera()
-      @checkForLocalStorage()
+      return if @checkForOpera()
+      return unless @checkForLocalStorage()
+      return unless @checkForCreativePayload()
 
       @widgets = []
-
       @ui = new UIManager @
-
-      AUtilLog.info "Adefy Editor created id(#{config.selector})"
 
       ###
       # @type [Object] clipboard
@@ -58,28 +55,53 @@ define (require) ->
       @settings = {}
       @refreshSettings()
 
-      Project.ui = @ui
-      if Project.quicksaveExists()
-        @project = Project.quickload()
-      else
-        @project = new Project @ui
+      AUtilLog.debug "Adefy Editor created"
+
+    ###
+    # Call after creating the editor, this ensures the top level is set
+    # @return [self]
+    ###
+    init: ->
+      @project = new Project @ui, window.ADEFY_EDITOR_CREATIVE_PAYLOAD, (p) =>
+        p.loadNewestSnapshot()
 
       @startAutosaveTask()
+
+      @
+
+    ###
+    # Get currently loaded project
+    #
+    # @return [Project] project
+    ###
+    getProject: -> @project
 
     ###
     # We can't run properly in Opera, as it does not let us override the
     # right-click context menu. Notify the user
     #
-    # @return [Boolean]
+    # @return [Boolean] isOpera
     ###
     checkForOpera: ->
       agent = navigator.userAgent
 
       if agent.search("Opera") != -1 or agent.search("OPR") != -1
         alert "Opera is not supported at this time, you may experience problems"
-        return true
+        true
+      else
+        false
 
-      false
+    ###
+    # Ensure that a creative payload is attached to the window
+    #
+    # @return [Boolean] havePayload
+    ###
+    checkForCreativePayload: ->
+      unless !!window.ADEFY_EDITOR_CREATIVE_PAYLOAD
+        alert "Something went wrong, no creative loaded ;("
+        false
+      else
+        true
 
     ###
     # Check that the browser supports HTML local storage
@@ -106,14 +128,37 @@ define (require) ->
         maxcount: Number(Storage.get("editor.autosave.maxcount") || 10)
 
     ###
+    # @return [self]
+    ###
+    applySettings: (options) ->
+      restartAutosave = false
+      autosaveData = param.optional options.autosave, null
+      if autosaveData
+        freq = param.optional autosaveData.frequency, \
+                              @settings.autosave.frequency
+        if freq
+          @settings.autosave.frequency = freq
+          restartAutosave = true
+
+        maxcount = param.optional autosaveData.maxcount, \
+                                  @settings.autosave.maxcount
+        @settings.autosave.maxcount = maxcount
+
+      @startAutosaveTask() if restartAutosave
+
+      @saveSettings()
+      @
+
+    ###
     # Saves the settings to Local Storage
     # @return [Void]
     ###
     saveSettings: ->
       Storage.set("editor.autosave.frequency", @settings.autosave.frequency)
       Storage.set("editor.autosave.maxcount", @settings.autosave.maxcount)
+      #Storage.set("are.renderer.mode", @settings.are.rendererMode)
 
-      AUtilLog.info "Saved editor.settings"
+      AUtilLog.debug "Saved editor.settings"
 
       @
 
@@ -127,8 +172,10 @@ define (require) ->
     ###
     ###
     autosave: ->
-      AUtilLog.info "[Editor] auto-saving project"
-      @project.autosave()
+      AUtilLog.debug "[Editor] autosaving current project"
+      AUtilLog.debug "[Editor] autosave is disabled"
+      #@project.autosave()
+      #@project.snapshot()
       @
 
     ###
@@ -383,6 +430,7 @@ define (require) ->
 
     ###
     # Create a new Ad
+    # @return [self]
     ###
     fileNewAd: ->
       @newAd()
@@ -390,6 +438,7 @@ define (require) ->
 
     ###
     # Create a new Ad from Template
+    # @return [self]
     ###
     fileNewFromTemplate: ->
       #
@@ -397,13 +446,15 @@ define (require) ->
 
     ###
     # Open an existing ad
+    # @return [self]
     ###
     fileOpen: ->
-      #
+      @ui.modals.showOpenProject()
       @
 
     ###
     # Save current ad
+    # @return [self]
     ###
     fileSave: ->
       @save()
@@ -411,29 +462,30 @@ define (require) ->
 
     ###
     # Save current ad, with new name
+    # @return [self]
     ###
     fileSaveAs: ->
       @
 
     ###
     # Export the current ad
+    # @return [self]
     ###
     fileExport: ->
       @export()
       @
 
-
     ###
+    # @return [self]
     ###
     startAutosaveTask: ->
+      AUtilLog.debug "Starting autosave task"
 
-      editor = @
+      clearInterval @autosaveTaskID if @autosaveTaskID
 
-      autosaveTask = =>
-        setTimeout ->
-          editor.autosave()
-          editor.ui.pushEvent "autosave"
-          autosaveTask()
-        , @settings.autosave.frequency
+      @autosaveTaskID = setInterval =>
+        @autosave()
+        @ui.pushEvent "autosave"
+      , @settings.autosave.frequency
 
-      autosaveTask()
+      @

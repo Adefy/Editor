@@ -10,15 +10,28 @@ define (require) ->
     # Create a new SidebarPanel
     # @param [Sidebar] parent
     ###
-    constructor: (parent, opts) ->
+    constructor: (@ui, options) ->
+      param.required options.parent
+
       @_tabs = []
       @_footerActive = false
 
-      super parent, [ "panel" ]
+      options.classes = param.optional options.classes, []
+      options.classes.push "panel"
+
+      super @ui, options
 
       @_parent.addItem @
 
-      @registerEvents()
+      @_registerEvents()
+
+    ###
+    # @return [Void]
+    ###
+    _registerEvents: ->
+      $(document).on "click", "#{@_sel} .tab", (e) =>
+        @selectTab Number $(e.target).closest(".tab").attr "data-index"
+        @_parent.render()
 
     ###
     # returns the scrollbar selector
@@ -76,7 +89,7 @@ define (require) ->
     ###
     addTab: (tab) ->
       tab.index = @_tabs.length
-      @_tabs.push(tab)
+      @_tabs.push tab
 
     ###
     # Selects a tab based on index
@@ -92,7 +105,7 @@ define (require) ->
     ###
     newTab: (name, cb) ->
       tab = name: name, selected: ""
-      tab.content = cb() if cb
+      tab.content = cb(tab) if cb
       @addTab tab
       tab
 
@@ -108,18 +121,15 @@ define (require) ->
       tab = _.find @_tabs, (t) -> t.selected
 
       if tab
-        if tab.content instanceof String
-          content = tab.content
-
-        else # probably is a Object
-          tcontent = tab.content
-          content = tcontent.render()
-          contentKlass = tcontent.cssAppendParentClass()
-          contentId = tcontent.appendParentId()
-          usesFooter = tcontent.needPanelFooter()
+        tcontent = tab.content
+        content = tcontent.render()
+        contentKlass = tcontent.cssAppendParentClass()
+        contentId = tcontent.appendParentId()
+        usesFooter = tcontent.needPanelFooter()
 
       @_footerActive = usesFooter
 
+      super() +
       TemplateSidebarPanel
         id: @_id
         sidebarId: @_parent.getID()
@@ -130,27 +140,44 @@ define (require) ->
         usesFooter: @_footerActive
 
     ###
-    # @return [Void]
+    # @return [self]
     ###
-    registerEvents: ->
-      $(document).on "click", "#{@_sel} .tab", (e) =>
-        @selectTab Number $(e.target).closest(".tab").attr "data-index"
-        @_parent.render()
+    refresh: ->
+      super()
+      tab = _.find @_tabs, (t) -> t.selected
+      tab.refresh() if tab
+
+      @
 
     ###
-    # @return [Void]
+    # @return [self]
     ###
-    postRender: ->
+    refreshStub: ->
+      super()
+
+    ###
+    # @return [self]
+    ###
+    postRefresh: ->
+      super()
       @_setupScrollbar()
-      for tab in @_tabs
-        if content = tab.content
-          if content.postRender
-            content.postRender()
-          if @_footerActive && content.renderFooter
-            @getElement(".footer").html content.renderFooter()
+      tab = _.find @_tabs, (t) -> t.selected
+      if content = tab.content
+        content.postRefresh() if content.postRefresh
+        if @_footerActive && content.renderFooter
+          @getElement(".footer").html content.renderFooter()
+
+      @
 
     ###
-    # When a child element changes size, position, this function is called
+    # When a child element refreshes
+    # @param [Widget] child
+    ###
+    onChildRefresh: (child) ->
+      @_setupScrollbar()
+
+    ###
+    # When a child element does some form of content update
     # @param [Widget] child
     ###
     onChildUpdate: (child) ->
@@ -164,9 +191,3 @@ define (require) ->
       for tab in @_tabs
         if tab.content
           tab.content.respondToEvent type, params if tab.content.respondToEvent
-
-    ###
-    # Panels don't refresh themselves
-    ###
-    refresh: ->
-      @_parent.refresh() if @_parent.refresh

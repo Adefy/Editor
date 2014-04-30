@@ -11,20 +11,21 @@ define (require) ->
     @include Dumpable
 
     ###
+    # @param [Project] project
     # @param [Hash] options
     ###
-    constructor: (options) ->
-      options = param.optional options, {}
+    constructor: (@project, options) ->
+      param.required project
+      param.required options
+      param.required options.key
+      param.required options.name
 
-      @project = null
+      @_id = ID.objID("texture").prefixed
 
-      @__id = ID.objID "texture"
-      @_id = @__id.prefix
+      @_uid = param.optional options.uid, ID.uID()
+      @_name = options.name
 
-      @_uid = ID.uID()
-
-      @_url = param.optional options.url, ""
-      @_name = param.optional options.name, ""
+      @setKey options.key
 
     ###
     # This is the ID used by handles inside the editor
@@ -44,7 +45,6 @@ define (require) ->
     getName: -> @_name
     setName: (@_name) -> @
     getURL: -> @_url
-    setURL: (@_url) -> @
 
     ###
     # Delete context menu callback function
@@ -52,12 +52,10 @@ define (require) ->
     # @return [self]
     ###
     contextFuncDelete: (texture) ->
-      if @project
-        @project.textures = _.without @project.textures, (t) ->
-          t._id == texture._id
+      _.remove @project.textures, (t) -> t.getID() == texture.getID()
 
-        window.AdefyEditor.ui.pushEvent "remove.texture",
-          texture: texture
+      window.AdefyEditor.ui.pushEvent "remove.texture",
+        texture: texture
 
       @
 
@@ -70,8 +68,7 @@ define (require) ->
       window.AdefyEditor.ui.modals.showRename texture,
         cb: (t, name) =>
           t.setName(name)
-          window.AdefyEditor.ui.pushEvent "rename.texture",
-            texture: t
+          window.AdefyEditor.ui.pushEvent "rename.texture", texture: t
 
         validate: (t, name) =>
           return "Name must be longer than 3 characters" if name.length <= 3
@@ -90,22 +87,43 @@ define (require) ->
       {
         name: @getName()
         functions:
-          "Delete": => @contextFuncDelete @
-          "Rename": => @contextFuncRename @
+          del:
+            name: "Delete"
+            cb: => @contextFuncDelete @
+          rename:
+            name: "Rename"
+            cb: => @contextFuncRename @
       }
 
+    ###
+    # Set key and update URL
+    #
+    # @param [String] key
+    ###
+    setKey: (key) ->
+      @_key = key
+      @_url = "#{@project.getCDNUrl()}/#{key}"
+
+    ###
+    # @return [Object] data
+    ###
     dump: ->
       _.extend Dumpable::dump.call(@),
-        version: "1.1.0"
+        textureVersion: "1.2.0"
         id: @_id
         uid: @_uid
         name: @_name
-        url: @_url
+        key: @_key
 
+    ###
+    # @param [Object] data
+    # @return [self]
+    ###
     load: (data) ->
       Dumpable::load.call @, data
 
-      if data.version > "1.0.0"
+      if data.textureVersion > "1.0.0" || \
+       (data.dumpableVersion == "1.0.0" && data.version > "1.1.0")
         @_uid = data.uid
 
       # we are probably dealing with an old v1.0.0 texture, so we'll
@@ -114,10 +132,25 @@ define (require) ->
         @_uid = ID.uID()
 
       @_name = data.name
-      @_url = data.url
+      @setKey data.key
 
       @
 
-    @load: (data) ->
-      texture = new Texture
+    ###
+    # @param [Object] data
+    # @return [self]
+    ###
+    @load: (project, data) ->
+      param.required project
+      param.required data
+      texture = new Texture project, data
       texture.load data
+
+###
+@ChangeLog
+
+  - "1.0.0": Initial
+  - "1.1.0": Added uid
+  - "1.2.0": dumpVersion bump changes
+
+###
