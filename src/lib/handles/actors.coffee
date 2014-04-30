@@ -1,9 +1,11 @@
 define (require) ->
 
-  # do not remove
-  # this is an empty object used for registering the actor classes
-  # the classes are not required by this file in
-  # order to prevent a dependency loop
+  ###
+  # DO NOT REMOVE
+  # This is object is used for registering the Handle classes.
+  #
+  # @type [Hash<String, Class>] actor_classes
+  ###
   {
-
+    # class_name: Class
   }
