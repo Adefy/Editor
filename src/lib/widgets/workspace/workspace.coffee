@@ -859,6 +859,7 @@ define (require) ->
           x: ARERenderer.camPos.x
           y: ARERenderer.camPos.y
         actors: actors                                                 # v1.1.0
+        #spawners: spawners                                             # v1.4.0
         clearColor: clearColor                                         # v1.5.0
 
     ###
