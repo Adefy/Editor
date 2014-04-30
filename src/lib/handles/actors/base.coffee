@@ -200,9 +200,6 @@ define (require) ->
       @_properties.layer.main.onUpdate = (layer) =>
         @_AJSActor.setLayer layer if @_AJSActor
 
-      @_properties.layer.main.requestUpdate = ->
-        @setValue me._AJSActor.getLayer() if me._AJSActor
-
       @_properties.layer.physics = new NumericProperty()
       @_properties.layer.physics.setValue 0
       @_properties.layer.physics.setMin 0
@@ -214,9 +211,6 @@ define (require) ->
 
       @_properties.layer.physics.onUpdate = (layer) =>
         @_AJSActor.setPhysicsLayer layer if @_AJSActor
-
-      @_properties.layer.physics.requestUpdate = ->
-        @setValue me._AJSActor.getPhysicsLayer() if me._AJSActor
 
       @_properties.layer.addProperty "main", @_properties.layer.main
       @_properties.layer.addProperty "physics", @_properties.layer.physics
@@ -724,12 +718,23 @@ define (require) ->
       @_temporalUpdatesEnabled
 
     ###
+    # Really, really ugly (FUGLY) method we need so spawners can register
+    # themselves after birth (they can't override @_birth....)
+    #
+    # GET RID OF THIS
+    ###
+    __fugly_postBirth: ->
+
+    ###
     # Materialize the actor from various stored value deltas (woah, that sounds
     # epic). Essentially, update our prop buffer, and then the actors' current
     # state
     ###
     updateInTime: ->
-      @_birth() unless @_alive
+      unless @_alive
+        @_birth()
+        @__fugly_postBirth()
+
       return unless @_temporalUpdatesEnabled
 
       cursor = @ui.timeline.getCursorTime()
@@ -1184,11 +1189,11 @@ define (require) ->
           # starting point.
           ###
           if (nextAnim = @findNearestState(@_lastTemporalState, true, p)) != -1
+            if @_animations[nextAnim]
+              startTime = @_lastTemporalState
+              startP = @_propBuffer[@_lastTemporalState][p]
 
-            startTime = @_lastTemporalState
-            startP = @_propBuffer[@_lastTemporalState][p]
-
-            @setAnimationStart @_animations[nextAnim][p], startTime, startP
+              @setAnimationStart @_animations[nextAnim][p], startTime, startP
 
           unless deltaStartTime == -1
 
@@ -1637,6 +1642,24 @@ define (require) ->
     # @return [self]
     ###
     load: (data) ->
+      dumpBirth = Math.floor data.birth
+
+      # Clean dump property buffer and animation buffer
+      for time of data.propBuffer
+        if time < dumpBirth
+          delete data.propBuffer[time]
+        else
+          for property of data.propBuffer[time]
+            unless @_properties[property]
+              delete data.propBuffer[time][property]
+
+      for time of data.animations
+        if time < dumpBirth
+          delete data.animations[time]
+        else
+          for property of data.animations[time]
+            unless data.properties[property]
+              delete data.animations[time][property]
 
       # Load basic properties
       super data

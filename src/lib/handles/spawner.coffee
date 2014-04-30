@@ -125,13 +125,24 @@ define (require) ->
       @_initPropertyVelocityRange()
       @_overridePhysicsProperty()
 
+      window.s ||= []
+      window.s.push @
+
       @_properties.position.setVisibleInToolbar true
       @_properties.layer.setVisibleInToolbar true
 
-      @postInit()
-
       # Ensure the spawner update cycle is both running, and includes us
       Spawner.setupUpdateInterval()
+
+    ###
+    # Horrible method (check @updateInTime()) that we need to register ourselves
+    # after birth...
+    #
+    # Actor time handling has to be heavily refactored, with all birth/death
+    # management moved into actors. Aka, don't call updateInTime() expecting to
+    # be in a valid time period (at the moment, the Timeline checks...)
+    ###
+    __fugly_postBirth: ->
       Spawner.registerSpawner @
 
     ###
@@ -180,6 +191,8 @@ define (require) ->
         "delete"
         "load"
         "dump"
+        "timelineDeath"
+        "__fugly_postBirth"
       ]
 
       unless window[handle.constructor.name]
@@ -369,6 +382,20 @@ define (require) ->
       super()
 
     ###
+    # Called when we transition from life to death in time. De-registers us and
+    # deletes all spawns
+    ###
+    timelineDeath: ->
+      Spawner.unregisterSpawner @
+
+      _.union(@_previewSpawns, @_spawns).map (spawn) -> spawn.delete()
+
+      @_previewSpawns = []
+      @_spawns = []
+
+      super()
+
+    ###
     # Reset the particle system to its original state
     #
     # @return [Spawner] self
@@ -438,8 +465,8 @@ define (require) ->
 
         if ARE_actor and ARE_actor._body
           impulse = ARERenderer.screenToWorld
-            x: (pos.x + finalVel.x) * 10
-            y: (pos.y + finalVel.y) * 10
+            x: finalVel.x * 1000
+            y: finalVel.y * 1000
 
           ARE_actor._body.applyImpulse impulse, new cp.v(0, 0)
 
@@ -729,6 +756,7 @@ define (require) ->
     # @return [Spawner] spawner
     ###
     @load: (ui, data) ->
+
       templateHandle = window[data.spawnableClassName].load ui, data
       spawner = new Spawner ui, templateHandle: templateHandle
       spawner.load data
