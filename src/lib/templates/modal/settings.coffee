@@ -8,7 +8,7 @@ define ->
   <div class="content">
     <ul>
       {{#each settings}}
-      <li class="input">
+      <li class="input {{#if halfw}}halfw{{/if}}">
         <label>{{label}}</label>
         <input
           {{#if min}}min="{{min}}"{{/if}}

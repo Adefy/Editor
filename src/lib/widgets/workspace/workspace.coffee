@@ -66,11 +66,6 @@ define (require) ->
       ###
       @actorObjects = []
 
-      ###
-      # @type [Array<Spawner>]
-      ###
-      @_spawners = []
-
       # Starting phone size is 800x480
       @_pWidth = 800
       @_pHeight = 480
@@ -132,11 +127,6 @@ define (require) ->
     # @return [Array<Handle>] actors
     ###
     getActors: -> @actorObjects
-
-    ###
-    # @return [Array<Spawner>] spawners
-    ###
-    getSpawners: -> @_spawners
 
     ###
     # Get ARE instance
@@ -237,7 +227,7 @@ define (require) ->
         @ui.events.push "texture", "load", texture: texture
 
         # Refresh any actors that already have the texture assigned
-        for handle in _.union @actorObjects, @_spawners
+        for handle in @actorObjects
           if handle.getTextureUID() == texture.getUID()
             handle.setTexture texture
 
@@ -253,20 +243,6 @@ define (require) ->
 
       @actorObjects.push handle
       @ui.events.push "workspace", "add.actor", actor: handle
-      @
-
-    #removeActor: (handle) ->
-
-    ###
-    # Add a new Particle System to the list
-    # @return [Workspace] self
-    ###
-    addSpawner: (spawner) ->
-      @_spawners.push spawner
-      # Spawners are still a kind of actor.
-      @addActor spawner
-
-      @ui.events.push "workspace", "add.spawner", spawner: spawner
       @
 
     ###
@@ -694,13 +670,15 @@ define (require) ->
     ###
     notifyDemise: (obj) ->
 
+      ctorName = obj.constructor.name
+
       # We keep track of actors internally, splice them out of our array
-      if obj.constructor.name.indexOf("Actor") != -1
+      if ctorName.indexOf("Actor") != -1 or ctorName.indexOf("Spawner") != -1
         for o, i in @actorObjects
           if o.getID() == obj.getID()
             @ui.events.push "workspace", "remove.actor", actor: o
             @actorObjects.splice i, 1
-            return
+            break
 
     ###
     # @param [String]
@@ -866,7 +844,7 @@ define (require) ->
     ###
     transformActorIntoSpawner: (actor) ->
 
-      @addSpawner new Spawner @ui,
+      @addActor new Spawner @ui,
         position: actor.getProperty("position").getValue()
         templateHandle: actor
 
@@ -907,7 +885,6 @@ define (require) ->
     # @return [Object] data
     ###
     dump: ->
-      spawners = _.map @getSpawners(), (spawner) -> spawner.dump()
       actors = _.map @getActors(), (actor) -> actor.dump()
       actors = _.without actors, (actor) -> actor.handleType == "Spawner"
 
@@ -918,14 +895,13 @@ define (require) ->
         b: c.getB()
 
       _.extend super(),
-        workspaceVersion: "1.5.0"
+        workspaceVersion: "1.5.1"
         camPos:                                                        # v1.2.0
           x: ARERenderer.camPos.x
           y: ARERenderer.camPos.y
         actors: actors                                                 # v1.1.0
-        spawners: spawners                                             # v1.4.0
+        #spawners: spawners                                             # v1.4.0
         clearColor: clearColor                                         # v1.5.0
-
 
     ###
     # Loads the a workspace data state
@@ -943,18 +919,17 @@ define (require) ->
         col = data.clearColor
         @setClearColor col.r, col.g, col.b
 
-      if data.workspaceVersion >= "1.4.0"
-        for spawnerData in data.spawners
-          @addSpawner Spawner.load @ui, spawnerData
+      # We merged actor and spawner collections after 1.4.0
+      if data.workspaceVersion == "1.4.0" and data.spawners.length > 0
+        data.actors = _.union data.spawners, data.actors
 
       # data.workspaceVersion >= "1.1.0"
       for actor in data.actors
-        continue if actor.handleType == "Spawner"
-        handleKlass = Actors[actor.type]
-        if handleKlass
-          newActor = handleKlass.load @ui, actor
-          @addActor newActor
+        actorClass = Actors[actor.handleType]
+
+        if actorClass
+          @addActor actorClass.load @ui, actor
         else
-          AUtilLog.warn "No such handle class #{actor.type}"
+          AUtilLog.warn "No such handle class #{actor.type}, can't load"
 
       @ui.timeline.updateAllActorsInTime()

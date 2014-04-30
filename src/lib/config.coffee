@@ -56,6 +56,7 @@ define
     radius: 0               # CircleActor.radius
     rotation: 0             # Actor.rotation
     sides: 0                # PolygonActor.sides
+    texture_repeat: 2       # BaseActor.textureRepeat
     width: 0                # RectangleActor.width
 
   ##
@@ -69,14 +70,15 @@ define
       create: "Create"
 
     label:
-      create_menu_item: "Create +"
-      texture_modal:    "Texture ..."
-      physics_modal:    "Physics ..."
+      create_menu_item:     "Create +"
+      texture_modal:        "Texture ..."
+      texture_repeat_modal: "Texture Rep. ..."
+      physics_modal:        "Physics ..."
       ##
-      actor_rectangle:  "Rectangle Actor"
-      actor_polygon:    "Polygon Actor"
-      actor_circle:     "Circle Actor"
-      actor_triangle:   "Triangle Actor"
+      actor_rectangle:      "Rectangle Actor"
+      actor_polygon:        "Polygon Actor"
+      actor_circle:         "Circle Actor"
+      actor_triangle:       "Triangle Actor"
 
     ctx:
       base_actor:

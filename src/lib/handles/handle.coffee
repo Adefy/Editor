@@ -155,9 +155,9 @@ define (require) ->
     load: (data) ->
       Dumpable::load.call @, data
       @name = data.name || "handle #{@_id_numeric}"
+
       for name, property of data.properties
-        if @_properties[name]
-          @_properties[name].load property
+        @_properties[name].load property if @_properties[name]
 
       @
 

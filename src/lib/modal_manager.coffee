@@ -36,6 +36,32 @@ define (require) ->
       #
 
     ###
+    # Shows the Texture Repeat settings modal
+    # @return [SettingsWidget] settings
+    ###
+    showActorTextureRepeatSettings: (actor) ->
+
+      texRep = actor.getProperty("textureRepeat")
+
+      new SettingsWidget @ui,
+        title: "Texture Repeat"
+        settings: [
+          label: "X-Repeat"
+          type: Number
+          value: texRep.x.getValue()
+          id: "x_rep"
+          min: 0
+        ,
+          label: "Y-Repeat"
+          type: Number
+          value: texRep.y.getValue()
+          id: "y_rep"
+          min: 0
+        ]
+        cb: (data) =>
+          texRep.setValue x: data.x_rep, y: data.y_rep
+
+    ###
     # @param [Handle] handle
     # @param [Object] options
     #   @optional
@@ -342,7 +368,7 @@ define (require) ->
           name: texture.getName()
         }
 
-      new FloatingTextureSelect @ui, textures, actor
+      new FloatingTextureSelect @ui, textures: textures, actor: actor
 
     ###
     # @return [Void]
@@ -353,6 +379,7 @@ define (require) ->
 
       filepicker.pickAndStore
         mimetype: "image/*"
+        multiple: true
       ,
         location: "S3"
         path: Project.getS3Prefix()
@@ -373,7 +400,7 @@ define (require) ->
         cb blob if cb = options.cb
 
     ###
-    # @return [Modal]
+    # @return [SettingsWidget] settings
     ###
     showPrefSettings: ->
 

@@ -116,6 +116,9 @@ define (require) ->
         setTexture:
           name: config.locale.label.texture_modal
           cb: => @_contextFuncSetTexture @
+        setTextureRepeat:
+          name: config.locale.label.texture_repeat_modal
+          cb: => @_contextFuncSetTextureRepeat @
         editPhysics:
           name: config.locale.label.physics_modal
           cb: => @_contextFuncEditPhysics @
@@ -129,12 +132,13 @@ define (require) ->
       @initPropertyLayer()
       @initPropertyColor()
       @initPropertyPhysics()
+      @initPropertyTextureRepeat()
 
       @_properties.position.setValue position
       @_properties.rotation.setValue rotation
 
     ###
-    # Initialize Actor Opacity properties
+    # Initialize Actor opacity properties
     ###
     initPropertyOpacity: ->
       me = @
@@ -152,7 +156,7 @@ define (require) ->
         @setValue me._AJSActor.getOpacity() if me._AJSActor
 
     ###
-    # Initialize Actor Rotation properties
+    # Initialize Actor rotation properties
     ###
     initPropertyRotation: ->
       me = @
@@ -168,7 +172,7 @@ define (require) ->
         @setValue me._AJSActor.getRotation() if me._AJSActor
 
     ###
-    # Initialize Actor Position properties
+    # Initialize Actor position properties
     ###
     initPropertyPosition: ->
       me = @
@@ -196,7 +200,7 @@ define (require) ->
       @_properties.position.addProperty "y", @_properties.position.y
 
     ###
-    # Initialize Actor Layer properties
+    # Initialize Actor layer properties
     ###
     initPropertyLayer: ->
       me = @
@@ -226,7 +230,7 @@ define (require) ->
       @_properties.layer.addProperty "physics", @_properties.layer.physics
 
     ###
-    # Initialize Actor Color properties
+    # Initialize Actor color properties
     ###
     initPropertyColor: ->
       me = @
@@ -287,7 +291,7 @@ define (require) ->
       @_properties.color.addProperty "b", @_properties.color.b
 
     ###
-    # Initialize Actor Physics properties
+    # Initialize Actor physics properties
     ###
     initPropertyPhysics: ->
       me = @
@@ -344,6 +348,40 @@ define (require) ->
       @_properties.physics.addProperty "elasticity", @_properties.physics.elasticity
       @_properties.physics.addProperty "friction", @_properties.physics.friction
       @_properties.physics.addProperty "enabled", @_properties.physics.enabled
+
+    ###
+    # Initialize Actor texture_repeat properties
+    ###
+    initPropertyTextureRepeat: ->
+      me = @
+
+      @_properties.textureRepeat = new CompositeProperty()
+      @_properties.textureRepeat.x = new NumericProperty()
+      @_properties.textureRepeat.x.setValue 1.0
+      @_properties.textureRepeat.x.setPlaceholder 1.0
+      @_properties.textureRepeat.x.setFloat true
+      @_properties.textureRepeat.x.setPrecision config.precision.texture_repeat
+      @_properties.textureRepeat.y = new NumericProperty()
+      @_properties.textureRepeat.y.clone @_properties.textureRepeat.x
+
+      @_properties.textureRepeat.x.onUpdate = (xRepeat) =>
+        if @_AJSActor
+          texRep = @_AJSActor.getTextureRepeat()
+          @_AJSActor.setTextureRepeat xRepeat, texRep.y
+
+      @_properties.textureRepeat.y.onUpdate = (yRepeat) =>
+        if @_AJSActor
+          texRep = @_AJSActor.getTextureRepeat()
+          @_AJSActor.setTextureRepeat texRep.x, yRepeat
+
+      @_properties.textureRepeat.x.requestUpdate = ->
+        @setValue me._AJSActor.getTextureRepeat().x if me._AJSActor
+
+      @_properties.textureRepeat.y.requestUpdate = ->
+        @setValue me._AJSActor.getTextureRepeat().y if me._AJSActor
+
+      @_properties.textureRepeat.addProperty "x", @_properties.textureRepeat.x
+      @_properties.textureRepeat.addProperty "y", @_properties.textureRepeat.y
 
     ###
     # Get actor property by name
@@ -758,7 +796,6 @@ define (require) ->
     ###
     _applyKnownState: (state) ->
       state = Number param.required state
-
       return if state == @_lastTemporalState
 
       # Apply saved state. Find all stored states between our previous state
@@ -930,7 +967,8 @@ define (require) ->
       else
         nearestState = @findNearestState cursor
 
-      @_applyKnownState nearestState
+      @_applyKnownState nearestState if nearestState != @_lastAppliedState
+      @_lastAppliedState = nearestState
 
       # Return if we have nothing else to do (cursor is at a known state)
       return if nearestState == cursor
@@ -973,14 +1011,15 @@ define (require) ->
 
         # Sanity checks
         # TODO: Refactor these into log messages + returns
-        if _prop == undefined
-          throw new Error "We don't have the property #{v.name}!"
+        unless _prop
+          AUtilLog.error "Expected actor to have prop #{v.name}!"
+          continue
 
-        if anim == undefined
-          throw new Error "Animation does not exist for #{v.end}!"
+        unless anim
+          AUtilLog.error "Expected animation @ to exist #{v.end}!"
+          continue
 
-        if anim[v.name] == undefined
-          throw new Error "Animation doesn't effect #{v.name}!"
+        continue unless anim[v.name]
 
         # The property to be animated is composite. Apply the state change
         # to each component individually.
@@ -1153,7 +1192,7 @@ define (require) ->
           # Check if there is another animation after us; if so, update its
           # starting point.
           ###
-          if (nextAnim = @findNearestState @_lastTemporalState, true, p) != -1
+          if (nextAnim = @findNearestState(@_lastTemporalState, true, p)) != -1
 
             startTime = @_lastTemporalState
             startP = @_propBuffer[@_lastTemporalState][p]
@@ -1452,12 +1491,13 @@ define (require) ->
     delete: ->
       if @_AJSActor != null
 
-        # Notify the workspace
-        @ui.workspace.notifyDemise @
-
         # Go through and remove ourselves from
+        @_AJSActor.disablePsyx()
         @_AJSActor.destroy()
         @_AJSActor = null
+
+      # Notify the workspace
+      @ui.workspace.notifyDemise @
 
       super()
 
@@ -1476,6 +1516,14 @@ define (require) ->
     ###
     _contextFuncSetTexture: (actor) ->
       @ui.modals.showSetTexture actor
+      @
+
+    ###
+    # Open a settings widget for texture repeat editing
+    # @param [BaseActor] actor
+    ###
+    _contextFuncSetTextureRepeat: (actor) ->
+      @ui.modals.showActorTextureRepeatSettings actor
       @
 
     ###
@@ -1568,7 +1616,7 @@ define (require) ->
       data = super()
 
       data.actorBaseVersion = "1.0.0"
-      data.propBuffer = @_propBuffer
+      data.propBuffer = _.clone @_propBuffer, true
       data.birth = @lifetimeStart_ms
       data.death = @lifetimeEnd_ms
       data.texture = @getTextureUID()
