@@ -12,7 +12,7 @@ define (require) ->
   Actors.RectangleActor = class RectangleActor extends BaseActor
 
     ###
-    # Instantiates an AJSRectangle and keeps track of it
+    # Instantiates an ARERectangle and keeps track of it
     #
     # @param [UIManager] ui
     # @param [Object] options
@@ -63,10 +63,10 @@ define (require) ->
       @_properties.width.setValue 1
       @_properties.width.setPrecision config.precision.width
       @_properties.width.requestUpdate = ->
-        @setValue me._AJSActor.getWidth() if me._AJSActor
+        @setValue me._areActor.getWidth() if me._areActor
 
       @_properties.width.onUpdate = (width) =>
-        @_AJSActor.setWidth width if @_AJSActor
+        @_areActor.setWidth width if @_areActor
 
       @_properties.width.genAnimationOpts = (animation, options) ->
         options.startVal = animation._start.y
@@ -83,10 +83,10 @@ define (require) ->
       @_properties.height.setValue 1
       @_properties.height.setPrecision config.precision.height
       @_properties.height.requestUpdate = ->
-        @setValue me._AJSActor.getHeight() if me._AJSActor
+        @setValue me._areActor.getHeight() if me._areActor
 
       @_properties.height.onUpdate = (height) =>
-        @_AJSActor.setHeight height if @_AJSActor
+        @_areActor.setHeight height if @_areActor
 
       @_properties.height.genAnimationOpts = (animation, options) ->
         options.startVal = animation._start.y
@@ -107,7 +107,7 @@ define (require) ->
     getWidth: -> @_properties.width.getValue()
 
     ###
-    # Instantiate our AJS actor
+    # Instantiate our ARE actor
     # @private
     ###
     _birth: ->
@@ -126,16 +126,21 @@ define (require) ->
       g = @_properties.color.getProperty("g").getValue()
       b = @_properties.color.getProperty("b").getValue()
 
-      @_AJSActor = new AJSRectangle
-        physics: physicsEnabled
-        mass: mass
-        friction: friction
-        elasticity: elasticity
-        w: @_properties.width.getValue()
-        h: @_properties.height.getValue()
-        position: new AJSVector2 x, y
-        color: new AJSColor3 r, g, b
-        rotation: @_properties.rotation.getValue()
+      w = @_properties.width.getValue()
+      h = @_properties.height.getValue()
+
+      rotation = @_properties.rotation.getValue()
+
+      position = new AREVector2 x, y
+      color = new AREColor3 r, g, b
+
+      @_areActor = new ARERectangleActor w, h
+      if physicsEnabled
+        @_areActor.createPhysicsBody mass, friction, elasticity
+
+      @_areActor.setPosition position
+      @_areActor.setColor color
+      @_areActor.setRotation rotation
 
       super()
 

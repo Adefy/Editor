@@ -53,7 +53,8 @@ define (require) ->
 
       @handleType = "BaseActor"
 
-      @_AJSActor = null
+      @_areActor = null
+
       @setName "Base Actor #{@_id_numeric}"
       @_alive = false
       @_initialized = false # True after postInit() is called
@@ -151,9 +152,9 @@ define (require) ->
       @_properties.opacity.setFloat true
       @_properties.opacity.setPrecision config.precision.opacity
       @_properties.opacity.onUpdate = (opacity) =>
-        @_AJSActor.setOpacity opacity if @_AJSActor
+        @_areActor.setOpacity opacity if @_areActor
       @_properties.opacity.requestUpdate = ->
-        @setValue me._AJSActor.getOpacity() if me._AJSActor
+        @setValue me._areActor.getOpacity() if me._areActor
 
     ###
     # Initialize Actor rotation properties
@@ -167,9 +168,9 @@ define (require) ->
       @_properties.rotation.setMax 360
       @_properties.rotation.setPrecision config.precision.rotation
       @_properties.rotation.onUpdate = (rotation) =>
-        @_AJSActor.setRotation rotation if @_AJSActor
+        @_areActor.setRotation rotation if @_areActor
       @_properties.rotation.requestUpdate = ->
-        @setValue me._AJSActor.getRotation() if me._AJSActor
+        @setValue me._areActor.getRotation() if me._areActor
 
     ###
     # Initialize Actor position properties
@@ -184,17 +185,17 @@ define (require) ->
 
       @_properties.position.x.setPrecision config.precision.position
       @_properties.position.x.onUpdate = (value) =>
-        return unless @_AJSActor
-        position = @_AJSActor.getPosition()
+        return unless @_areActor
+        position = @_areActor.getPosition()
         position.x = value
-        @_AJSActor.setPosition position
+        @_areActor.setPosition position
 
       @_properties.position.y.setPrecision config.precision.position
       @_properties.position.y.onUpdate = (value) =>
-        return unless @_AJSActor
-        position = @_AJSActor.getPosition()
+        return unless @_areActor
+        position = @_areActor.getPosition()
         position.y = value
-        @_AJSActor.setPosition position
+        @_areActor.setPosition position
 
       @_properties.position.addProperty "x", @_properties.position.x
       @_properties.position.addProperty "y", @_properties.position.y
@@ -213,7 +214,7 @@ define (require) ->
       @_properties.layer.main.setPrecision config.precision.layer
 
       @_properties.layer.main.onUpdate = (layer) =>
-        @_AJSActor.setLayer layer if @_AJSActor
+        @_areActor.setLayer layer if @_areActor
 
       @_properties.layer.physics = new NumericProperty()
       @_properties.layer.physics.setValue 0
@@ -225,7 +226,7 @@ define (require) ->
         val >= 0 && val <= 16 && Math.round(val) == val
 
       @_properties.layer.physics.onUpdate = (layer) =>
-        @_AJSActor.setPhysicsLayer layer if @_AJSActor
+        @_areActor.setPhysicsLayer layer if @_areActor
 
       @_properties.layer.addProperty "main", @_properties.layer.main
       @_properties.layer.addProperty "physics", @_properties.layer.physics
@@ -261,31 +262,31 @@ define (require) ->
       @_properties.color.b.clone @_properties.color.r
 
       @_properties.color.r.onUpdate = (value) =>
-        return unless @_AJSActor
-        color = @_AJSActor.getColor()
+        return unless @_areActor
+        color = @_areActor.getColor()
         color.setR value
-        @_AJSActor.setColor color
+        @_areActor.setColor color
 
       @_properties.color.g.onUpdate = (value) =>
-        return unless @_AJSActor
-        color = @_AJSActor.getColor()
+        return unless @_areActor
+        color = @_areActor.getColor()
         color.setG value
-        @_AJSActor.setColor color
+        @_areActor.setColor color
 
       @_properties.color.b.onUpdate = (value) =>
-        return unless @_AJSActor
-        color = @_AJSActor.getColor()
+        return unless @_areActor
+        color = @_areActor.getColor()
         color.setB value
-        @_AJSActor.setColor color
+        @_areActor.setColor color
 
       @_properties.color.r.requestUpdate = ->
-        @setValue me._AJSActor.getColor().getR() if me._AJSActor
+        @setValue me._areActor.getColor().getR() if me._areActor
 
       @_properties.color.g.requestUpdate = ->
-        @setValue me._AJSActor.getColor().getG() if me._AJSActor
+        @setValue me._areActor.getColor().getG() if me._areActor
 
       @_properties.color.b.requestUpdate = ->
-        @setValue me._AJSActor.getColor().getB() if me._AJSActor
+        @setValue me._areActor.getColor().getB() if me._areActor
 
       @_properties.color.addProperty "r", @_properties.color.r
       @_properties.color.addProperty "g", @_properties.color.g
@@ -309,7 +310,7 @@ define (require) ->
       @_properties.physics.mass.setPrecision config.precision.physics_mass
 
       @_properties.physics.mass.onUpdate = (mass) =>
-        @_AJSActor.setMass mass if @_AJSActor
+        @_areActor.setMass mass if @_areActor
 
       @_properties.physics.elasticity = new NumericProperty()
       @_properties.physics.elasticity.setVisibleInToolbar false
@@ -320,7 +321,7 @@ define (require) ->
       @_properties.physics.elasticity.setValue 0.3
 
       @_properties.physics.elasticity.onUpdate = (elasticity) =>
-        @_AJSActor.setElasticity elasticity if @_AJSActor
+        @_areActor.setElasticity elasticity if @_areActor
 
       @_properties.physics.friction = new NumericProperty()
       @_properties.physics.friction.setVisibleInToolbar false
@@ -331,19 +332,19 @@ define (require) ->
       @_properties.physics.friction.setValue 0.2
 
       @_properties.physics.friction.onUpdate = (friction) =>
-        @_AJSActor.setFriction friction if @_AJSActor
+        @_areActor.setFriction friction if @_areActor
 
 
       @_properties.physics.enabled = new BooleanProperty()
       @_properties.physics.enabled.setValue false
 
       @_properties.physics.enabled.onUpdate = (enabled) =>
-        return unless @_AJSActor
+        return unless @_areActor
 
         if enabled
-          @_AJSActor.enablePsyx()
+          @_areActor.enablePhysics()
         else
-          @_AJSActor.disablePsyx()
+          @_areActor.disablePhysics()
 
       @_properties.physics.addProperty "mass", @_properties.physics.mass
       @_properties.physics.addProperty "elasticity", @_properties.physics.elasticity
@@ -366,20 +367,20 @@ define (require) ->
       @_properties.textureRepeat.y.clone @_properties.textureRepeat.x
 
       @_properties.textureRepeat.x.onUpdate = (xRepeat) =>
-        if @_AJSActor
-          texRep = @_AJSActor.getTextureRepeat()
-          @_AJSActor.setTextureRepeat xRepeat, texRep.y
+        if @_areActor
+          texRep = @_areActor.getTextureRepeat()
+          @_areActor.setTextureRepeat xRepeat, texRep.y
 
       @_properties.textureRepeat.y.onUpdate = (yRepeat) =>
-        if @_AJSActor
-          texRep = @_AJSActor.getTextureRepeat()
-          @_AJSActor.setTextureRepeat texRep.x, yRepeat
+        if @_areActor
+          texRep = @_areActor.getTextureRepeat()
+          @_areActor.setTextureRepeat texRep.x, yRepeat
 
       @_properties.textureRepeat.x.requestUpdate = ->
-        @setValue me._AJSActor.getTextureRepeat().x if me._AJSActor
+        @setValue me._areActor.getTextureRepeat().x if me._areActor
 
       @_properties.textureRepeat.y.requestUpdate = ->
-        @setValue me._AJSActor.getTextureRepeat().y if me._AJSActor
+        @setValue me._areActor.getTextureRepeat().y if me._areActor
 
       @_properties.textureRepeat.addProperty "x", @_properties.textureRepeat.x
       @_properties.textureRepeat.addProperty "y", @_properties.textureRepeat.y
@@ -413,24 +414,24 @@ define (require) ->
     # @return [Number] id
     ###
     getActorId: ->
-      if @_AJSActor
-        @_AJSActor.getId()
+      if @_areActor
+        @_areActor.getId()
       else
         null
 
     ###
     # Get our internal actor
     #
-    # @param [AJSBaseActor] actor
+    # @param [ARERawActor*] actor
     ###
-    getActor: -> @_AJSActor
+    getActor: -> @_areActor
 
     ###
     # @param [Booleab] _visible
     ###
     getVisible: ->
-      if @_AJSActor
-        @_AJSActor.getVisible()
+      if @_areActor
+        @_areActor.getVisible()
       else
         false
 
@@ -447,8 +448,8 @@ define (require) ->
     # @return [Object] position
     ###
     getPosition: ->
-      if @_AJSActor
-        @_AJSActor.getPosition()
+      if @_areActor
+        @_areActor.getPosition()
       else
         null
 
@@ -458,7 +459,7 @@ define (require) ->
     # @return [Number] angle in degrees
     ###
     getRotation: ->
-      if @_AJSActor
+      if @_areActor
         @_properties.rotation.getValue()
       else
         null
@@ -473,7 +474,7 @@ define (require) ->
       float = param.optional float, false
 
       colorRaw = @_properties.color.getValue()
-      color = new AJSColor3 colorRaw.r, colorRaw.g, colorRaw.b
+      color = new AREColor3 colorRaw.r, colorRaw.g, colorRaw.b
 
       {
         r: color.getR(float)
@@ -516,7 +517,7 @@ define (require) ->
     # @param [Boolean] visible
     ###
     setVisible: (visible) ->
-      @_AJSActor.setVisible visible if @_AJSActor
+      @_areActor.setVisible visible if @_areActor
       @updateInTime()
 
     ###
@@ -563,7 +564,7 @@ define (require) ->
     ###
     setTexture: (@_texture) ->
       @_textureUID = @_texture.getUID()
-      @_AJSActor.setTexture @_texture.getUID() if @_texture and @_AJSActor
+      @_areActor.setTexture @_texture.getUID() if @_texture and @_areActor
       @updateInTime()
 
     ###
@@ -619,17 +620,17 @@ define (require) ->
 
     ###
     # Called when the cursor leaves our lifetime on the timeline. We delete
-    # our AJS actor if not already dead
+    # our ARE actor if not already dead
     ###
     timelineDeath: ->
       return unless @_alive
       @_alive = false
 
-      @_AJSActor.destroy()
-      @_AJSActor = null
+      @_areActor.destroy()
+      @_areActor = null
 
     ###
-    # Virtual method that our children need to implement, called when our AJS
+    # Virtual method that our children need to implement, called when our ARE
     # actor needs to be instantiated
     #
     # @private
@@ -1506,12 +1507,12 @@ define (require) ->
     # panel if it is targetting us, and destroy our actor.
     ###
     delete: ->
-      if @_AJSActor != null
+      if @_areActor != null
 
         # Go through and remove ourselves from
-        @_AJSActor.disablePsyx()
-        @_AJSActor.destroy()
-        @_AJSActor = null
+        @_areActor.disablePhysics()
+        @_areActor.destroy()
+        @_areActor = null
 
       # Notify the workspace
       @ui.workspace.notifyDemise @

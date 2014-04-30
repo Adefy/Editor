@@ -62,7 +62,7 @@ define (require) ->
       @_properties.sides.setValue 3
       @_properties.sides.setPrecision config.precision.sides
       @_properties.sides.onUpdate = (sides) =>
-        @_AJSActor.setSegments sides if @_AJSActor
+        @_areActor.setSegments sides if @_areActor
 
       @_properties.sides.genAnimationOpts = (animation, options) ->
         options.startVal = animation._start.y
@@ -78,7 +78,7 @@ define (require) ->
       @_properties.radius.setValue 10
       @_properties.radius.setPrecision config.precision.radius
       @_properties.radius.onUpdate = (radius) =>
-        @_AJSActor.setRadius radius if @_AJSActor
+        @_areActor.setRadius radius if @_areActor
 
       @_properties.sides.genAnimationOpts = (animation, options) ->
         options.startVal = animation._start.y
@@ -100,7 +100,7 @@ define (require) ->
     getRadius: -> @_properties.radius.getValue()
 
     ###
-    # Instantiate our AJS actor
+    # Instantiate our ARE actor
     # @private
     ###
     _birth: ->
@@ -119,16 +119,19 @@ define (require) ->
       g = @_properties.color.getProperty("g").getValue()
       b = @_properties.color.getProperty("b").getValue()
 
-      @_AJSActor = new AJSPolygon
-        physics: physicsEnabled
-        mass: mass
-        friction: friction
-        elasticity: elasticity
-        radius: @_properties.radius.getValue()
-        segments: @_properties.sides.getValue()
-        position: new AJSVector2 x, y
-        color: new AJSColor3 r, g, b
-        rotation: @_properties.rotation.getValue()
+      radius = @_properties.radius.getValue()
+      segments = @_properties.sides.getValue()
+      rotation = @_properties.rotation.getValue()
+      position = new AREVector2 x, y
+      color = new AREColor3 r, g, b
+
+      @_areActor = new AREPolygonActor radius, segments
+      if physicsEnabled
+        @_areActor.createPhysicsBody mass, friction, elasticity
+
+      @_areActor.setPosition position
+      @_areActor.setColor color
+      @_areActor.setRotation rotation
 
       super()
 

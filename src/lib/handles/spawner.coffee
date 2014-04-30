@@ -359,9 +359,9 @@ define (require) ->
       @_properties.physics.enabled.onUpdate = (enabled) =>
         _.union(@_spawns, @_previewSpawns).map (handle) ->
           if enabled
-            handle.enablePsyx() if handle.enablePsyx
+            handle.enablePhysics() if handle.enablePhysics
           else
-            handle.disablePsyx() if handle.disablePsyx
+            handle.disablePhysics() if handle.disablePhysics
 
     ###
     # Remove an actor from the actors list

@@ -12,7 +12,7 @@ define (require) ->
   Actors.TriangleActor = class TriangleActor extends BaseActor
 
     ###
-    # Creates an AJSTriangle and keeps track of it
+    # Creates an ARETriangle and keeps track of it
     #
     # @param [UIManager] ui
     # @param [Object] options
@@ -63,10 +63,10 @@ define (require) ->
       @_properties.base.setValue 1
       @_properties.base.setPrecision config.precision.base
       @_properties.base.requestUpdate = ->
-        @setValue me._AJSActor.getBase() if me._AJSActor
+        @setValue me._areActor.getBase() if me._areActor
 
       @_properties.base.onUpdate = (base) =>
-        @_AJSActor.setBase base if @_AJSActor
+        @_areActor.setBase base if @_areActor
 
       @_properties.base.genAnimationOpts = (animation, options) ->
         options.startVal = animation._start.y
@@ -83,10 +83,10 @@ define (require) ->
       @_properties.height.setValue 1
       @_properties.height.setPrecision config.precision.height
       @_properties.height.requestUpdate = ->
-        @setValue me._AJSActor.getHeight() if me._AJSActor
+        @setValue me._areActor.getHeight() if me._areActor
 
       @_properties.height.onUpdate = (height) =>
-        @_AJSActor.setHeight height if @_AJSActor
+        @_areActor.setHeight height if @_areActor
 
       @_properties.height.genAnimationOpts = (animation, options) ->
         options.startVal = animation._start.y
@@ -107,7 +107,7 @@ define (require) ->
     getHeight: -> @_properties.height.getValue()
 
     ###
-    # Instantiate our AJS actor
+    # Instantiate our ARE actor
     # @private
     ###
     _birth: ->
@@ -125,15 +125,17 @@ define (require) ->
       g = @_properties.color.getProperty("g").getValue()
       b = @_properties.color.getProperty("b").getValue()
 
-      @_AJSActor = new AJSTriangle
+      ## Right, ARE doesn't have a triangle actor...
+      #@_areActor = new ARETriangleActor
+      @_areActor = new AREPolygonActor
         physics: physicsEnabled
         mass: mass
         friction: friction
         elasticity: elasticity
         base: @_properties.base.getValue()
         height: @_properties.height.getValue()
-        position: new AJSVector2 x, y
-        color: new AJSColor3 r, g, b
+        position: new AREVector2 x, y
+        color: new AREColor3 r, g, b
         rotation: @_properties.rotation.getValue()
 
       super()

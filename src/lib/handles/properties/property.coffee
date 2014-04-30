@@ -83,7 +83,7 @@ define (require) ->
 
     ###
     # Attempt to update our value from an external source. This should be
-    # overriden to fetch data from our handle, or AJSActor. Called at the start
+    # overriden to fetch data from our handle, or AREActor. Called at the start
     # of getValue()
     ###
     requestUpdate: ->

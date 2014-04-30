@@ -84,7 +84,7 @@ define (require) ->
     postInit: ->
       super()
 
-      ## AJS overrides setting the renderer mode...
+      ##
       #mode = Storage.get("are.renderer.mode")
       #mode = ARERenderer.rendererMode if mode == null
       #ARERenderer.rendererMode = Number(mode)
@@ -95,9 +95,12 @@ define (require) ->
       @_canvasHeight = sectionElement.height()
 
       # Create an ARE instance on ourselves
-      AUtilLog.info "Initializing AJS..."
-      AJS.init =>
+      AUtilLog.info "Initializing ARE..."
 
+      w = @_canvasWidth
+      h = @_canvasHeight
+
+      cb = =>
         @_are = AdefyRE.Engine()._engine
 
         # AdefyRE.Engine().setLogLevel 4
@@ -105,8 +108,7 @@ define (require) ->
         @_engineInit()
         @_applyCanvasSizeUpdate()
 
-      , @_canvasWidth, @_canvasHeight, config.id.are_canvas
-
+      AdefyRE.Engine().initialize w, h, cb, 0, config.id.are_canvas
 
       @
 
@@ -432,8 +434,8 @@ define (require) ->
 
       toggleActorPhysics = (d, handle) ->
 
-        if handle.getActor().hasPsyx()
-          handle.getActor().disablePsyx()
+        if handle.getActor().hasPhysics()
+          handle.getActor().disablePhysics()
           d.setUserDataValue "hasPhysics", true
         else
           d.setUserDataValue "hasPhysics", false
@@ -467,7 +469,7 @@ define (require) ->
 
         if d.getUserData()
           handle = d.getTarget()
-          handle.getActor().enablePsyx() if d.getUserData().hasPhysics
+          handle.getActor().enablePhysics() if d.getUserData().hasPhysics
 
       @draggerRotate.setOnDrag (d, deltaX, deltaY) =>
 
@@ -510,7 +512,7 @@ define (require) ->
 
         if d.getUserData()
           handle = d.getTarget()
-          handle.getActor().enablePsyx() if d.getUserData().hasPhysics
+          handle.getActor().enablePhysics() if d.getUserData().hasPhysics
 
       @dragger.setOnDrag (d, deltaX, deltaY) =>
 
@@ -838,7 +840,7 @@ define (require) ->
     # Create a new spawner with a base object definition cloned from an actor,
     # then kill the actor.
     #
-    # NOTE: This deletes the AJS actor, and signals it's death to the rest of
+    # NOTE: This deletes the ARE actor, and signals it's death to the rest of
     #       the editor! Do NOT use an actor object after this method has been
     #       called on it.
     ###
