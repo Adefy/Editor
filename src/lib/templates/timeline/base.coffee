@@ -33,7 +33,9 @@ define ->
     <div class="content">
       <div class="list">
         {{! <div class="timebar"></div> }}
-        {{{ contents }}}
+        <div class="timeline-actor-list">
+          {{{ contents }}}
+        </div>
       </div>
       <div class="time">
         <div id="timeline-cursor" class="cursor"></div>

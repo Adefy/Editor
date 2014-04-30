@@ -183,8 +183,11 @@ define (require) ->
     # @return [Number] time cursor time in ms
     ###
     getCursorTime: ->
-      @_duration * ($("#timeline-cursor").position().left /
-                    $(@_spaceSelector()).width())
+      if $("#timeline-cursor").length > 0
+        @_duration * ($("#timeline-cursor").position().left /
+                      $(@_spaceSelector()).width())
+      else
+        0
 
     ###
     # Get the amount of time each pixel in the timeline represents
@@ -633,7 +636,10 @@ define (require) ->
       #  throw new Error "Actor must be an instance of BaseActor!"
 
       @_actors.push actor
-      @refresh()
+
+      @getElement(".timeline-actor-list").html @_renderActorList()
+      @getElement(".time-actors").html @_renderActorTimebar()
+
       @_updateScrollbar()
 
       true
@@ -997,17 +1003,15 @@ define (require) ->
       .join ""
 
     ###
-    # Proper render function, fills in timeline internals. Since we have two
-    # distinct sections, each is rendered by a seperate function. This helps
-    # divide the necessary logic, into @_renderActorList() and @_renderActorTimebar().
-    # This function simply calls both.
-    # @return [String]
+    # Proper render function, fills in timeline internals.
+    #
+    # @return [String] html
     ###
     render: ->
       options =
         id: "timeline-header"
         timelineId: @getID()
-        currentTime: "0:00.00"
+        currentTime: @_generateTimeString()
         contents: @_renderActorList()
         timeContents: @_renderActorTimebar()
 
@@ -1045,13 +1049,19 @@ define (require) ->
     # @private
     ###
     _updateCursorTime: ->
+      $("#timeline-cursor-time").text @_generateTimeString()
+
+    ###
+    # Creates a string suitable for rendering
+    #
+    # @return [String] time_s
+    ###
+    _generateTimeString: ->
       ms = @getCursorTime()
 
       seconds = ms / 1000.0
       minutes = seconds / 60.0
-      timeText = "#{(minutes % 60).toFixed()}:#{(seconds % 60).toFixed(2)}"
-
-      $("#timeline-cursor-time").text timeText
+      "#{(minutes % 60).toFixed()}:#{(seconds % 60).toFixed(2)}"
 
     ###
     # Update the state of the controls bar
