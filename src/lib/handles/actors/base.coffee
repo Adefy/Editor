@@ -194,10 +194,8 @@ define (require) ->
       @_properties.layer.icon = config.icon.property_layer
       @_properties.layer.main = new NumericProperty()
       @_properties.layer.main.setValue 0
+      @_properties.layer.main.setMin 0
       @_properties.layer.main.setPrecision config.precision.layer
-
-      @_properties.layer.physics = new NumericProperty()
-      @_properties.layer.physics.clone @_properties.layer.main
 
       @_properties.layer.main.onUpdate = (layer) =>
         @_AJSActor.setLayer layer if @_AJSActor
@@ -205,7 +203,16 @@ define (require) ->
       @_properties.layer.main.requestUpdate = ->
         @setValue me._AJSActor.getLayer() if me._AJSActor
 
-      @_properties.layer.physics.onUpdate (layer) =>
+      @_properties.layer.physics = new NumericProperty()
+      @_properties.layer.physics.setValue 0
+      @_properties.layer.physics.setMin 0
+      @_properties.layer.physics.setMax 16
+      @_properties.layer.physics.setPrecision config.precision.physicsLayer
+
+      @_properties.layer.physics.validateValue = (val) ->
+        val >= 0 && val <= 16 && Math.round(val) == val
+
+      @_properties.layer.physics.onUpdate = (layer) =>
         @_AJSActor.setPhysicsLayer layer if @_AJSActor
 
       @_properties.layer.physics.requestUpdate = ->
