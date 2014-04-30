@@ -6,7 +6,7 @@ define (require) ->
   AUtilLog = require "util/log"
   ID = require "util/id"
   Widget = require "widgets/widget"
-  Storage = require "storage"
+  Storage = require "core/storage"
   config = require "config"
 
   # Generic sidebar, needs to be specialized to be useful
@@ -54,6 +54,16 @@ define (require) ->
         @show()
       else
         @hide()
+
+    ###
+    # @return [self]
+    ###
+    postInit: ->
+      super()
+      for item in @_items
+        item.postInit()
+
+      @
 
     ###
     # @private
@@ -230,11 +240,3 @@ define (require) ->
 
       @_visible = false
       @refreshVisible()
-
-    ###
-    # @param [String] type
-    # @param [Object] params
-    ###
-    respondToEvent: (type, params) ->
-      for item in @_items
-        item.respondToEvent(type, params) if item.respondToEvent

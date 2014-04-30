@@ -5,7 +5,7 @@ define (require) ->
 
   AUtilLog = require "util/log"
 
-  EditorObject = require "editor_object"
+  EditorObject = require "core/editor_object"
 
   Renderable = require "mixin/renderable"
   Dumpable = require "mixin/dumpable"
@@ -46,6 +46,7 @@ define (require) ->
     # @return [self]
     ###
     postInit: ->
+      @initEventListen()
       #
       @
 
@@ -175,12 +176,20 @@ define (require) ->
     ## Event handling
 
     ###
-    # Called by ui.pushEvent
+    # @return [self]
+    ###
+    initEventListen: ->
+      #
+      @
+
+    ###
+    # Called by ui.events.push
     # @param [String] type
     # @param [Object] params
     ###
-    respondToEvent: (type, params) ->
+    respondToEvent: (g, type, params) ->
       #
+      @
 
     ## Dumpable
 

@@ -7,19 +7,23 @@
 define (require) ->
 
   config = require "config"
-  param = require "util/param"
 
+  param = require "util/param"
   AUtilLog = require "util/log"
+
+  Project = require "core/project"
+
   Handle = require "handles/handle"
   Bezier = require "handles/bezier"
-  Project = require "project"
+
+  Actors = require "handles/actors"
 
   CompositeProperty = require "handles/properties/composite"
   NumericProperty = require "handles/properties/numeric"
   BooleanProperty = require "handles/properties/boolean"
 
   # Base manipulateable class for actors
-  window.BaseActor = class BaseActor extends Handle
+  Actors.BaseActor = class BaseActor extends Handle
 
     ###
     # @property [Number] accuracy the number of digits animations round-off to
@@ -31,13 +35,21 @@ define (require) ->
     # This serves as the base for the other actor classes
     #
     # @param [UIManager] ui
-    # @param [Number] lifetimeStart_ms time at which we are created, in ms
-    # @param [Number] lifetimeEnd_ms time we are destroyed, defaults to end of ad
+    # @param [Object] options
+    #   @option [Number] lifetimeStart_ms  time at which we are created, in ms
+    #   @option [Number] lifetimeEnd_ms  time we are destroyed, defaults to end of ad
+    #   @option [Vec2] position  x starting coordinates
+    #   @option [Number] rotation  angle in degrees
+    #     @optional
     ###
-    constructor: (@ui, lifetimeStart, lifetimeEnd) ->
+    constructor: (@ui, options) ->
       param.required @ui
+      param.required options
 
       super()
+
+      position = param.optional options.position, { x: 0, y: 0 }
+      rotation = param.optional options.rotation, 0
 
       @handleType = "BaseActor"
 
@@ -46,8 +58,8 @@ define (require) ->
       @_alive = false
       @_initialized = false # True after postInit() is called
 
-      @lifetimeStart_ms = param.required lifetimeStart
-      @lifetimeEnd_ms = param.optional lifetimeEnd, @ui.timeline.getDuration()
+      @lifetimeStart_ms = param.required options.lifetimeStart
+      @lifetimeEnd_ms = param.optional options.lifetimeEnd, @ui.timeline.getDuration()
 
       ###
       # Property buffer, holds values at different points in time. Current
@@ -121,6 +133,9 @@ define (require) ->
       @initPropertyColor()
       @initPropertyPhysics()
       @initPropertyTextureRepeat()
+
+      @_properties.position.setValue position
+      @_properties.rotation.setValue rotation
 
     ###
     # Initialize Actor opacity properties
@@ -730,14 +745,13 @@ define (require) ->
     # epic). Essentially, update our prop buffer, and then the actors' current
     # state
     ###
-    updateInTime: ->
+    updateInTime: (time) ->
       unless @_alive
         @_birth()
         @__fugly_postBirth()
-
       return unless @_temporalUpdatesEnabled
 
-      cursor = @ui.timeline.getCursorTime()
+      time = Math.floor(param.optional time, @ui.timeline.getCursorTime())
 
       if @_propSnapshot == null
         @seedBirth()
@@ -746,16 +760,18 @@ define (require) ->
         seededBirth = false
 
       @_updatePropBuffer()
-      @_updateActorState()
+      @_updateActorState time
       @_genSnapshot()
 
-      @seedBirth() if @isBirth(Math.floor cursor) and !seededBirth
+      @seedBirth() if @isBirth(time) and !seededBirth
 
       # Save state
-      @_lastTemporalState = Number Math.floor(cursor)
+      @_lastTemporalState = Number time
 
       unless @_silentUpdate
-        @ui.pushEvent "actor.update.intime", actor: @
+        @ui.events.push "actor", "update.intime", actor: @
+
+      @
 
     ###
     # Generates a new snapshot from our current properties
@@ -949,8 +965,8 @@ define (require) ->
     #
     # @private
     ###
-    _updateActorState: ->
-      cursor = Math.floor @ui.timeline.getCursorTime()
+    _updateActorState: (time) ->
+      cursor = param.required time
       return unless @inLifetime cursor
 
       # If it's our birth state, take a shortcut and just apply it directly
@@ -1509,7 +1525,7 @@ define (require) ->
     duplicate: ->
 
       dumpdata = @dump()
-      window[dumpdata.type].load @ui, dumpdata
+      Actors[dumpdata.type].load @ui, dumpdata
 
     ###
     # Set Texture context menu function
@@ -1532,7 +1548,7 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     _contextFuncCopy: (actor) ->
-      window.AdefyEditor.clipboard =
+      AdefyEditor.clipboard =
         type: "actor"
         reason: "copy"
         data: @
@@ -1551,6 +1567,14 @@ define (require) ->
       newActor.setPosition pos.x + 16, pos.y + 16
 
       @ui.workspace.addActor newActor
+      @
+
+    ###
+    # Open a settings widget for physics editing
+    # @param [BaseActor] actor
+    ###
+    _contextFuncEditPhysics: (actor) ->
+      @ui.modals.showEditActorPsyx actor
       @
 
     ###
@@ -1692,12 +1716,4 @@ define (require) ->
 
         @_animations[time] = animationSet
 
-      @
-
-    ###
-    # Open a settings widget for physics editing
-    # @param [BaseActor] actor
-    ###
-    _contextFuncEditPhysics: (actor) ->
-      @ui.modals.showEditActorPsyx actor
       @

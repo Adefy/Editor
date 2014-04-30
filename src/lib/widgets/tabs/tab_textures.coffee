@@ -1,9 +1,13 @@
 define (require) ->
 
+  config = require "config"
+
+  param = require "util/param"
   ID = require "util/id"
   AUtilLog = require "util/log"
   AUtilEventLog = require "util/event_log"
-  param = require "util/param"
+
+  Project = require "core/project"
 
   ContextMenu = require "widgets/context_menu"
 
@@ -11,7 +15,6 @@ define (require) ->
   TemplateTabThumb = require "templates/tabs/thumb"
   TemplateTabTexturesFooter = require "templates/tabs/textures_footer"
 
-  Project = require "project"
 
   class TexturesTab extends Tab
 
@@ -137,15 +140,24 @@ define (require) ->
       @onUpdate()
 
     ###
+    # @return [self]
+    ###
+    initEventListen: ->
+      super()
+      @ui.events.listen @, "texture"
+      @
+
+    ###
     # @param [String] type
     # @param [Object] params
     ###
-    respondToEvent: (type, params) ->
-      AUtilEventLog.egot "tab.textures", type
+    respondToEvent: (groupname, type, params) ->
+      AUtilEventLog.egot "tab.textures", groupname, type
 
+      return unless groupname == "texture"
       switch type
-        when "rename.texture", "update.texture"
+        when "rename", "update"
           @updateTexture params.texture
-        when "load.texture", "upload.texture", "remove.texture"
+        when "load", "upload", "remove"
           # params.texture
           @refresh()

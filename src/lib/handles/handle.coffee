@@ -3,11 +3,13 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
 
-  EditorObject = require "editor_object"
+  Actors = require "handles/actors"
+
+  EditorObject = require "core/editor_object"
   Dumpable = require "mixin/dumpable"
 
   # Base class for all elements that can be manipulated by the editor
-  window.Handle = class Handle extends EditorObject
+  Actors.Handle = class Handle extends EditorObject
 
     @include Dumpable
 
@@ -27,7 +29,7 @@ define (require) ->
       @_ctx =
         rename:
           name: "Rename ..."
-          cb: => window.AdefyEditor.ui.modals.showRename @
+          cb: => AdefyEditor.ui.modals.showRename @
         del:
           name: "Delete"
           cb: => @delete()

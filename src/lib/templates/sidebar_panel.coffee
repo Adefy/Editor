@@ -19,10 +19,10 @@ define ->
       <div class="tabs">
         {{#each tabs}}
 
-        {{#if selected}}
-        <div class="tab selected" data-index="{{ index }}">{{ name }}</div>
+        {{#if tabselected}}
+        <div class="tab selected" data-index="{{ tabindex }}">{{ tabname }}</div>
         {{else}}
-        <div class="tab" data-index="{{ index }}">{{ name }}</div>
+        <div class="tab" data-index="{{ tabindex }}">{{ tabname }}</div>
         {{/if}}
 
         {{/each}}

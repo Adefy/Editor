@@ -137,15 +137,24 @@ define (require) ->
       $("#{elementId}.asset > dd > label.name").text asset.getName()
 
     ###
+    # @return [self]
+    ###
+    initEventListen: ->
+      super()
+      @ui.events.listen @, "asset"
+      @
+
+    ###
     # @param [String] type
     # @param [Object] params
     ###
-    respondToEvent: (type, params) ->
-      AUtilEventLog.egot "tab.assets", type
+    respondToEvent: (groupname, type, params) ->
+      return unless groupname == "asset"
+      AUtilEventLog.egot "tab.assets", groupname, type
       switch type
-        when "update.asset", "renamed.asset"
+        when "update", "rename"
           @updateAsset params.asset
-        when "add.asset"
+        when "add"
           @refresh()
-        when "remove.asset"
+        when "remove"
           @refresh()

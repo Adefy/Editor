@@ -3,7 +3,7 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
 
-  EditorObject = require "editor_object"
+  EditorObject = require "core/editor_object"
   Dumpable = require "mixin/dumpable"
 
   class Asset extends EditorObject
@@ -190,7 +190,9 @@ define (require) ->
     contextFuncAddDirectory: (asset, name) ->
       child = new Asset asset, name: name, isDirectory: true
       asset.addAsset child
-      window.AdefyEditor.ui.pushEvent "add.asset", parent: asset, child: child
+      window.AdefyEditor.ui.events.push "asset", "add",
+        parent: asset
+        child: child
       @
 
     ###
@@ -202,7 +204,9 @@ define (require) ->
     contextFuncAddFile: (asset, name) ->
       child = new Asset(@, name: name)
       asset.addAsset child
-      window.AdefyEditor.ui.pushEvent "add.asset", parent: asset, child: child
+      window.AdefyEditor.ui.events.push "asset", "add",
+        parent: asset
+        child: child
       @
 
     ###
@@ -214,7 +218,7 @@ define (require) ->
       if parent = asset._parent
         parent.removeAsset asset
 
-        window.AdefyEditor.ui.pushEvent "remove.asset",
+        window.AdefyEditor.ui.events.push "asset", "remove",
           parent: parent,
           child: asset
 

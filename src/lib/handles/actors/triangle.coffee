@@ -3,38 +3,42 @@ define (require) ->
   config = require "config"
   param = require "util/param"
 
+  Actors = require "handles/actors"
   BaseActor = require "handles/actors/base"
 
   NumericProperty = require "handles/properties/numeric"
 
   # Trianglular actor
-  window.TriangleActor = class TriangleActor extends BaseActor
+  Actors.TriangleActor = class TriangleActor extends BaseActor
 
     ###
     # Creates an AJSTriangle and keeps track of it
     #
     # @param [UIManager] ui
-    # @param [Number] birth time in ms at which we are to be created
-    # @param [Number] b base width
-    # @param [Number] h triangle height
-    # @param [Number] x x starting coordinate
-    # @param [Number] y y starting coordinate
-    # @param [Number] rotation optional, angle in degrees
-    # @param [Number] death optional death time specification
-    # @param [Boolean] manualInit optional, postInit() not called if true
+    # @param [Object] options
+    #   @option [Number] lifetimeStart  time in ms at which we are to be created
+    #   @option [Number] lifetimeEnd  death time specification
+    #     @optional
+    #   @option [Number] base  triangle width
+    #   @option [Number] height  triangle height
+    #   @option [Vec2] position  starting coordinates
+    #   @option [Number] rotation  angle in degrees
+    #     @optional
+    #   @option [Boolean] manualInit  postInit() not called if true
+    #     @optional
     ###
-    constructor: (@ui, birth, b, h, x, y, rotation, death, manualInit) ->
+    constructor: (@ui, options) ->
       param.required @ui
-      param.required b
-      param.required h
-      param.required x
-      param.required y
+      param.required options
+
+      b = param.required options.base
+      h = param.required options.height
+
       manualInit = param.optional manualInit, false
-      rotation = param.optional rotation, 0
 
       if b <= 0 or h <= 0 then throw new Error "Base/Height must be >0!"
 
-      super @ui, birth, death
+      super @ui, options
 
       @handleType = "TriangleActor"
 
@@ -43,10 +47,8 @@ define (require) ->
       @initPropertyBase()
       @initPropertyHeight()
 
-      @_properties.position.setValue x: x, y: y
       @_properties.base.setValue b
       @_properties.height.setValue h
-      @_properties.rotation.setValue rotation
 
       @postInit() unless manualInit
 
@@ -155,6 +157,13 @@ define (require) ->
       y = position.y.value
       rotation = data.properties.rotation.value
 
-      actor = new TriangleActor ui, birth, b, h, x, y, rotation, death
+      actor = new TriangleActor ui,
+        lifetimeStart: birth
+        lifetimeEnd: death
+        base: b
+        height: h
+        position: x: x, y: y
+        rotation: rotation
+
       actor.load data
       actor

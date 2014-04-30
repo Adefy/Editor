@@ -17,8 +17,14 @@ define (require) ->
   ID = require "util/id"
   AUtilLog = require "util/log"
 
-  Storage = require "storage"
+  Storage = require "core/storage"
+
+  Actors = require "handles/actors"
   Spawner = require "handles/spawner"
+  PolygonActor = require "handles/actors/polygon"
+  RectangleActor = require "handles/actors/rectangle"
+  TriangleActor = require "handles/actors/triangle"
+
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
   TemplateWorkspaceCanvasContainer = require "templates/workspace/canvas_container"
@@ -76,6 +82,8 @@ define (require) ->
     # @return [Workspace] self
     ###
     postInit: ->
+      super()
+
       ## AJS overrides setting the renderer mode...
       #mode = Storage.get("are.renderer.mode")
       #mode = ARERenderer.rendererMode if mode == null
@@ -98,6 +106,7 @@ define (require) ->
         @_applyCanvasSizeUpdate()
 
       , @_canvasWidth, @_canvasHeight, config.id.are_canvas
+
 
       @
 
@@ -215,7 +224,7 @@ define (require) ->
       AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, =>
         AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
 
-        @ui.pushEvent "load.texture", texture: texture
+        @ui.events.push "texture", "load", texture: texture
 
         # Refresh any actors that already have the texture assigned
         for handle in @actorObjects
@@ -233,7 +242,7 @@ define (require) ->
       param.required handle
 
       @actorObjects.push handle
-      @ui.pushEvent "workspace.add.actor", actor: handle
+      @ui.events.push "workspace", "add.actor", actor: handle
       @
 
     ###
@@ -279,16 +288,36 @@ define (require) ->
         functions:
           trinActor:
             name: config.locale.label.actor_triangle
-            cb: => @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
+            cb: =>
+              @addActor new TriangleActor @ui,
+                lifetimeStart: time
+                base: 100
+                height: 100
+                position: pos
           rectActor:
             name: config.locale.label.actor_rectangle
-            cb: => @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
+            cb: =>
+              @addActor new RectangleActor @ui,
+                lifetimeStart: time
+                width: 100
+                height: 100
+                position: pos
           polyActor:
             name: config.locale.label.actor_polygon
-            cb: => @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
+            cb: =>
+              @addActor new PolygonActor @ui,
+                lifetimeStart: time
+                sides: 5
+                radius: 60
+                position: pos
           circActor:
             name: config.locale.label.actor_circle
-            cb: => @addActor new PolygonActor @ui, time, 32, 60, pos.x, pos.y
+            cb: =>
+              @addActor new PolygonActor @ui,
+                lifetimeStart: time
+                sides: 32
+                radius: 60
+                position: pos
       }
 
     ###
@@ -450,7 +479,7 @@ define (require) ->
 
           d.getTarget().setRotation n
 
-          @ui.pushEvent "selected.actor.update", actor: d.getTarget()
+          @ui.events.push "workspace", "selected.actor.update", actor: d.getTarget()
 
       ###
       # Move actor
@@ -491,7 +520,7 @@ define (require) ->
           newY = d.getUserData().original.y + deltaY
 
           d.getTarget().setPosition newX, newY
-          @ui.pushEvent "selected.actor.update", actor: d.getTarget()
+          @ui.events.push "workspace", "selected.actor.update", actor: d.getTarget()
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
@@ -509,7 +538,7 @@ define (require) ->
           actor = @getActorFromPick r, g, b
           if actor
             @setSelectedActor actor
-            @ui.pushEvent "workspace.selected.actor", actor: actor
+            @ui.events.push "workspace", "selected.actor", actor: actor
 
     ###
     # Register listeners
@@ -623,7 +652,7 @@ define (require) ->
     reset: ->
 
       for o in @actorObjects
-        @ui.pushEvent "workspace.remove.actor", actor: o
+        @ui.events.push "workspace", "remove.actor", actor: o
         o.timelineDeath()
         o.delete()
 
@@ -647,7 +676,7 @@ define (require) ->
       if ctorName.indexOf("Actor") != -1 or ctorName.indexOf("Spawner") != -1
         for o, i in @actorObjects
           if o.getID() == obj.getID()
-            @ui.pushEvent "workspace.remove.actor", actor: o
+            @ui.events.push "workspace", "remove.actor", actor: o
             @actorObjects.splice i, 1
             break
 
@@ -831,12 +860,24 @@ define (require) ->
       # workspace now inherits its height from the config.selector.content
 
     ###
+    # Initialize the event listener
+    #
+    # @return [self]
+    ###
+    initEventListen: ->
+      super()
+      @ui.events.listen @, "timeline"
+      @
+
+    ###
     # @param [String] type
     # @param [Object] params
     ###
-    respondToEvent: (type, params) ->
+    respondToEvent: (groupname, type, params) ->
+      return unless groupname == "timeline"
+
       switch type
-        when "timeline.selected.actor"
+        when "selected.actor"
           @setSelectedActor params.actor
 
     ###
@@ -884,8 +925,8 @@ define (require) ->
         actors = _.union data.spawners, actors
 
       # data.workspaceVersion >= "1.1.0"
-      for actor in actors
-        actorClass = window[actor.handleType]
+      for actor in data.actors
+        actorClass = Actors[actor.handleType]
 
         if actorClass
           @addActor actorClass.load @ui, actor

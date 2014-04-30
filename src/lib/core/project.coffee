@@ -1,12 +1,18 @@
 define (require) ->
 
+  config = require "config"
+  param = require "util/param"
+
   ID = require "util/id"
-  Storage = require "storage"
   AUtilLog = require "util/log"
+
+  EditorObject = require "core/editor_object"
+  Storage = require "core/storage"
+
+  Dumpable = require "mixin/dumpable"
+
   Asset = require "handles/asset"
   Texture = require "handles/texture"
-  EditorObject = require "editor_object"
-  Dumpable = require "mixin/dumpable"
 
   class Project extends EditorObject
 

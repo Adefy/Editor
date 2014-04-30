@@ -4,18 +4,21 @@ define (require) ->
   param = require "util/param"
   AUtilLog = require "util/log"
 
-  Storage = require "storage"
+  ## forward requires, because
+  Effects = require "effects"
+
+  Storage = require "core/storage"
+  Project = require "core/project"
 
   PolygonActor = require "handles/actors/polygon"
-  TriangleActor = require "handles/actors/triangle"
   RectangleActor = require "handles/actors/rectangle"
+  TriangleActor = require "handles/actors/triangle"
 
   UIManager = require "ui"
 
   Notification = require "widgets/notification"
 
   Bezier = require "handles/bezier"
-  Project = require "project"
 
   class Editor
 
@@ -485,7 +488,7 @@ define (require) ->
 
       @autosaveTaskID = setInterval =>
         @autosave()
-        @ui.pushEvent "autosave"
+        @ui.events.push "editor", "autosave"
       , @settings.autosave.frequency
 
       @

@@ -3,38 +3,41 @@ define (require) ->
   config = require "config"
   param = require "util/param"
 
+  Actors = require "handles/actors"
   BaseActor = require "handles/actors/base"
 
   NumericProperty = require "handles/properties/numeric"
 
   # N-sided actor
-  window.PolygonActor = class PolygonActor extends BaseActor
+  Actors.PolygonActor = class PolygonActor extends BaseActor
 
     ###
     # Defines a variable-sided actor, psicktually
     #
     # @param [UIManager] ui
-    # @param [Number] birth time in ms at which we are to be created
-    # @param [Number] sides the n in ngon
-    # @param [Number] radius ngon radius
-    # @param [Number] x x starting coordinate
-    # @param [Number] y y starting coordinate
-    # @param [Number] rotation optional, angle in degrees
-    # @param [Number] death optional death time specification
-    # @param [Boolean] manualInit optional, postInit() not called if true
+    # @param [Object] options
+    #   @option [Number] lifetimeStart  time in ms at which we are to be created
+    #   @option [Number] lifetimeEnd  death time specification
+    #     @optional
+    #   @option [Number] sides  the n in ngon
+    #   @option [Number] radius  ngon radius
+    #   @option [Vec2] position  x starting coordinates
+    #   @option [Number] rotation  angle in degrees
+    #     @optional
+    #   @option [Boolean] manualInit  postInit() not called if true
+    #     @optional
     ###
-    constructor: (@ui, birth, sides, radius, x, y, rotation, death, manualInit) ->
+    constructor: (@ui, options) ->
       param.required @ui
-      param.required sides
-      radius = Math.abs param.required radius
-      param.required x
-      param.required y
-      manualInit = param.optional manualInit, false
-      rotation = param.optional rotation, 0
+      param.required options
+
+      sides      = param.required options.sides
+      radius     = Math.abs param.required options.radius
+      manualInit = param.optional options.manualInit, false
 
       throw new Error "Can't create an ngon with less than 3 sides" if sides < 3
 
-      super @ui, birth, death
+      super @ui, options
 
       @handleType = "PolygonActor"
 
@@ -43,10 +46,8 @@ define (require) ->
       @initPropertySides()
       @initPropertyRadius()
 
-      @_properties.position.setValue x: x, y: y
       @_properties.sides.setValue sides
       @_properties.radius.setValue radius
-      @_properties.rotation.setValue rotation
 
       @postInit() unless manualInit
 
@@ -150,6 +151,12 @@ define (require) ->
       y = position.y.value
       rotation = data.properties.rotation.value
 
-      actor = new PolygonActor ui, birth, sides, radius, x, y, rotation, death
+      actor = new PolygonActor ui,
+        lifetimeStart: birth
+        lifetimeEnd: death
+        sides: sides
+        radius: radius
+        position: x: x, y: y
+        rotation: rotation
       actor.load data
       actor

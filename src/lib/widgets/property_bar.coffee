@@ -89,7 +89,8 @@ define (require) ->
 
       $(document).on "change", "#{@_sel} .control > input", (e) =>
         @saveControl e.target
-        @ui.pushEvent "property.bar.update.actor", actor: @targetActor
+
+        @ui.events.push "property_bar", "update.actor", actor: @targetActor
 
     ###
     # This method applies the state of the control to our current object, by
@@ -234,17 +235,30 @@ define (require) ->
           @clear()
 
     ###
+    # Initialize the event listener
+    #
+    # @return [self]
+    ###
+    initEventListen: ->
+      super()
+      @ui.events.listen @, "workspace"
+      @ui.events.listen @, "timeline"
+      @
+
+    ###
     # @param [String] type
     # @param [Object] params
     ###
-    respondToEvent: (type, params) ->
-      AUtilEventLog.egot "tab.properties", type
-      switch type
-        when "workspace.selected.actor", "timeline.selected.actor", "workspace.add.actor"
-          @updateActor params.actor
-        when "workspace.remove.actor"
-          @clearActor params.actor
-        when "selected.actor.update"
+    respondToEvent: (groupname, type, params) ->
+      AUtilEventLog.egot "tab.properties", groupname, type
+      if groupname == "workspace"
+        switch type
+          when "selected.actor", "add.actor", "selected.actor.update"
+            @updateActor params.actor
+          when "remove.actor"
+            @clearActor params.actor
+      else if groupname == "timeline"
+        if type == "selected.actor"
           @updateActor params.actor
 
     ###
