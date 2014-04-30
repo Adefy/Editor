@@ -878,11 +878,12 @@ define (require) ->
         @setClearColor col.r, col.g, col.b
 
       # We merged actor and spawner collections after 1.4.0
+      actors = data.actors
       if data.workspaceVersion == "1.4.0" and data.spawners.length > 0
-        data.actors = _.union data.spawners, data.actors
+        actors = _.union data.spawners, actors
 
       # data.workspaceVersion >= "1.1.0"
-      for actor in data.actors
+      for actor in actors
         actorClass = window[actor.handleType]
 
         if actorClass
