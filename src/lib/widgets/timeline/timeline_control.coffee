@@ -70,7 +70,11 @@ define (require) ->
         return unless actor
 
         time = actor.getNearestAnimationTime(cursorTime, right: true)
-        @timeline.setCursorTime time if time
+
+        if time
+          @timeline.setCursorTime time
+        else
+          @timeline.setCursorTime Math.floor actor.lifetimeEnd_ms
 
       # else, jump to the nearest keyframe from any actor
       else
@@ -96,7 +100,11 @@ define (require) ->
         return unless actor
 
         time = actor.getNearestAnimationTime(cursorTime, left: true)
-        @timeline.setCursorTime time if time
+
+        if time
+          @timeline.setCursorTime time
+        else
+          @timeline.setCursorTime Math.ceil actor.lifetimeStart_ms
 
       # else, jump to the nearest keyframe from any actor
       else

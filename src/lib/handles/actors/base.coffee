@@ -1281,9 +1281,13 @@ define (require) ->
 
     ###
     # Retrieve the nearest animation based on a source time
+    #
+    # @param [Number] source
+    # @param [Object] options
     # @return [Object] animation
     ###
     getNearestAnimationTime: (source, options) ->
+      param.required source
       options = param.optional options, {}
       time = null
 
@@ -1292,12 +1296,13 @@ define (require) ->
       else if options.left
         time = @findPrecedingAnimationTime(source, options.property)
       else
-        lefttime = @findPrecedingAnimationTime(source, options.property)
-        righttime = @findSucceedingAnimationTime(source, options.property)
-        if (source - lefttime) < (righttime - source)
-          time = lefttime
+        leftTime = @findPrecedingAnimationTime(source, options.property)
+        rightTime = @findSucceedingAnimationTime(source, options.property)
+
+        if (source - leftTime) < (rightTime - source)
+          time = leftTime
         else
-          time = righttime
+          time = rightTime
 
       time
 
