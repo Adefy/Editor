@@ -615,9 +615,14 @@ define (require) ->
     ###
     # Virtual method that our children need to implement, called when our AJS
     # actor needs to be instantiated
+    #
     # @private
     ###
     _birth: ->
+
+      # Make sure we have our texture (this lets us set the texture in the
+      # constructor)
+      @setTextureByUID @_textureUID if @_textureUID
 
     ###
     # Get our living state
@@ -638,10 +643,6 @@ define (require) ->
 
       # Set up properties by grabbing initial values
       @_properties[p].getValue() for p of @_properties
-
-      # Make sure we have our texture (this lets us set the texture in the
-      # constructor)
-      @setTextureByUID @_textureUID if @_textureUID
 
       @updateInTime()
 
