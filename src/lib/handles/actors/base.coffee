@@ -209,22 +209,23 @@ define (require) ->
       @_properties.layer.icon = config.icon.property_layer
       @_properties.layer.main = new NumericProperty()
       @_properties.layer.main.setValue 0
+      @_properties.layer.main.setMin 0
       @_properties.layer.main.setPrecision config.precision.layer
-
-      @_properties.layer.physics = new NumericProperty()
-      @_properties.layer.physics.clone @_properties.layer.main
 
       @_properties.layer.main.onUpdate = (layer) =>
         @_AJSActor.setLayer layer if @_AJSActor
 
-      @_properties.layer.main.requestUpdate = ->
-        @setValue me._AJSActor.getLayer() if me._AJSActor
+      @_properties.layer.physics = new NumericProperty()
+      @_properties.layer.physics.setValue 0
+      @_properties.layer.physics.setMin 0
+      @_properties.layer.physics.setMax 16
+      @_properties.layer.physics.setPrecision config.precision.physicsLayer
 
-      @_properties.layer.physics.onUpdate (layer) =>
+      @_properties.layer.physics.validateValue = (val) ->
+        val >= 0 && val <= 16 && Math.round(val) == val
+
+      @_properties.layer.physics.onUpdate = (layer) =>
         @_AJSActor.setPhysicsLayer layer if @_AJSActor
-
-      @_properties.layer.physics.requestUpdate = ->
-        @setValue me._AJSActor.getPhysicsLayer() if me._AJSActor
 
       @_properties.layer.addProperty "main", @_properties.layer.main
       @_properties.layer.addProperty "physics", @_properties.layer.physics
@@ -630,9 +631,14 @@ define (require) ->
     ###
     # Virtual method that our children need to implement, called when our AJS
     # actor needs to be instantiated
+    #
     # @private
     ###
     _birth: ->
+
+      # Make sure we have our texture (this lets us set the texture in the
+      # constructor)
+      @setTextureByUID @_textureUID if @_textureUID
 
     ###
     # Get our living state
@@ -653,10 +659,6 @@ define (require) ->
 
       # Set up properties by grabbing initial values
       @_properties[p].getValue() for p of @_properties
-
-      # Make sure we have our texture (this lets us set the texture in the
-      # constructor)
-      @setTextureByUID @_textureUID if @_textureUID
 
       @updateInTime()
 
@@ -731,12 +733,22 @@ define (require) ->
       @_temporalUpdatesEnabled
 
     ###
+    # Really, really ugly (FUGLY) method we need so spawners can register
+    # themselves after birth (they can't override @_birth....)
+    #
+    # GET RID OF THIS
+    ###
+    __fugly_postBirth: ->
+
+    ###
     # Materialize the actor from various stored value deltas (woah, that sounds
     # epic). Essentially, update our prop buffer, and then the actors' current
     # state
     ###
     updateInTime: (time) ->
-      @_birth() unless @_alive
+      unless @_alive
+        @_birth()
+        @__fugly_postBirth()
       return unless @_temporalUpdatesEnabled
 
       time = Math.floor(param.optional time, @ui.timeline.getCursorTime())
@@ -1193,11 +1205,11 @@ define (require) ->
           # starting point.
           ###
           if (nextAnim = @findNearestState(@_lastTemporalState, true, p)) != -1
+            if @_animations[nextAnim]
+              startTime = @_lastTemporalState
+              startP = @_propBuffer[@_lastTemporalState][p]
 
-            startTime = @_lastTemporalState
-            startP = @_propBuffer[@_lastTemporalState][p]
-
-            @setAnimationStart @_animations[nextAnim][p], startTime, startP
+              @setAnimationStart @_animations[nextAnim][p], startTime, startP
 
           unless deltaStartTime == -1
 
@@ -1290,9 +1302,13 @@ define (require) ->
 
     ###
     # Retrieve the nearest animation based on a source time
+    #
+    # @param [Number] source
+    # @param [Object] options
     # @return [Object] animation
     ###
     getNearestAnimationTime: (source, options) ->
+      param.required source
       options = param.optional options, {}
       time = null
 
@@ -1301,12 +1317,13 @@ define (require) ->
       else if options.left
         time = @findPrecedingAnimationTime(source, options.property)
       else
-        lefttime = @findPrecedingAnimationTime(source, options.property)
-        righttime = @findSucceedingAnimationTime(source, options.property)
-        if (source - lefttime) < (righttime - source)
-          time = lefttime
+        leftTime = @findPrecedingAnimationTime(source, options.property)
+        rightTime = @findSucceedingAnimationTime(source, options.property)
+
+        if (source - leftTime) < (rightTime - source)
+          time = leftTime
         else
-          time = righttime
+          time = rightTime
 
       time
 
@@ -1649,6 +1666,24 @@ define (require) ->
     # @return [self]
     ###
     load: (data) ->
+      dumpBirth = Math.floor data.birth
+
+      # Clean dump property buffer and animation buffer
+      for time of data.propBuffer
+        if time < dumpBirth
+          delete data.propBuffer[time]
+        else
+          for property of data.propBuffer[time]
+            unless @_properties[property]
+              delete data.propBuffer[time][property]
+
+      for time of data.animations
+        if time < dumpBirth
+          delete data.animations[time]
+        else
+          for property of data.animations[time]
+            unless data.properties[property]
+              delete data.animations[time][property]
 
       # Load basic properties
       super data

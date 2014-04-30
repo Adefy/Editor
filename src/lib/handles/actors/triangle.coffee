@@ -136,6 +136,8 @@ define (require) ->
         color: new AJSColor3 r, g, b
         rotation: @_properties.rotation.getValue()
 
+      super()
+
     ###
     # Initializes a new TriangleActor using serialized data
     #

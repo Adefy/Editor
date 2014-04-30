@@ -51,6 +51,7 @@ define (require) ->
         if setting.type == Number
           setting.computedType = "number"
         else if setting.type == Boolean
+          setting.checked = true if setting.value
           setting.computedType = "checkbox"
         else
           setting.computedType = "text"
