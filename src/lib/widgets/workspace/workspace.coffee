@@ -100,6 +100,11 @@ define (require) ->
       w = @_canvasWidth
       h = @_canvasHeight
 
+      # setup deps basepath
+      ARE.config.deps.physics.chipmunk = "/editor/components/chipmunk/cp.js"
+      ARE.config.deps.physics.koon = "/editor/components/adefyre/build/lib/koon/koon.js"
+      ARE.config.deps.physics.physics_worker = "/editor/components/adefyre/build/lib/physics/worker.js"
+
       cb = =>
         @_are = AdefyRE.Engine()._engine
 
