@@ -3,7 +3,6 @@ define (require) ->
   param = require "util/param"
   SelectTextureModal = require "templates/modal/select_texture"
   FloatingWidget = require "widgets/floating_widget"
-  ContextMenu = require "widgets/context_menu"
 
   class FloatingTextureSelect extends FloatingWidget
 
@@ -27,7 +26,7 @@ define (require) ->
     registerListeners: ->
       $(document).on "click", "#{@_sel} img", (e) =>
 
-        new ContextMenu @ui,
+        @ui.spawnContextMenu
           x: e.pageX
           y: e.pageY
           properties:

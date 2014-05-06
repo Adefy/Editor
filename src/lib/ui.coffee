@@ -22,6 +22,8 @@ define (require) ->
 
   ModalManager = require "modal_manager"
 
+  ContextMenu = require "widgets/context_menu"
+
   class UIManager
 
     constructor: (@editor) ->
@@ -309,6 +311,12 @@ define (require) ->
       @onResize()        # ensure that all widgets have the correct size
       @postInit()        # finish initializing the widgets
       @
+
+    ###
+    # @return [ContextMenu] context_menu
+    ###
+    spawnContextMenu: (options) ->
+      new ContextMenu @, options
 
     ###
     # @return [self]

@@ -107,26 +107,6 @@ define (require) ->
       # should this actor not spawn events when updating?
       @_silentUpdate = false
 
-      @_ctx = _.extend @_ctx,
-        copy:
-          name: config.locale.copy
-          cb: => @_contextFuncCopy @
-        dup:
-          name: config.locale.duplicate
-          cb: => @_contextFuncDuplicate @
-        setTexture:
-          name: config.locale.label.texture_modal
-          cb: => @_contextFuncSetTexture @
-        setTextureRepeat:
-          name: config.locale.label.texture_repeat_modal
-          cb: => @_contextFuncSetTextureRepeat @
-        editPhysics:
-          name: config.locale.label.physics_modal
-          cb: => @_contextFuncEditPhysics @
-        makeSpawner:
-          name: config.locale.ctx.base_actor.make_spawner
-          cb: => @ui.workspace.transformActorIntoSpawner @
-
       @initPropertyOpacity()
       @initPropertyRotation()
       @initPropertyPosition()
@@ -137,6 +117,34 @@ define (require) ->
 
       @_properties.position.setValue position
       @_properties.rotation.setValue rotation
+
+    ###
+    # @return [Object] context_entries
+    ###
+    makeContextEntries: ->
+      ctx = _.extend super(),
+        copy:
+          name: config.locale.copy
+          cb: => @_contextFuncCopy @
+        dup:
+          name: config.locale.duplicate
+          cb: => @_contextFuncDuplicate @
+        makeSpawner:
+          name: config.locale.ctx.base_actor.make_spawner
+          cb: => @ui.workspace.transformActorIntoSpawner @
+
+      ctx.set.entries = _.extend ctx.set.entries,
+        setTexture:
+          name: config.locale.label.texture_modal
+          cb: => @_contextFuncSetTexture @
+        setTextureRepeat:
+          name: config.locale.label.texture_repeat_modal
+          cb: => @_contextFuncSetTextureRepeat @
+        editPhysics:
+          name: config.locale.label.physics_modal
+          cb: => @_contextFuncEditPhysics @
+
+      ctx
 
     ###
     # Initialize Actor opacity properties

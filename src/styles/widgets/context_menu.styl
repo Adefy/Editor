@@ -6,7 +6,9 @@
 .context-menu
   position absolute
   font-size 12px
-  min-width 96px
+  /// for use with icons
+  //min-width 140px
+  min-width 130px
   z-index $Z_context_menu
 
   display none
@@ -24,7 +26,8 @@
     line-height 1.0
 
   li
-    width 130px
+    overflow hidden
+    width 100%
     padding 5px 10px
     color #aaa
 

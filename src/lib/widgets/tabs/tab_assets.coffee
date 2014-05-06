@@ -9,7 +9,6 @@ define (require) ->
   Asset = require "handles/asset"
   TemplateAssetDirectory = require "templates/tabs/asset_directory"
   TemplateAssetFile = require "templates/tabs/asset_file"
-  ContextMenu = require "widgets/context_menu"
 
   class AssetsTab extends Tab
 
@@ -56,14 +55,14 @@ define (require) ->
         assetElement = $(e.target).closest(".asset")
 
         if asset = @ui.editor.project.assets.findByID(assetElement[0].id)
-          new ContextMenu @ui,
+          @ui.spawnContextMenu
             x: e.pageX, y: e.pageY, properties: asset.getContextProperties()
 
         e.preventDefault()
         false
 
       $(document).on "contextmenu", ".files", (e) =>
-        new ContextMenu @ui,
+        @ui.spawnContextMenu
           x: e.pageX
           y: e.pageY
           properties: @ui.editor.project.assets.getContextProperties()

@@ -1,7 +1,11 @@
 define (require) ->
 
+  config = require "config"
+
   param = require "util/param"
   ID = require "util/id"
+
+  AUtilLog = require "util/log"
 
   Actors = require "handles/actors"
 
@@ -25,14 +29,8 @@ define (require) ->
       # Set handle-global properties here
       @_properties = {}
 
-      # Basic right-click menu functions
-      @_ctx =
-        rename:
-          name: "Rename ..."
-          cb: => AdefyEditor.ui.modals.showRename @
-        del:
-          name: "Delete"
-          cb: => @delete()
+      @_ctxEntries = @makeContextEntries()
+      @_ctx = @generateContextEntries @_ctxEntries
 
       # Give ourselves a unique id so we can be discovered on the body
       generatedID = ID.objID "handle"
@@ -45,6 +43,53 @@ define (require) ->
 
       # Attach ourselves to the body
       $("body").data @getID(), @
+
+    ###
+    # @return [Object] context_entries
+    ###
+    makeContextEntries: ->
+      # Basic right-click menu functions
+      {
+        set:
+          name: config.locale.label.set_sub_menu
+          subMenu: true
+          title: config.locale.title.set
+          entries:
+            rename:
+              name: config.locale.label.rename_modal
+              cb: => AdefyEditor.ui.modals.showRename @
+        del:
+          name: config.locale.del
+          cb: => @delete()
+      }
+
+    ###
+    # @param [Object] entries
+    # @return [Object] context_entries
+    ###
+    generateContextEntries: (entries) ->
+      result = {}
+
+      for key, data of entries
+        # is this a sub menu?
+        if data.subMenu
+          subresult =
+            name: data.title || data.name
+            functions: @renderContextEntries data.entries
+
+          result[key] =
+            # for menu items, use either the title (the context menu name at the top)
+            # or use the menu item name
+            name: data.name
+            cb: (ctxmenu, e) =>
+              AdefyEditor.ui.spawnContextMenu
+                x: ctxmenu.origin.x + ctxmenu.origin.ox
+                y: ctxmenu.origin.y + ctxmenu.origin.oy
+                properties: subresult
+        else
+          result[key] = data
+
+      result
 
     ###
     # Helper that hides all of our properties from toolbar rendering

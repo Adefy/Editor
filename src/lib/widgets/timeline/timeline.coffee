@@ -11,7 +11,6 @@ define (require) ->
   Storage = require "core/storage"
 
   Widget = require "widgets/widget"
-  ContextMenu = require "widgets/context_menu"
   TimelineControl = require "widgets/timeline/timeline_control"
   Workspace = require "widgets/workspace/workspace"
 
@@ -22,7 +21,6 @@ define (require) ->
   TemplateTimelineActor = require "templates/timeline/actor"
   TemplateTimelineActorTime = require "templates/timeline/actor_time"
   TemplateTimelineKeyframe = require "templates/timeline/keyframe"
-
 
   # Timeline widget, serving as the main control center for objects.
   class Timeline extends Widget
@@ -449,7 +447,7 @@ define (require) ->
       $(document).on "contextmenu", ".timeline .actor .title", (e) =>
         actorElement = $(e.target).closest ".actor"
         index = $(actorElement).attr "data-index"
-        new ContextMenu @ui,
+        @ui.spawnContextMenu
           x: e.pageX
           y: e.pageY
           properties: @_actors[index].getContextProperties()

@@ -66,12 +66,19 @@ define
     copy:      "Copy"
     cut:       "Cut"
     paste:     "Paste"
+    del:       "Delete"
 
     title:
-      create: "Create"
+      workspace: "Workspace"
+      create:    "Create"
+      set:       "Set"
 
     label:
-      create_menu_item:     "Create +"
+      set_sub_menu:        "Set +"
+      create_sub_menu:     "Create +"
+      ##
+      rename_modal:         "Rename ..."
+      color_modal:          "Color ..."
       texture_modal:        "Texture ..."
       texture_repeat_modal: "Texture Rep. ..."
       physics_modal:        "Physics ..."

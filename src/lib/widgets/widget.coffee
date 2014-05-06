@@ -127,13 +127,18 @@ define (require) ->
       @
 
     ###
-    # @return [self]
+    # @return [Object]
+    #   @property [Number] x
+    #   @property [Number] y
     ###
-    forceElementInSpace: ->
+    getElementPosition: ->
       elem = @getElement()
-      elem.left 0
-      elem.top 0
-      @
+      offset = elem.offset()
+
+      {
+        x: offset.left
+        y: offset.top
+      }
 
     ## rendering
 

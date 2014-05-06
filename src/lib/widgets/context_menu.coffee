@@ -35,17 +35,19 @@ define (require) ->
     #
     # Note that once the menu is clicked out of, it should be discarded!
     #
-    # @param [Number] x x coordinate to spawn at
-    # @param [Number] y y coordinate to spawn at
-    # @param [Handle] properties context menu property definitions
+    # @param [Number] x  x coordinate to spawn at
+    # @param [Number] y  y coordinate to spawn at
+    # @param [Handle] properties  context menu property definitions
     ###
     constructor: (@ui, options) ->
+      param.required @ui
+
       x = param.required options.x
       y = param.required options.y
-      @properties = param.required options.properties
 
-      @name = @properties.name
-      @functions = @properties.functions
+      @properties = param.required options.properties
+      @name = param.required @properties.name
+      @functions = param.required @properties.functions
 
       @alive = true # Set to false upon removal
 
@@ -72,10 +74,18 @@ define (require) ->
       # how far away from the egde should the context menu be kept
       border = 8
 
+      @origin =
+        ox: w/2
+        oy: 0
+        x: Math.max(Math.min(x, doc.width() - w - border), border)
+        y: Math.max(Math.min(y, doc.height() - h - border), border)
+        w: w
+        h: h
+
       # clamps the element inside the document
       elem.css
-        left: Math.max(Math.min(x, doc.width() - w - border), border)
-        top: Math.max(Math.min(y, doc.height() - h - border), border)
+        left: @origin.x
+        top: @origin.y
 
       if ContextMenu.animate
         elem.slideDown ContextMenu.animateSpeed
@@ -102,9 +112,9 @@ define (require) ->
           return
 
 
-        $(document).on "click", "[data-id=\"#{@functions[f]._ident}\"]", =>
+        $(document).on "click", "[data-id=\"#{@functions[f]._ident}\"]", (e) =>
           @remove()
-          @functions[f].cb()
+          @functions[f].cb(@, e)
 
 
       entries = []
@@ -117,6 +127,7 @@ define (require) ->
         @functions[f]._ident = @_convertToIdent(f) + ID.nextID()
 
         entries.push
+          icon: @functions[f].icon
           name: @functions[f].name || f
           dataId: @functions[f]._ident
 

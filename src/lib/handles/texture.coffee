@@ -1,5 +1,7 @@
 define (require) ->
 
+  config = require "config"
+
   param = require "util/param"
   ID = require "util/id"
 
@@ -88,10 +90,10 @@ define (require) ->
         name: @getName()
         functions:
           del:
-            name: "Delete"
+            name: config.locale.del
             cb: => @contextFuncDelete @
           rename:
-            name: "Rename"
+            name: config.locale.label.rename_modal
             cb: => @contextFuncRename @
       }
 

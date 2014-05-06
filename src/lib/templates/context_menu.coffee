@@ -12,7 +12,10 @@ define ->
     {{/if}}
     <ul>
       {{#each entries}}
-        <li data-id="{{dataId}}">{{name}}</li>
+      <li data-id="{{dataId}}">
+        {{#if icon}}<i class="fa fa-fw {{icon}}"></i>{{/if}}
+        {{name}}
+      </li>
       {{/each}}
     </ul>
   """

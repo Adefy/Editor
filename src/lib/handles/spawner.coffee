@@ -8,11 +8,14 @@
 
 define (require) ->
 
-  AUtilLog = require "util/log"
   config = require "config"
+
   param = require "util/param"
   ID = require "util/id"
+
+  AUtilLog = require "util/log"
   seedrand = require "util/seedrandom"
+
   Vec2 = require "core/vec2"
 
   Actors = require "handles/actors"
@@ -110,17 +113,6 @@ define (require) ->
 
       @_seedIncrement = 0
 
-      ## for testing
-      @_ctx.spawn =
-        name: config.locale.ctx.spawner.spawn
-        cb: => @spawn()
-
-      @_ctx.configure =
-        name: config.locale.ctx.spawner.configure
-        cb: => @openConfigureDialog()
-
-      delete @_ctx.makeSpawner
-
       @hideAllProperties()
       @_initPropertyState()
       @_initPropertyParticles()
@@ -137,6 +129,27 @@ define (require) ->
 
       # Ensure the spawner update cycle is both running, and includes us
       Spawner.setupUpdateInterval()
+
+    ###
+    # @return [Object] context_entries
+    ###
+    makeContextEntries: ->
+      ctx = super()
+
+      ## for testing
+      ctx.spawn =
+        name: config.locale.ctx.spawner.spawn
+        cb: => @spawn()
+
+
+      ctx.configure =
+        name: config.locale.ctx.spawner.configure
+        cb: => @openConfigureDialog()
+
+      ## you can't make a spawner from a spawner.
+      delete ctx.makeSpawner
+
+      ctx
 
     ###
     # Horrible method (check @updateInTime()) that we need to register ourselves

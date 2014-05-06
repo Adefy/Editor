@@ -82,7 +82,7 @@ define (require) ->
         texture = _.find project.textures, (t) -> t.getID() == textureId
 
         if texture
-          new ContextMenu @ui,
+          @ui.spawnContextMenu
             x: e.pageX, y: e.pageY, properties: texture.getContextProperties()
 
         e.preventDefault()

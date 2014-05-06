@@ -14,6 +14,8 @@ define (require) ->
   config = require "config"
   param = require "util/param"
 
+  aformat = require "util/format"
+
   ID = require "util/id"
   AUtilLog = require "util/log"
 
@@ -26,7 +28,6 @@ define (require) ->
   TriangleActor = require "handles/actors/triangle"
 
   Widget = require "widgets/widget"
-  ContextMenu = require "widgets/context_menu"
   TemplateWorkspaceCanvasContainer = require "templates/workspace/canvas_container"
 
   Dragger = require "util/dragger"
@@ -339,9 +340,9 @@ define (require) ->
     getWorkspaceCtxMenu: (x, y) ->
       functions =
         create:
-          name: config.locale.label.create_menu_item
+          name: config.locale.label.create_sub_menu
           cb: =>
-            new ContextMenu @ui,
+            @ui.spawnContextMenu
               x: x, y: y, properties: @getNewActorCtxMenu(x, y)
 
       if @ui.editor.clipboard && @ui.editor.clipboard.type == "actor"
@@ -355,12 +356,12 @@ define (require) ->
 
             newActor = @ui.editor.clipboard.data.duplicate()
             newActor.setPosition pos.x, pos.y
-            newActor.setName(newActor.getName() + " copy")
+            newActor.setName(aformat.nameForCopy newActor.getName())
 
             @addActor newActor
 
       {
-        name: "Workspace"
+        name: config.locale.title.workspace
         functions: functions
       }
 
@@ -425,10 +426,10 @@ define (require) ->
             if actor
               unless _.isEmpty actor.getContextProperties()
                 @dragger.forceDragEnd()
-                new ContextMenu @ui,
+                @ui.spawnContextMenu
                   x: x , y: y, properties: actor.getContextProperties()
           else
-            new ContextMenu @ui,
+            @ui.spawnContextMenu
               x: x , y: y, properties: @getWorkspaceCtxMenu(x, y)
 
         e.preventDefault()
