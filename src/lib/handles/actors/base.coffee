@@ -17,6 +17,7 @@ define (require) ->
   Bezier = require "handles/bezier"
 
   Actors = require "handles/actors"
+  Effects = require "effects"
 
   CompositeProperty = require "handles/properties/composite"
   NumericProperty = require "handles/properties/numeric"
@@ -146,6 +147,21 @@ define (require) ->
         editPhysics:
           name: config.locale.label.physics_modal
           cb: => @_contextFuncEditPhysics @
+
+      fxEntries = {}
+
+      for key, effect of Effects
+        fxEntries[key] =
+          name: effect.title + " ..."
+          cb: =>
+            handle = @
+            effect.dialog @ui, (data) -> effect.execute handle, data
+
+      ctx.fx =
+        name: "FX +"
+        subMenu: true
+        title: "FX"
+        entries: fxEntries
 
       ctx
 

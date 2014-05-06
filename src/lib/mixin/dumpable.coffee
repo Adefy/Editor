@@ -1,3 +1,11 @@
+###
+@Changlog
+
+  - "1.0.0": Initial
+  - "1.1.0": dumpVersion bump
+
+###
+
 define (require) ->
 
   param = require "util/param"
@@ -38,11 +46,3 @@ define (require) ->
     deserialize: (raw) ->
       param.required raw
       @load JSON.parse raw
-
-###
-@Changlog
-
-  - "1.0.0": Initial
-  - "1.1.0": dumpVersion bump
-
-###

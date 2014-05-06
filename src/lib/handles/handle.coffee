@@ -75,7 +75,7 @@ define (require) ->
         if data.subMenu
           subresult =
             name: data.title || data.name
-            functions: @renderContextEntries data.entries
+            functions: @generateContextEntries data.entries
 
           result[key] =
             # for menu items, use either the title (the context menu name at the top)
