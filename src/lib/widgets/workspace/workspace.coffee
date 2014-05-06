@@ -102,8 +102,10 @@ define (require) ->
 
       # setup deps basepath
       ARE.config.deps.physics.chipmunk = "/editor/components/chipmunk/cp.js"
-      ARE.config.deps.physics.koon = "/editor/components/adefyre/build/lib/koon/koon.js"
-      ARE.config.deps.physics.physics_worker = "/editor/components/adefyre/build/lib/physics/worker.js"
+      ARE.config.deps.physics.koon = "/editor/components/adefyre-dev/build/lib/koon/koon.js"
+      ARE.config.deps.physics.physics_worker = "/editor/components/adefyre-dev/build/lib/physics/worker.js"
+      # work around for getting actors to render properly
+      ARERenderer.alwaysClearScreen = true
 
       cb = =>
         @_are = AdefyRE.Engine()._engine
@@ -503,14 +505,29 @@ define (require) ->
           handle = @getActorFromPick r, g, b
           return d.forceDragEnd() unless handle
 
+          pos = handle.getPosition()
+
           d.setTarget handle
           d.setUserData
             updateProperties: true
-            original: handle.getPosition()
+            original:
+              x: pos.x
+              y: pos.y
 
           toggleActorPhysics d, handle
 
           document.body.style.cursor = "pointer"
+
+      @dragger.setOnDrag (d, deltaX, deltaY) =>
+
+        # Delay the drag until we finish our pick
+        if d.getUserData() and d.getUserData().original
+
+          newX = d.getUserData().original.x + deltaX
+          newY = d.getUserData().original.y + deltaY
+
+          d.getTarget().setPosition newX, newY
+          @ui.events.push "workspace", "selected.actor.update", actor: d.getTarget()
 
       @dragger.setOnDragEnd (d) =>
         document.body.style.cursor = "auto"
@@ -519,15 +536,6 @@ define (require) ->
           handle = d.getTarget()
           handle.getActor().enablePhysics() if d.getUserData().hasPhysics
 
-      @dragger.setOnDrag (d, deltaX, deltaY) =>
-
-        # Delay the drag untill we finish our pick
-        if d.getUserData() and d.getUserData().original
-          newX = d.getUserData().original.x + deltaX
-          newY = d.getUserData().original.y + deltaY
-
-          d.getTarget().setPosition newX, newY
-          @ui.events.push "workspace", "selected.actor.update", actor: d.getTarget()
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
