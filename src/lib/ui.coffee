@@ -194,6 +194,7 @@ define (require) ->
         label: "Refresh"
         click: =>
           @refresh()
+          @postRefresh()
           @onResize()
         sectionEnd: true
 
