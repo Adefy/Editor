@@ -4,9 +4,9 @@ define (require) ->
 
   Action = require "actions/action"
 
-  class CallbackAction extends Action
+  class ActionCallback extends Action
 
     constructor: (options) ->
-      super()
+      super "callback"
       @execute = param.required options.executeCB
       @revert = param.required options.revertCB
