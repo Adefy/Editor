@@ -126,6 +126,15 @@ define (require) ->
       @getElement(subSelector).replaceWith(content)
       @
 
+    ###
+    # @return [self]
+    ###
+    forceElementInSpace: ->
+      elem = @getElement()
+      elem.left 0
+      elem.top 0
+      @
+
     ## rendering
 
     ###
@@ -170,7 +179,23 @@ define (require) ->
     ###
     # @return [self]
     ###
+    postRefreshStub: ->
+      @
+
+    ###
+    # @return [self]
+    ###
     postRefresh: ->
+      @
+
+    ###
+    # @return [self]
+    ###
+    refreshHard: ->
+      @refreshStub()
+      @postRefreshStub()
+      @refresh()
+      @postRefresh()
       @
 
     ## Event handling

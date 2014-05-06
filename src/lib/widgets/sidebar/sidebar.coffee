@@ -123,6 +123,27 @@ define (require) ->
       @_items.map((i) -> i.render()).join ""
 
     ###
+    # @return [self]
+    ###
+    refreshStub: ->
+      super()
+      for item in @_items
+        item.refreshStub() if item.refreshStub
+
+      @
+
+    ###
+    # postRefreshStub! Calls all the child postRefreshStub
+    # @return [self]
+    ###
+    postRefreshStub: ->
+      super()
+      for item in @_items
+        item.postRefreshStub() if item.postRefreshStub
+
+      @
+
+    ###
     # Render the HTML content and replace it
     ###
     refresh: ->
@@ -133,22 +154,13 @@ define (require) ->
 
     ###
     # postRefresh! Calls all the child postRefresh
+    # @return [self]
     ###
     postRefresh: ->
       super()
       @setWidth @getElement().width()
       for item in @_items
         item.postRefresh() if item.postRefresh
-
-      @
-
-    ###
-    # @return [self]
-    ###
-    refreshStub: ->
-      super()
-      for item in @_items
-        item.refreshStub() if item.refreshStub
 
       @
 

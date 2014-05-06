@@ -280,6 +280,16 @@ define (require) ->
     ###
     # @return [self]
     ###
+    postRefreshStub: ->
+      AUtilLog.info "UI#postRefreshStub"
+      for widget in @widgets
+        widget.postRefreshStub() if widget.postRefreshStub
+
+      @
+
+    ###
+    # @return [self]
+    ###
     postRefresh: ->
       AUtilLog.info "UI#postRefresh"
       for widget in @widgets
@@ -291,11 +301,12 @@ define (require) ->
     # @return [self]
     ###
     refreshHard: ->
-      @refreshStub() # create widget stubs
-      @refresh()     # render the widget content
-      @postRefresh() # conduct all post refresh shebang
-      @onResize()    # ensure that all widgets have the correct size
-      @postInit()    # finish initializing the widgets
+      @refreshStub()     # create widget stubs
+      @postRefreshStub() # do we even need to post-refresh the stubs?
+      @refresh()         # render the widget content
+      @postRefresh()     # conduct all post refresh shebang
+      @onResize()        # ensure that all widgets have the correct size
+      @postInit()        # finish initializing the widgets
       @
 
     ###

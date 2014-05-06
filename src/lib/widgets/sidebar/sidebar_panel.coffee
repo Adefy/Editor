@@ -121,6 +121,12 @@ define (require) ->
       tab
 
     ###
+    # @return [Tab]
+    ###
+    getSelectedTab: ->
+      tab = _.find @_tabs, (t) -> t.tabselected
+
+    ###
     # @return [HTML]
     ###
     render: ->
@@ -129,9 +135,7 @@ define (require) ->
       contentId = ""
       usesFooter = false
 
-      tab = _.find @_tabs, (t) -> t.tabselected
-
-      if tab
+      if tab = @getSelectedTab()
         content = tab.render()
         contentKlass = tab.cssAppendParentClass()
         contentId = tab.appendParentId()
@@ -154,8 +158,8 @@ define (require) ->
     ###
     refresh: ->
       super()
-      tab = _.find @_tabs, (t) -> t.tabselected
-      tab.refresh() if tab
+      if tab = @getSelectedTab()
+        tab.refresh()
 
       @
 
@@ -168,11 +172,20 @@ define (require) ->
     ###
     # @return [self]
     ###
+    postRefreshStub: ->
+      super()
+      if tab = @getSelectedTab()
+        tab.postRefreshStub() if tab.postRefreshStub
+
+      @
+
+    ###
+    # @return [self]
+    ###
     postRefresh: ->
       super()
       @_setupScrollbar()
-      tab = _.find @_tabs, (t) -> t.tabselected
-      if tab
+      if tab = @getSelectedTab()
         tab.postRefresh() if tab.postRefresh
         if @_footerActive && tab.renderFooter
           @getElement(".footer").html tab.renderFooter()
