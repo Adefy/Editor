@@ -3,7 +3,7 @@ define ->
   ###
   # @property [String] title
   # @property [HTML] content
-  # @property [Boolean] cb is a callback present? (this will enable the Submit button)
+  # @property [Boolean] cb  is a callback present? (this will enable the Submit button)
   ###
   Handlebars.compile """
     <div class="header">{{ title }}</div>

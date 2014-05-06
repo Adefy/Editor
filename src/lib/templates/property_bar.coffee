@@ -1,7 +1,8 @@
 define ->
 
   ###
-  #
+  # @property [String] actorName
+  # @property [Array<HTML>] controls
   ###
   Handlebars.compile """
     <div class="controls">

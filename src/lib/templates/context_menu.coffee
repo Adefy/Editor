@@ -1,6 +1,7 @@
 define ->
 
   ###
+  # @property [String] name  name of the context menu
   # @property [Array<Object>] entries
   #   @property [String] name
   #   @property [String] dataId

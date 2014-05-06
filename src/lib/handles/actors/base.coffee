@@ -523,8 +523,8 @@ define (require) ->
     ###
     # Set actor position, relative to the GL world!
     #
-    # @param [Number] x x coordinate
-    # @param [Number] y y coordinate
+    # @param [Number] x  x coordinate
+    # @param [Number] y  y coordinate
     ###
     setPosition: (x, y) ->
       x = Number (param.required x).toFixed(@ACCURACY)

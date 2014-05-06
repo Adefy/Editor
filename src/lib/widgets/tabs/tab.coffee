@@ -61,10 +61,11 @@ define (require) ->
       super()
 
     ###
-    # @return [Void]
+    # @return [self]
     ###
     postRefresh: ->
       super()
+      @
 
     ###
     # @return [self]
