@@ -118,25 +118,26 @@ define (require) ->
       friction = @_properties.physics.getProperty("friction").getValue()
       elasticity = @_properties.physics.getProperty("elasticity").getValue()
 
-      x = @_properties.position.getProperty("x").getValue()
-      y = @_properties.position.getProperty("y").getValue()
+      position = @_properties.position.getValue()
 
       r = @_properties.color.getProperty("r").getValue()
       g = @_properties.color.getProperty("g").getValue()
       b = @_properties.color.getProperty("b").getValue()
 
-      ## Right, ARE doesn't have a triangle actor...
-      #@_areActor = new ARETriangleActor
-      @_areActor = new AREPolygonActor
-        physics: physicsEnabled
-        mass: mass
-        friction: friction
-        elasticity: elasticity
-        base: @_properties.base.getValue()
-        height: @_properties.height.getValue()
-        position: new AREVector2 x, y
-        color: new AREColor3 r, g, b
-        rotation: @_properties.rotation.getValue()
+      base = @_properties.base.getValue()
+      height = @_properties.height.getValue()
+
+      color = new AREColor3 r, g, b
+      position = new AREVector2 position.x, position.y
+      rotation = @_properties.rotation.getValue()
+
+      @_areActor = new ARETriangleActor base, height
+      if physicsEnabled
+        @_areActor.createPhysicsBody mass, friction, elasticity
+
+      @_areActor.setPosition position
+      @_areActor.setColor color
+      @_areActor.setRotation rotation
 
       super()
 
