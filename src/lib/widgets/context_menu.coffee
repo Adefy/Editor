@@ -60,18 +60,27 @@ define (require) ->
       # Add a handle to our instance on the body
       $("body").data @getID(), @
 
-      # Position and inject ourselves
-      @refreshStub() # widget auto refresh was removed
-      @refresh()
+      @refreshHard()
 
-      @getElement().css
-        left: x
-        top: y
+      elem = @getElement()
+      doc = $(document)
+
+      w = elem.width()
+      h = elem.height()
+      x -= w / 2
+
+      # how far away from the egde should the context menu be kept
+      border = 8
+
+      # clamps the element inside the document
+      elem.css
+        left: Math.max(Math.min(x, doc.width() - w - border), border)
+        top: Math.max(Math.min(y, doc.height() - h - border), border)
 
       if ContextMenu.animate
-        @getElement().slideDown ContextMenu.animateSpeed
+        elem.slideDown ContextMenu.animateSpeed
       else
-        @getElement().show()
+        elem.show()
 
     ###
     # Builds the html for the rendered menu, called in the constructor. Useful
@@ -138,6 +147,9 @@ define (require) ->
 
       html
 
+    ###
+    # @return [String]
+    ###
     render: ->
       super() + @_buildHTML()
 
