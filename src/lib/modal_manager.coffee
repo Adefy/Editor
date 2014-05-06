@@ -36,7 +36,58 @@ define (require) ->
       #
 
     ###
+    # Display Set Color
+    #
+    # @return [SettingsWidget] settings
+    ###
+    showSetActorColor: (actor) ->
+
+      color = actor.getProperty("color")
+      values = color.getValue()
+
+      new SettingsWidget @ui,
+        title: "Actor Color"
+        settings: [
+          label: "R"
+          type: Number
+          value: values.r
+          id: "red"
+          min: 0
+        ,
+          label: "G"
+          type: Number
+          value: values.g
+          id: "green"
+          min: 0
+        ,
+          label: "B"
+          type: Number
+          value: values.b
+          id: "blue"
+          min: 0
+        ]
+        cb: (data) =>
+          color.setValue r: data.red, g: data.green, b: data.blue
+
+    ###
+    # Display set Actor Texture
+    #
+    # @return [Modal]
+    ###
+    showSetActorTexture: (actor) ->
+
+      textures = _.map @ui.editor.project.textures, (texture) ->
+        {
+          uid: texture.getUID()
+          url: texture.getURL()
+          name: texture.getName()
+        }
+
+      new FloatingTextureSelect @ui, textures: textures, actor: actor
+
+    ###
     # Shows the Texture Repeat settings modal
+    #
     # @return [SettingsWidget] settings
     ###
     showActorTextureRepeatSettings: (actor) ->
@@ -354,21 +405,6 @@ define (require) ->
             return "You must select a texture"
 
           true
-
-    ###
-    # Set
-    # @return [Modal]
-    ###
-    showSetTexture: (actor) ->
-
-      textures = _.map @ui.editor.project.textures, (texture) ->
-        {
-          uid: texture.getUID()
-          url: texture.getURL()
-          name: texture.getName()
-        }
-
-      new FloatingTextureSelect @ui, textures: textures, actor: actor
 
     ###
     # @return [Void]

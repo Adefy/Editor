@@ -134,6 +134,9 @@ define (require) ->
           cb: => @ui.workspace.transformActorIntoSpawner @
 
       ctx.set.entries = _.extend ctx.set.entries,
+        setColor:
+          name: config.locale.label.color_modal
+          cb: => @_contextFuncSetColor @
         setTexture:
           name: config.locale.label.texture_modal
           cb: => @_contextFuncSetTexture @
@@ -1537,11 +1540,19 @@ define (require) ->
       Actors[dumpdata.type].load @ui, dumpdata
 
     ###
+    # Set Actor color
+    # @param [BaseActor] actor
+    ###
+    _contextFuncSetColor: (actor) ->
+      @ui.modals.showSetActorColor actor
+      @
+
+    ###
     # Set Texture context menu function
     # @param [BaseActor] actor
     ###
     _contextFuncSetTexture: (actor) ->
-      @ui.modals.showSetTexture actor
+      @ui.modals.showSetActorTexture actor
       @
 
     ###

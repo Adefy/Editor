@@ -91,3 +91,10 @@ define ->
       else
         n = @num(null, precision)
         "#{n}, #{n}, #{n}"
+
+    ###
+    # @param [String] name
+    # @return [String]
+    ###
+    @nameForCopy: (name) ->
+      name + " copy"
