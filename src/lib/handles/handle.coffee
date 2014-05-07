@@ -70,22 +70,28 @@ define (require) ->
     generateContextEntries: (entries) ->
       result = {}
 
+      make_sub_menu_entries = (data) =>
+        {
+          name: data.title || data.name
+          functions: @generateContextEntries data.entries
+        }
+
+      make_sub_menu = (data, properties) ->
+        # for menu items, use either the title (the context menu name at the top)
+        # or use the menu item name
+        {
+          name: data.name
+          cb: (ctxmenu, e) =>
+            AdefyEditor.ui.spawnContextMenu
+              x: ctxmenu.origin.x + ctxmenu.origin.ox
+              y: ctxmenu.origin.y + ctxmenu.origin.oy
+              properties: properties
+        }
+
       for key, data of entries
         # is this a sub menu?
         if data.subMenu
-          subresult =
-            name: data.title || data.name
-            functions: @generateContextEntries data.entries
-
-          result[key] =
-            # for menu items, use either the title (the context menu name at the top)
-            # or use the menu item name
-            name: data.name
-            cb: (ctxmenu, e) =>
-              AdefyEditor.ui.spawnContextMenu
-                x: ctxmenu.origin.x + ctxmenu.origin.ox
-                y: ctxmenu.origin.y + ctxmenu.origin.oy
-                properties: subresult
+          result[key] = make_sub_menu(data, make_sub_menu_entries(data))
         else
           result[key] = data
 
