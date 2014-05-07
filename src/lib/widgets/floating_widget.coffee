@@ -58,6 +58,9 @@ define (require) ->
           @kill() if @_closeOnFocusLoss
 
       # Generic close listener
+      $(document).on "click", "#{@_sel} .submit", (e) =>
+        @submit()
+
       $(document).on "click", "#{@_sel} .close", (e) =>
         @kill()
 
@@ -148,6 +151,13 @@ define (require) ->
     # be deleted!
     ###
     kill: ->
+      @hide()
+
+      setTimeout =>
+        @removeElement()
+      , @_animateSpeed * 2
+
+    submit: ->
       @hide()
 
       setTimeout =>

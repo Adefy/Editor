@@ -11,7 +11,7 @@ define (require) ->
       @y = param.optional y, 0
 
     ###
-    # @param [Boolean] bipolar should randomization occur in all directions?
+    # @param [Boolean] bipolar  should randomization occur in all directions?
     # @return [Vec2] randomizedVector
     ###
     random: (options) ->

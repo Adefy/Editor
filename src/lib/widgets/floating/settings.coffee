@@ -35,6 +35,7 @@ define (require) ->
       @_title = param.required options.title
       @_settings = param.required options.settings
       @_doneCB = param.required options.cb
+      @_closeCB = param.optional options.cb_close
 
       super @ui, title: "", extraClasses: ["settings-widget"]
 
@@ -42,6 +43,12 @@ define (require) ->
       @setCloseOnFocusLoss()
 
       @show()
+
+    getVisibleY: ->
+      $("body > header").height()
+
+    getHiddenY: ->
+      @getVisibleY() - @getElement().height()
 
     render: ->
 
@@ -60,6 +67,9 @@ define (require) ->
         settings: settings
         title: @_title
 
+    ###
+    # @return [self]
+    ###
     show: ->
       return if @_visible
 
@@ -71,6 +81,11 @@ define (require) ->
       @getElement().animate top: @getVisibleY(), @_animateSpeed, =>
         @_visible = true
 
+      @
+
+    ###
+    # @return [self]
+    ###
     hide: ->
       return unless @_visible
 
@@ -78,7 +93,23 @@ define (require) ->
         @getElement().css "opacity", 0
         @_visible = false
 
-        @_doneCB @_dumpData()
+      @
+
+    ###
+    # @return [self]
+    ###
+    kill: ->
+      @_closeCB() if @_closeCB
+      super()
+      @
+
+    ###
+    # @return [self]
+    ###
+    submit: ->
+      @_doneCB @_dumpData()
+      super()
+      @
 
     ###
     # Parse data from our HTML element, ready to pass to callback
@@ -103,9 +134,3 @@ define (require) ->
         value
 
       _.zipObject settings, values
-
-    getVisibleY: ->
-      $("body > header").height()
-
-    getHiddenY: ->
-      @getVisibleY() - @getElement().height()
