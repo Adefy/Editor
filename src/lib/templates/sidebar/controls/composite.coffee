@@ -5,7 +5,7 @@ define ->
   # @property [Number] value
   ###
   Handlebars.compile """
-  <span data-name="{{dataName}}" class="label">{{displayName}}</span>
+  <label data-name="{{dataName}}">{{displayName}}</label>
 
   {{{contents}}}
   """.split("\n").join " "

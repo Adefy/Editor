@@ -8,7 +8,7 @@ define ->
   ###
   Handlebars.compile """
     {{#if name}}
-      <dl class="label">{{name}}</dl>
+      <label>{{name}}</label>
     {{/if}}
     <ul>
       {{#each entries}}

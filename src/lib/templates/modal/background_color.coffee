@@ -19,7 +19,7 @@ define ->
     <div>
 
     <br />
-    <p class="tcenter">Or...</p>
+    <p style="text-align: center">Or...</p>
     <br />
 
     <div class="input_group">

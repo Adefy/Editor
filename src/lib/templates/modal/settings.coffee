@@ -28,7 +28,7 @@ define ->
   </div>
 
   <span class="footer-title">
-    {{title}}
+    <label>{{title}}</label>
     <div class="float-right">
       <i class="fa fa-fw fa-check submit"></i>
       <i class="fa fa-fw fa-times close"></i>
