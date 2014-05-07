@@ -623,7 +623,12 @@ define (require) ->
           w = texSize.w
           h = texSize.h
 
-          actor = new RectangleActor @ui, time, w, h, pos.x, pos.y
+          actor = new RectangleActor @ui,
+            lifetimeStart: time
+            width: w
+            height: h
+            position: pos
+
           actor.setTexture texture
           @addActor actor
 
