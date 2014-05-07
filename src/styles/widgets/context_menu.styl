@@ -1,42 +1,49 @@
-//
-// Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
-//
-
-// Context menu that appears when right-clicking a manipulatable
 .context-menu
+  z-index $z_ctxmenu
+
   position absolute
-  font-size 12px
-  /// for use with icons
-  //min-width 140px
-  min-width 130px
-  z-index $Z_context_menu
-
   display none
-  line-height 1.5
 
-  background-color rgba(35, 35, 35, .8)
-  border 1px solid rgba(0,0,0,.15)
-  box-shadow 0 2px 3px rgba(0,0,0,.25), inset 0 0 1px rgba(255,255,255,.15)
+  //min-width 140px /// for use with icons
+  min-width 130px
 
-  .label
-    color #fff
-    background-color $col_cm_bg_highlight_label
-    font-size 10px
+  font-size $f_size_ctxmenu
+  font-weight $f_weight_ctxmenu
+  line-height $f_lnh_ctxmenu
+
+  background-color $c_bkg_ctxmenu
+  border 1px solid $c_brd_ctxmenu
+  box-shadow 0 2px 3px $c_boxshdw_ctxmenu, inset 0 0 1px $c_boxshdw_ctxmenu_hnt
+
+  label
+    display block
+
+    width 100%
+
     padding 3px 6px
-    line-height 1.0
+
+    font-size $f_size_ctxmenu_label
+    font-weight $f_weight_ctxmenu_label
+    line-height $f_lnh_ctxmenu_label
+
+    color $c_ctxmenu_label
+    background-color $c_bkg_ctxmenu_label
 
   li
     overflow hidden
+
     width 100%
     padding 5px 10px
-    color #aaa
 
-    transition $time_short padding, $time_short background-color
+    color $c_ctxmenu_item
+
+    transition $t_short padding, $t_short background-color
 
     &:hover
       cursor hand
       cursor pointer
 
-      color #ddd
-      background-color $col_cm_bg_highlight
       padding 5px 16px
+
+      color $c_ctxmenu_item_hl
+      background-color $c_bkg_ctxmenu_item_hl

@@ -1,0 +1,41 @@
+.button
+  display inline-block
+
+  color $c_button
+
+  text-align center
+  vertical-align baseline
+
+  border 1px solid $c_brd_button
+  border-radius 5px
+
+  &:hover
+    cursor pointer
+
+    color $c_button_hl
+
+    border-color $c_brd_button_hl
+    box-shadow inset 0 0 1px $c_boxshdw_button_hl
+
+  &.active, &:hover.active, &:active
+    box-shadow inset 0 0 1px $c_boxshdw_button_act
+    /*background linear-gradient(bottom, #343434, #272727)*/
+
+  &.active, &:hover.active
+    color $c_button_act
+
+  &.toggle
+    display inline-block
+
+    float right
+
+    width 24px
+    height 24px
+    margin-right 8px
+
+    text-align center
+
+    transition $t_short color
+
+    &:hover
+      color $c_button_hl

@@ -2,27 +2,26 @@
 // Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
 //
 // Shown in a modal when changing the bg color
-.bg-color-preview
-  width 75%
-  height 48px
-  display block
-  margin 8px auto
-  border 1px solid rgba(0, 0, 0, 0.1)
+
 
 .modal, .floating-widget
+  z-index $z_floating
+
   position absolute
-  z-index $Z_amodal
 
   font-weight 300
   text-shadow 0 1px 1px rgba(0,0,0,0.58)
-  box-shadow inset 0 0 1px rgba(255,255,255,.15), 0 3px 15px rgba(0,0,0,.15)
-  border 1px solid rgba(0,0,0,.6)
 
   opacity 0
   color #ddd
 
   background rgba(48, 48, 48, 0.96)
+  box-shadow inset 0 0 1px rgba(255,255,255,.15), 0 3px 15px rgba(0,0,0,.15)
+  border 1px solid rgba(0,0,0,.6)
   border-radius 4px
+
+  label
+    font-weight 500
 
   .header
     position relative
@@ -35,11 +34,19 @@
 
     line-height 28px
     font-size 14px
+    font-weight 700
     text-align center
     color #ddd
 
     &:hover
       cursor pointer
+
+  .bg-color-preview
+    width 75%
+    height 48px
+    display block
+    margin 8px auto
+    border 1px solid rgba(0, 0, 0, 0.1)
 
   .modal-body
     color #aaa
