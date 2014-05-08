@@ -4,10 +4,9 @@
 
 // Top navigation bar, holds the logo and menu items
 .menubar
-  z-index $Z_amainbar
+  z-index $z_menubar
 
   position relative
-
   display block
 
   width 100%
@@ -15,98 +14,91 @@
   color $c_menubar
 
   font-size $f_size_menubar
-  text-shadow 0 1px 2px rgba(0,0,0,.2), 0 1px rgba(0,0,0,.2)
+  text-shadow 0 1px 2px $c_txtshdw_menubar, 0 1px $c_txtshdw_menubar
 
   background-color $c_bkg_menubar
-  border-bottom 1px solid rgba(0,0,0,.15)
-  box-shadow 0 1px rgba(255,255,255,.1)
+  border-bottom 1px solid $c_brd_menubar
+  box-shadow 0 1px $c_boxshdw_menubar_hnt
 
-  line-height normal
-
-  //a
-  //  transition color 0.15s, background-color 0.15s
+  line-height $f_lnh_menubar
 
   *
     display block
     vertical-align top
 
-  // Decorater, used to be a border on the mainbar, but moved into a seperate
-  // element to not mess with the height of it. It turned out to mess with the
-  // height anyways, but at this point, not going to move it again
   .menubar-decorater
+    position relative
+
     height 2px
     width 100%
-    position relative
-    background-color $col_mainbar_decorator_bg
-    border-bottom 1px solid $col_divider_bot
+
+    background-color $c_bkg_menubar_decorator
+    border-bottom 1px solid $c_brd_menubar_decorator
 
   .mb-section-end
     border none
-    border-bottom: 1px solid rgba(0,0,0,.15)
-    box-shadow: 0 1px rgba(255,255,255,.1)
+    border-bottom 1px solid $c_brd_menubar_seperator
+    box-shadow 0 1px $c_brd_menubar_seperator_hnt
 
   .bar
-    z-index $Z_amainbar_primary
+    z-index $z_menubar_bar
     position relative
+
     margin 0
     padding 0
 
-    li
-      display: inline-block
+    li, a
+      display inline-block
 
     a
-      display inline-block
-      padding: 2px 10px
-      border-left 1px solid rgba(0,0,0,.0)
-      border-right 1px solid rgba(0,0,0,.0)
+      padding 2px 10px
+      border-left 1px solid $c_brd_menubar_seperator
+      border-right 1px solid $c_brd_menubar_seperator
 
       &:hover
         background-color #222
-        border-left 1px solid rgba(0,0,0,.20)
-        border-right 1px solid rgba(0,0,0,.20)
+        border-left 1px solid $c_brd_menubar_seperator_hl
+        border-right 1px solid $c_brd_menubar_seperator_hl
 
       &:first-child
         margin-left 4px
 
-    //a:hover:not(.open)
-    //  background $col_mainbar_link_hover_bg
-
-    //a.open
-    //  background-color $col_mainbar_primary_open_bg
-
-  // aka menu
   .menu
-    z-index $Z_amainbar_secondary
+    z-index $z_menubar_menu
+
     position absolute
 
-    min-width 120px
+    min-width 140px
 
     display none
 
-    line-height 1.5
+    font-size $f_size_menubar_menu
+    font-weight $f_weight_menubar_menu
+    line-height $f_lnh_menubar_menu
 
-    background-color rgba(35, 35, 35, .8)
-    border 1px solid rgba(0,0,0,.15)
-    box-shadow 0 2px 3px rgba(0,0,0,.25), inset 0 0 1px rgba(255,255,255,.15)
+    background-color $c_bkg_menubar_menu
+    border 1px solid $c_brd_menubar_menu
+    box-shadow 0 2px 3px $c_boxshdw_menubar_menu, inset 0 0 1px $c_boxshdw_menubar_menu_hnt
 
     a
       display block
       padding 4px 10px
-      color #AAA
+      color $c_menubar_menu_item
 
       transition $t_short padding, $t_short background-color
 
       &:hover
-        color #DDD
-        background-color $col_mainbar_secondary_hover_bg
+        color $c_menubar_menu_item_hl
+        background-color $c_bkg_menubar_menu_item_hl
         padding 4px 16px
 
-      //&:last-child
-      //  margin-bottom 8px
+      &:last-child
+        border-bottom 4px solid $c_bkg_menubar_menu_tail
 
     hr
-      border none
       height 0
       margin 0
-      border-top 1px solid rgba(0,0,0,.15)
-      border-bottom 1px solid rgba(255,255,255,.05)
+
+      border none
+      border-top 1px solid $c_brd_menubar_seperator
+      border-bottom 1px solid $c_brd_menubar_seperator_hl
