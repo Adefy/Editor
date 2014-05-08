@@ -1,42 +1,56 @@
 .panel
+  overflow hidden
+
   width 100%
   height 100%
-  background-color #1e1e1e
-  border-right 1px solid rgba(0,0,0,0.35)
-  box-shadow inset -1px 0 rgba(255,255,255,.05)
-  overflow hidden
+
+  background-color $c_bkg_panel
+  border-right 1px solid $c_brd_panel
+  box-shadow inset -1px 0 $c_boxshdw_panel
 
   &.with-footer
     .content
-      height: calc(100% - (26px + 20px))
+      height calc(100% - (26px + 20px))
+
     .footer
-      height: 20px
-      line-height: 22px
-      color: #666
-      padding: 0 7px
-      text-shadow: 0 1px 1px rgba(0,0,0,0.58)
-      border-bottom: 1px solid rgba(0,0,0,0.3)
-      background: -webkit-linear-gradient(top,#343434,#272727)
-      background: #2c2c2c
-      border-top: 1px solid rgba(0,0,0,0.45)
-      box-shadow: inset 0 1px rgba(255,255,255,0.07)
-      font-size: .750rem
+      height 20px
+
+      padding 0 7px
+
+      line-height $f_lnh_panel_footer
+      font-size $f_size_panel_footer
+
+      color $c_panel_footer
+
+      text-shadow 0 1px 1px $c_txtshdw_panel_footer
+
+      background-color $c_bkg_panel_footer
+      border-bottom 1px solid $c_brd_panel_footer
+      border-top 1px solid $c_brd_panel_footer_hnt
+      box-shadow inset 0 1px $c_boxshdw_panel_footer
+
       i
-        cursor: pointer
-        line-height: 20px
+        cursor pointer
+        line-height 20px
+
+        transition $t_short color
+
         &:hover
-          color: #fff
+          color #fff
+
         &.active
-          color: #33b5e5
+          color #33b5e5
+
       i.left
-        float: left
+        float left
         margin-right 7px
+
       i.right
-        float: right
+        float right
         margin-left: 7px
 
   .tabs
-    background linear-gradient(bottom, #272727, #313131)
+    background $c_gradient
     box-shadow 0 1px rgba(0,0,0,.1)
     border-top 1px solid #313131
     padding 0 4px
@@ -68,10 +82,10 @@
       // , inset 0 1px rgba(255,255,255,.05)
 
   .content
-    position: relative
-    height: calc(100% - 26px)
-    overflow: hidden
-    padding: 0
+    position relative
+    height calc(100% - 26px)
+    overflow hidden
+    padding 0
     line-height 1.4
 
     div
@@ -79,7 +93,7 @@
       padding 0
 
     h1
-      color: #ccc
+      color #ccc
       border-bottom: 1px solid rgba(0,0,0,.35)
       box-shadow: 0 1px rgba(255,255,255,.05)
       margin: .35em -20px .5em
@@ -203,58 +217,60 @@
 
     &.thumbs
       .thumb
-        display: inline-block
-        vertical-align: top
-        width: 50%
-        padding: .5rem .5rem .25rem
-        text-align: center
-        color: #fff
-        text-shadow: 0 1px rgba(0,0,0,.35)
-        font-size: .75rem
+        display inline-block
+        vertical-align top
+        width 50%
+        padding .5rem .5rem .25rem
+        text-align center
+        color #fff
+        text-shadow 0 1px rgba(0,0,0,.35)
+        font-size .75rem
         .img
-          max-height: 120px
-          line-height: 120px
+          max-height 120px
+          line-height 120px
           img
-            max-width: 100%
-            max-height: 100%
-            vertical-align: middle
-            box-shadow: 0 0 10px 5px rgba(0,0,0,.3)
+            max-width 100%
+            max-height 100%
+            vertical-align middle
+            box-shadow 0 0 10px 5px rgba(0,0,0,.3)
 
     &.list
       .thumb
-        display: block
-        vertical-align: top
-        width: 100%
-        padding: .5rem .5rem .25rem
-        text-align: left
-        color: #fff
-        text-shadow: 0 1px rgba(0,0,0,.35)
-        font-size: 1.25rem
+        display block
+        vertical-align top
+        width 100%
+        padding .5rem .5rem .25rem
+        text-align left
+        color #fff
+        text-shadow 0 1px rgba(0,0,0,.35)
+        font-size 1.25rem
 
         .img
-          display: inline-block
-          max-width: 20%
-          min-width: 20%
-          max-height: 32px
+          display inline-block
+          max-width 20%
+          min-width 20%
+          max-height 32px
 
           img
-            max-width: 100%
-            max-height: 100%
-            vertical-align: middle
-            box-shadow: 0 0 10px 5px rgba(0,0,0,.3)
+            max-width 100%
+            max-height 100%
+            vertical-align middle
+            box-shadow 0 0 10px 5px rgba(0,0,0,.3)
 
         .name
-          display: inline-block
-          width: 70%
+          display inline-block
+          width 70%
 
     &.thumbs, &.list
-      border-radius 5px
+      background-color transparent
+      border none
       border 1px solid transparent
 
       .thumb
+        transition $t_short border-color, $t_short background-color
         &:hover
-          border-color: rgba(0,0,0,.2)
-          box-shadow: inset 0 0 1px rgba(255,255,255,.2)
+          background-color $c_bkg_panel_thumb_hl
+          border-color $c_brd_panel_thumb_hl
 
 
 .canvas

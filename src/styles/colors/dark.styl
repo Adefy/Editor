@@ -7,13 +7,26 @@
  act : active
  */
 
+$c_gradient = linear-gradient(top, #343434, #272727)
+
 /** background color */
-$c_bkg_default = rgba(35, 35, 35, 0.85)
+//$c_bkg_default_dark = rgb(25, 25, 25)
+$c_bkg_default = rgba(35, 35, 35, 0.95)
+$c_bkg_default_s = rgb(35, 35, 35)
+$c_bkg_default2 = rgba(45, 45, 45, 0.95)
+$c_bkg_default2_s = rgb(45, 45, 45)
 $c_bkg_default_hl = rgb(45, 45, 45)
+$c_bkg_default_act = rgb(35, 35, 35)
+
+$c_bkg_button_act = $c_bkg_default_act
 
 $c_bkg_ctxmenu = $c_bkg_default
 $c_bkg_ctxmenu_label = rgb(60, 60, 60)
 $c_bkg_ctxmenu_item_hl = $c_bkg_default_hl
+
+$c_bkg_flotw = $c_bkg_default2
+
+$c_bkg_input = $c_bkg_default
 
 $c_bkg_menubar = $c_bkg_default_hl
 
@@ -23,16 +36,28 @@ $c_bkg_menubar_menu = $c_bkg_default
 $c_bkg_menubar_menu_item_hl = $c_bkg_default_hl
 $c_bkg_menubar_menu_tail = rgb(60, 60, 60)
 
+$c_bkg_panel = $c_bkg_default_s
+$c_bkg_panel_footer = $c_bkg_default2_s
+$c_bkg_panel_thumb_hl = $c_bkg_default_hl
+
 
 /** border color */
-$c_brd_default = rgba(0, 0, 0, 0.2)
-$c_brd_default_hl = rgba(0, 0, 0, 0.3)
+$c_brd_default = rgba(0, 0, 0, 0.3)
+$c_brd_default_hl = rgba(0, 0, 0, 0.45)
 $c_brd_default_hnt = rgba(255, 255, 255, 0.1)
 
 $c_brd_ctxmenu = $c_brd_default
 
 $c_brd_button = transparent
+$c_brd_button2 = $c_brd_default
 $c_brd_button_hl = $c_brd_default
+$c_brd_button_hnt = $c_brd_default_hnt
+
+$c_brd_flotw = $c_brd_default
+$c_brd_flotw_footer = $c_brd_default
+
+$c_brd_input = transparent
+$c_brd_input_focus = rgb(52, 181, 229)
 
 $c_brd_menubar_decorator = rgb(24, 96, 115)
 
@@ -44,6 +69,12 @@ $c_brd_menubar_seperator_hl = $c_brd_default_hl
 
 $c_brd_menubar_menu = $c_brd_default
 
+$c_brd_panel = $c_brd_default
+$c_brd_panel_footer = $c_brd_default
+$c_brd_panel_footer_hnt = $c_brd_default_hl
+
+$c_brd_panel_thumb_hl = $c_brd_default
+
 $c_brd_settings_footer = $c_brd_default
 
 
@@ -51,13 +82,23 @@ $c_brd_settings_footer = $c_brd_default
 $c_boxshdw_default = rgba(0, 0, 0, 0.15)
 $c_boxshdw_default_hl = rgba(255, 255, 255, 0.2)
 $c_boxshdw_default_hnt = rgba(255, 255, 255, 0.2)
+$c_boxshdw_default_hnt2 = rgba(255, 255, 255, 0.1)
 $c_boxshdw_default_act = rgba(0, 0, 0, 0.25)
+
+$c_boxshdw_button = $c_boxshdw_default
+$c_boxshdw_button_hl = $c_boxshdw_default_hl
+$c_boxshdw_button_hnt = $c_boxshdw_default_hnt
+$c_boxshdw_button_act = $c_boxshdw_default_act
+$c_boxshdw_button_hnt2 = $c_boxshdw_default_hnt2
 
 $c_boxshdw_ctxmenu = $c_boxshdw_default
 $c_boxshdw_ctxmenu_hnt = $c_boxshdw_default_hnt
 
-$c_boxshdw_button_hl = $c_boxshdw_default_hl
-$c_boxshdw_button_act = $c_boxshdw_default_act
+$c_boxshdw_flotw = $c_boxshdw_default
+$c_boxshdw_flotw_hnt = $c_boxshdw_default_hnt
+
+$c_boxshdw_input = $c_boxshdw_default
+$c_boxshdw_input_hnt = $c_boxshdw_default_hnt
 
 $c_boxshdw_menubar_hnt = $c_boxshdw_default_hnt
 
@@ -66,16 +107,25 @@ $c_boxshdw_menubar_menu_hnt = $c_boxshdw_default_hnt
 
 $c_boxshdw_settings = $c_boxshdw_default
 
+$c_boxshdw_panel = rgba(255,255,255,.05)
+$c_boxshdw_panel_footer = rgba(255,255,255,.05)
 
 /** text-shadow */
 $c_txtshdw_default = rgba(0, 0, 0, 0.2)
+$c_txtshdw_default2 = rgba(0,0,0,0.58)
 
 $c_txtshdw_menubar = $c_txtshdw_default
 
+$c_txtshdw_button = $c_txtshdw_default
+
+$c_txtshdw_flotw = $c_txtshdw_default
+
+$c_txtshdw_panel_footer = $c_txtshdw_default2
 
 
 /** font color */
 $c_default = rgb(48, 48, 48)
+$c_default2 = rgb(96, 96, 96)
 $c_item_default = rgb(160, 160, 160)
 $c_item_default_hl = rgb(208, 208, 208)
 $c_item_default_act = rgb(52, 181, 229)
@@ -87,13 +137,22 @@ $c_a_hl = $c_item_default_hl
 /* button */
 $c_button = $c_item_default
 $c_button_hl = $c_item_default_hl
-$c_button_act = $c_item_default_hl
+$c_button_act = $c_item_default_act
 
 /* context-menu label */
 $c_ctxmenu_label = rgb(255, 255, 255)
 /* context-menu item */
 $c_ctxmenu_item = $c_item_default
 $c_ctxmenu_item_hl = $c_item_default_hl
+
+/* floating-widget */
+$c_flotw = $c_item_default
+$c_flotw_header = $c_item_default
+$c_flotw_message = $c_item_default_hl
+$c_flotw_message_error = rgb(255, 68, 68)
+
+/* input */
+$c_input = $c_item_default_hl
 
 /* menubar */
 $c_menubar = rgb(255, 255, 255)
@@ -105,6 +164,8 @@ $c_menubar_menu_item_act = $c_item_default_act
 $c_settings_button = $c_item_default
 $c_settings_button_hl = $c_item_default_hl
 $c_settings_button_act = $c_item_default_act
+
+$c_panel_footer = $c_default2
 
 
 /* OLD to be removed \/ */

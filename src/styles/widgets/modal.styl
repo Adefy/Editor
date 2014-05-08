@@ -1,42 +1,37 @@
-//
-// Copyright © 2013 Spectrum IT Solutions Gmbh - All Rights Reserved
-//
-// Shown in a modal when changing the bg color
-
-
 .modal, .floating-widget
   z-index $z_floating
 
   position absolute
 
-  font-weight 300
-  text-shadow 0 1px 1px rgba(0,0,0,0.58)
+  font-weight $f_weight_flotw
+  text-shadow 0 1px 1px $c_txtshdw_flotw
 
   opacity 0
-  color #ddd
+  color $c_flotw
 
-  background rgba(48, 48, 48, 0.96)
-  box-shadow inset 0 0 1px rgba(255,255,255,.15), 0 3px 15px rgba(0,0,0,.15)
-  border 1px solid rgba(0,0,0,.6)
+  background-color $c_bkg_flotw
+  box-shadow 0 2px 3px $c_boxshdw_flotw, inset 0 0 1px $c_boxshdw_flotw_hnt
+  border 1px solid $c_brd_flotw
   border-radius 4px
 
   label
-    font-weight 500
+    font-weight $f_weight_flotw_label
+    font-size $f_size_flotw_label
 
   .header
     position relative
     padding 0 12px
 
     border-radius 4px 4px 0 0
-    background linear-gradient(top, #343434,#292929)
+    background $c_gradient
     box-shadow inset 0 -1px rgba(0,0,0,.35), inset 0 1px rgba(255,255,255,.05)
     border-bottom 1px solid rgba(255,255,255,.05)
 
     line-height 28px
-    font-size 14px
-    font-weight 700
+    font-size $f_size_flotw_header
+    font-weight $f_weight_flotw_header
     text-align center
-    color #ddd
+    color $c_flotw_header
 
     &:hover
       cursor pointer
@@ -46,12 +41,12 @@
     height 48px
     display block
     margin 8px auto
-    border 1px solid rgba(0, 0, 0, 0.1)
+    border 1px solid $c_brd_default
 
   .modal-body
     color #aaa
     padding 16px
-    font-size 14px
+    font-size $f_size_flotw_body
 
     p.description
       display block !important
@@ -79,17 +74,17 @@
     height 46px
     padding 8px
 
-    border-top 1px solid rgba(255,255,255,.05)
+    border-top 1px solid $c_brd_flotw_footer
 
     .message
-      color #aaa
-      font-size 14px
+      color $c_flotw_message
+      font-size $f_size_flotw_message
       line-height 28px
       margin-left 8px
       font-style italic
 
       &.error
-        color $lred
+        color $c_flotw_message_error
 
     .modal-dismiss
       float right
