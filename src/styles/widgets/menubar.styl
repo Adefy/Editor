@@ -82,15 +82,21 @@
 
     a
       display block
-      padding 4px 10px
+      padding 5px 10px
       color $c_menubar_menu_item
 
-      transition $t_short padding, $t_short background-color
+      transition $t_short padding, $t_short color, $t_short background-color
 
-      &:hover
+      &:hover, &:active
+        cursor pointer
+
+        padding 5px 16px
+
         color $c_menubar_menu_item_hl
         background-color $c_bkg_menubar_menu_item_hl
-        padding 4px 16px
+
+      &:active
+        color $c_menubar_menu_item_act
 
       &:last-child
         border-bottom 4px solid $c_bkg_menubar_menu_tail

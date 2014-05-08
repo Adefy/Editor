@@ -37,13 +37,15 @@
 
     color $c_ctxmenu_item
 
-    transition $t_short padding, $t_short background-color
+    transition $t_short padding, $t_short color, $t_short background-color
 
-    &:hover
-      cursor hand
+    &:hover, &:active
       cursor pointer
 
       padding 5px 16px
 
       color $c_ctxmenu_item_hl
       background-color $c_bkg_ctxmenu_item_hl
+
+    &:active
+      color $c_menubar_menu_item_act

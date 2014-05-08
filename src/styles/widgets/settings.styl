@@ -1,10 +1,10 @@
 .settings-widget
+  z-index $z_settings
+
   width 256px
 
-  z-index 1
-
   margin-top -4px
-  box-shadow 0 1px 4px rgba(0, 0, 0, 0.4)
+  box-shadow 0 1px 4px $c_boxshdw_settings
 
   .content
     padding 4px 12px
@@ -14,7 +14,8 @@
 
       label
         display block
-        font-size 12px
+        font-size $f_size_settings_label
+        font-weight $f_weight_settings_label
         margin-bottom 4px
 
       input
@@ -22,8 +23,8 @@
         width 100%
 
       &.halfw
-        width 45%
         display inline-block
+        width 45%
         vertical-align top
 
     .input.halfw:nth-child(2n)
@@ -34,20 +35,29 @@
     display block
     padding 2px 12px
 
-    background linear-gradient(top, #343434,#292929) !important
-    border-top 1px solid rgba(0, 0, 0, 0.05)
-    font-size 14px
+    background linear-gradient(top, #343434, #292929) !important
+    border-top 1px solid $c_brd_settings_footer
+    font-size $f_size_settings_footer
 
     label
-      font-weight 700
+      font-size $f_size_settings_footer_label
+      font-weight $f_weight_settings_footer_label
 
     .float-right
       float right
 
     .close, .submit
-      position relative
       display inline-block
 
-      &:hover
+      position relative
+
+      color $c_settings_button
+
+      transition $t_short color
+
+      &:hover, &:active
         cursor pointer
-        color #eee
+        color $c_settings_button_hl
+
+      &:active
+        color $c_settings_button_act
