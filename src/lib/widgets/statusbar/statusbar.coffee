@@ -15,9 +15,9 @@ define (require) ->
     # Make that StatusBar!
     ###
     constructor: (@ui, options) ->
-      options = param.optional options, {}
+      options ||= {}
       options.id = ID.prefID("statusbar")
-      options.classes = param.optional options.classes, []
+      options.classes ||= []
       options.classes.push "statusbar"
 
       @_items = []

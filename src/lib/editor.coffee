@@ -66,7 +66,7 @@ define (require) ->
     ###
     init: ->
       @project = new Project @ui, window.ADEFY_EDITOR_CREATIVE_PAYLOAD, (p) =>
-        p.loadNewestSnapshot()
+        #p.loadNewestSnapshot()
 
       @startAutosaveTask()
 
@@ -135,20 +135,19 @@ define (require) ->
     ###
     applySettings: (options) ->
       restartAutosave = false
-      autosaveData = param.optional options.autosave, null
-      if autosaveData
-        freq = param.optional autosaveData.frequency, \
-                              @settings.autosave.frequency
-        if freq
-          @settings.autosave.frequency = freq
+      autosaveData = options.autosave
+      autosaveData.frequency ||= @settings.autosave.frequency
+      autosaveData.maxcount ||= @settings.autosave.maxcount
+
+      if !!autosaveData                              
+
+        if autosaveData.frequency != @settings.autosave.frequency
+          @settings.autosave.frequency = autosaveData.frequency
           restartAutosave = true
 
-        maxcount = param.optional autosaveData.maxcount, \
-                                  @settings.autosave.maxcount
-        @settings.autosave.maxcount = maxcount
+        @settings.autosave.maxcount = autosaveData.maxcount
 
       @startAutosaveTask() if restartAutosave
-
       @saveSettings()
       @
 

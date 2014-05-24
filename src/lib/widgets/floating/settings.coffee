@@ -35,7 +35,7 @@ define (require) ->
       @_title = param.required options.title
       @_settings = param.required options.settings
       @_doneCB = param.required options.cb
-      @_closeCB = param.optional options.cb_close
+      @_closeCB = options.cb_close
 
       super @ui, title: "", extraClasses: ["settings-widget"]
 
@@ -74,7 +74,7 @@ define (require) ->
       return if @_visible
 
       w = @getElement().width()
-      x = param.optional x, (window.innerWidth / 2) - (w / 2)
+      x = x || (window.innerWidth / 2) - (w / 2)
 
       @getElement().offset left: x, top: @getHiddenY()
       @getElement().css "opacity", 1

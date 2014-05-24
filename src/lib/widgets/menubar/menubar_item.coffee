@@ -36,9 +36,9 @@ define (require) ->
 
       @_secondaryID = ID.prefID "#{@_id}-secondary"
 
-      @label = param.optional label, ""
-      @href = param.optional href, "#"
-      @sectionEnd = param.optional sectionEnd, false
+      @label = label || ""
+      @href = href || "#"
+      @sectionEnd = !!sectionEnd
 
       @_children = []
 
@@ -92,10 +92,10 @@ define (require) ->
     ###
     createChild: (options) ->
       param.required options
-      sectionEnd = param.optional options.sectionEnd, false
-      label = param.optional options.label, ""
-      click = param.optional options.click, null
-      href = param.optional options.href, "javascript:void(0)", [], false
+      sectionEnd = !!options.sectionEnd
+      label = options.label || ""
+      click = options.click
+      href = options.href || "javascript:void(0)"
 
       role = "secondary"
 

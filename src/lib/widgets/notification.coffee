@@ -35,15 +35,15 @@ define (require) ->
     ###
     # Instantiates and renders us, sets timeout for death
     #
+    # @param [UIManager] ui
     # @param [Number] msg message to display
     # @param [Number] color notification color
     # @param [Number] life lifetime length in ms, defaults to 2000
     ###
-    constructor: (@ui, options) ->
-      #msg, color, life
+    constructor: (@ui, msg, color, life) ->
       param.required msg
-      color = param.optional color, "blue", [ "blue", "red", "green" ]
-      life = param.optional life, 2000
+      color ||= "blue"
+      life ||= 2000
 
       # For premature timeout clearing
       @timeout = null

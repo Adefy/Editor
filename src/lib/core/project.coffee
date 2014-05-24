@@ -109,10 +109,12 @@ define (require) ->
         save = _.find creative.saves, (s) ->
           s.timestamp == new Date(creative.activeSave).getTime()
 
+        ###
         if save
           @load save
         else
           AUtilLog.error "Invalid creative payload, active save not found"
+        ###
 
       onLoad(@) if onLoad
 

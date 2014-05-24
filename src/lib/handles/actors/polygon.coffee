@@ -33,7 +33,7 @@ define (require) ->
 
       sides      = param.required options.sides
       radius     = Math.abs param.required options.radius
-      manualInit = param.optional options.manualInit, false
+      manualInit = !!options.manualInit
 
       throw new Error "Can't create an ngon with less than 3 sides" if sides < 3
 
@@ -125,7 +125,7 @@ define (require) ->
       position = new AREVector2 x, y
       color = new AREColor3 r, g, b
 
-      @_areActor = new AREPolygonActor radius, segments
+      @_areActor = new AREPolygonActor @ui.getARERenderer(), radius, segments
       if physicsEnabled
         @_areActor.createPhysicsBody mass, friction, elasticity
 

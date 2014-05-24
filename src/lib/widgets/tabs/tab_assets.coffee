@@ -17,9 +17,9 @@ define (require) ->
     # @param [SidebarPanel] parent
     ###
     constructor: (@ui, options) ->
-      options = param.optional options, {}
+      options ||= {}
       options.id = ID.prefID("tab-assets")
-      options.classes = param.optional options.classes, []
+      options.classes ||= []
       options.classes.push "tab-assets"
 
       super @ui, options

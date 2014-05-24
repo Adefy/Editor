@@ -49,8 +49,8 @@ define (require) ->
 
       super()
 
-      position = param.optional options.position, { x: 0, y: 0 }
-      rotation = param.optional options.rotation, 0
+      position = options.position || { x: 0, y: 0 }
+      rotation = options.rotation || 0
 
       @handleType = "BaseActor"
 
@@ -61,7 +61,7 @@ define (require) ->
       @_initialized = false # True after postInit() is called
 
       @lifetimeStart_ms = param.required options.lifetimeStart
-      @lifetimeEnd_ms = param.optional options.lifetimeEnd, @ui.timeline.getDuration()
+      @lifetimeEnd_ms = options.lifetimeEnd || @ui.timeline.getDuration()
 
       ###
       # Property buffer, holds values at different points in time. Current
@@ -253,6 +253,7 @@ define (require) ->
         val >= 0 && val <= 16 && Math.round(val) == val
 
       @_properties.layer.physics.onUpdate = (layer) =>
+        layer = 15 if layer > 15
         @_areActor.setPhysicsLayer layer if @_areActor
 
       @_properties.layer.addProperty "main", @_properties.layer.main
@@ -280,7 +281,7 @@ define (require) ->
       @_properties.color.r.setMax 255
       @_properties.color.r.setFloat false
       @_properties.color.r.setPlaceholder 255
-      @_properties.color.r.setValue 255
+      @_properties.color.r.setValue 100
       @_properties.color.r.setPrecision config.precision.color
 
       @_properties.color.g = new NumericProperty()
@@ -498,15 +499,15 @@ define (require) ->
     # @return [Object] color
     ###
     getColor: (float) ->
-      float = param.optional float, false
+      float = !!float
 
       colorRaw = @_properties.color.getValue()
       color = new AREColor3 colorRaw.r, colorRaw.g, colorRaw.b
 
       {
-        r: color.getR(float)
-        g: color.getG(float)
-        b: color.getB(float)
+        r: color.getR float
+        g: color.getG float
+        b: color.getB float
       }
 
     ###
@@ -606,8 +607,6 @@ define (require) ->
 
       try
         @setTexture texture
-      catch e
-        AUtilLog.warn "Texture not loaded yet, but continuing... [#{uid}]"
 
       @
 
@@ -634,7 +633,7 @@ define (require) ->
       param.required property
       param.required anim
       param.required opts
-      component = param.optional component, ""
+      component ||= ""
 
       property = @_properties[property]
       return unless property
@@ -779,7 +778,7 @@ define (require) ->
         @__fugly_postBirth()
       return unless @_temporalUpdatesEnabled
 
-      time = Math.floor(param.optional time, @ui.timeline.getCursorTime())
+      time = Math.floor time || @ui.timeline.getCursorTime()
 
       if @_propSnapshot == null
         @seedBirth()
@@ -916,7 +915,7 @@ define (require) ->
     adjustLifetime: (options) ->
       start = param.required options.start
       end = param.required options.end
-      scaleToFit = param.optional options.scaleToFit, false
+      scaleToFit = !!options.scaleToFit
 
       oldStart = @lifetimeStart_ms
       oldEnd = @lifetimeEnd_ms
@@ -1337,7 +1336,7 @@ define (require) ->
     ###
     getNearestAnimationTime: (source, options) ->
       param.required source
-      options = param.optional options, {}
+      options ||= {}
       time = null
 
       if options.right
@@ -1368,8 +1367,7 @@ define (require) ->
     ###
     findNearestState: (start, right, prop) ->
       start = Number param.required start
-      right = param.optional right, false
-      prop = param.optional prop, null
+      right = !!right
 
       nearest = -1
 
@@ -1378,9 +1376,9 @@ define (require) ->
 
         if buffer
           if right and (time > start) and (time < nearest or nearest == -1)
-            nearest = time if prop == null or buffer[prop]
+            nearest = time if !prop or buffer[prop]
           else if !right and (time < start) and (time > nearest)
-            nearest = time if prop == null or buffer[prop]
+            nearest = time if !prop or buffer[prop]
 
       nearest
 
@@ -1491,7 +1489,7 @@ define (require) ->
     _serializeProperties: (delta) ->
 
       # If no property names are supplied, serialize all properties
-      delta = param.optional delta, []
+      delta ||= []
 
       # Go through and build an object for our buffer, simple
       props = {}

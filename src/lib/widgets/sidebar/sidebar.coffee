@@ -30,12 +30,12 @@ define (require) ->
     # @param [Number] width
     ###
     constructor: (@ui, options) ->
-      options = param.optional options, {}
+      options ||= {}
 
       # Sidebar items of class SidebarItem (or implementations)
       @_items = []
 
-      @_width = param.optional options.width, 300
+      @_width = options.width || 300
 
       super @ui,
         id: ID.prefID("sidebar")
@@ -200,7 +200,7 @@ define (require) ->
     # @param [Boolean] animate defaults to false
     ###
     toggle: (cb, animate) ->
-      animate = param.optional animate, true
+      animate = true if typeof animate != "boolean"
 
       if @_visible
         @hide cb, animate
@@ -214,7 +214,7 @@ define (require) ->
     # @param [Boolean] animate defaults to true
     ###
     show: (cb, animate) ->
-      animate = param.optional animate, true
+      animate = true if typeof animate != "boolean"
 
       if @_visible
         cb() if cb
@@ -237,7 +237,7 @@ define (require) ->
     # @param [Boolean] animate defaults to true
     ###
     hide: (cb, animate) ->
-      animate = param.optional animate, true
+      animate = true if typeof animate != "boolean"
 
       unless @_visible
         cb() if cb

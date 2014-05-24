@@ -251,6 +251,15 @@ define (require) ->
       @menu
 
     ###
+    # Get the active ARE renderer
+    #
+    # @return [ARERenderer]
+    ###
+    getARERenderer: ->
+      return null unless !!@workspace
+      return @workspace.getARE().getRenderer()
+
+    ###
     # @return [self]
     ###
     refreshStub: ->

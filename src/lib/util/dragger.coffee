@@ -12,7 +12,7 @@ define (require) ->
     # @param [Number] tolerance drag tolerance in pixels, default 5
     ###
     constructor: (selector, tolerance) ->
-      @_tolerance = param.optional tolerance, 5
+      @_tolerance = tolerance || 5
       @_sel = param.required selector
 
       @clearUserData()
@@ -32,6 +32,7 @@ define (require) ->
     # Set up drag event listeners
     ###
     bindListeners: ->
+      console.log "Bound dragger listeners"
       $(document).on "mousedown", @_sel, (e) =>
         return unless @checkDrag e
 

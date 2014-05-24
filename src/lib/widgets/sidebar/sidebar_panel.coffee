@@ -16,7 +16,7 @@ define (require) ->
       @_tabs = []
       @_footerActive = false
 
-      options.classes = param.optional options.classes, []
+      options.classes ||= []
       options.classes.push "panel"
 
       super @ui, options

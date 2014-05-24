@@ -33,8 +33,8 @@ define (require) ->
       w = param.required options.width
       h = param.required options.height
 
-      manualInit = param.optional options.manualInit, false
-      rotation = param.optional options.rotation, 0
+      manualInit = !!options.manualInit
+      rotation = options.rotation || 0
 
       if w <= 0 or h <= 0 then throw new Error "Width/Height must be >0!"
 
@@ -134,7 +134,7 @@ define (require) ->
       position = new AREVector2 x, y
       color = new AREColor3 r, g, b
 
-      @_areActor = new ARERectangleActor w, h
+      @_areActor = new ARERectangleActor @ui.getARERenderer(), w, h
       if physicsEnabled
         @_areActor.createPhysicsBody mass, friction, elasticity
 

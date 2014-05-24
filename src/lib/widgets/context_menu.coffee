@@ -111,11 +111,9 @@ define (require) ->
           AUtilLog.error "No callback function was given for #{f}"
           return
 
-
         $(document).on "click", "[data-id=\"#{@functions[f]._ident}\"]", (e) =>
           @remove()
           @functions[f].cb(@, e)
-
 
       entries = []
 

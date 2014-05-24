@@ -118,7 +118,7 @@ define (require) ->
     ###
     addItem: (label, link) ->
       param.required label
-      link = param.optional link, "#"
+      link ||= "#"
 
       _id = ID.prefID "menubar-item"
       child = new MenuBarItem _id, "#", @, "primary", label, link

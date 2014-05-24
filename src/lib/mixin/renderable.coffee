@@ -16,8 +16,8 @@ define (requre) ->
     ###
     genElement: (type, attributes, cb) ->
       param.required type
-      attributes = param.optional attributes, {}
-      cb = param.optional cb, -> ""
+      attributes ||= {}
+      cb = cb || -> ""
 
       attributes_s = _.pairs(attributes).map (a) ->
         "#{a[0]}=\"#{a[1]}\""

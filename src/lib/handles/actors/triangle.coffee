@@ -34,7 +34,7 @@ define (require) ->
       b = param.required options.base
       h = param.required options.height
 
-      manualInit = param.optional manualInit, false
+      manualInit = !!manualInit
 
       if b <= 0 or h <= 0 then throw new Error "Base/Height must be >0!"
 
@@ -131,7 +131,7 @@ define (require) ->
       position = new AREVector2 position.x, position.y
       rotation = @_properties.rotation.getValue()
 
-      @_areActor = new ARETriangleActor base, height
+      @_areActor = new ARETriangleActor @ui.getARERenderer(), base, height
       if physicsEnabled
         @_areActor.createPhysicsBody mass, friction, elasticity
 

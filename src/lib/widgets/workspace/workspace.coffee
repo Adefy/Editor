@@ -103,20 +103,22 @@ define (require) ->
 
       # setup deps basepath
       ARE.config.deps.physics.chipmunk = "/editor/components/chipmunk/cp.js"
-      ARE.config.deps.physics.koon = "/editor/components/adefyre-dev/build/lib/koon/koon.js"
-      ARE.config.deps.physics.physics_worker = "/editor/components/adefyre-dev/build/lib/physics/worker.js"
+      ARE.config.deps.physics.koon = "/editor/components/adefyre/build/lib/koon/koon.js"
+      ARE.config.deps.physics.physics_worker = "/editor/components/adefyre/build/lib/physics/worker.js"
       # work around for getting actors to render properly
       ARERenderer.alwaysClearScreen = true
 
-      cb = =>
-        @_are = AdefyRE.Engine()._engine
+      cb = (@_are) =>
 
-        # AdefyRE.Engine().setLogLevel 4
+        # Tag class onto canvas div
+        $("##{config.id.are_canvas}").addClass "canvas"
+
+        AdefyRE.Engine().setLogLevel 1
 
         @_engineInit()
         @_applyCanvasSizeUpdate()
 
-      AdefyRE.Engine().initialize w, h, cb, 0, config.id.are_canvas
+      AdefyRE.Engine().initialize w, h, cb, 0, "#{config.id.are_canvas}"
 
       @
 
@@ -232,8 +234,6 @@ define (require) ->
       return AUtilLog.error "ARE not loaded, cannot load texture" unless @_are
 
       AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, =>
-        AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
-
         @ui.events.push "texture", "load", texture: texture
 
         # Refresh any actors that already have the texture assigned
@@ -289,9 +289,11 @@ define (require) ->
     ###
     getNewActorCtxMenu: (x, y) ->
       time = @ui.timeline.getCursorTime()
-      pos = @domToGL(x, y)
-      pos.x += ARERenderer.camPos.x
-      pos.y += ARERenderer.camPos.y
+
+      pos = @domToGL x, y
+      camPos = @_are.getRenderer().getCameraPosition()
+      pos.x += camPos.x
+      pos.y += camPos.y
 
       {
         name: config.locale.title.create
@@ -350,9 +352,11 @@ define (require) ->
           name: config.locale.paste
           cb: =>
 
-            pos = @domToGL(x, y)
-            pos.x += ARERenderer.camPos.x
-            pos.y += ARERenderer.camPos.y
+            pos = @domToGL x, y
+
+            camPos = @_are.getRenderer().getCameraPosition()
+            pos.x += camPos.x
+            pos.y += camPos.y
 
             newActor = @ui.editor.clipboard.data.duplicate()
             newActor.setPosition pos.x, pos.y
@@ -396,7 +400,7 @@ define (require) ->
     # @param [Method] noActorCallback
     ###
     pickActor: (x, y, cb, noActorCb) ->
-      noActorCb = param.optional noActorCb, ->
+      noActorCb ||= ->
 
       @performPick @domToGL(x, y), (r, g, b) =>
         return noActorCb() unless @isValidPick r, g, b
@@ -412,6 +416,7 @@ define (require) ->
     # Bind a contextmenu listener
     ###
     _bindContextClick: ->
+
       $(document).on "contextmenu", ".workspace canvas", (e) =>
         return if @dragger.isDragging()
 
@@ -567,8 +572,10 @@ define (require) ->
       $(document).on "mousemove", ".workspace canvas", (e) =>
         pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
 
-        pos.x += ARERenderer.camPos.x
-        pos.y += ARERenderer.camPos.y
+        camPos = @_are.getRenderer().getCameraPosition()
+
+        pos.x += camPos.x
+        pos.y += camPos.y
 
         $(".workspace .cursor-position").text "x: #{pos.x}, y: #{pos.y}"
 
@@ -580,8 +587,12 @@ define (require) ->
 
         x = @_workspaceDrag.x
         y = @_workspaceDrag.y
-        ARERenderer.camPos.x += x - e.pageX
-        ARERenderer.camPos.y += y - e.pageY
+
+        camPos = @_are.getRenderer().getCameraPosition()
+        camPos.x += x - e.pageX
+        camPos.y += y - e.pageY
+
+        @_are.getRenderer().setCameraPosition camPos
 
         @_workspaceDrag =
           x: e.pageX
@@ -616,8 +627,9 @@ define (require) ->
           time = @ui.timeline.getCursorTime()
           pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
 
-          pos.x += ARERenderer.camPos.x
-          pos.y += ARERenderer.camPos.y
+          camPos = @_are.getRenderer().getCameraPosition()
+          pos.x += camPos.x
+          pos.y += camPos.y
 
           texSize = ARERenderer.getTextureSize texture.getUID()
           w = texSize.w
@@ -724,7 +736,8 @@ define (require) ->
       unless @_are.getActiveRendererMode() == ARERenderer.RENDERER_MODE_WGL
         return false
 
-      gl = @_are.getGL()
+      window.a = @_are
+      gl = @_are.getRenderer().getGL()
 
       # Delete them if they already exist
       if @_pickTexture != null then gl.deleteTexture @_pickTexture
@@ -780,11 +793,11 @@ define (require) ->
       @_pickInProgress = true
 
       # Request a pick render from ARE, continue once we get it
-      switch @_are.getActiveRendererMode()
-        when ARERenderer.RENDERER_MODE_NULL
+      switch @_are.getRenderer().getActiveRendererMode()
+        when ARERenderer.RENDER_MODE_NULL
           AUtilLog.warn "You can't perform a pick with a null renderer"
-        when ARERenderer.RENDERER_MODE_CANVAS
-          @_are.requestPickingRenderCanvas
+        when ARERenderer.RENDER_MODE_CANVAS
+          @_are.getRenderer().requestPickingRenderCanvas
             x: pos.x
             y: pos.y
             width: 1
@@ -797,14 +810,14 @@ define (require) ->
 
             @_pickInProgress = false
 
-        when ARERenderer.RENDERER_MODE_WGL
-          @_are.requestPickingRenderWGL @_pickBuffer, =>
+        when ARERenderer.RENDER_MODE_WGL
+          @_are.getRenderer().requestPickingRenderWGL @_pickBuffer, =>
 
             pick = new Uint8Array 4
 
             pos.y = @_are.getHeight() - pos.y
 
-            gl = @_are.getGL()
+            gl = @_are.getRenderer().getGL()
             gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
             gl.readPixels pos.x, pos.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pick
             gl.bindFramebuffer gl.FRAMEBUFFER, null
@@ -812,6 +825,9 @@ define (require) ->
             cb pick[0], pick[1], pick[2]
 
             @_pickInProgress = false
+
+        else
+          AUtilLog.error "Unknown active render mode"
 
       # Start the next pick if one is queued (after a timeout)
       if @_pickQueue.length > 0
@@ -910,11 +926,13 @@ define (require) ->
         g: c.getG()
         b: c.getB()
 
+      camPos = @_are.getRenderer().getCameraPosition()
+
       _.extend super(),
         workspaceVersion: "1.5.1"
         camPos:                                                        # v1.2.0
-          x: ARERenderer.camPos.x
-          y: ARERenderer.camPos.y
+          x: camPos.x
+          y: camPos.y
         actors: actors                                                 # v1.1.0
         #spawners: spawners                                             # v1.4.0
         clearColor: clearColor                                         # v1.5.0
@@ -928,8 +946,8 @@ define (require) ->
 
       if (data.workspaceVersion >= "1.2.0") || \
        ((data.dumpVersion == "1.0.0") && (data.version >= "1.2.0"))
-        ARERenderer.camPos.x = data.camPos.x
-        ARERenderer.camPos.y = data.camPos.y
+
+        @_are.getRenderer().setCameraPosition data.camPos
 
       if data.workspaceVersion >= "1.5.0"
         col = data.clearColor
@@ -942,7 +960,7 @@ define (require) ->
 
       # data.workspaceVersion >= "1.1.0"
       for actor in data.actors
-        actorClass = Actors[actor.handleType]
+        actorClass = Actors[actor.type]
 
         if actorClass
           @addActor actorClass.load @ui, actor

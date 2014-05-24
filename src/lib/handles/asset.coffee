@@ -15,22 +15,20 @@ define (require) ->
     # @param [Hash] options
     ###
     constructor: (parent, options) ->
-      options = param.optional options, {}
-
+      options ||= {}
       @_parent = parent
-
       @_id = ID.prefID "asset"
 
       @_name = param.required options.name
       #@_color = param.optional options.color, [198, 198, 198]
 
-      @_isDirectory = param.optional options.isDirectory, false
-
-      @_disabled = param.optional options.disabled, []
+      @_isDirectory = !!options.isDirectory
+      @_disabled = options.disabled || []
 
       if @_isDirectory
-        @_expanded = param.optional options.expanded, false
-        @_entries = param.optional options.entries, []
+        @_expanded = !!options.expanded
+        @_entries = options.entries || []
+
         for entry in @_entries
           # convert pure objects to Asset
           unless entry instanceof Asset
@@ -41,7 +39,7 @@ define (require) ->
 
         @_fileType = "directory"
       else
-        @_fileType = param.optional options.fileType, "file"
+        @_fileType = options.fileType || "file"
 
     ###
     # Ensures that this Asset is a directory

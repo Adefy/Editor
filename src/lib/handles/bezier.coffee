@@ -35,7 +35,7 @@ define (require) ->
       param.required @_degree, [0, 1, 2]
 
       # Set buffering
-      @_buffer = param.optional @_buffer, false
+      @_buffer = !!@_buffer
       @_bufferData = {}
 
       # Recyle param to check for coordinates

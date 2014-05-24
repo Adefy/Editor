@@ -103,10 +103,10 @@ define (require) ->
     # @param [Boolean] apply if false, returns results without applying
     ###
     saveControl: (control, apply) ->
-      param.required control
-      apply = param.optional apply, true
-
       return unless @targetActor
+
+      param.required control
+      apply = true if typeof apply != "boolean"
 
       propType = $(control).attr "type"
       propName = $(control).attr "name"
@@ -199,7 +199,7 @@ define (require) ->
     ###
     updateActor: (actor) ->
       oldActor = @targetActor
-      @targetActor = param.optional actor, @targetActor
+      @targetActor = actor if actor
       return unless @targetActor
 
       if !@_builtHMTL || (@targetActor != oldActor)
@@ -278,7 +278,6 @@ define (require) ->
     generateControl: (data, value) ->
       param.required data
       param.required data.name
-      param.optional data.icon, config.icon.property_default
       param.required value
       param.required value.getType(), ["composite"]
 
@@ -303,7 +302,7 @@ define (require) ->
       param.required data
 
       displayName = param.required data.name
-      displayIcon = param.optional data.icon, config.icon.property_default
+      displayIcon = data.icon || config.icon.property_default
 
       param.required value.getType(), ["composite"]
 
@@ -359,8 +358,8 @@ define (require) ->
     renderControl_number: (data, value) ->
       value = param.required value
       displayName = param.required data.name
-      width = param.optional data.width, "100%"
-      parent = param.optional data.parent, false
+      width = data.width || "100%"
+      parent = !!data.parent
 
       TemplateNumericControl
         displayName: displayName
@@ -376,8 +375,8 @@ define (require) ->
     renderControl_boolean: (data, value) ->
       value = param.required value
       displayName = param.required data.name
-      width = param.optional data.width, "100%"
-      parent = param.optional data.parent, false
+      width = data.width || "100%"
+      parent = !!data.parent
 
       TemplateBooleanControl
         displayName: displayName
@@ -389,8 +388,8 @@ define (require) ->
     renderControl_text: (data, value) ->
       value = param.required value
       displayName = param.required data.name
-      width = param.optional data.width, "100%"
-      parent = param.optional data.parent, false
+      width = data.width || "100%"
+      parent = !!data.parent
 
       TemplateTextControl
         displayName: displayName

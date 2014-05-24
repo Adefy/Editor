@@ -28,11 +28,11 @@ define (require) ->
     #   @option [Array<String>] classes
     ###
     constructor: (@ui, options) ->
-      options   = param.optional options, {}
+      @_id = param.required options.id
 
-      @_id      = param.required options.id
-      @_parent  = param.optional options.parent, ".editor"
-      @_classes = param.optional options.classes, []
+      options ||= {}
+      @_parent = options.parent || ".editor"
+      @_classes = options.classes || []
 
       # container selector, defaults to no container
       @_sel = null
@@ -152,7 +152,8 @@ define (require) ->
     # @return [String]
     ###
     renderStub: (options) ->
-      options = param.optional options, {}
+      options ||= {}
+
       Renderable::renderStub.call(@) +
       if options.content
         @genElement "div", id: @_id, class: @_classes.join(" "), ->
