@@ -66,7 +66,7 @@ define (require) ->
     ###
     init: ->
       @project = new Project @ui, window.ADEFY_EDITOR_CREATIVE_PAYLOAD, (p) =>
-        #p.loadNewestSnapshot()
+        p.loadNewestSnapshot()
 
       @startAutosaveTask()
 
