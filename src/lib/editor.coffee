@@ -1,5 +1,18 @@
 define (require) ->
 
+  ###
+  Too lazy to get rid of param.optional again, create it if it doesn't exist and
+  ship a warning
+  ###
+  console.warn "PROCEEDING WITH PARAM.OPTIONAL"
+  unless window.param and window.param.optional
+    window.param = {} unless window.param
+    window.param.optional = (arg, value) ->
+      if arg == undefined or arg == null
+        value
+      else
+        arg
+
   config = require "config"
   param = require "util/param"
   AUtilLog = require "util/log"
@@ -7,7 +20,6 @@ define (require) ->
   Storage = require "storage"
 
   PolygonActor = require "handles/actors/polygon"
-  TriangleActor = require "handles/actors/triangle"
   RectangleActor = require "handles/actors/rectangle"
 
   UIManager = require "ui"
@@ -287,12 +299,7 @@ define (require) ->
         birthOpts.position = { x: pos.x.value - pOffX, y: pos.y.value - pOffY }
         birthOpts.color = { r: col.r.value, g: col.g.value, b: col.b.value }
 
-        if a instanceof TriangleActor
-          type = "AJSTriangle"
-          birthOpts.base = buff.base.value
-          birthOpts.height = buff.height.value
-
-        else if a instanceof PolygonActor
+        if a instanceof PolygonActor
           type = "AJSPolygon"
           birthOpts.radius = buff.radius.value
           birthOpts.segments = buff.sides.value

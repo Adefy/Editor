@@ -76,7 +76,7 @@ define (require) ->
     # @return [Workspace] self
     ###
     postInit: ->
-      ## AJS overrides setting the renderer mode...
+      ## ARE overrides setting the renderer mode...
       #mode = Storage.get("are.renderer.mode")
       #mode = ARERenderer.rendererMode if mode == null
       #ARERenderer.rendererMode = Number(mode)
@@ -87,17 +87,20 @@ define (require) ->
       @_canvasHeight = sectionElement.height()
 
       # Create an ARE instance on ourselves
-      AUtilLog.info "Initializing AJS..."
-      AJS.init =>
+      AUtilLog.info "Initializing ARE..."
 
-        @_are = AdefyRE.Engine()._engine
+      ARE.config.deps.physics.chipmunk = "/editor/components/chipmunk/cp.js"
+      ARE.config.deps.physics.koon = "/editor/components/adefyre/build/lib/koon/koon.js"
+      ARE.config.deps.physics.physics_worker = "/editor/components/adefyre/build/lib/physics/worker.js"
 
-        # AdefyRE.Engine().setLogLevel 4
+      window.AdefyRE.Engine().initialize @_canvasWidth, @_canvasHeight, (@_are) =>
+
+        @_are.getRenderer()._alwaysClearScreen = true
 
         @_engineInit()
         @_applyCanvasSizeUpdate()
 
-      , @_canvasWidth, @_canvasHeight, config.id.are_canvas
+      , config.debug.are_log_level, config.id.are_canvas
 
       @
 
@@ -212,7 +215,7 @@ define (require) ->
     loadTexture: (texture) ->
       return AUtilLog.error "ARE not loaded, cannot load texture" unless @_are
 
-      AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), false, =>
+      AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), true, =>
         AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
 
         @ui.pushEvent "load.texture", texture: texture
@@ -271,15 +274,13 @@ define (require) ->
     getNewActorCtxMenu: (x, y) ->
       time = @ui.timeline.getCursorTime()
       pos = @domToGL(x, y)
-      pos.x += ARERenderer.camPos.x
-      pos.y += ARERenderer.camPos.y
+
+      pos.x += @_are.getRenderer().getCameraPosition().x
+      pos.y += @_are.getRenderer().getCameraPosition().y
 
       {
         name: config.locale.title.create
         functions:
-          trinActor:
-            name: config.locale.label.actor_triangle
-            cb: => @addActor new TriangleActor @ui, time, 100, 100, pos.x, pos.y
           rectActor:
             name: config.locale.label.actor_rectangle
             cb: => @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
@@ -312,8 +313,8 @@ define (require) ->
           cb: =>
 
             pos = @domToGL(x, y)
-            pos.x += ARERenderer.camPos.x
-            pos.y += ARERenderer.camPos.y
+            pos.x += @_are.getRenderer().getCameraPosition().x
+            pos.y += @_are.getRenderer().getCameraPosition().y
 
             newActor = @ui.editor.clipboard.data.duplicate()
             newActor.setPosition pos.x, pos.y
@@ -403,8 +404,8 @@ define (require) ->
 
       toggleActorPhysics = (d, handle) ->
 
-        if handle.getActor().hasPsyx()
-          handle.getActor().disablePsyx()
+        if handle.getActor().hasPhysics()
+          handle.getActor().destroyPhysicsBody()
           d.setUserDataValue "hasPhysics", true
         else
           d.setUserDataValue "hasPhysics", false
@@ -438,7 +439,7 @@ define (require) ->
 
         if d.getUserData()
           handle = d.getTarget()
-          handle.getActor().enablePsyx() if d.getUserData().hasPhysics
+          handle.getActor().createPhysicsBody() if d.getUserData().hasPhysics
 
       @draggerRotate.setOnDrag (d, deltaX, deltaY) =>
 
@@ -481,7 +482,7 @@ define (require) ->
 
         if d.getUserData()
           handle = d.getTarget()
-          handle.getActor().enablePsyx() if d.getUserData().hasPhysics
+          handle.getActor().createPhysicsBody() if d.getUserData().hasPhysics
 
       @dragger.setOnDrag (d, deltaX, deltaY) =>
 
@@ -522,8 +523,8 @@ define (require) ->
       $(document).on "mousemove", ".workspace canvas", (e) =>
         pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
 
-        pos.x += ARERenderer.camPos.x
-        pos.y += ARERenderer.camPos.y
+        pos.x += @_are.getRenderer().getCameraPosition().x
+        pos.y += @_are.getRenderer().getCameraPosition().y
 
         $(".workspace .cursor-position").text "x: #{pos.x}, y: #{pos.y}"
 
@@ -535,8 +536,10 @@ define (require) ->
 
         x = @_workspaceDrag.x
         y = @_workspaceDrag.y
-        ARERenderer.camPos.x += x - e.pageX
-        ARERenderer.camPos.y += y - e.pageY
+
+        camPos = @_are.getRenderer().getCameraPosition()
+        camPos.x += x - e.pageX
+        camPos.y += y - e.pageY
 
         @_workspaceDrag =
           x: e.pageX
@@ -571,10 +574,10 @@ define (require) ->
           time = @ui.timeline.getCursorTime()
           pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
 
-          pos.x += ARERenderer.camPos.x
-          pos.y += ARERenderer.camPos.y
+          pos.x += @_are.getRenderer().getCameraPosition().x
+          pos.y += @_are.getRenderer().getCameraPosition().y
 
-          texSize = ARERenderer.getTextureSize texture.getUID()
+          texSize = @_are.getRenderer().getTextureSize texture.getUID()
           w = texSize.w
           h = texSize.h
 
@@ -676,10 +679,10 @@ define (require) ->
     # http://learningwebgl.com/blog/?p=1786
     ###
     _buildPickBuffer: ->
-      unless @_are.getActiveRendererMode() == ARERenderer.RENDERER_MODE_WGL
+      unless @_are.getRenderer().isWGLRendererActive()
         return false
 
-      gl = @_are.getGL()
+      gl = @_are.getRenderer().getGL()
 
       # Delete them if they already exist
       if @_pickTexture != null then gl.deleteTexture @_pickTexture
@@ -735,10 +738,10 @@ define (require) ->
       @_pickInProgress = true
 
       # Request a pick render from ARE, continue once we get it
-      switch @_are.getActiveRendererMode()
-        when ARERenderer.RENDERER_MODE_NULL
+      switch @_are.getRenderer().getActiveRendererMode()
+        when ARERenderer.RENDER_MODE_NULL
           AUtilLog.warn "You can't perform a pick with a null renderer"
-        when ARERenderer.RENDERER_MODE_CANVAS
+        when ARERenderer.RENDER_MODE_CANVAS
           @_are.requestPickingRenderCanvas
             x: pos.x
             y: pos.y
@@ -752,14 +755,14 @@ define (require) ->
 
             @_pickInProgress = false
 
-        when ARERenderer.RENDERER_MODE_WGL
+        when ARERenderer.RENDER_MODE_WGL
           @_are.requestPickingRenderWGL @_pickBuffer, =>
 
             pick = new Uint8Array 4
 
             pos.y = @_are.getHeight() - pos.y
 
-            gl = @_are.getGL()
+            gl = @_are.getRenderer().getGL()
             gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
             gl.readPixels pos.x, pos.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pick
             gl.bindFramebuffer gl.FRAMEBUFFER, null
@@ -809,7 +812,7 @@ define (require) ->
     # Create a new spawner with a base object definition cloned from an actor,
     # then kill the actor.
     #
-    # NOTE: This deletes the AJS actor, and signals it's death to the rest of
+    # NOTE: This deletes the ARE actor, and signals it's death to the rest of
     #       the editor! Do NOT use an actor object after this method has been
     #       called on it.
     ###
@@ -856,8 +859,8 @@ define (require) ->
       _.extend super(),
         workspaceVersion: "1.5.1"
         camPos:                                                        # v1.2.0
-          x: ARERenderer.camPos.x
-          y: ARERenderer.camPos.y
+          x: @_are.getRenderer().getCameraPosition().x
+          y: @_are.getRenderer().getCameraPosition().y
         actors: actors                                                 # v1.1.0
         #spawners: spawners                                             # v1.4.0
         clearColor: clearColor                                         # v1.5.0
@@ -871,8 +874,8 @@ define (require) ->
 
       if (data.workspaceVersion >= "1.2.0") || \
        ((data.dumpVersion == "1.0.0") && (data.version >= "1.2.0"))
-        ARERenderer.camPos.x = data.camPos.x
-        ARERenderer.camPos.y = data.camPos.y
+
+        @_are.getRenderer().setCameraPosition data.camPos
 
       if data.workspaceVersion >= "1.5.0"
         col = data.clearColor

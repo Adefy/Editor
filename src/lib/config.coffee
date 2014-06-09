@@ -3,8 +3,9 @@
 ###
 define
   debug:
-    event_log:  false
-    render_log: false
+    event_log:     false
+    render_log:    false
+    are_log_level: 1
 
   # enable and disable certain features
   use:
@@ -44,9 +45,8 @@ define
     # animation rounding
     animation: 4
     # precision used for properties
-    base: 0                 # TriangleActor.base
     color: 0                # Actor.color
-    height: 0               # TriangleActor.height and RectangleActor.height
+    height: 0               # RectangleActor.height
     layer: 1                # Actor.layer
     physicsLayer: 0         # Actor.physicsLayer
     opacity: 2              # Actor.opacity
@@ -79,7 +79,6 @@ define
       actor_rectangle:      "Rectangle Actor"
       actor_polygon:        "Polygon Actor"
       actor_circle:         "Circle Actor"
-      actor_triangle:       "Triangle Actor"
 
     ctx:
       base_actor:

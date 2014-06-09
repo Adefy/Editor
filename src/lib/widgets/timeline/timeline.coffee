@@ -646,7 +646,7 @@ define (require) ->
 
     ###
     # Remove an actor by id, re-renders timeline internals. Note that this
-    # utilizies the ID of the AJS actor!
+    # utilizies the ID of the ARE actor!
     #
     # @param [BaseActor] actor
     # @return [Boolean] success

@@ -32,6 +32,7 @@ define (require) ->
     # Set up drag event listeners
     ###
     bindListeners: ->
+
       $(document).on "mousedown", @_sel, (e) =>
         return unless @checkDrag e
 
@@ -47,7 +48,7 @@ define (require) ->
 
         @clearUserData()
 
-      $(document).mousemove (e) =>
+      $(document).on "mousemove", (e) =>
         return unless @_active
 
         dX = e.pageX - @_start.x
@@ -62,7 +63,7 @@ define (require) ->
         @_delta = x: dX, y: dY
         @onDrag @, dX, dY if @onDrag
 
-      $(document).mouseup (e) =>
+      $(document).on "mouseup", (e) =>
         return unless @_active
 
         @onDragEnd @ if @onDragEnd

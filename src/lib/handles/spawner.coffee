@@ -354,9 +354,9 @@ define (require) ->
       @_properties.physics.enabled.onUpdate = (enabled) =>
         _.union(@_spawns, @_previewSpawns).map (handle) ->
           if enabled
-            handle.enablePsyx() if handle.enablePsyx
-          else
-            handle.disablePsyx() if handle.disablePsyx
+            handle.createPhysicsBody() if handle.createPhysicsBody
+          else if handle.destroyPhysicsBody
+            handle.destroyPhysicsBody() if handle.hasPhysics()
 
     ###
     # Remove an actor from the actors list
@@ -461,14 +461,19 @@ define (require) ->
       # Apply physics impulse directly on ARE actor (low-level, hacky)
       if @_properties.physics.enabled.getValue()
         ARE_id = spawn.getActor().getId()
+
+        actors = @ui.workspace.getARE().getRenderer()._actors
         ARE_actor = _.find ARERenderer.actors, (a) -> a.getId() == ARE_id
 
         if ARE_actor and ARE_actor._body
+          console.log "WARNING! Body impulses no longer work! Missing screenToWorld"
+        ###
           impulse = ARERenderer.screenToWorld
             x: finalVel.x * 1000
             y: finalVel.y * 1000
 
           ARE_actor._body.applyImpulse impulse, new cp.v(0, 0)
+        ###
 
     ###
     # Generate a spawned actor. This actor is not tracked by the workspace or

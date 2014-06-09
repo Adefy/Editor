@@ -61,7 +61,7 @@ define (require) ->
       @_properties.sides.setValue 3
       @_properties.sides.setPrecision config.precision.sides
       @_properties.sides.onUpdate = (sides) =>
-        @_AJSActor.setSegments sides if @_AJSActor
+        @_AREActor.setSegments sides if @_AREActor
 
       @_properties.sides.genAnimationOpts = (animation, options) ->
         options.startVal = animation._start.y
@@ -77,7 +77,7 @@ define (require) ->
       @_properties.radius.setValue 10
       @_properties.radius.setPrecision config.precision.radius
       @_properties.radius.onUpdate = (radius) =>
-        @_AJSActor.setRadius radius if @_AJSActor
+        @_AREActor.setRadius radius if @_AREActor
 
       @_properties.sides.genAnimationOpts = (animation, options) ->
         options.startVal = animation._start.y
@@ -99,7 +99,7 @@ define (require) ->
     getRadius: -> @_properties.radius.getValue()
 
     ###
-    # Instantiate our AJS actor
+    # Instantiate our ARE actor
     # @private
     ###
     _birth: ->
@@ -118,16 +118,18 @@ define (require) ->
       g = @_properties.color.getProperty("g").getValue()
       b = @_properties.color.getProperty("b").getValue()
 
-      @_AJSActor = new AJSPolygon
-        physics: physicsEnabled
-        mass: mass
-        friction: friction
-        elasticity: elasticity
-        radius: @_properties.radius.getValue()
-        segments: @_properties.sides.getValue()
-        position: new AJSVector2 x, y
-        color: new AJSColor3 r, g, b
-        rotation: @_properties.rotation.getValue()
+      renderer = @ui.workspace.getARE().getRenderer()
+      radius = @_properties.radius.getValue()
+      segments = @_properties.sides.getValue()
+
+      @_AREActor = new AREPolygonActor renderer, radius, segments
+      @_AREActor.setPosition x: x, y: y
+      @_AREActor.setColor r, g, b
+      @_AREActor.setRotation @_properties.rotation.getValue()
+      @_AREActor.setMass mass
+      @_AREActor.setFriction friction
+      @_AREActor.setElasticity elasticity
+      @_AREActor.createPhysicsBody() if physicsEnabled
 
       super()
 
