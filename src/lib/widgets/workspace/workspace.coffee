@@ -471,7 +471,9 @@ define (require) ->
           d.setTarget handle
           d.setUserData
             updateProperties: true
-            original: handle.getPosition()
+            original:
+              x: handle.getPosition().x
+              y: handle.getPosition().y
 
           toggleActorPhysics d, handle
 
