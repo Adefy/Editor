@@ -96,6 +96,11 @@ define (require) ->
       ###
       @textures = []
 
+      ######
+      ###### Early return for the redesign, no need to load everything
+      ######
+      return
+
       # Load active save, if there is one, but do it after the current chain
       # of execution; otherwise, we won't be tied to objects like the current
       # Editor class
