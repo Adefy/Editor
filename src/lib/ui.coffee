@@ -30,11 +30,13 @@ define (require) ->
       @widgets = []
 
       @widgets.push @initializeMenu()
-      @widgets.push @initializePropertyBar()
+      # @widgets.push @initializePropertyBar()
       @widgets.push @initializeTimeline()
       @widgets.push @initializeWorkspace()
-      @widgets.push @initializeStatusbar()
-      @widgets.push @initializeSidebar()
+      # @widgets.push @initializeStatusbar()
+
+      # Temporarily disable sidebar untill the workspace is updated
+      # @widgets.push @initializeSidebar()
 
       @modals = new ModalManager @
 
@@ -106,7 +108,6 @@ define (require) ->
       editMenu = @menu.addItem "Edit"
       viewMenu = @menu.addItem "View"
       canvasMenu = @menu.addItem "Canvas"
-      toolsMenu = @menu.addItem "Tools"
       helpMenu = @menu.addItem "Help"
 
       ###
@@ -201,22 +202,6 @@ define (require) ->
       canvasMenu.createChild
         label: "Set Background Color ..."
         click: => @modals.showSetBackgroundColor()
-
-      ###
-      #
-      # Tools menu options
-      #
-      ###
-      toolsMenu.createChild label: "Preview ..."
-      toolsMenu.createChild label: "Calculate device support ..."
-
-      toolsMenu.createChild
-        label: "Set Export Framerate ..."
-        click: => @modals.showSetExportRate()
-
-      toolsMenu.createChild
-        label: "Upload textures ..."
-        click: => @modals.showUploadTextures()
 
       ###
       #

@@ -2,8 +2,10 @@ define ->
 
   Handlebars.compile """
     <div id="{{id}}" class="editor-canvas">
-      <div class="outline-text"></div>
-      <div class="outline"></div>
-      <div class="cursor-position"></div>
+      <div id="{{id}}-overlay-left" class="canvas-overlay"></div>
+      <div id="{{id}}-overlay-right" class="canvas-overlay"></div>
+      <div id="{{id}}-overlay-top" class="canvas-overlay"></div>
+      <div id="{{id}}-overlay-bottom" class="canvas-overlay"></div>
+      <div id="{{id}}-overlay-center" class="canvas-overlay-center"></div>
     </div>
   """

@@ -18,35 +18,11 @@
   canvas
     position absolute
 
-  .cursor-position
-    display inline-block
-    z-index 1001
-    position relative
-    float right
-    padding 1px 8px
-    margin 4px 4px
+  .canvas-overlay, .canvas-overlay-center
+    position absolute
+    background-color rgba(0, 0, 0, 0.1)
+    z-index $Z_canvas_overlay
 
-    //background-color $gray
-    border 1px solid #33bbff
-    border-radius 8px
-
-    color #33bbff
-    font-size 12px
-    opacity 0.0
-
-    transition $time_short opacity
-
-  .outline
-    border 1px solid #0099cc
+  .canvas-overlay-center
     background-color transparent
-    position relative
-    pointer-events none
-
-  .outline-text
-    color #0099cc
-    position relative
-    font-size 12px
-
-  &:hover
-    .cursor-position
-      opacity 1.0
+    box-shadow 0 0 1px rgba(0, 0, 0, 0.35)

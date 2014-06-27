@@ -90,7 +90,6 @@ define (require) ->
       AUtilLog.info "Initializing ARE..."
 
       ARE.config.deps.physics.chipmunk = "/editor/components/chipmunk/cp.js"
-      ARE.config.deps.physics.koon = "/editor/components/adefyre/build/lib/koon/koon.js"
       ARE.config.deps.physics.physics_worker = "/editor/components/adefyre/build/lib/physics/worker.js"
 
       @_are = window.AdefyRE.Engine().initialize @_canvasWidth, @_canvasHeight, =>
@@ -377,7 +376,7 @@ define (require) ->
     # Bind a contextmenu listener
     ###
     _bindContextClick: ->
-      $(document).on "contextmenu", ".workspace canvas", (e) =>
+      $(document).on "contextmenu", ".workspace .editor-canvas", (e) =>
         return if @dragger.isDragging()
 
         x = e.pageX
@@ -416,7 +415,7 @@ define (require) ->
       ###
       # Rotate Actor
       ###
-      @draggerRotate = new Dragger ".workspace canvas"
+      @draggerRotate = new Dragger ".workspace .editor-canvas"
 
       @draggerRotate.setCheckDrag (e) =>
         !e.shiftKey && e.ctrlKey
@@ -459,7 +458,7 @@ define (require) ->
       ###
       # Move actor
       ###
-      @dragger = new Dragger ".workspace canvas"
+      @dragger = new Dragger ".workspace .editor-canvas"
 
       @dragger.setCheckDrag (e) =>
         !e.shiftKey && !e.ctrlKey
@@ -501,7 +500,7 @@ define (require) ->
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
-      $(".workspace canvas").click (e) =>
+      $(".workspace .editor-canvas").click (e) =>
         return if @dragger.isDragging()
         return if e.shiftKey
 
@@ -525,14 +524,6 @@ define (require) ->
       @_bindActorDragging()
       @_bindContextClick()
 
-      $(document).on "mousemove", ".workspace canvas", (e) =>
-        pos = @domToGL(e.originalEvent.pageX, e.originalEvent.pageY)
-
-        pos.x += @_are.getRenderer().getCameraPosition().x
-        pos.y += @_are.getRenderer().getCameraPosition().y
-
-        $(".workspace .cursor-position").text "x: #{pos.x}, y: #{pos.y}"
-
       ###
       # Workspace drag
       ###
@@ -555,7 +546,7 @@ define (require) ->
 
         @_workspaceDrag = null
 
-      $(document).on "mousedown", ".workspace canvas", (e) =>
+      $(document).on "mousedown", ".workspace .editor-canvas", (e) =>
         if e.shiftKey && !e.ctrlKey && !@_workspaceDrag
           @_workspaceDrag =
             x: e.pageX
@@ -613,11 +604,50 @@ define (require) ->
     # resize
     ###
     _applyCanvasSizeUpdate: ->
+      sel = "##{config.id.are_canvas}"
 
       # Resize canvas container
-      $("##{config.id.are_canvas}").css
-        height: "#{@_canvasHeight}px"
-        width: "#{@_canvasWidth}px"
+      $("#{sel}").height @_canvasHeight
+      $("#{sel}").width @_canvasWidth
+
+      ##
+      ## TODO: Move and make these calculations generic
+      ##
+
+      # Resize and reposition overlays
+      phoneWidth = 1200
+      phoneHeight = 1920
+
+      # Scale actual phone size so we get a comfortable level of padding
+      padding = 100
+      zoomFactor = Math.min 1, (@_canvasHeight - (padding * 2)) / phoneHeight
+
+      phoneWidth = Math.floor(phoneWidth * zoomFactor)
+      phoneHeight = Math.floor(phoneHeight * zoomFactor)
+
+      overlayWidth = Math.floor((@_canvasWidth - phoneWidth) / 2)
+      overlayHeight = Math.floor((@_canvasHeight - phoneHeight) / 2)
+
+      $("#{sel}-overlay-left").height @_canvasHeight
+      $("#{sel}-overlay-left").width overlayWidth
+      $("#{sel}-overlay-right").height @_canvasHeight
+      $("#{sel}-overlay-right").width overlayWidth
+      $("#{sel}-overlay-right").css left: @_canvasWidth - overlayWidth
+
+      $("#{sel}-overlay-top").width @_canvasWidth - (overlayWidth * 2)
+      $("#{sel}-overlay-top").height overlayHeight
+      $("#{sel}-overlay-top").css left: overlayWidth
+      $("#{sel}-overlay-bottom").width @_canvasWidth - (overlayWidth * 2)
+      $("#{sel}-overlay-bottom").height overlayHeight
+      $("#{sel}-overlay-bottom").css
+        top: @_canvasHeight - overlayHeight
+        left: overlayWidth
+
+      $("#{sel}-overlay-center").width @_canvasWidth - (overlayWidth * 2)
+      $("#{sel}-overlay-center").height @_canvasHeight - (overlayHeight * 2)
+      $("#{sel}-overlay-center").css
+        top: overlayHeight
+        left: overlayWidth
 
       # Rebuild our picking resources
       @_buildPickBuffer()
