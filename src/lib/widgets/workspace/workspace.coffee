@@ -93,7 +93,7 @@ define (require) ->
       ARE.config.deps.physics.koon = "/editor/components/adefyre/build/lib/koon/koon.js"
       ARE.config.deps.physics.physics_worker = "/editor/components/adefyre/build/lib/physics/worker.js"
 
-      window.AdefyRE.Engine().initialize @_canvasWidth, @_canvasHeight, (@_are) =>
+      @_are = window.AdefyRE.Engine().initialize @_canvasWidth, @_canvasHeight, =>
 
         @_are.getRenderer()._alwaysClearScreen = true
 
@@ -215,7 +215,10 @@ define (require) ->
     loadTexture: (texture) ->
       return AUtilLog.error "ARE not loaded, cannot load texture" unless @_are
 
-      AdefyRE.Engine().loadTexture texture.getUID(), texture.getURL(), true, =>
+      AdefyRE.Engine().loadTexture
+        name: texture.getUID()
+        file: texture.getURL()
+      , =>
         AUtilLog.info "Texture(uid: #{texture.getUID()}) loaded"
 
         @ui.pushEvent "load.texture", texture: texture
@@ -597,8 +600,6 @@ define (require) ->
     ###
     _engineInit: ->
       AUtilLog.info "ARE instance up, initializing workspace"
-
-      @_are.setClearColor 240, 240, 240
 
       @_bindListeners()
 

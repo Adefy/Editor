@@ -569,8 +569,6 @@ define (require) ->
       # This may fail if the texture hasn't fully loaded yet.
       try
         @setTexture texture
-      catch e
-        console.log e.message
 
       @
 

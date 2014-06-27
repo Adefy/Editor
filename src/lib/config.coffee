@@ -5,7 +5,7 @@ define
   debug:
     event_log:     false
     render_log:    false
-    are_log_level: 1
+    are_log_level: 3
 
   # enable and disable certain features
   use:

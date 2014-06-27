@@ -243,7 +243,7 @@ define (require) ->
     # @return [self]
     ###
     refreshStub: ->
-      AUtilLog.info "UI refreshStub"
+      AUtilLog.info "UI#refreshStub"
       for widget in @widgets
         widget.refreshStub() if widget.refreshStub
 
