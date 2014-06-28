@@ -619,7 +619,7 @@ define (require) ->
       phoneHeight = 1920
 
       # Scale actual phone size so we get a comfortable level of padding
-      padding = 100
+      padding = 32
       zoomFactor = Math.min 1, (@_canvasHeight - (padding * 2)) / phoneHeight
 
       phoneWidth = Math.floor(phoneWidth * zoomFactor)
