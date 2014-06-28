@@ -56,6 +56,7 @@ define (require) ->
     initPropertyWidth: ->
       me = @
       @_properties.width = new NumericProperty()
+      @_properties.width.setVisibleInSidebar true
       @_properties.width.setMin 0
       @_properties.width.setPlaceholder 100
       @_properties.width.setValue 1
@@ -76,6 +77,7 @@ define (require) ->
     initPropertyHeight: ->
       me = @
       @_properties.height = new NumericProperty()
+      @_properties.height.setVisibleInSidebar true
       @_properties.height.setMin 0
       @_properties.height.setPlaceholder 100
       @_properties.height.setValue 1

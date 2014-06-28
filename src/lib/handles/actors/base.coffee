@@ -147,7 +147,6 @@ define (require) ->
       me = @
 
       @_properties.rotation = new NumericProperty()
-      @_properties.rotation.setVisibleInToolbar false
       @_properties.rotation.setMin 0
       @_properties.rotation.setMax 360
       @_properties.rotation.setPrecision config.precision.rotation
@@ -224,20 +223,12 @@ define (require) ->
       @_properties.color = new CompositeProperty()
       @_properties.color.icon = config.icon.property_color
 
-      ##
-      ## Temporary, untill we have a color picker
-      ##
-      @_properties.color.setVisibleInToolbar false
-      ##
-      ##
-      ##
-
       @_properties.color.r = new NumericProperty()
       @_properties.color.r.setMin 0
       @_properties.color.r.setMax 255
       @_properties.color.r.setFloat false
       @_properties.color.r.setPlaceholder 255
-      @_properties.color.r.setValue 255
+      @_properties.color.r.setValue 0
       @_properties.color.r.setPrecision config.precision.color
 
       @_properties.color.g = new NumericProperty()
@@ -286,7 +277,6 @@ define (require) ->
       @_properties.physics.icon = config.icon.property_physics
 
       @_properties.physics.mass = new NumericProperty()
-      @_properties.physics.mass.setVisibleInToolbar false
 
       @_properties.physics.mass.setMin 0
       @_properties.physics.mass.setPlaceholder 50
@@ -297,7 +287,6 @@ define (require) ->
         @_AREActor.setMass mass if @_AREActor
 
       @_properties.physics.elasticity = new NumericProperty()
-      @_properties.physics.elasticity.setVisibleInToolbar false
       @_properties.physics.elasticity.setMin 0
       @_properties.physics.elasticity.setMax 1
       @_properties.physics.elasticity.setPrecision config.precision.physics_elasticity
@@ -308,7 +297,6 @@ define (require) ->
         @_AREActor.setElasticity elasticity if @_AREActor
 
       @_properties.physics.friction = new NumericProperty()
-      @_properties.physics.friction.setVisibleInToolbar false
       @_properties.physics.friction.setMin 0
       @_properties.physics.friction.setMax 1
       @_properties.physics.friction.setPrecision config.precision.physics_friction

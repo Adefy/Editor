@@ -55,6 +55,7 @@ define (require) ->
     ###
     initPropertySides: ->
       @_properties.sides = new NumericProperty()
+      @_properties.sides.setVisibleInSidebar true
       @_properties.sides.setMin 3
       @_properties.sides.setPlaceholder 5
       @_properties.sides.setFloat false
@@ -72,6 +73,7 @@ define (require) ->
     ###
     initPropertyRadius: ->
       @_properties.radius = new NumericProperty()
+      @_properties.radius.setVisibleInSidebar true
       @_properties.radius.setMin 0
       @_properties.radius.setPlaceholder 50
       @_properties.radius.setValue 10

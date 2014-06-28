@@ -1223,7 +1223,7 @@ define (require) ->
         when "workspace.selected.actor"
           @switchSelectedActor params.actor
           @updateActor params.actor
-        when "property.bar.update.actor"
+        when "sidebar.update.actor"
           @updateActor params.actor
         when "actor.update.intime"
           @updateActor params.actor unless @_playbackID

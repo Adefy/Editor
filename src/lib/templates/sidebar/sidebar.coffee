@@ -5,34 +5,32 @@ define ->
   ###
   Handlebars.compile """
   <header>
-    <div class="sb-actor-name">Rectangle 145</div>
+    <div class="sb-actor-name">{{actorName}}</div>
   </header>
   <section>
     <div class="sb-controls">
       <ul class="sb-controls-left">
-        <li class="sb-control">
+        <li class="sb-control" data-id="position-x">
           <i>x</i>
           <input type="number" value="1500" />
         </li>
-        <li class="sb-control">
+        <li class="sb-control" data-id="position-y">
           <i>y</i>
+          <input type="number" value="130" />
+        </li>
+        <li class="sb-control" data-id="rotation">
+          <i class="fa fa-rotate-left"></i>
           <input type="number" value="130" />
         </li>
       </ul>
 
       <ul class="sb-controls-right">
-        <li class="sb-control">
-          <i class="fa fa-arrows-v"></i>
-          <input type="number" value="1500" />
+        {{#each controls}}
+        <li class="sb-control" data-id="{{name}}">
+          <i class="fa {{icon}}"></i>
+          <input type="number" value="{{value}}" min="{{min}}" max="{{max}}" />
         </li>
-        <li class="sb-control">
-          <i class="fa fa-arrows-h"></i>
-          <input type="number" value="130" />
-        </li>
-        <li class="sb-control">
-          <i class="fa fa-rotate-left"></i>
-          <input type="number" value="130" />
-        </li>
+        {{/each}}
       </ul>
     </div>
 

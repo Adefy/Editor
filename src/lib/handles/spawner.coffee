@@ -117,7 +117,6 @@ define (require) ->
 
       delete @_ctx.makeSpawner
 
-      @hideAllProperties()
       @_initPropertyState()
       @_initPropertyParticles()
       @_initPropertyDirection()
@@ -128,8 +127,8 @@ define (require) ->
       window.s ||= []
       window.s.push @
 
-      @_properties.position.setVisibleInToolbar true
-      @_properties.layer.setVisibleInToolbar true
+      @_properties.position.setVisibleInSidebar true
+      @_properties.layer.setVisibleInSidebar true
 
       # Ensure the spawner update cycle is both running, and includes us
       Spawner.setupUpdateInterval()
@@ -246,7 +245,6 @@ define (require) ->
     ###
     _initPropertyParticles: ->
       @_properties.particles = new CompositeProperty()
-      @_properties.particles.setVisibleInToolbar false
 
       @_properties.particles.seed = new NumericProperty()
       @_properties.particles.seed.setPrecision 0
@@ -291,8 +289,6 @@ define (require) ->
     ###
     _initPropertyDirection: ->
       @_properties.direction = new CompositeProperty()
-      @_properties.direction.setVisibleInToolbar false
-
       @_properties.direction.x = new NumericProperty()
       @_properties.direction.x.setValue 0
       @_properties.direction.y = new NumericProperty()
@@ -307,8 +303,6 @@ define (require) ->
     ###
     _initPropertyVelocity: ->
       @_properties.velocity = new CompositeProperty()
-      @_properties.velocity.setVisibleInToolbar false
-
       @_properties.velocity.x = new NumericProperty()
       @_properties.velocity.x.setValue 0
       @_properties.velocity.y = new NumericProperty()
@@ -322,8 +316,6 @@ define (require) ->
     ###
     _initPropertyVelocityRange: ->
       @_properties.velocityRange = new CompositeProperty()
-      @_properties.velocityRange.setVisibleInToolbar false
-
       @_properties.velocityRange.x = new NumericProperty()
       @_properties.velocityRange.x.setValue 2
       @_properties.velocityRange.y = new NumericProperty()

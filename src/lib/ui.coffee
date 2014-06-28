@@ -8,10 +8,7 @@ define (require) ->
   StatusBar = require "widgets/statusbar/statusbar"
   Timeline = require "widgets/timeline/timeline"
   Workspace = require "widgets/workspace/workspace"
-  Sidebar = require "widgets/sidebar/sidebar"
-  SidebarPanel = require "widgets/sidebar/sidebar_panel"
-  AssetsTab = require "widgets/tabs/tab_assets"
-  TexturesTab = require "widgets/tabs/tab_textures"
+  Sidebar = require "widgets/sidebar"
   ModalManager = require "modal_manager"
 
   class UIManager
