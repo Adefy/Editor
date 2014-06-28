@@ -32,7 +32,7 @@ define (require) ->
       # @widgets.push @initializeStatusbar()
 
       # Temporarily disable sidebar untill the workspace is updated
-      # @widgets.push @initializeSidebar()
+      @widgets.push @initializeSidebar()
 
       @modals = new ModalManager @
 
@@ -87,13 +87,7 @@ define (require) ->
       @workspace = new Workspace @
 
     initializeSidebar: ->
-      @sidebar = new Sidebar @, 310
-
-      panel = new SidebarPanel @, parent: @sidebar
-      panel.newTab "Textures", (tab) => new TexturesTab @, parent: panel
-      panel.selectTab 0
-
-      @sidebar
+      @sidebar = new Sidebar @
 
     initializeMenu: ->
 

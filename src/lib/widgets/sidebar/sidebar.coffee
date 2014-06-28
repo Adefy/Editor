@@ -8,34 +8,19 @@ define (require) ->
   Widget = require "widgets/widget"
   Storage = require "storage"
   config = require "config"
+  TemplateSidebar = require "templates/sidebar"
 
-  # Generic sidebar, needs to be specialized to be useful
-  #
-  # @depend SidebarItem.coffee
   class Sidebar extends Widget
-
-    ###
-    # Set to true upon the first sidebar instantiation, signals that our
-    # event listeners are bound
-    # @type [Boolean]
-    # @private
-    ###
-    @__staticInitialized: false
 
     ###
     # Creates a new sidebar with a given origin. The element's id is randomized
     # to sbar + Math.floor(Math.random() * 1000)
     #
     # @param [UIManager] ui
-    # @param [Number] width
     ###
-    constructor: (@ui, options) ->
-      options = param.optional options, {}
-
-      # Sidebar items of class SidebarItem (or implementations)
+    constructor: (@ui) ->
+      @_width = 250
       @_items = []
-
-      @_width = param.optional options.width, 300
 
       super @ui,
         id: ID.prefID("sidebar")
@@ -44,7 +29,7 @@ define (require) ->
 
       @_hiddenX = 0
       @_visibleX = 0
-      @_visible = Storage.get("sidebar.visible") == true
+      @_visible = !!Storage.get("sidebar.visible")
 
       @setWidth @_width
       @onResize()           # Calculate X offsets
@@ -59,16 +44,13 @@ define (require) ->
     # @private
     ###
     _bindToggle: ->
-      if not Sidebar.__staticInitialized
-        Sidebar.__staticInitialized = true
+      $(document).on "click", "#{@getSel()} .button.toggle", ->
 
-        $(document).on "click", ".sidebar .button.toggle", ->
+        # Find the affected sidebar
+        selector = @attributes["data-sidebarid"].value
+        sidebar = $("body").data "##{selector}"
 
-          # Find the affected sidebar
-          selector = @attributes["data-sidebarid"].value
-          sidebar = $("body").data "##{selector}"
-
-          sidebar.toggle()
+        sidebar.toggle()
 
     ###
     # Add an item to the sidebar and re-render. An item is any object with a
@@ -110,7 +92,7 @@ define (require) ->
     # Render! Fill the sidebar with html from the items rendered in order.
     ###
     render: ->
-      @_items.map((i) -> i.render()).join ""
+      super() + TemplateSidebar()
 
     ###
     # Render the HTML content and replace it
@@ -122,11 +104,12 @@ define (require) ->
       @
 
     ###
-    # postRefresh! Calls all the child postRefresh
+    # Calls all the child postRefresh
     ###
     postRefresh: ->
       super()
       @setWidth @getElement().width()
+
       for item in @_items
         item.postRefresh() if item.postRefresh
 
@@ -178,7 +161,7 @@ define (require) ->
     # @param [Boolean] animate defaults to false
     ###
     toggle: (cb, animate) ->
-      animate = param.optional animate, true
+      animate = false unless animate
 
       if @_visible
         @hide cb, animate
@@ -192,7 +175,7 @@ define (require) ->
     # @param [Boolean] animate defaults to true
     ###
     show: (cb, animate) ->
-      animate = param.optional animate, true
+      animate = false unless animate
 
       if @_visible
         cb() if cb
@@ -215,7 +198,7 @@ define (require) ->
     # @param [Boolean] animate defaults to true
     ###
     hide: (cb, animate) ->
-      animate = param.optional animate, true
+      animate = false unless animate
 
       unless @_visible
         cb() if cb
