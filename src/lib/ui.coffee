@@ -3,19 +3,15 @@ define (require) ->
   AUtilLog = require "util/log"
   AUtilEventLog = require "util/event_log"
   param = require "util/param"
-
   PropertyBar = require "widgets/property_bar"
-  MenuBar = require "widgets/menubar/menubar"
+  MenuBar = require "widgets/menubar"
   StatusBar = require "widgets/statusbar/statusbar"
   Timeline = require "widgets/timeline/timeline"
   Workspace = require "widgets/workspace/workspace"
-
   Sidebar = require "widgets/sidebar/sidebar"
   SidebarPanel = require "widgets/sidebar/sidebar_panel"
-
   AssetsTab = require "widgets/tabs/tab_assets"
   TexturesTab = require "widgets/tabs/tab_textures"
-
   ModalManager = require "modal_manager"
 
   class UIManager
@@ -101,128 +97,87 @@ define (require) ->
 
     initializeMenu: ->
 
-      @menu = new MenuBar @
-
-      # Set up the @menu
-      fileMenu = @menu.addItem "File"
-      editMenu = @menu.addItem "Edit"
-      viewMenu = @menu.addItem "View"
-      canvasMenu = @menu.addItem "Canvas"
-      helpMenu = @menu.addItem "Help"
-
-      ###
-      #
-      # File menu options
-      #
-      ###
-      fileMenu.createChild
-        label: "New Creative..."
-        click: => @editor.fileNewAd()
-
-      fileMenu.createChild
-        label: "Open..."
-        click: => @editor.fileOpen()
-        sectionEnd: true
-
-      fileMenu.createChild
-        label: "Save"
-        click: => @editor.fileSave()
-
-      fileMenu.createChild
-        label: "Save As..."
-        click: => @editor.fileSaveAs()
-
-      fileMenu.createChild
-        label: "Export..."
-        click: => @editor.fileExport()
-        sectionEnd: true
-
-      fileMenu.createChild
-        label: "Preferences"
-        click: => @modals.showPrefSettings()
-        sectionEnd: true
-
-      fileMenu.createChild
-        label: "Quit"
-        click: =>
-          window.location.pathname = "/creatives/#{@editor.getProject().getId()}"
-
-      ###
-      #
-      # Edit menu options
-      #
-      ###
-      editMenu.createChild label: "Undo"
-      editMenu.createChild label: "Redo"
-
-      editMenu.createChild
-        label: "History ..."
-        sectionEnd: true
-        click: => @modals.showEditHistory()
-
-      editMenu.createChild label: "Copy"
-      editMenu.createChild label: "Cut"
-      editMenu.createChild label: "Paste", sectionEnd: true
-
-      ###
-      #
-      # View menu options
-      #
-      ###
-      viewMenu.createChild
-        label: "Toggle Sidebar"
-        click: => @sidebar.toggle()
-
-      viewMenu.createChild
-        label: "Toggle Timeline"
-        click: => @timeline.toggle()
-        sectionEnd: true
-
-      viewMenu.createChild
-        label: "Fullscreen"
-        click: => @toggleFullScreen()
-        sectionEnd: true
-
-      viewMenu.createChild
-        label: "Refresh"
-        click: =>
-          @refresh()
-          @onResize()
-        sectionEnd: true
-
-      ###
-      #
-      # Canvas menu options
-      #
-      ###
-      canvasMenu.createChild
-        label: "Set Screen Properties ..."
-        click: => @modals.showSetScreenProperties()
-
-      canvasMenu.createChild
-        label: "Set Background Color ..."
-        click: => @modals.showSetBackgroundColor()
-
-      ###
-      #
-      # Help menu options
-      #
-      ###
-      helpMenu.createChild
-        label: "About Editor"
-        click: => @modals.showHelpAbout()
-
-      helpMenu.createChild
-        label: "Changelog"
-        click: => @modals.showHelpChangeLog()
-        sectionEnd: true
-
-      helpMenu.createChild label: "Take a Guided Tour"
-      helpMenu.createChild label: "Quick Start"
-      helpMenu.createChild label: "Tutorials"
-      helpMenu.createChild label: "Documentation"
-
-      @menu
+      @menu = new MenuBar @, [
+        label: "File"
+        children: [
+          label: "New Creative..."
+          click: => @editor.fileNewAd()
+        ,
+          label: "Open..."
+          click: => @editor.fileOpen()
+          sectionEnd: true
+        ,
+          label: "Save"
+          click: => @editor.fileSave()
+        ,
+          label: "Save As..."
+          click: => @editor.fileSaveAs()
+        ,
+          label: "Export..."
+          click: => @editor.fileExport()
+          sectionEnd: true
+        ,
+          label: "Preferences"
+          click: => @modals.showPrefSettings()
+          sectionEnd: true
+        ]
+      ,
+        label: "Edit"
+        children: [
+          label: "Undo"
+        ,
+          label: "Redo"
+        ,
+          label: "History..."
+          sectionEnd: true
+          click: => @modals.showEditHistory()
+        ,
+          label: "Copy"
+        ,
+          label: "Cut"
+        ,
+          label: "Paste"
+        ]
+      ,
+        label: "View"
+        children: [
+          label: "Toggle Sidebar"
+          click: => @sidebar.toggle()
+        ,
+          label: "Toggle Timeline"
+          click: => @timeline.toggle()
+          sectionEnd: true
+        ,
+          label: "Fullscreen"
+          click: => @toggleFullScreen()
+          sectionEnd: true
+        ,
+          label: "Refresh"
+          click: =>
+            @refresh()
+            @onResize()
+          sectionEnd: true
+        ]
+      ,
+        label: "Canvas"
+        children: [
+          label: "Set Screen Properties ..."
+          click: => @modals.showSetScreenProperties()
+        ,
+          label: "Set Background Color ..."
+          click: => @modals.showSetBackgroundColor()
+        ]
+      ,
+        label: "Help"
+        children: [
+          label: "About Editor"
+          click: => @modals.showHelpAbout()
+        ,
+          label: "Changelog"
+          click: => @modals.showHelpChangeLog()
+          sectionEnd: true
+        ]
+      ]
 
     ###
     # @return [self]
