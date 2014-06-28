@@ -1,21 +1,19 @@
-.sidebar
+.sidebar, .sidebar > .sb-secondary, .sidebar > .sb-primary
   position relative
   z-index 2
-  overflow hidden
-
-  width 250px
-  height 100%
 
   background-color rgb(240, 240, 240)
-  border-right 1px solid rgba(43,43,43,0.4)
-  padding 30px 0 0 0
+
+.sidebar
+  height 100%
+  width 250px
 
   header
-    top -30px
     height 32px
     background-color rgba(220, 220, 220, 0.73)
+    border-right 1px solid rgba(43,43,43,0.4)
 
-    .sb-actor-name
+    .sb-title
       text-shadow #fff 0px 1px 0px
       box-shadow -1px 0 0 0 rgba(255,255,255,.8) inset
       color #595959
@@ -33,6 +31,24 @@
     box-shadow none
     text-align right
 
+  // Primary is the main sidebar
+  .sb-primary
+    width 250px
+    height 100%
+    overflow hidden
+    padding 30px 0 0 0
+
+    header
+      top -30px
+
+  // Secondary sidebars are expansions that open only when needed
+  .sb-secondary
+    position absolute
+    left 250px
+    top 0
+    width 200px
+    min-height 300px
+
   section
     position absolute
     top 32px
@@ -40,6 +56,8 @@
     height 100%
 
     border-top 1px solid #b9b9b9
+    border-right 1px solid rgba(43,43,43,0.4)
+    border-bottom 1px solid #b9b9b9
     box-shadow 0 1px 0 0 rgba(255,255,255,0.4) inset, -1px 0 0 0 rgba(255,255,255,.9) inset
     background-color rgba(220, 220, 220, 0.9)
 
