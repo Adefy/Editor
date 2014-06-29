@@ -170,6 +170,14 @@ define (require) ->
           label: config.strings.documentation
           click: => alert "Unimplemented"
         ]
+      ,
+        label: config.strings.texture_library
+        right: true
+        image: "/editor/img/favicon.png"
+      ,
+        label: config.strings.actor_library
+        right: true
+        icon: config.icon.actor_library
       ]
 
     ###

@@ -13,7 +13,17 @@ define ->
 
   <ul class="mb-primary">
   {{#each items}}
-    <a data-id="{{id}}" href="javascript:void(0)">
+    <a data-id="{{id}}" href="javascript:void(0)"
+    {{#if right}}class="mb-right"{{/if}}
+    >
+      {{#if icon}}
+      <i class="fa {{icon}}"></i>
+      {{/if}}
+
+      {{#if image}}
+      <img src="{{image}}" alt="{{label}}" />
+      {{/if}}
+
       <li>{{label}}</li>
     </a>
   {{/each}}

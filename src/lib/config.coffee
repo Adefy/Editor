@@ -44,6 +44,8 @@ define
     property_particles: "fa-star"
     property_spawn:     "fa-dot-circle-o"
 
+    actor_library:      "fa-male"
+
   ###
   # Number precision; values specify the number of digits values are rounded to
   ###
