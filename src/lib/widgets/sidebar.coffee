@@ -139,8 +139,13 @@ define (require) ->
     _bindPanelControls: ->
       physicsEnable = "#{@getSel()} .sb-dialogues li[data-id=physics] input"
       physicsToggle = "#{@getSel()} .sb-dialogues li[data-id=physics] a"
+      physicsApply = "#{@getSel()} .sb-seco-physics .sb-commit .sb-apply"
+      physicsCancel = "#{@getSel()} .sb-seco-physics .sb-commit .sb-cancel"
+
       spawnEnable = "#{@getSel()} .sb-dialogues li[data-id=spawn] input"
       spawnToggle = "#{@getSel()} .sb-dialogues li[data-id=spawn] a"
+      spawnApply = "#{@getSel()} .sb-seco-spawn .sb-commit .sb-apply"
+      spawnCancel = "#{@getSel()} .sb-seco-spawn .sb-commit .sb-cancel"
 
       # Sidebar toggles
       $(document).on "click", physicsToggle, =>
@@ -148,6 +153,15 @@ define (require) ->
 
       $(document).on "click", spawnToggle, =>
         @togglePanel Sidebar.PANEL_SPAWN
+
+      # Cancel buttons, hide associated panel and perform a value update
+      $(document).on "click", physicsCancel, =>
+        @hidePanel Sidebar.PANEL_PHYSICS, null, =>
+          @refreshInputValues()
+
+      $(document).on "click", spawnCancel, =>
+        @hidePanel Sidebar.PANEL_SPAWN, null, =>
+          @refreshInputValues()
 
     ###
     # Clear the property widget

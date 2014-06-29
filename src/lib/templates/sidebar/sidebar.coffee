@@ -105,7 +105,7 @@ define ->
         </ul>
       </div>
 
-      <div class="sb-apply">
+      <div class="sb-commit">
         <button class="sb-cancel">Cancel</button>
         <button class="sb-apply">Apply</button>
       </div>
@@ -181,7 +181,7 @@ define ->
         </ul>
       </div>
 
-      <div class="sb-apply">
+      <div class="sb-commit">
         <button class="sb-cancel">Cancel</button>
         <button class="sb-apply">Apply</button>
       </div>
