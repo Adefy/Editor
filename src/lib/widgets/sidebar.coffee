@@ -18,11 +18,23 @@ define (require) ->
   TemplateNumericControl = require "templates/sidebar/controls/numeric"
   TemplateTextControl = require "templates/sidebar/controls/text"
 
+  ###
+  # The sidebar exposes actor properties to the user through various input
+  # fields spread across multiple panels.
+  #
+  # Sex'ay
+  ###
   class Sidebar extends Widget
 
+    # Panel names used for show/hide/toggle commands
+    @PANEL_PHYSICS: "physics"
+    @PANEL_SPAWN: "spawn"
+
+    # Speed of animations in ms
+    @ANIM_SPEED: 300
+
     ###
-    # Creates a new sidebar with a given origin. The element's id is randomized
-    # to sbar + Math.floor(Math.random() * 1000)
+    # Sets up a new actor sidebar on the left side of the screen.
     #
     # @param [UIManager] ui
     ###
@@ -40,10 +52,7 @@ define (require) ->
       @_visible = !!Storage.get("sidebar.visible")
 
       @setWidth 250
-      @_bindToggle()
-
-      @registerInputListener()
-      @setupDragger()
+      @_bindListeners()
 
       # At this point, this just sets up our cached HTML. No element exists yet,
       # so it doesn't render us directly
@@ -65,10 +74,49 @@ define (require) ->
       @_cachedHTML
 
     ###
-    # Set up our ability to modify numeric input values by dragging horizontally
+    # Binds listeners responsible for detecting input modifications, sidebar
+    # toggling, and panel toggling.
+    #
     # @private
     ###
-    setupDragger: ->
+    _bindListeners: ->
+      @_bindSidebarToggle()
+      @_bindInputChange()
+      @_bindDraggableInputs()
+      @_bindPanelControls()
+
+    ###
+    # Binds the listener responsible for toggling the visible state of the
+    # sidebar. This also hides all visible panels.
+    #
+    # @private
+    ###
+    _bindSidebarToggle: ->
+      $(document).on "click", "#{@getSel()} .button.toggle", ->
+
+        # Find the affected sidebar
+        selector = @attributes["data-sidebarid"].value
+        sidebar = $("body").data "##{selector}"
+
+        sidebar.toggle()
+
+    ###
+    # Binds the listener responsible for reacting to input changes. This
+    # includes both the main sidebar and all extension panels.
+    #
+    # @private
+    ###
+    _bindInputChange: ->
+      $(document).on "change", "#{@_sel} .sb-control > input", (e) =>
+        @saveControl e.target
+        @ui.pushEvent "sidebar.update.actor", actor: @_targetActor
+
+    ###
+    # Set up our ability to modify numeric input values by dragging horizontally
+    #
+    # @private
+    ###
+    _bindDraggableInputs: ->
       @dragger = new Dragger "#{@_sel} input[type=number]"
 
       @dragger.setOnDragStart (d) ->
@@ -83,24 +131,23 @@ define (require) ->
         $(d.getTarget()).css "cursor", "auto"
 
     ###
+    # Binds listeners for the extension panel controls. Includes sidebar links
+    # and panel cancel/apply buttons.
+    #
     # @private
     ###
-    registerInputListener: ->
-      $(document).on "change", "#{@_sel} .sb-control > input", (e) =>
-        @saveControl e.target
-        @ui.pushEvent "sidebar.update.actor", actor: @_targetActor
+    _bindPanelControls: ->
+      physicsEnable = "#{@getSel()} .sb-dialogues li[data-id=physics] input"
+      physicsToggle = "#{@getSel()} .sb-dialogues li[data-id=physics] a"
+      spawnEnable = "#{@getSel()} .sb-dialogues li[data-id=spawn] input"
+      spawnToggle = "#{@getSel()} .sb-dialogues li[data-id=spawn] a"
 
-    ###
-    # @private
-    ###
-    _bindToggle: ->
-      $(document).on "click", "#{@getSel()} .button.toggle", ->
+      # Sidebar toggles
+      $(document).on "click", physicsToggle, =>
+        @togglePanel Sidebar.PANEL_PHYSICS
 
-        # Find the affected sidebar
-        selector = @attributes["data-sidebarid"].value
-        sidebar = $("body").data "##{selector}"
-
-        sidebar.toggle()
+      $(document).on "click", spawnToggle, =>
+        @togglePanel Sidebar.PANEL_SPAWN
 
     ###
     # Clear the property widget
@@ -132,6 +179,107 @@ define (require) ->
         when "workspace.add.actor" then @updateActor params.actor
         when "workspace.remove.actor" then @clearActor params.actor
         when "selected.actor.update" then @updateActor params.actor
+
+    ###
+    ###
+    ## Panel logic
+    ###
+    ###
+
+    ###
+    # Get the full HTML selector for the specified panel. Primarily used by
+    # internal methods for panel manipulation.
+    #
+    # @param [String] name
+    # @return [String] selector
+    ###
+    getPanelSelector: (name) ->
+      if name == Sidebar.PANEL_PHYSICS
+        "#{@getSel()} .sb-secondary.sb-seco-physics"
+      else if name == Sidebar.PANEL_SPAWN
+        "#{@getSel()} .sb-secondary.sb-seco-spawn"
+      else
+        null
+
+    ###
+    # Show the specified panel if it is currently hidden.
+    #
+    # @param [String] name
+    # @param [String] selector optional, so we don't have to fetch it
+    # @param [Method] cb optional end of animation callback
+    ###
+    showPanel: (name, sel, cb) ->
+      return unless sel ||= @getPanelSelector name
+      return if @isPanelVisible name, sel
+
+      @hideAllPanelsExcept name, sel
+      $(sel).animate left: @_width, Sidebar.ANIM_SPEED, cb
+
+    ###
+    # Hide the specified panel if it is currently visible.
+    #
+    # @param [String] name
+    # @param [String] selector optional, so we don't have to fetch it
+    # @param [Method] cb optional end of animation callback
+    ###
+    hidePanel: (name, sel, cb) ->
+      return unless sel ||= @getPanelSelector name
+      return if @isPanelHidden name, sel
+
+      $(sel).animate left: 0, Sidebar.ANIM_SPEED, cb
+
+    ###
+    # Hide all panels except the specified one.
+    #
+    # @param [String] name
+    # @param [String] selector optional, so we don't have to fetch it
+    # @param [Method] cb optional end of animation callback
+    ###
+    hideAllPanelsExcept: (name, sel, cb) ->
+      return unless sel ||= @getPanelSelector name
+
+      @hidePanel Sidebar.PANEL_PHYSICS unless name == Sidebar.PANEL_PHYSICS
+      @hidePanel Sidebar.PANEL_SPAWN unless name == Sidebar.PANEL_SPAWN
+
+    ###
+    # Toggle the visible state of the specified panel. If we have to show it,
+    # all other panels are hidden.
+    #
+    # @param [String] name
+    # @param [String] selector optional, so we don't have to fetch it
+    # @param [Method] cb optional end of animation callback
+    ###
+    togglePanel: (name, sel, cb) ->
+      return unless sel ||= @getPanelSelector name
+
+      if @isPanelHidden name, sel
+        @showPanel name, sel, cb
+      else
+        @hidePanel name, sel, cb
+
+    ###
+    # Check if the specified panel is currently visible.
+    #
+    # @param [String] name
+    # @param [String] selector optional, so we don't have to fetch it
+    # @return [Boolean] visible
+    ###
+    isPanelVisible: (name, sel) ->
+      return unless sel ||= @getPanelSelector name
+
+      $(sel).offset().left == @_width
+
+    ###
+    # Check if the specified panel is currently hidden.
+    #
+    # @param [String] name
+    # @param [String] selector optional, so we don't have to fetch it
+    # @return [Boolean] hidden
+    ###
+    isPanelHidden: (name, sel) ->
+      return unless sel ||= @getPanelSelector name
+
+      $(sel).offset().left == 0
 
     ###
     ###
@@ -394,10 +542,8 @@ define (require) ->
     #
     # @param [Number] width
     ###
-    setWidth: (width) ->
-      elem = @getElement()
-      elem.width width
-      @_width = elem.width()
+    setWidth: (@_width) ->
+      @getElement().width @_width
       @_hiddenX = -(@_width - 40)
       @_visibleX = 0
 
@@ -437,7 +583,7 @@ define (require) ->
         return
 
       if animate
-        @getElement().animate left: @_visibleX, 300, cb
+        @getElement().animate left: @_visibleX, Sidebar.ANIM_SPEED, cb
       else
         @getElement().css left: @_visibleX
         cb() if cb
@@ -459,7 +605,7 @@ define (require) ->
         return
 
       if animate
-        @getElement().animate left: @_hiddenX , 300, cb
+        @getElement().animate left: @_hiddenX, Sidebar.ANIM_SPEED, cb
       else
         @getElement().css left: @_hiddenX
         cb() if cb

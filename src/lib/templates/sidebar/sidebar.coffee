@@ -60,11 +60,11 @@ define ->
       </div>
 
       <ul class="sb-dialogues">
-        <li>
+        <li data-id="physics">
           <input type="checkbox" name="physics" />
           <a href="javascript:void(0)">Physics...</a>
         </li>
-        <li>
+        <li data-id="spawn">
           <input type="checkbox" name="spawning" />
           <a href="javascript:void(0)">Spawning...</a>
         </li>
@@ -99,6 +99,35 @@ define ->
         <ul class="sb-controls-right">
           <li class="sb-control" data-id="mass">
             <input type="checkbox" name="physics-static" /> Static
+          </li>
+        </ul>
+      </div>
+
+      <div class="sb-apply">
+        <button class="sb-cancel">Cancel</button>
+        <button class="sb-apply">Apply</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="sb-secondary sb-seco-spawn">
+    <header>
+      <div class="sb-title">Spawner settings...</div>
+    </header>
+    <section>
+      <div class="sb-controls">
+        <ul class="sb-controls-left">
+          <li class="sb-control" data-id="mass">
+            <label>Mass</label>
+            <input type="number" value="20" min="0" />
+          </li>
+          <li class="sb-control" data-id="elasticity">
+            <label>Elasticity</label>
+            <input type="number" value="10" min="0" max="100" />
+          </li>
+          <li class="sb-control" data-id="friction">
+            <label>Friction</label>
+            <input type="number" value="70" min="0" max="100" />
           </li>
         </ul>
       </div>
