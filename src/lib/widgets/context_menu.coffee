@@ -64,9 +64,15 @@ define (require) ->
       @refreshStub() # widget auto refresh was removed
       @refresh()
 
+      # Vertical offset depends on if we have a label
+      if @properties.name
+        verticalOffset = 25
+      else
+        verticalOffset = 12
+
       @getElement().css
-        left: x
-        top: y
+        left: x - 30
+        top: y - verticalOffset
 
       if ContextMenu.animate
         @getElement().slideDown ContextMenu.animateSpeed

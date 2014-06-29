@@ -307,7 +307,9 @@ define (require) ->
           name: config.locale.label.create_menu_item
           cb: =>
             new ContextMenu @ui,
-              x: x, y: y, properties: @getNewActorCtxMenu(x, y)
+              x: x
+              y: y
+              properties: @getNewActorCtxMenu(x, y)
 
       if @ui.editor.clipboard && @ui.editor.clipboard.type == "actor"
         functions.paste =
@@ -391,10 +393,14 @@ define (require) ->
               unless _.isEmpty actor.getContextProperties()
                 @dragger.forceDragEnd()
                 new ContextMenu @ui,
-                  x: x , y: y, properties: actor.getContextProperties()
+                  x: x
+                  y: y
+                  properties: actor.getContextProperties()
           else
             new ContextMenu @ui,
-              x: x , y: y, properties: @getWorkspaceCtxMenu(x, y)
+              x: x
+              y: y
+              properties: @getWorkspaceCtxMenu(x, y)
 
         e.preventDefault()
         false
