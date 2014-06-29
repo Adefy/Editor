@@ -51,7 +51,7 @@ define ->
         <a class="sb-ap-dialogue" href="javascript:void(0)">Appearance...</a>
       </div>
 
-      <div class="sb-opacity">
+      <div class="sb-opacity" data-id="opacity">
         <div class="sb-op-slider">
           <input type="range" min="0" max="100" value="100" />
         </div>
