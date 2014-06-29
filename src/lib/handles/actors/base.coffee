@@ -24,7 +24,7 @@ define (require) ->
     ###
     # @property [Number] accuracy the number of digits animations round-off to
     ###
-    ACCURACY: config.precision.animation
+    ACCURACY: config.precision.base
 
     ###
     # Defines a raw actor, with no shape information or any other presets.
@@ -96,22 +96,22 @@ define (require) ->
 
       @_ctx = _.extend @_ctx,
         copy:
-          name: config.locale.copy
+          name: config.strings.copy
           cb: => @_contextFuncCopy @
         dup:
-          name: config.locale.duplicate
+          name: config.strings.duplicate
           cb: => @_contextFuncDuplicate @
         setTexture:
-          name: config.locale.label.texture_modal
+          name: config.strings.texture
           cb: => @_contextFuncSetTexture @
         setTextureRepeat:
-          name: config.locale.label.texture_repeat_modal
+          name: config.strings.texture_repeat
           cb: => @_contextFuncSetTextureRepeat @
         editPhysics:
-          name: config.locale.label.physics_modal
+          name: config.strings.physics
           cb: => @_contextFuncEditPhysics @
         makeSpawner:
-          name: config.locale.ctx.base_actor.make_spawner
+          name: config.strings.make_spawner
           cb: => @ui.workspace.transformActorIntoSpawner @
 
       @initPropertyOpacity()

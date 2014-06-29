@@ -108,11 +108,11 @@ define (require) ->
 
       ## for testing
       @_ctx.spawn =
-        name: config.locale.ctx.spawner.spawn
+        name: config.strings.spawn
         cb: => @spawn()
 
       @_ctx.configure =
-        name: config.locale.ctx.spawner.configure
+        name: config.strings.configure
         cb: => @openConfigureDialog()
 
       delete @_ctx.makeSpawner

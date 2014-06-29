@@ -265,9 +265,9 @@ define (require) ->
         y: y - canvasTop
       }
 
+
     ###
-    # Generate the new actor menu options object, opened through the workspace
-    # context menu.
+    # Generate workspace right-click ctx data object
     #
     # @param [Number] x x coordinate of click
     # @param [Number] y y coordinate of click
@@ -313,7 +313,7 @@ define (require) ->
 
       if @ui.editor.clipboard && @ui.editor.clipboard.type == "actor"
         functions.paste =
-          name: config.locale.paste
+          name: config.strings.paste
           cb: =>
 
             pos = @domToGL(x, y)
@@ -327,7 +327,7 @@ define (require) ->
             @addActor newActor
 
       {
-        name: "Workspace"
+        name: config.strings.create_actor
         functions: functions
       }
 

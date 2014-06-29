@@ -1,50 +1,56 @@
 ###
-# AdefyEditor config
+# AdefyEditor config, read individual sections for details
 ###
 define
+
+  ###
+  # Debug parameters; controls various log levels
+  ###
   debug:
     event_log:     false
     render_log:    false
     are_log_level: 3
 
-  # enable and disable certain features
-  use:
-    spawner: true
-
-  # html element ids
+  ###
+  # HTML element IDs
+  ###
   id:
     are_canvas: "are-canvas"
 
-  # css selectors
+  ###
+  # CSS selectors
+  ###
   selector:
     header:  "header"
     content: "section.main"
     footer:  "footer"
 
-  # ui.icons
+  ###
+  # UI icon classes
+  ###
   icon:
-    # ui.toggle
-    toggle_down:  "fa-toggle-down"
-    toggle_left:  "fa-toggle-left"
-    toggle_right: "fa-toggle-right"
-    toggle_up:    "fa-toggle-up"
 
-    # handle.properties
+    toggle_down:        "fa-toggle-down"
+    toggle_left:        "fa-toggle-left"
+    toggle_right:       "fa-toggle-right"
+    toggle_up:          "fa-toggle-up"
+
     property_default:   "fa-cog"
     property_basic:     "fa-cog"
     property_color:     "fa-adjust"
     property_layer:     "fa-tasks"
     property_physics:   "fa-anchor"
     property_position:  "fa-arrows"
-    ## particle system
     property_particles: "fa-star"
     property_spawn:     "fa-dot-circle-o"
 
-  # number precision
+  ###
+  # Number precision; values specify the number of digits values are rounded to
+  ###
   precision:
-    # animation rounding
-    animation: 4
-    # precision used for properties
+
+    # Animation rounding
+    base: 4                 # Base rounding, used by default for all actor props
     color: 0                # Actor.color
     height: 0               # RectangleActor.height
     layer: 1                # Actor.layer
@@ -60,30 +66,26 @@ define
     texture_repeat: 2       # BaseActor.textureRepeat
     width: 0                # RectangleActor.width
 
-  ##
-  locale:
-    duplicate: "Duplicate"
-    copy:      "Copy"
-    cut:       "Cut"
-    paste:     "Paste"
+  ###
+  # This section defines interface strings, and is expected to be replaced on
+  # load for locales other than englines. The strings must use proper
+  # capitalisation, and should not include any form of ending punctuation.
+  ###
+  strings:
+    duplicate:            "Duplicate"
+    copy:                 "Copy"
+    cut:                  "Cut"
+    paste:                "Paste"
+    configure:            "Configure"
 
-    title:
-      create: "Create Actor"
+    texture:              "Texture"
+    texture_repeat:       "Texture Repeat"
+    physics:              "Physics"
 
-    label:
-      create_menu_item:     "Create +"
-      texture_modal:        "Texture ..."
-      texture_repeat_modal: "Texture Rep. ..."
-      physics_modal:        "Physics ..."
-      ##
-      actor_rectangle:      "Rectangle Actor"
-      actor_polygon:        "Polygon Actor"
-      actor_circle:         "Circle Actor"
+    create_actor:         "Create Actor"
+    actor_rectangle:      "Rectangle Actor"
+    actor_polygon:        "Polygon Actor"
+    actor_circle:         "Circle Actor"
 
-    ctx:
-      base_actor:
-        make_spawner: "Make Spawner"
-
-      spawner:
-        configure: "Configure..."
-        spawn: "Spawn"
+    make_spawner:         "Make Spawner"
+    spawn:                "Spawn"
