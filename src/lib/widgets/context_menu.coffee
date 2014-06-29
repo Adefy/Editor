@@ -15,7 +15,7 @@ define (require) ->
     ###
     # Builds a context menu as a new div on the body. It is absolute
     # positioned, and as such requires a position at instantiation.
-    #
+    #  
     # Note that once the menu is clicked out of, it should be discarded!
     #
     # @param [Number] x x coordinate to spawn at
@@ -25,10 +25,10 @@ define (require) ->
     constructor: (@ui, options) ->
       x = param.required options.x
       y = param.required options.y
-      @properties = param.required options.properties
+      @_properties = param.required options.properties
 
-      @_name = @properties.name
-      @_items = @properties.functions
+      @_name = @_properties.name
+      @_items = @_properties.functions
 
       # Silently drop out, empty ctx menu is allowed, we just do nothing
       return if $.isEmptyObject @_items
@@ -59,7 +59,7 @@ define (require) ->
       @refresh()
 
       # Vertical offset depends on if we have a label
-      if @properties.name
+      if @_properties.name
         verticalOffset = 25
       else
         verticalOffset = 12
