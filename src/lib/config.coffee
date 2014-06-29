@@ -77,6 +77,8 @@ define
     cut:                  "Cut"
     paste:                "Paste"
     configure:            "Configure"
+    rename:               "Rename"
+    delete:               "Delete"
 
     texture:              "Texture"
     texture_repeat:       "Texture Repeat"

@@ -101,18 +101,6 @@ define (require) ->
         dup:
           name: config.strings.duplicate
           cb: => @_contextFuncDuplicate @
-        setTexture:
-          name: config.strings.texture
-          cb: => @_contextFuncSetTexture @
-        setTextureRepeat:
-          name: config.strings.texture_repeat
-          cb: => @_contextFuncSetTextureRepeat @
-        editPhysics:
-          name: config.strings.physics
-          cb: => @_contextFuncEditPhysics @
-        makeSpawner:
-          name: config.strings.make_spawner
-          cb: => @ui.workspace.transformActorIntoSpawner @
 
       @initPropertyOpacity()
       @initPropertyRotation()

@@ -273,43 +273,23 @@ define (require) ->
     # @param [Number] y y coordinate of click
     # @return [Object] options
     ###
-    getNewActorCtxMenu: (x, y) ->
+    getWorkspaceCtxMenu: (x, y) ->
       time = @ui.timeline.getCursorTime()
       pos = @domToGL(x, y)
 
       pos.x += @_are.getRenderer().getCameraPosition().x
       pos.y += @_are.getRenderer().getCameraPosition().y
 
-      {
-        name: config.locale.title.create
-        functions:
-          rectActor:
-            name: config.locale.label.actor_rectangle
-            cb: => @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
-          polyActor:
-            name: config.locale.label.actor_polygon
-            cb: => @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
-          circActor:
-            name: config.locale.label.actor_circle
-            cb: => @addActor new PolygonActor @ui, time, 32, 60, pos.x, pos.y
-      }
-
-    ###
-    # Generate workspace right-click ctx data object
-    #
-    # @param [Number] x x coordinate of click
-    # @param [Number] y y coordinate of click
-    # @return [Object] options
-    ###
-    getWorkspaceCtxMenu: (x, y) ->
       functions =
-        create:
-          name: config.locale.label.create_menu_item
-          cb: =>
-            new ContextMenu @ui,
-              x: x
-              y: y
-              properties: @getNewActorCtxMenu(x, y)
+        rectActor:
+          name: config.strings.actor_rectangle
+          cb: => @addActor new RectangleActor @ui, time, 100, 100, pos.x, pos.y
+        polyActor:
+          name: config.strings.actor_polygon
+          cb: => @addActor new PolygonActor @ui, time, 5, 60, pos.x, pos.y
+        circActor:
+          name: config.strings.actor_circle
+          cb: => @addActor new PolygonActor @ui, time, 32, 60, pos.x, pos.y
 
       if @ui.editor.clipboard && @ui.editor.clipboard.type == "actor"
         functions.paste =

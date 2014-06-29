@@ -2,6 +2,7 @@ define (require) ->
 
   param = require "util/param"
   ID = require "util/id"
+  config = require "config"
 
   EditorSuperClass = require "superclass"
   Dumpable = require "mixin/dumpable"
@@ -26,11 +27,13 @@ define (require) ->
       # Basic right-click menu functions
       @_ctx =
         rename:
-          name: "Rename ..."
+          name: "#{config.strings.rename}..."
           cb: => window.AdefyEditor.ui.modals.showRename @
+          prepend: true
         del:
-          name: "Delete"
+          name: config.strings.delete
           cb: => @delete()
+          append: true
 
       # Give ourselves a unique id so we can be discovered on the body
       generatedID = ID.objID "handle"

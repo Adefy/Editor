@@ -27,14 +27,27 @@ define (require) ->
       y = param.required options.y
       @_properties = param.required options.properties
 
-      @_name = @_properties.name
-      @_items = @_properties.functions
+      # NOTE: We convert the items hash into an array internally, for sorting!
+      items = @_properties.functions
 
       # Silently drop out, empty ctx menu is allowed, we just do nothing
-      return if $.isEmptyObject @_items
+      return if $.isEmptyObject items
 
       # Give items unique IDs
-      item.id = ID.prefID("ctx-item") for key, item of @_items
+      item.id = ID.prefID("ctx-item") for key, item of items
+
+      # Sort items into final array. I realise this isn't very efficient, but
+      # our context menus are reasonably sized :)
+      @_items = []
+
+      for key, item of items
+        @_items.push item if item.prepend
+
+      for key, item of items
+        @_items.push item unless item.prepend or item.append
+
+      for key, item of items
+        @_items.push item if item.append
 
       super @ui,
         id: ID.prefID("context-menu")
@@ -51,7 +64,7 @@ define (require) ->
         ]
         static: true
         html: TemplateContextMenu
-          name: @_name
+          name: @_properties.name
           items: @_items
 
       # We render ourselves immediately; refreshStub creates our outer container
@@ -76,7 +89,7 @@ define (require) ->
     onClick: (e) =>
       return unless id = $(e.target).parent().attr "data-id"
 
-      for key, item of @_items
+      for item in @_items
         if item.id == id
           item.cb()
           break
