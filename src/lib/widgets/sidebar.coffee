@@ -46,7 +46,7 @@ define (require) ->
         classes: ["sidebar"]
 
       @_cachedHTML =  null
-      @_tagetActor = null
+      @_targetActor = null
       @_hiddenX = 0
       @_visibleX = 0
       @_visible = !!Storage.get("sidebar.visible")
@@ -82,6 +82,7 @@ define (require) ->
     _bindListeners: ->
       @_bindSidebarToggle()
       @_bindInputChange()
+      @_bindOpacityInput()
       @_bindDraggableInputs()
       @_bindPanelControls()
 
@@ -106,6 +107,23 @@ define (require) ->
         @ui.pushEvent "sidebar.update.actor", actor: @_targetActor
 
     ###
+    # Binds the listeners responsible for making the compound opacity control
+    # work properly. The slider and input field update when the other is
+    # changed.
+    ###
+    _bindOpacityInput: ->
+      $(document).on "change", "#{@_sel} .sb-opacity input", (e) =>
+        opacity = $(e.target).val()
+        isSlider = $(e.target).parent().hasClass "sb-op-slider"
+
+        if isSlider
+          $("#{@_sel} .sb-op-input").val opacity
+        else
+          $("#{@_sel} .sb-op-slider input").val opacity
+
+        @_targetActor.getProperties().opacity.setValue opacity
+
+    ###
     # Set up our ability to modify numeric input values by dragging horizontally
     #
     # @private
@@ -119,7 +137,7 @@ define (require) ->
 
       @dragger.setOnDrag (d, deltaX, deltaY) =>
         $(d.getTarget()).val d.getUserData().initialValue + deltaX
-        @saveControl $(d.getTarget())[0]
+        $(d.getTarget()).change()
 
       @dragger.setOnDragEnd (d) ->
         $(d.getTarget()).css "cursor", "auto"
@@ -390,7 +408,10 @@ define (require) ->
     ###
     refreshInputValues: ->
       return unless !!@_targetActor
+
       @_refreshRawInputs()
+      @_refreshAppearance()
+      @_refreshOpacity()
 
     _refreshRawInputs: ->
       properties = @_targetActor.getProperties()
@@ -407,6 +428,30 @@ define (require) ->
       for input in $("#{@getSel()} .sb-controls-right input")
         if properties[$(input).attr "data-id"]
           $(input).val properties[$(input).attr "data-id"].getValue()
+
+    _refreshAppearance: ->
+      color = @_targetActor.getColor()
+      texture = _.find @ui.editor.project.textures, (texture) ->
+        texture.getUID() == @_targetActor.getTextureUID()
+
+      apSquare = $("#{@getSel()} .sb-appearance .sb-ap-sample")
+
+      if texture
+        apSquare.removeClass "color"
+        apSquare.addClass("texture") unless apSquare.hasClass "texture"
+
+        apSquare.css background: "#fff url(#{texture.getURL()}) cover"
+      else
+        apSquare.removeClass "texture"
+        apSquare.addClass("color") unless apSquare.hasClass "color"
+
+        apSquare.css background: "rgb(#{color.r}, #{color.g}, #{color.b})"
+
+    _refreshOpacity: ->
+      opacity = @_targetActor.getOpacity()
+
+      $("#{@getSel()} .sb-opacity input[type=range]").val opacity * 100
+      $("#{@getSel()} .sb-opacity input[type=number]").val opacity * 100
 
     ###
     ###

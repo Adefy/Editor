@@ -47,7 +47,7 @@ define ->
       </div>
 
       <div class="sb-appearance">
-        <div class="sb-ap-sample color"></div>
+        <div class="sb-ap-sample"></div>
         <a class="sb-ap-dialogue" href="javascript:void(0)">Appearance...</a>
       </div>
 
@@ -56,7 +56,7 @@ define ->
           <input type="range" min="0" max="100" value="100" />
         </div>
         <label class="sb-op-label">Opacity</label>
-        <input class="sb-op-input" type="number" min="0" max="1" value="1" />
+        <input class="sb-op-input" type="number" min="0" max="100" />
       </div>
 
       <ul class="sb-dialogues">

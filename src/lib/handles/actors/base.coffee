@@ -405,7 +405,11 @@ define (require) ->
     #
     # @return [Number] opacity
     ###
-    getOpacity: -> 1.0
+    getOpacity: ->
+      if @_AREActor
+        @_AREActor.getOpacity()
+      else
+        null
 
     ###
     # Return actor position as (x,y) relative to the GL world
