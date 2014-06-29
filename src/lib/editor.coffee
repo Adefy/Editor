@@ -18,16 +18,12 @@ define (require) ->
   AUtilLog = require "util/log"
 
   Storage = require "storage"
+  UIManager = require "ui"
+  Project = require "project"
 
   PolygonActor = require "handles/actors/polygon"
   RectangleActor = require "handles/actors/rectangle"
-
-  UIManager = require "ui"
-
-  Notification = require "widgets/notification"
-
   Bezier = require "handles/bezier"
-  Project = require "project"
 
   class Editor
 
@@ -311,9 +307,7 @@ define (require) ->
 
         # This shouldn't happen, but just in case, log, notify and skip
         if type.length == 0
-          error = "Unrecognized actor, can't export: #{a._id}"
-          AUtilLog.warn error
-          new Notification error, "red"
+          AUtilLog.warn "Unrecognized actor, can't export: #{a._id}"
         else
 
           # Build actor definition
@@ -347,9 +341,7 @@ define (require) ->
 
       # Send result to backend and receive a link
       $.post "/api/v1/editor/export?id=#{window.ad}&data=#{ex}", (result) ->
-        if result.error != undefined
-          new Notification "Error exporting: #{result.error}"
-          return
+        return if result.error
 
         # Show a modal dialog offering to view, or download the export
         _html =  ""

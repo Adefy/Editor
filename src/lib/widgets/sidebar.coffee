@@ -92,13 +92,7 @@ define (require) ->
     # @private
     ###
     _bindSidebarToggle: ->
-      $(document).on "click", "#{@getSel()} .button.toggle", ->
-
-        # Find the affected sidebar
-        selector = @attributes["data-sidebarid"].value
-        sidebar = $("body").data "##{selector}"
-
-        sidebar.toggle()
+      # TODO: Re-implement this
 
     ###
     # Binds the listener responsible for reacting to input changes. This

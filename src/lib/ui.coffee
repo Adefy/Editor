@@ -11,10 +11,13 @@ define (require) ->
   Sidebar = require "widgets/sidebar"
   ModalManager = require "modal_manager"
 
+  ###
+  # Singleton god class, responsible for initializing and keeping references
+  # of all top-level UI elements.
+  ###
   class UIManager
 
     constructor: (@editor) ->
-
       if UIManager.instance
         throw new Error "UIManager already instantiated!"
       else
@@ -39,7 +42,7 @@ define (require) ->
       window.onresize = @onResize
 
     ###
-    # swiped from:
+    # Swiped from:
     # http://xparkmedia.com/blog/enter-fullscreen-mode-javascript/
     ###
     toggleFullScreen: ->
@@ -61,13 +64,11 @@ define (require) ->
           document.webkitCancelFullScreen()
 
     updateSectionMain: =>
-      $("section.main").height $(window).height() - \
-                               $("header").height() - \
-                               $("footer").height()
+      height = $(window).height() - $("header").height() - $("footer").height()
+      $("section.main").height height
       @
 
     onResize: =>
-
       @updateSectionMain()
 
       for widget in @widgets
@@ -171,7 +172,9 @@ define (require) ->
       ]
 
     ###
-    # @return [self]
+    # Refresh all wigdet stubs
+    #
+    # @return [UIManager] self
     ###
     refreshStub: ->
       AUtilLog.info "UI#refreshStub"
@@ -181,7 +184,9 @@ define (require) ->
       @
 
     ###
-    # @return [self]
+    # Refresh all widgets
+    #
+    # @return [UIManager] self
     ###
     refresh: ->
       AUtilLog.info "UI#refresh"
@@ -191,7 +196,9 @@ define (require) ->
       @
 
     ###
-    # @return [self]
+    # Call postInit() on all widgets supporting it
+    #
+    # @return [UIManager] self
     ###
     postInit: ->
       AUtilLog.info "UI#postInit"
@@ -201,7 +208,9 @@ define (require) ->
       @
 
     ###
-    # @return [self]
+    # Call postRefresh() on all widgets supporting it
+    #
+    # @return [UIManager] self
     ###
     postRefresh: ->
       AUtilLog.info "UI#postRefresh"
@@ -211,7 +220,9 @@ define (require) ->
       @
 
     ###
-    # @return [self]
+    # Perform a full re-render. This destroys and rebuilds all widgets!
+    #
+    # @return [UIManager] self
     ###
     refreshHard: ->
       @refreshStub() # create widget stubs
@@ -227,14 +238,13 @@ define (require) ->
 
     ###
     # Adds a new event
+    #
     # @param [String] type
     # @param [Object] params
     ###
     pushEvent: (type, params) ->
-
-      unless @_ignoreEventList == null || @_ignoreEventList == undefined
-        if _.include @_ignoreEventList, type
-          return AUtilEventLog.ignore "ui", type
+      if @_ignoreEventList and _.include @_ignoreEventList, type
+        return AUtilEventLog.ignore "ui", type
 
       AUtilEventLog.epush "ui", type
 
@@ -251,30 +261,26 @@ define (require) ->
       ##
       # more debugging stuff
       @_eventStats ||= {}
-      if @_eventStats[type] == null || @_eventStats[type] == undefined
-        @_eventStats[type] = 0
+      @_eventStats[type] = 0 if isNaN @_eventStats[type]
       @_eventStats[type]++
 
     ###
     # Allows incoming event of (type)
+    #
     # @param [String] type
     ###
     allowEvent: (type) ->
-
-      if @_ignoreEventList == null || @_ignoreEventList == undefined
-        return
+      return unless !!@_ignoreEventList
 
       index = @_ignoreEventList.indexOf(type)
       @_ignoreEventList.splice index, 1
 
     ###
     # Blocks incoming event of (type)
+    #
     # @param [String] type
     ###
     ignoreEvent: (type) ->
-
-      if @_ignoreEventList == null || @_ignoreEventList == undefined
-        @_ignoreEventList = []
-
+      @_ignoreEventList = [] unless @_ignoreEventList instanceof Array
       @_ignoreEventList.push type
 

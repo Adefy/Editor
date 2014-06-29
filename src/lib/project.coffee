@@ -5,10 +5,10 @@ define (require) ->
   AUtilLog = require "util/log"
   Asset = require "handles/asset"
   Texture = require "handles/texture"
-  EditorObject = require "editor_object"
+  EditorSuperClass = require "superclass"
   Dumpable = require "mixin/dumpable"
 
-  class Project extends EditorObject
+  class Project extends EditorSuperClass
 
     @include Dumpable
 

@@ -3,11 +3,11 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
 
-  EditorObject = require "editor_object"
+  EditorSuperClass = require "superclass"
   Dumpable = require "mixin/dumpable"
 
   # Base class for all elements that can be manipulated by the editor
-  window.Handle = class Handle extends EditorObject
+  window.Handle = class Handle extends EditorSuperClass
 
     @include Dumpable
 
@@ -40,9 +40,6 @@ define (require) ->
       @name = "handle #{@_id_numeric}"
 
       @handleType = "Handle"
-
-      # Attach ourselves to the body
-      $("body").data @getID(), @
 
     ###
     # Get our id. TODO: Consider giving us a base class, possible giving doing

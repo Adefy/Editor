@@ -511,11 +511,7 @@ define (require) ->
         return if e.shiftKey
 
         @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
-
-          unless @isValidPick r, g, b
-            data = $("body").data("default-properties")
-            data.clear() if data
-            return
+          return unless @isValidPick r, g, b
 
           actor = @getActorFromPick r, g, b
           if actor

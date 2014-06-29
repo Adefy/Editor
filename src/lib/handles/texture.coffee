@@ -3,10 +3,10 @@ define (require) ->
   param = require "util/param"
   ID = require "util/id"
 
-  EditorObject = require "editor_object"
+  EditorSuperClass = require "superclass"
   Dumpable = require "mixin/dumpable"
 
-  class Texture extends EditorObject
+  class Texture extends EditorSuperClass
 
     @include Dumpable
 

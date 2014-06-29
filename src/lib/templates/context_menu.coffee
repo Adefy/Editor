@@ -1,9 +1,10 @@
 define ->
 
   ###
-  # @property [Array<Object>] entries
+  # @property [String] name menu name
+  # @property [Array<Object>] items
   #   @property [String] name
-  #   @property [String] dataId
+  #   @property [String] id
   ###
   Handlebars.compile """
     <ul class="floating-menu">
@@ -14,9 +15,8 @@ define ->
       </a>
       {{/if}}
 
-      {{#each entries}}
-
-      <a data-id="{{dataId}}" href="javascript:void(0)">
+      {{#each items}}
+      <a data-id="{{id}}" href="javascript:void(0)">
         <li>{{name}}</li>
       </a>
       {{/each}}

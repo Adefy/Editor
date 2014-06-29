@@ -11,7 +11,7 @@ define (require) ->
   BaseActor = require "handles/actors/base"
   Handle = require "handles/handle"
 
-  EditorObject = require "editor_object"
+  EditorSuperClass = require "superclass"
 
   FloatingTextureSelect = require "widgets/floating/texture_select"
   Modal = require "widgets/floating/form"
@@ -31,7 +31,7 @@ define (require) ->
   ChangeLog = require "info_change_log"
   Version = require "version"
 
-  class ModalManager extends EditorObject
+  class ModalManager extends EditorSuperClass
 
     constructor: (@ui) ->
       #

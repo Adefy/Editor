@@ -2,16 +2,14 @@ define (require) ->
 
   config = require "config"
   param = require "util/param"
-
   AUtilLog = require "util/log"
 
-  EditorObject = require "editor_object"
-
+  EditorSuperClass = require "superclass"
   Renderable = require "mixin/renderable"
   Dumpable = require "mixin/dumpable"
 
   # Widgets are the building blocks of the editor's interface
-  class Widget extends EditorObject
+  class Widget extends EditorSuperClass
 
     @include Renderable
     @include Dumpable
@@ -21,33 +19,57 @@ define (require) ->
     # the widget. The parent is either a string selector, or an object offering
     # a getSel() method.
     #
+    # Offers smart listener management, unbinding them on removal
+    #
     # @param [UIManager] ui
     # @param [Object] options
     #   @option [ID] id
     #   @option [Object] parent
     #   @option [Array<String>] classes
+    #   @option [Array<Object>] listeners
     ###
     constructor: (@ui, options) ->
-      options   = param.optional options, {}
+      options ||= {}
 
-      @_id      = param.required options.id
-      @_parent  = param.optional options.parent, ".editor"
-      @_classes = param.optional options.classes, []
+      @_id = param.required options.id
+      @_parent = options.parent || ".editor"
+      @_classes = options.classes || []
+      @_listeners = options.listeners || []
 
-      # container selector, defaults to no container
-      @_sel = null
-      if "#{@_id}".length > 0
-        @_sel = "##{@_id}"
+      # If static, we always render the same HTML
+      @_static = !!options.static
+      @_staticHTML = options.html
 
-      # Bind a pointer to ourselves on the body, under a key matching our @_sel
-      $("body").data @_sel, @
+      # Container selector
+      @_sel = "##{@_id}" if "#{@_id}".length > 0
+
+      # Bind listeners
+      for listener in @_listeners
+        if listener.prefixSelf
+          selector = "#{@_sel} #{listener.sel}"
+        else
+          selector = listener.sel
+
+        $(document).on listener["event"], selector, listener.cb
 
     ###
-    # @return [self]
+    # Removes our HTML from the document, and unbinds any listeners. Widgets
+    # are expected to be discarded after this method is called.
     ###
-    postInit: ->
-      #
-      @
+    remove: ->
+
+      # Unbind listeners
+      for listener in @_listeners
+        $(document).off listener["event"], listener.sel, listener.cb
+
+      $(@getSel()).remove()
+
+    ###
+    # Called by the UIManager at the end of a hard refresh.
+    #
+    # @return [Widget] self
+    ###
+    postInit: -> @
 
     ###
     # Get the classes present on our main element
@@ -70,9 +92,9 @@ define (require) ->
     ###
     getParentSel: ->
       if typeof @_parent == "string"
-        return @_parent
+        @_parent
       else if @_parent.getSel != undefined and @_parent.getSel != null
-        return @_parent.getSel()
+        @_parent.getSel()
       else
         throw new Error "Invalid parent specified!"
 
@@ -101,14 +123,15 @@ define (require) ->
     #
     # @return [String] id
     ###
-    getID: -> "#{@_id}"
+    getID: ->
+      "#{@_id}"
 
     ###
     # Removes the element, if subSelector is provided, removes the element
     # under the current
-    # @param [String] subSelector
-    #   @optional
-    # @return [self]
+    #
+    # @param [String] subSelector optional
+    # @return [Widget] self
     ###
     removeElement: (subSelector) ->
       @getElement(subSelector).remove()
@@ -117,9 +140,9 @@ define (require) ->
     ###
     # Replaces the element, if subSelector is provided, places the element
     # under the current
-    # @param [String] subSelector
-    #   @optional
-    # @return [self]
+    #
+    # @param [String] subSelector optional
+    # @return [Widget] self
     ###
     replaceElement: (content, subSelector) ->
       @getElement(subSelector).replaceWith(content)
@@ -128,38 +151,57 @@ define (require) ->
     ## rendering
 
     ###
-    # @return [self]
+    # Generate an HTML string that is ready for injection into our stub
+    #
+    # @return [Widget] self
     ###
     render: ->
-      Renderable::render.call(@)
+      if @_static
+        Renderable::render.call(@) + @_staticHTML
+      else
+        Renderable::render.call(@)
 
     ###
-    # @return [String]
+    # The stub is our top level element; Any content provided on the options
+    # object is injected (calling @renderStub @render() effectively generates
+    # an HTML string fully identifying us, which should be injected into our
+    # parent)
+    #
+    # @return [String] stub
     ###
     renderStub: (options) ->
-      options = param.optional options, {}
-      Renderable::renderStub.call(@) +
-      if options.content
-        @genElement "div", id: @_id, class: @_classes.join(" "), ->
-          options.content
-      else
-        @genElement "div", id: @_id, class: @_classes.join(" ")
+      options ||= {}
+      options.content ||= ""
+
+      stubHTML = """
+      <div id=\"#{@_id}\" class=\"#{@_classes.join(" ")}\">
+        #{options.content}
+      </div>
+      """
+
+      Renderable::renderStub.call(@) + stubHTML
 
     ###
-    # @return [String]
+    # Generate the HTML defining our top level element, including our content.
+    #
+    # @return [String] html
     ###
     renderWithStub: ->
       @renderStub content: @render()
 
     ###
-    # @return [self]
+    # Rebuilds and injects our HTML content
+    #
+    # @return [Widget] self
     ###
     refresh: ->
       @getElement().html @render()
       @
 
     ###
-    # @return [self]
+    # Performs a full *hard* refresh; fully removes and reconstructs our element
+    #
+    # @return [Widget] self
     ###
     refreshStub: ->
       @removeElement()
@@ -167,7 +209,9 @@ define (require) ->
       @
 
     ###
-    # @return [self]
+    # Called by the UIManager after a refresh has occured
+    #
+    # @return [Widget] self
     ###
     postRefresh: ->
       @
@@ -176,6 +220,7 @@ define (require) ->
 
     ###
     # Called by ui.pushEvent
+    #
     # @param [String] type
     # @param [Object] params
     ###
@@ -188,11 +233,11 @@ define (require) ->
     # @return [Object] data
     ###
     dump: ->
-      _.extend Dumpable::dump.call(@),
-        widgetVersion: "1.0.0"
+      _.extend Dumpable::dump.call(@), widgetVersion: "1.0.0"
 
     ###
     # Load from Widget dump
+    #
     # @param [Object] data
     ###
     load: (data) ->
@@ -201,10 +246,3 @@ define (require) ->
       # data.widgetVersion
 
       @
-
-###
-@Changlog
-
-  - "1.0.0": Initial
-
-###
