@@ -3,6 +3,8 @@ define (require) ->
   AUtilLog = require "util/log"
   AUtilEventLog = require "util/event_log"
   param = require "util/param"
+  config = require "config"
+
   PropertyBar = require "widgets/property_bar"
   MenuBar = require "widgets/menubar"
   StatusBar = require "widgets/statusbar/statusbar"
@@ -90,84 +92,83 @@ define (require) ->
     initializeMenu: ->
 
       @menu = new MenuBar @, [
-        label: "File"
+        label: config.strings.file
         children: [
-          label: "New Creative..."
+          label: "#{config.strings.new_creative}..."
           click: => @editor.fileNewAd()
         ,
-          label: "Open..."
+          label: "#{config.strings.open}..."
           click: => @editor.fileOpen()
           sectionEnd: true
         ,
-          label: "Save"
+          label: config.strings.save
           click: => @editor.fileSave()
         ,
-          label: "Save As..."
+          label: "#{config.strings.make_a_copy}..."
           click: => @editor.fileSaveAs()
+          sectionEnd: true
         ,
-          label: "Export..."
+          label: "#{config.strings.revision_history}..."
+          click: => alert "Unimplemented"
+        ,
+          label: "#{config.strings.export}..."
           click: => @editor.fileExport()
-          sectionEnd: true
-        ,
-          label: "Preferences"
-          click: => @modals.showPrefSettings()
-          sectionEnd: true
         ]
       ,
-        label: "Edit"
+        label: config.strings.edit
         children: [
-          label: "Undo"
+          label: config.strings.undo
+          click: => alert "Unimplemented"
         ,
-          label: "Redo"
-        ,
-          label: "History..."
+          label: config.strings.redo
+          click: => alert "Unimplemented"
           sectionEnd: true
-          click: => @modals.showEditHistory()
         ,
-          label: "Copy"
+          label: config.strings.copy
+          click: => alert "Unimplemented"
         ,
-          label: "Cut"
+          label: config.strings.cut
+          click: => alert "Unimplemented"
         ,
-          label: "Paste"
+          label: config.strings.paste
+          click: => alert "Unimplemented"
         ]
       ,
-        label: "View"
+        label: config.strings.view
         children: [
-          label: "Toggle Sidebar"
+          label: config.strings.toggle_sidebar
           click: => @sidebar.toggle()
         ,
-          label: "Toggle Timeline"
+          label: config.strings.toggle_timeline
           click: => @timeline.toggle()
-          sectionEnd: true
         ,
-          label: "Fullscreen"
+          label: config.strings.fullscreen
           click: => @toggleFullScreen()
           sectionEnd: true
         ,
-          label: "Refresh"
-          click: =>
-            @refresh()
-            @onResize()
-          sectionEnd: true
+          label: config.strings.preview
+          click: => alert "Unimplemented"
         ]
       ,
-        label: "Canvas"
+        label: config.strings.canvas
         children: [
-          label: "Set Screen Properties ..."
+          label: "#{config.strings.screen_properties}..."
           click: => @modals.showSetScreenProperties()
         ,
-          label: "Set Background Color ..."
+          label: "#{config.strings.background_color}..."
           click: => @modals.showSetBackgroundColor()
         ]
       ,
-        label: "Help"
+        label: config.strings.help
         children: [
-          label: "About Editor"
-          click: => @modals.showHelpAbout()
+          label: config.strings.quick_start
+          click: => alert "Unimplemented"
         ,
-          label: "Changelog"
-          click: => @modals.showHelpChangeLog()
-          sectionEnd: true
+          label: config.strings.tutorials
+          click: => alert "Unimplemented"
+        ,
+          label: config.strings.documentation
+          click: => alert "Unimplemented"
         ]
       ]
 

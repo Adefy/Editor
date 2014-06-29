@@ -72,10 +72,47 @@ define
   # capitalisation, and should not include any form of ending punctuation.
   ###
   strings:
-    duplicate:            "Duplicate"
+
+    ###
+    # Menu entries
+    ###
+    file:                 "File"
+    new_creative:         "New Creative"
+    open:                 "Open"
+    save:                 "Save"
+    make_a_copy:          "Make a Copy"
+    revision_history:     "Revision History"
+    export:               "Export"
+
+    edit:                 "Edit"
+    undo:                 "Undo"
+    redo:                 "Redo"
     copy:                 "Copy"
     cut:                  "Cut"
     paste:                "Paste"
+
+    view:                 "View"
+    toggle_sidebar:       "Toggle Sidebar"
+    toggle_timeline:      "Toggle Timeline"
+    fullscreen:           "Fullscreen"
+    preview:              "Preview"
+
+    canvas:               "Canvas"
+    screen_properties:    "Screen Properties"
+    background_color:     "Background Color"
+
+    help:                 "Help"
+    quick_start:          "Quick Start"
+    tutorials:            "Tutorials"
+    documentation:        "Documentation"
+
+    actor_library:        "Actor Library"
+    texture_library:      "Texture Library"
+
+    ###
+    # Actor actions
+    ###
+    duplicate:            "Duplicate"
     configure:            "Configure"
     rename:               "Rename"
     delete:               "Delete"
