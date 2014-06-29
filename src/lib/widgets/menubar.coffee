@@ -91,7 +91,7 @@ define (require) ->
 
           $(link).toggleClass "open"
 
-        item.click() if item.click
+        item.click(e) if item.click
 
         e.preventDefault()
         false
@@ -110,7 +110,7 @@ define (require) ->
         parent = _.where(@_items, id: parentId)[0]
         child = _.where(parent.children, id: id)[0]
 
-        child.click() if child
+        child.click(e) if child
 
         e.preventDefault()
         false

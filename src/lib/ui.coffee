@@ -12,6 +12,7 @@ define (require) ->
   Workspace = require "widgets/workspace/workspace"
   Sidebar = require "widgets/sidebar"
   ModalManager = require "modal_manager"
+  TextureLibrary = require "widgets/floating/texture_library"
 
   ###
   # Singleton god class, responsible for initializing and keeping references
@@ -174,12 +175,25 @@ define (require) ->
         label: config.strings.texture_library
         right: true
         image: "/editor/img/favicon.png"
-        click: => alert "Open texture library"
+        click: (e) => @openTextureLibrary "top", e.clientX, e.clientY
       ,
         label: config.strings.actor_library
         right: true
         icon: config.icon.actor_library
       ]
+
+    ###
+    # Show the texture library from the specified origin
+    #
+    # @param [String] direction "left", "top", "right", "bottom"
+    # @param [Number] x
+    # @param [Number] y
+    ###
+    openTextureLibrary: (direction, x, y) ->
+      new TextureLibrary @,
+        direction: direction
+        x: x
+        y: y
 
     ###
     # Refresh all wigdet stubs
