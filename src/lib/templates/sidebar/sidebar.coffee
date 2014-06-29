@@ -89,10 +89,12 @@ define ->
           <li class="sb-control" data-id="elasticity">
             <label>Elasticity</label>
             <input type="number" value="10" min="0" max="100" />
+            <label class="suffix">%</label>
           </li>
           <li class="sb-control" data-id="friction">
             <label>Friction</label>
             <input type="number" value="70" min="0" max="100" />
+            <label class="suffix">%</label>
           </li>
         </ul>
 
@@ -112,22 +114,69 @@ define ->
 
   <div class="sb-secondary sb-seco-spawn">
     <header>
-      <div class="sb-title">Spawner settings...</div>
+      <div class="sb-title">Spawning settings...</div>
     </header>
     <section>
       <div class="sb-controls">
+        <ul class="sb-controls-wide">
+          <li class="sb-control" data-id="frequency">
+            <label>Spawn a particle every</label>
+            <input type="number" value="150" min="0" />
+            <label class="suffix">ms</label>
+          </li>
+          <li class="sb-control" data-id="lifetime">
+            <label>Each particle lives</label>
+            <input type="number" value="7000" min="0" />
+            <label class="suffix">ms</label>
+          </li>
+          <li class="sb-control" data-id="limit">
+            <label>Display at most</label>
+            <input type="number" value="500" min="0" />
+            <label class="suffix">particles</label>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sb-controls">
+        <label>Spawning area</label>
+
         <ul class="sb-controls-left">
-          <li class="sb-control" data-id="mass">
-            <label>Mass</label>
-            <input type="number" value="20" min="0" />
+          <li class="sb-control" data-id="area-width">
+            <i class="fa fa-arrows-h"></i>
+            <input type="number" value="100" min="0" />
           </li>
-          <li class="sb-control" data-id="elasticity">
-            <label>Elasticity</label>
-            <input type="number" value="10" min="0" max="100" />
+        </ul>
+
+        <ul class="sb-controls-right">
+          <li class="sb-control" data-id="area-height">
+            <i class="fa fa-arrows-v"></i>
+            <input type="number" value="100" min="0" />
           </li>
-          <li class="sb-control" data-id="friction">
-            <label>Friction</label>
-            <input type="number" value="70" min="0" max="100" />
+        </ul>
+      </div>
+
+      <div class="sb-controls">
+        <label>Initial velocity</label>
+
+        <ul class="sb-controls-left">
+          <li class="sb-control small" data-id="vel-x-min">
+            <i>x min</i>
+            <input type="number" value="2" min="0" />
+          </li>
+          <li class="sb-control small" data-id="vel-y-min">
+            <i>y min</i>
+            <input type="number" value="7" min="0" />
+          </li>
+        </ul>
+
+        <ul class="sb-controls-right">
+          <li class="sb-control small" data-id="vel-x-max">
+            <i>max</i>
+            <input type="number" value="9" min="0" />
+          </li>
+          <li class="sb-control small" data-id="vel-y-max">
+            <i>max</i>
+            <input type="number" value="15" min="0" />
           </li>
         </ul>
       </div>
