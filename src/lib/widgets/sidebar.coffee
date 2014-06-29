@@ -33,6 +33,7 @@ define (require) ->
         parent: config.selector.content
         classes: ["sidebar"]
 
+      @_cachedHTML =  null
       @_tagetActor = null
       @_hiddenX = 0
       @_visibleX = 0
@@ -44,10 +45,24 @@ define (require) ->
       @registerInputListener()
       @setupDragger()
 
+      # At this point, this just sets up our cached HTML. No element exists yet,
+      # so it doesn't render us directly
+      @setNewTargetActor null
+
       if @_visible
         @show()
       else
         @hide()
+
+    ###
+    # Since we are updated live without a full refresh and inject generated HTML
+    # immediately, we have to cache it for when the render method is actually
+    # called (aka, after we are first created).
+    #
+    # @return [String] html
+    ###
+    render: ->
+      @_cachedHTML
 
     ###
     # Set up our ability to modify numeric input values by dragging horizontally
@@ -167,28 +182,37 @@ define (require) ->
     # @param [Handle] actor
     ###
     setNewTargetActor: (actor) ->
-      @_targetActor = param.required actor
 
-      # The only custom controls we render are numeric, and we display them
-      # in the right input column. Everything else is handled by generic sidebar
-      # functionality (appearance, etc)
-      properties = _.filter _.pairs(actor.getProperties()), (p) ->
-        p[1].showInSidebar() && p[1].getType() == "number"
+      if actor
+        @_targetActor = actor
 
-      renderableData = properties.map (p) ->
-        {
-          name: p[0]
-          min: p[1].getMin()
-          max: p[1].getMax()
-          float: p[1].getFloat()
-          placeholder: p[1].getPlaceholder()
-          icon: config.icon.property_basic
-          value: p[1].getValue()
-        }
+        # The only custom controls we render are numeric, and we display them
+        # in the right input column. Everything else is handled by generic sidebar
+        # functionality (appearance, etc)
+        properties = _.filter _.pairs(actor.getProperties()), (p) ->
+          p[1].showInSidebar() && p[1].getType() == "number"
 
-      @getElement().html TemplateSidebar
-        controls: renderableData
-        actorName: @_targetActor.getName()
+        renderableData = properties.map (p) ->
+          {
+            name: p[0]
+            min: p[1].getMin()
+            max: p[1].getMax()
+            float: p[1].getFloat()
+            placeholder: p[1].getPlaceholder()
+            icon: config.icon.property_basic
+            value: p[1].getValue()
+          }
+
+        data =
+          controls: renderableData
+          actorName: @_targetActor.getName()
+
+      else
+        data = null
+
+      # We cache the result for later calls to @render()
+      @_cachedHTML = TemplateSidebar data
+      @getElement().html @_cachedHTML
 
       # We need to perform a refresh anyways, to update the rest of the sidebar
       @refreshInputValues()

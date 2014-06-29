@@ -47,7 +47,20 @@
     left 250px
     top 0
     width 200px
-    min-height 300px
+
+    .sb-controls-left
+      width 70px
+      margin-right 4px
+
+    .sb-controls-right
+      width 74px
+      margin-top 20px
+
+    .sb-control
+      margin-bottom 12px
+
+    section
+      position initial
 
   section
     position absolute
@@ -82,7 +95,7 @@
         display inline-block
         margin-right 8px
 
-      input
+      input[type=text], input[type=number], textarea
         width 67px
 
     .sb-appearance
@@ -140,3 +153,14 @@
       a
         text-decoration underline
         color #333
+
+    .sb-apply
+      button
+        display inline-block
+        vertical-align top
+
+      .sb-cancel
+        margin-right 12px
+
+      .sb-apply
+        width 80px

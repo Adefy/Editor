@@ -6,9 +6,18 @@ define ->
   Handlebars.compile """
   <div class="sb-primary">
     <header>
-      <div class="sb-title">{{actorName}}</div>
+      <div class="sb-title">
+        {{#if actorName}}
+        {{actorName}}
+        {{else}}
+        Select an actor...
+        {{/if}}
+      </div>
     </header>
+
     <section>
+    {{#if actorName}}
+
       <div class="sb-controls">
         <ul class="sb-controls-left">
           <li class="sb-control" data-id="position-x">
@@ -26,12 +35,14 @@ define ->
         </ul>
 
         <ul class="sb-controls-right">
+          {{#if controls}}
           {{#each controls}}
           <li class="sb-control" data-id="{{name}}">
             <i class="fa {{icon}}"></i>
             <input type="number" value="{{value}}" min="{{min}}" max="{{max}}" />
           </li>
           {{/each}}
+          {{/if}}
         </ul>
       </div>
 
@@ -58,14 +69,45 @@ define ->
           <a href="javascript:void(0)">Spawning...</a>
         </li>
       </ul>
+
+    {{/if}}
     </section>
   </div>
 
+  {{#if actorName}}
   <div class="sb-secondary sb-seco-physics">
     <header>
-      <div class="sb-title">Physics</div>
+      <div class="sb-title">Physics settings...</div>
     </header>
     <section>
+      <div class="sb-controls">
+        <ul class="sb-controls-left">
+          <li class="sb-control" data-id="mass">
+            <label>Mass</label>
+            <input type="number" value="20" min="0" />
+          </li>
+          <li class="sb-control" data-id="elasticity">
+            <label>Elasticity</label>
+            <input type="number" value="10" min="0" max="100" />
+          </li>
+          <li class="sb-control" data-id="friction">
+            <label>Friction</label>
+            <input type="number" value="70" min="0" max="100" />
+          </li>
+        </ul>
+
+        <ul class="sb-controls-right">
+          <li class="sb-control" data-id="mass">
+            <input type="checkbox" name="physics-static" /> Static
+          </li>
+        </ul>
+      </div>
+
+      <div class="sb-apply">
+        <button class="sb-cancel">Cancel</button>
+        <button class="sb-apply">Apply</button>
+      </div>
     </section>
   </div>
+  {{/if}}
   """
