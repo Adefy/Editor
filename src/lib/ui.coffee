@@ -174,6 +174,7 @@ define (require) ->
         label: config.strings.texture_library
         right: true
         image: "/editor/img/favicon.png"
+        click: => alert "Open texture library"
       ,
         label: config.strings.actor_library
         right: true

@@ -71,15 +71,27 @@ define (require) ->
     # Click listener to open/close menu items
     ###
     _regMenuClick: ->
-      $(document).on "click", "#{@getSel()} .mb-primary a", (e) ->
-        menu = $(".mb-secondary[data-owner=\"#{$(@).attr("data-id")}\"]")
+      $(document).on "click", "#{@getSel()} .mb-primary a", (e) =>
 
-        if $(@).hasClass "open"
-          menu.hide()
+        if $(e.target).attr "data-id"
+          link = e.target
         else
-          menu.show()
+          link = $(e.target).closest "a"
 
-        $(@).toggleClass "open"
+        id = $(link).attr "data-id"
+        item = _.where(@_items, id: id)[0]
+
+        return unless item
+
+        if item.children && item.children.length > 0
+          menu = $(".mb-secondary[data-owner=\"#{id}\"]")
+
+          if $(link).hasClass "open" then menu.hide()
+          else menu.show()
+
+          $(link).toggleClass "open"
+
+        item.click() if item.click
 
         e.preventDefault()
         false
