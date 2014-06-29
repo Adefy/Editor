@@ -68,7 +68,7 @@ define
     paste:     "Paste"
 
     title:
-      create: "Create"
+      create: "Create Actor"
 
     label:
       create_menu_item:     "Create +"

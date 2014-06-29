@@ -21,7 +21,7 @@ define ->
 
   {{#each items}}
   {{#if children}}
-  <ul class="mb-secondary" data-owner="{{id}}">
+  <ul class="mb-secondary floating-menu" data-owner="{{id}}">
     {{#each children}}
     <a data-id="{{id}}" href="javascript:void(0)"
     {{#if sectionEnd}} class="mb-section-end" {{/if}}

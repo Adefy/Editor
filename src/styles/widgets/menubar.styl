@@ -57,33 +57,9 @@
 
         z-index $Z_amainbar_secondary_plus_one
 
-  // aka menu
+  // The actual menu. It is styled by the floating-menu class
   .mb-secondary
     z-index $Z_amainbar_secondary
     position absolute
     min-width 120px
     display none
-
-    border 1px solid #00040a
-    box-shadow 0px 3px 15px 0px rgba(0, 0, 0, 0.65)
-    background-color #494949
-    margin-top -1px
-
-    a
-      display block
-      padding 5px 16px 6px 23px
-      white-space nowrap
-
-      font-family Tahoma, Arial
-      font-size 11px
-      line-height 14px
-      color #f1f1f1
-      text-shadow 0px 1px 0px #2c2c2c
-
-      transition $time_short padding, $time_short background-color
-
-      &:hover
-        background-color #262626
-        color #33b5e5
-
-        cursor pointer

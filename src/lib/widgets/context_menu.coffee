@@ -147,7 +147,8 @@ define (require) ->
     # @param [String] ident
     # @private
     ###
-    _unbindListener: (ident) -> $(document).off "click", "[data-id=\"#{ident}\"]"
+    _unbindListener: (ident) ->
+      $(document).off "click", "[data-id=\"#{ident}\"]"
 
     ###
     # Useful internal function, turns "Test 3" into test_3
