@@ -1,7 +1,7 @@
 define ->
 
   Handlebars.compile """
-  <header class="origin-left">
+  <header class="origin-top">
     <button class="tl-upload">Upload Texture...</button>
   </header>
 
