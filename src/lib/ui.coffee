@@ -175,7 +175,20 @@ define (require) ->
         label: config.strings.texture_library
         right: true
         image: "/editor/img/favicon.png"
-        click: (e) => @openTextureLibrary "top", e.clientX, e.clientY
+        click: (e) =>
+
+          # Pass the center of the button as the origin
+          if $(e.target).attr "href"
+            origin = $(e.target).position()
+            origin.left += $(e.target).width() / 2
+            origin.top += $(e.target).height()
+          else
+            elm = $(e.target).closest "a"
+            origin = elm.position()
+            origin.left += elm.width() / 2
+            origin.top += elm.height()
+
+          @openTextureLibrary "top", origin.left, origin.top
       ,
         label: config.strings.actor_library
         right: true

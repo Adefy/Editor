@@ -29,6 +29,7 @@ define (require) ->
     # Panel names used for show/hide/toggle commands
     @PANEL_PHYSICS: "physics"
     @PANEL_SPAWN: "spawn"
+    @PANEL_APPEARANCE: "appearance"
 
     # Speed of animations in ms
     @ANIM_SPEED: 300
@@ -159,12 +160,19 @@ define (require) ->
       spawnApply = "#{@getSel()} .sb-seco-spawn .sb-commit .sb-apply"
       spawnCancel = "#{@getSel()} .sb-seco-spawn .sb-commit .sb-cancel"
 
+      appearanceToggle = "#{@getSel()} .sb-appearance a"
+      appearanceCancel = "#{@getSel()} .sb-seco-appearance .sb-commit .sb-cancel"
+      appearanceApply = "#{@getSel()} .sb-seco-appearance .sb-commit .sb-apply"
+
       # Sidebar toggles
       $(document).on "click", physicsToggle, =>
         @togglePanel Sidebar.PANEL_PHYSICS
 
       $(document).on "click", spawnToggle, =>
         @togglePanel Sidebar.PANEL_SPAWN
+
+      $(document).on "click", appearanceToggle, =>
+        @togglePanel Sidebar.PANEL_APPEARANCE
 
       # Cancel buttons, hide associated panel and perform a value update
       $(document).on "click", physicsCancel, =>
@@ -173,6 +181,10 @@ define (require) ->
 
       $(document).on "click", spawnCancel, =>
         @hidePanel Sidebar.PANEL_SPAWN, null, =>
+          @refreshInputValues()
+
+      $(document).on "click", appearanceCancel, =>
+        @hidePanel Sidebar.PANEL_APPEARANCE, null, =>
           @refreshInputValues()
 
     ###
@@ -224,6 +236,8 @@ define (require) ->
         "#{@getSel()} .sb-secondary.sb-seco-physics"
       else if name == Sidebar.PANEL_SPAWN
         "#{@getSel()} .sb-secondary.sb-seco-spawn"
+      else if name == Sidebar.PANEL_APPEARANCE
+        "#{@getSel()} .sb-secondary.sb-seco-appearance"
       else
         null
 
@@ -266,6 +280,7 @@ define (require) ->
 
       @hidePanel Sidebar.PANEL_PHYSICS unless name == Sidebar.PANEL_PHYSICS
       @hidePanel Sidebar.PANEL_SPAWN unless name == Sidebar.PANEL_SPAWN
+      @hidePanel Sidebar.PANEL_APPEARANCE unless name == Sidebar.PANEL_APPEARANCE
 
     ###
     # Toggle the visible state of the specified panel. If we have to show it,
@@ -387,6 +402,11 @@ define (require) ->
       # We cache the result for later calls to @render()
       @_cachedHTML = TemplateSidebar data
       @getElement().html @_cachedHTML
+
+      # Move appearance dialogue down, in line with appearance section
+      if @_targetActor
+        $("#{@getSel()} .sb-seco-appearance").offset
+          top: $("#{@getSel()} .sb-appearance").position().top
 
       # We need to perform a refresh anyways, to update the rest of the sidebar
       @refreshInputValues()

@@ -187,5 +187,51 @@ define ->
       </div>
     </section>
   </div>
+
+  <div class="sb-secondary sb-seco-appearance">
+    <section>
+      <div class="apa-top">
+
+        <div class="apa-top-sample"></div>
+      </div>
+
+      <div class="apa-tabs">
+        <ul>
+          <a href="javascript:void(0)" class="active"><li>RGB</li></a>
+          <a href="javascript:void(0)"><li>HSV</li></a>
+        </ul>
+
+        <div class="sb-control">
+          <i>#</i>
+          <input type="text" value="33b5e5" />
+        </div>
+      </div>
+
+      <div class="apa-controls">
+        <ul class="apa-sliders">
+          <li>
+            <label>R</label>
+            <input type="range" min="0" max="255" />
+            <input type="number" value="150" />
+          </li>
+          <li>
+            <label>G</label>
+            <input type="range" min="0" max="255" />
+            <input type="number" value="150" />
+          </li>
+          <li>
+            <label>B</label>
+            <input type="range" min="0" max="255" />
+            <input type="number" value="150" />
+          </li>
+        </ul>
+      </div>
+
+      <div class="sb-commit">
+          <button class="sb-cancel">Cancel</button>
+          <button class="sb-apply">Apply</button>
+      </div>
+    </section>
+  </div>
   {{/if}}
   """

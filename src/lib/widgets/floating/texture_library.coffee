@@ -11,6 +11,9 @@ define (require) ->
   ###
   class TextureLibrary extends FloatingWidget
 
+    # Keep track of any open library, so we can close it when opening a new one
+    ACTIVE_LIBRARY: null
+
     ###
     # Initialises and displays a texture library
     #
@@ -26,7 +29,13 @@ define (require) ->
       @makeDraggable "#{@getSel()} header"
       @setAnimateSpeed 300
 
-      @show()
+      width = @getElement().width()
+      height = @getElement().height()
+
+      TextureLibrary.ACTIVE_LIBRARY.kill() if TextureLibrary.ACTIVE_LIBRARY
+      TextureLibrary.ACTIVE_LIBRARY = @
+
+      @show options.x - width + 24, options.y + 28
 
     render: ->
       TextureLibraryTemplate()
