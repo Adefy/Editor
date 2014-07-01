@@ -22,7 +22,7 @@ define (require) ->
 
       @_id = ID.objID("texture").prefixed
 
-      @_uid = param.optional options.uid, ID.uID()
+      @_uid = options.uid || ID.uID()
       @_name = options.name
 
       @setKey options.key

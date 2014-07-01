@@ -404,8 +404,7 @@ define (require) ->
     # @return [Spawner] self
     ###
     spawn: (time) ->
-      time = param.optional time, Date.now()
-
+      time ||= Date.now()
       spawn = @_generateSpawn time
 
       @initializeSpawn spawn
@@ -420,8 +419,7 @@ define (require) ->
     # @return [Spawner] self
     ###
     spawnPreview: (time) ->
-      time = param.optional time, Date.now()
-
+      time ||= Date.now()
       spawn = @_generateSpawn time
       spawn.getProperty("opacity").setValue 0.25
 

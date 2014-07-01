@@ -26,7 +26,7 @@ define (require) ->
     ###
     constructor: (@ui, options) ->
       title = param.required options.title
-      extraClasses = param.optional options.extraClasses, []
+      extraClasses = options.extraClasses || []
 
       super @ui,
         id: ID.prefID("floating-widget")
@@ -120,8 +120,8 @@ define (require) ->
 
       w = @getElement().width()
       h = @getElement().height()
-      x = param.optional x, (window.innerWidth / 2) - (w / 2)
-      y = param.optional y, (window.innerHeight / 2) - (h / 2)
+      x ||= (window.innerWidth / 2) - (w / 2)
+      y ||= (window.innerHeight / 2) - (h / 2)
 
       @getElement().offset top: y, left: x
       @getElement().animate opacity: 1, @_animateSpeed, ->

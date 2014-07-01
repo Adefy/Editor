@@ -47,7 +47,7 @@ define (require) ->
       @_initialized = false # True after postInit() is called
 
       @lifetimeStart_ms = param.required lifetimeStart
-      @lifetimeEnd_ms = param.optional lifetimeEnd, @ui.timeline.getDuration()
+      @lifetimeEnd_ms = lifetimeEnd or @ui.timeline.getDuration()
 
       ###
       # Property buffer, holds values at different points in time. Current
@@ -440,7 +440,7 @@ define (require) ->
     # @return [Object] color
     ###
     getColor: (float) ->
-      float = param.optional float, false
+      float = !!float
 
       colorRaw = @_properties.color.getValue()
       color = new AREColor3 colorRaw.r, colorRaw.g, colorRaw.b
@@ -575,7 +575,7 @@ define (require) ->
       param.required property
       param.required anim
       param.required opts
-      component = param.optional component, ""
+      component ||= ""
 
       property = @_properties[property]
       return unless property
@@ -855,7 +855,7 @@ define (require) ->
     adjustLifetime: (options) ->
       start = param.required options.start
       end = param.required options.end
-      scaleToFit = param.optional options.scaleToFit, false
+      scaleToFit = !!options.scaleToFit
 
       oldStart = @lifetimeStart_ms
       oldEnd = @lifetimeEnd_ms
@@ -1276,7 +1276,7 @@ define (require) ->
     ###
     getNearestAnimationTime: (source, options) ->
       param.required source
-      options = param.optional options, {}
+      options ||= {}
       time = null
 
       if options.right
@@ -1307,8 +1307,7 @@ define (require) ->
     ###
     findNearestState: (start, right, prop) ->
       start = Number param.required start
-      right = param.optional right, false
-      prop = param.optional prop, null
+      right = !!right
 
       nearest = -1
 
@@ -1430,7 +1429,7 @@ define (require) ->
     _serializeProperties: (delta) ->
 
       # If no property names are supplied, serialize all properties
-      delta = param.optional delta, []
+      delta ||= []
 
       # Go through and build an object for our buffer, simple
       props = {}

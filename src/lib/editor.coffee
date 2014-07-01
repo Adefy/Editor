@@ -1,18 +1,5 @@
 define (require) ->
 
-  ###
-  Too lazy to get rid of param.optional again, create it if it doesn't exist and
-  ship a warning
-  ###
-  console.warn "PROCEEDING WITH PARAM.OPTIONAL"
-  unless window.param and window.param.optional
-    window.param = {} unless window.param
-    window.param.optional = (arg, value) ->
-      if arg == undefined or arg == null
-        value
-      else
-        arg
-
   config = require "config"
   param = require "util/param"
   AUtilLog = require "util/log"
@@ -140,16 +127,15 @@ define (require) ->
     ###
     applySettings: (options) ->
       restartAutosave = false
-      autosaveData = param.optional options.autosave, null
+
       if autosaveData
-        freq = param.optional autosaveData.frequency, \
-                              @settings.autosave.frequency
+        freq = autosaveData.frequency or @settings.autosave.frequency
+
         if freq
           @settings.autosave.frequency = freq
           restartAutosave = true
 
-        maxcount = param.optional autosaveData.maxcount, \
-                                  @settings.autosave.maxcount
+        maxcount = autosaveData.maxcount or @settings.autosave.maxcount
         @settings.autosave.maxcount = maxcount
 
       @startAutosaveTask() if restartAutosave

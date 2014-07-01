@@ -342,7 +342,7 @@ define (require) ->
     # @param [Method] noActorCallback
     ###
     pickActor: (x, y, cb, noActorCb) ->
-      noActorCb = param.optional noActorCb, ->
+      noActorCb ||= ->
 
       @performPick @domToGL(x, y), (r, g, b) =>
         return noActorCb() unless @isValidPick r, g, b

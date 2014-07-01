@@ -29,26 +29,22 @@ define (require) ->
       radius = Math.abs param.required radius
       param.required x
       param.required y
-      manualInit = param.optional manualInit, false
-      rotation = param.optional rotation, 0
 
       throw new Error "Can't create an ngon with less than 3 sides" if sides < 3
 
       super @ui, birth, death
 
       @handleType = "PolygonActor"
-
       @setName "Polygon #{@_id_numeric}"
-
       @initPropertySides()
       @initPropertyRadius()
 
       @_properties.position.setValue x: x, y: y
       @_properties.sides.setValue sides
       @_properties.radius.setValue radius
-      @_properties.rotation.setValue rotation
+      @_properties.rotation.setValue rotation or 0
 
-      @postInit() unless manualInit
+      @postInit() unless !!manualInit
 
     ###
     # Initialize Actor sides property

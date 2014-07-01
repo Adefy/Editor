@@ -29,26 +29,22 @@ define (require) ->
       param.required h
       param.required x
       param.required y
-      manualInit = param.optional manualInit, false
-      rotation = param.optional rotation, 0
 
       if w <= 0 or h <= 0 then throw new Error "Width/Height must be >0!"
 
       super @ui, birth, death
 
       @handleType = "RectangleActor"
-
       @setName "Rectangle #{@_id_numeric}"
-
       @initPropertyWidth()
       @initPropertyHeight()
 
       @_properties.position.setValue x: x, y: y
       @_properties.width.setValue w
       @_properties.height.setValue h
-      @_properties.rotation.setValue rotation
+      @_properties.rotation.setValue rotation or 0
 
-      @postInit() unless manualInit
+      @postInit() unless !!manualInit
 
     ###
     # Initialize Actor width property

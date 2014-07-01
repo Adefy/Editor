@@ -64,7 +64,7 @@ define (require) ->
       return if @_visible
 
       w = @getElement().width()
-      x = param.optional x, (window.innerWidth / 2) - (w / 2)
+      x = (window.innerWidth / 2) - (w / 2)
 
       @getElement().offset left: x, top: @getHiddenY()
       @getElement().css "opacity", 1

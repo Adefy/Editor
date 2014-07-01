@@ -15,7 +15,7 @@ define (require) ->
     # @param [Number] tolerance default 1
     ###
     constructor: (selector, tolerance) ->
-      @_tolerance = param.optional tolerance, 1
+      @_tolerance = tolerance || 1
       @_dragSel = @_sel = param.required selector
 
       # Can be "x" or "y"

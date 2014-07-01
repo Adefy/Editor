@@ -22,9 +22,9 @@ define (require) ->
     constructor: (@ui, options) ->
       @_title = param.required options.title
       @_HTMLContent = param.required options.content
-      @_submitCB = param.optional options.cb, null
-      @_changeCB = param.optional options.change, null
-      @_validationCB = param.optional options.validation, null
+      @_submitCB = options.cb
+      @_changeCB = options.change
+      @_validationCB = options.validation
 
       super @ui, options
 

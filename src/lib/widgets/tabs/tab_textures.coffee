@@ -23,7 +23,7 @@ define (require) ->
       @_viewMode = "list"
 
       options.id = ID.prefID("tab-textures")
-      options.classes = param.optional options.classes, []
+      options.classes ||= []
       options.classes.push "tab-textures"
 
       super @ui, options

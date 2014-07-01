@@ -73,8 +73,7 @@ define (require) ->
     # @return [Modal]
     ###
     showRename: (handle, options) ->
-
-      options = param.optional options, {}
+      options ||= {}
 
       nameId = ID.prefID "fileName"
 
@@ -375,8 +374,7 @@ define (require) ->
     # @return [Void]
     ###
     showUploadTextures: (options) ->
-
-      options = param.optional options, {}
+      options ||= {}
 
       filepicker.pickAndStore
         mimetype: "image/*"

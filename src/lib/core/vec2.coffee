@@ -7,17 +7,17 @@ define (require) ->
   class Vec2 extends Dumpable
 
     constructor: (x, y) ->
-      @x = param.optional x, 0
-      @y = param.optional y, 0
+      @x = 0 if isNaN x
+      @y = 0 if isNaN y
 
     ###
     # @param [Boolean] bipolar should randomization occur in all directions?
     # @return [Vec2] randomizedVector
     ###
     random: (options) ->
-      options = param.optional options, {}
-      bipolar = param.optional options.bipolar, false
-      seed = param.optional options.seed, Math.random() * 0xFFFF
+      options ||= {}
+      bipolar = !!options.bipolar
+      seed = options.seed || Math.random() * 0xFFFF
 
       x = Math.random() * @x
       y = Math.random() * @y

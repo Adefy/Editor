@@ -40,7 +40,7 @@ define (require) ->
     # @param [Number] duration ad length in ms, can be modified (expensive)
     ###
     constructor: (@ui, options) ->
-      options = param.optional options, {}
+      options ||= {}
       return unless @enforceSingleton()
 
       super @ui,
@@ -48,7 +48,7 @@ define (require) ->
         parent: config.selector.footer
         classes: ["timeline"]
 
-      @_duration = Number param.optional(options.duration, 5000)
+      @_duration = Number(options.duration || 5000)
 
       unless @_duration > 0
         return AUtilLog.error "Invalid duration: #{@_duration}"
@@ -710,7 +710,7 @@ define (require) ->
     # @param [Boolean] animate defaults to false
     ###
     toggle: (cb, animate) ->
-      animate = param.optional animate, true
+      animate = true unless animate = false
 
       if @_visible
         @hide cb, animate
@@ -724,7 +724,7 @@ define (require) ->
     # @param [Boolean] animate defaults to true
     ###
     show: (cb, animate) ->
-      animate = param.optional animate, true
+      animate = true unless animate = false
 
       if @_visible
         AUtilLog.warn "Timeline was already visible"
@@ -754,7 +754,7 @@ define (require) ->
     # @param [Boolean] animate defaults to true
     ###
     hide: (cb, animate) ->
-      animate = param.optional animate, true
+      animate = true unless animate = false
 
       unless @_visible
         AUtilLog.warn "Timeline was already hidden"
@@ -789,6 +789,7 @@ define (require) ->
     ###
     _calcActorTimebar: (actor) ->
       param.required actor
+
       #spaceW = $(@_spaceSelector()).width()
       {
         #spaceW: spaceW
@@ -1086,7 +1087,7 @@ define (require) ->
     # @return [self]
     ###
     updateActorBody: (actor) ->
-      actor = param.optional actor, @_lastSelectedActor
+      actor ||= @_lastSelectedActor
       return unless actor
 
       pos = actor.getPosition()
@@ -1124,7 +1125,7 @@ define (require) ->
     # @return [self]
     ###
     updateActorTime: (actor) ->
-      actor = param.optional actor, @_lastSelectedActor
+      actor ||= @_lastSelectedActor
       return unless actor
 
       timeSelector = @_actorTimeSelector actor
@@ -1195,7 +1196,7 @@ define (require) ->
     # @private
     ###
     updateActor: (actor) ->
-      actor = param.optional actor, @_lastSelectedActor
+      actor ||= @_lastSelectedActor
       return unless actor
 
       @updateActorBody actor
