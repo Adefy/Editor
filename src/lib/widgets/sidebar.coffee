@@ -136,6 +136,20 @@ define (require) ->
     _bindAppearanceInputs: ->
       apa_sel = "#{@_sel} .sb-seco-appearance"
 
+      # Direct HTML color code input
+      $(document).on "change", "#{apa_sel} .apa-tabs input", (e) =>
+        value = $(e.target).val().match(/.{1,2}/g)
+        return unless value.length == 3
+
+        color =
+          r: parseInt value[0], 16
+          g: parseInt value[1], 16
+          b: parseInt value[2], 16
+        @_targetActor.setColor color.r, color.g, color.b
+
+        @_refreshAppearance sidebar: false
+
+      # Sliders
       $(document).on "change", "#{apa_sel} .apa-sliders input", (e) =>
         li = $(e.target).parent()
         id = li.attr "data-id"
@@ -578,6 +592,18 @@ define (require) ->
         return unless value != null
 
         $(elm).children("input").val value
+
+      _getHexComponent = (c) ->
+        c_s = c.toString 16
+        if c_s.length == 2 then c_s else "0#{c_s}"
+
+      # Update HTML code input
+      htmlCode = ""
+      htmlCode += _getHexComponent color.r
+      htmlCode += _getHexComponent color.g
+      htmlCode += _getHexComponent color.b
+
+      $("#{@getSel()} .sb-seco-appearance .apa-tabs input").val htmlCode
 
     _refreshOpacity: ->
       opacity = @_targetActor.getOpacity()
