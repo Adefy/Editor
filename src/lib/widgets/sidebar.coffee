@@ -84,6 +84,7 @@ define (require) ->
       @_bindSidebarToggle()
       @_bindInputChange()
       @_bindOpacityInput()
+      @_bindAppearanceInputs()
       @_bindDraggableInputs()
       @_bindPanelControls()
 
@@ -111,6 +112,8 @@ define (require) ->
     # Binds the listeners responsible for making the compound opacity control
     # work properly. The slider and input field update when the other is
     # changed.
+    #
+    # @private
     ###
     _bindOpacityInput: ->
       $(document).on "change", "#{@_sel} .sb-opacity input", (e) =>
@@ -123,6 +126,37 @@ define (require) ->
           $("#{@_sel} .sb-op-slider input").val opacity
 
         @_targetActor.getProperties().opacity.setValue opacity
+
+    ###
+    # Hooks up listeners for the appearance panel input fields. This includes
+    # all tabs.
+    #
+    # @private
+    ###
+    _bindAppearanceInputs: ->
+      apa_sel = "#{@_sel} .sb-seco-appearance"
+
+      $(document).on "change", "#{apa_sel} .apa-sliders input", (e) =>
+        li = $(e.target).parent()
+        id = li.attr "data-id"
+
+        component = Number $(e.target).val()
+
+        # Update the other input
+        if $(e.target).attr("type") == "range"
+          li.children("input[type=number]").val component
+        else
+          li.children("input[type=range]").val component
+
+        # Send update to actor
+        color = @_targetActor.getColor()
+        color.r = component if id == "red"
+        color.g = component if id == "green"
+        color.b = component if id == "blue"
+        @_targetActor.setColor color.r, color.g, color.b
+
+        # Refresh only panel
+        @_refreshAppearance sidebar: false
 
     ###
     # Set up our ability to modify numeric input values by dragging horizontally
@@ -164,6 +198,32 @@ define (require) ->
       appearanceCancel = "#{@getSel()} .sb-seco-appearance .sb-commit .sb-cancel"
       appearanceApply = "#{@getSel()} .sb-seco-appearance .sb-commit .sb-apply"
 
+      # Update apa dialogue cache with current cache state
+      _apaRefreshCache = =>
+        apaControls = $("#{@getSel()} .apa-controls")
+
+        if @_targetActor.hasTexture()
+          textureUID = @_targetActor.getTextureUID()
+          apaControls.attr "data-cached-mode", "texture"
+          apaControls.attr "data-cached-texture", textureUID
+        else
+          color = @_targetActor.getColor()
+          apaControls.attr "data-cached-mode", "color"
+          apaControls.attr "data-cached-color", JSON.stringify color
+
+      # Apply data cached on apa dialogue onto actor
+      _apaApplyCached = =>
+        apaControls = $("#{@getSel()} .apa-controls")
+        mode = apaControls.attr("data-cached-mode")
+
+        if mode
+          if mode == "color"
+            color = JSON.parse apaControls.attr "data-cached-color"
+            @_targetActor.setColor color.r, color.g, color.b
+          else if mode == "texture"
+            textureUID = apaControls.attr "data-cached-texture"
+            @_targetActor.setTextureByUID textureUID
+
       # Sidebar toggles
       $(document).on "click", physicsToggle, =>
         @togglePanel Sidebar.PANEL_PHYSICS
@@ -172,6 +232,13 @@ define (require) ->
         @togglePanel Sidebar.PANEL_SPAWN
 
       $(document).on "click", appearanceToggle, =>
+
+        if @isPanelVisible Sidebar.PANEL_APPEARANCE
+          _apaApplyCached()
+          @_refreshAppearance sidebar: false
+        else
+          _apaRefreshCache()
+
         @togglePanel Sidebar.PANEL_APPEARANCE
 
       # Cancel buttons, hide associated panel and perform a value update
@@ -184,8 +251,19 @@ define (require) ->
           @refreshInputValues()
 
       $(document).on "click", appearanceCancel, =>
+
+        _apaApplyCached()
+        @_refreshAppearance sidebar: false
+
         @hidePanel Sidebar.PANEL_APPEARANCE, null, =>
           @refreshInputValues()
+
+      $(document).on "click", appearanceApply, =>
+
+        _apaRefreshCache()
+        @_refreshAppearance panel: false
+
+        @hidePanel Sidebar.PANEL_APPEARANCE, null
 
     ###
     # Clear the property widget
@@ -449,13 +527,36 @@ define (require) ->
         if properties[$(input).attr "data-id"]
           $(input).val properties[$(input).attr "data-id"].getValue()
 
-    _refreshAppearance: ->
+    ###
+    # Refresh appearance squares. Can also be used to refresh specific squares.
+    #
+    # @param [Object] options optional specification of which square to refresh
+    # @option options [Boolean] sidebar
+    # @option options [Boolean] panel
+    ###
+    _refreshAppearance: (options) ->
+      options ||= {}
+      options.sidebar = true unless options.sidebar == false
+      options.panel = true unless options.panel == false
+
+      # Build selector
+      sidebarSquare = "#{@getSel()} .sb-appearance .sb-ap-sample"
+      panelSquare = "#{@getSel()} .sb-seco-appearance .apa-top-sample"
+
+      apSquareSelector = ""
+      apSquareSelector += sidebarSquare if options.sidebar
+      apSquareSelector += ", " if options.sidebar and options.panel
+      apSquareSelector += panelSquare if options.panel
+
+      return unless apSquareSelector.length > 0
+      apSquare = $(apSquareSelector)
+
+      # Grab existing color/texture info
       color = @_targetActor.getColor()
       texture = _.find @ui.editor.project.textures, (texture) ->
         texture.getUID() == @_targetActor.getTextureUID()
 
-      apSquare = $("#{@getSel()} .sb-appearance .sb-ap-sample")
-
+      # Update square
       if texture
         apSquare.removeClass "color"
         apSquare.addClass("texture") unless apSquare.hasClass "texture"
@@ -466,6 +567,17 @@ define (require) ->
         apSquare.addClass("color") unless apSquare.hasClass "color"
 
         apSquare.css background: "rgb(#{color.r}, #{color.g}, #{color.b})"
+
+      # Update sliders/inputs
+      $("#{@getSel()} .sb-seco-appearance .apa-sliders-rgb li").each (i, elm) =>
+        id = $(elm).attr "data-id"
+        value = null
+        value = color.r if id == "red"
+        value = color.g if id == "green"
+        value = color.b if id == "blue"
+        return unless value != null
+
+        $(elm).children("input").val value
 
     _refreshOpacity: ->
       opacity = @_targetActor.getOpacity()

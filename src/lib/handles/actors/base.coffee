@@ -529,6 +529,26 @@ define (require) ->
       @updateInTime()
 
     ###
+    # Check if we have a texture applied
+    #
+    # @return [Boolean] texture
+    ###
+    hasTexture: ->
+      if @_AREActor
+        @_AREActor.hasTexture()
+      else
+        false
+
+    ###
+    # Clear our set texture (if any); reverts us to solid color rendering
+    ###
+    clearTexture: ->
+      @_AREActor.clearTexture() if @_AREActor
+      @updateInTime()
+
+    ###
+    # Set our texture with a full texture object
+    #
     # @param [Texture] texture
     ###
     setTexture: (@_texture) ->

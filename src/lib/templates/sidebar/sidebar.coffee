@@ -208,21 +208,21 @@ define ->
       </div>
 
       <div class="apa-controls">
-        <ul class="apa-sliders">
-          <li>
+        <ul class="apa-sliders apa-sliders-rgb">
+          <li data-id="red">
             <label>R</label>
             <input type="range" min="0" max="255" />
-            <input type="number" value="150" />
+            <input type="number" value="150" min="0" max="255" />
           </li>
-          <li>
+          <li data-id="green">
             <label>G</label>
             <input type="range" min="0" max="255" />
-            <input type="number" value="150" />
+            <input type="number" value="150" min="0" max="255" />
           </li>
-          <li>
+          <li data-id="blue">
             <label>B</label>
             <input type="range" min="0" max="255" />
-            <input type="number" value="150" />
+            <input type="number" value="150" min="0" max="255" />
           </li>
         </ul>
       </div>
