@@ -194,11 +194,11 @@ define ->
         <ul class="apa-top-switch">
           <li><label>Color</label></li>
           <li class="onoffswitch">
-              <input type="checkbox" class="onoffswitch-checkbox" id="apa-switch" checked>
-              <label class="onoffswitch-label" for="apa-switch">
-                  <span class="onoffswitch-inner"></span>
-                  <span class="onoffswitch-switch"></span>
-              </label>
+            <input type="checkbox" class="onoffswitch-checkbox" id="apa-switch" checked>
+            <label class="onoffswitch-label" for="apa-switch">
+                <span class="onoffswitch-inner"></span>
+                <span class="onoffswitch-switch"></span>
+            </label>
           </li>
           <li><label>Texture</label></li>
         </ul>

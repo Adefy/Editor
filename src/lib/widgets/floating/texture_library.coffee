@@ -58,6 +58,7 @@ define (require) ->
         formatted =
           name: texture.getName()
           url: texture.getURL()
+          uid: texture.getUID()
 
         if texture.getSize() > 1048576
           formatted.size = "#{Math.round(texture.getSize() / 1048576)}MB"
@@ -122,6 +123,7 @@ define (require) ->
 
         info = {}
         info.filename = $(filename).text() if filename
+        info.uid = $(@).attr "data-id"
 
         if image
           rawURL = $(image).css "background-image"

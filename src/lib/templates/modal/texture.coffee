@@ -11,7 +11,7 @@ define ->
     <ul class="tl-list">
 
       {{#each textures}}
-      <li class="tl-entry">
+      <li class="tl-entry" data-id="{{uid}}">
         <div class="tl-entry-img">
           <div style="background-image: url('{{url}}')"></div>
         </div>

@@ -223,6 +223,9 @@ define (require) ->
             square = $ "#{@getSel()} .sb-seco-appearance .apa-top-sample"
             square.css "background-image": "url(#{item.image})"
 
+            @_targetActor.setTextureByUID item.uid
+            TextureLibrary.close()
+
           $(e.target).addClass "open"
           $(e.target).text "Close library"
 
@@ -287,6 +290,7 @@ define (require) ->
         if mode
           if mode == "color"
             color = JSON.parse apaControls.attr "data-cached-color"
+            @_targetActor.clearTexture()
             @_targetActor.setColor color.r, color.g, color.b
           else if mode == "texture"
             textureUID = apaControls.attr "data-cached-texture"
@@ -644,12 +648,16 @@ define (require) ->
         apOuter.removeClass "color"
         apOuter.addClass("texture") unless apOuter.hasClass "texture"
 
-        apSquare.css background: "#fff url(#{texture.getURL()}) cover"
+        apSquare.css
+          "background-image": "url(#{texture.getURL()})"
+          "background-color": "#fff"
       else
         apOuter.removeClass "texture"
         apOuter.addClass("color") unless apOuter.hasClass "color"
 
-        apSquare.css background: "rgb(#{color.r}, #{color.g}, #{color.b})"
+        apSquare.css
+          "background-image": "none"
+          "background-color": "rgb(#{color.r}, #{color.g}, #{color.b})"
 
       # Update control mode
       if texture

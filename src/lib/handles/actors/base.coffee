@@ -526,6 +526,7 @@ define (require) ->
       b = Number (param.required b).toFixed(@ACCURACY)
 
       @_properties.color.setValue r: r, g: g, b: b
+      @clearTexture()
       @updateInTime()
 
     ###
@@ -544,6 +545,7 @@ define (require) ->
     ###
     clearTexture: ->
       @_AREActor.clearTexture() if @_AREActor
+      @_textureUID = null
       @updateInTime()
 
     ###
