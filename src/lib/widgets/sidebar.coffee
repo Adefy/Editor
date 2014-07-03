@@ -11,6 +11,7 @@ define (require) ->
   config = require "config"
   Dragger = require "util/dragger"
   CompositeProperty = require "handles/properties/composite"
+  TextureLibrary = require "widgets/floating/texture_library"
 
   TemplateSidebar = require "templates/sidebar/sidebar"
   TemplateBooleanControl = require "templates/sidebar/controls/boolean"
@@ -172,6 +173,59 @@ define (require) ->
         # Refresh only panel
         @_refreshAppearance sidebar: false
 
+      # Mode switch
+      $(document).on "change", "#{apa_sel} .onoffswitch input", (e) =>
+        @_resetApaTextureLibrary()
+
+        square = $ "#{@getSel()} .sb-seco-appearance .apa-top-sample"
+        outer = $ "#{@getSel()} .sb-seco-appearance .apa-top"
+
+        # Grab existing color/texture info
+        color = @_targetActor.getColor()
+        texture = _.find @ui.editor.project.textures, (texture) ->
+          texture.getUID() == @_targetActor.getTextureUID()
+
+        # Show input section
+        if $(e.target).is ":checked"
+          $("#{@getSel()} .apa-mode-color").hide()
+          $("#{@getSel()} .apa-mode-texture").show()
+
+          outer.removeClass "color"
+          outer.addClass("texture") unless outer.hasClass "texture"
+        else
+          $("#{@getSel()} .apa-mode-color").show()
+          $("#{@getSel()} .apa-mode-texture").hide()
+
+          outer.removeClass "texture"
+          outer.addClass("color") unless outer.hasClass "color"
+
+        if texture
+          square.css background: "#fff url(#{texture.getURL()}) cover"
+        else
+          square.css background: "rgb(#{color.r}, #{color.g}, #{color.b})"
+
+      # Texture library
+      $(document).on "click", "#{apa_sel} .apa-texture-button button", (e) =>
+
+        if $(e.target).hasClass "open"
+          TextureLibrary.close()
+          $(e.target).removeClass "open"
+          $(e.target).text "Select texture..."
+        else
+          sample = $("#{apa_sel} .apa-top-sample")
+
+          lib = new TextureLibrary @ui,
+            direction: "left"
+            x: $(sample).position().left + $(sample).width()
+            y: $(sample).position().top + $(sample).height() / 2
+
+          lib.setOnItemClick (item) =>
+            square = $ "#{@getSel()} .sb-seco-appearance .apa-top-sample"
+            square.css "background-image": "url(#{item.image})"
+
+          $(e.target).addClass "open"
+          $(e.target).text "Close library"
+
     ###
     # Set up our ability to modify numeric input values by dragging horizontally
     #
@@ -246,8 +300,8 @@ define (require) ->
         @togglePanel Sidebar.PANEL_SPAWN
 
       $(document).on "click", appearanceToggle, =>
-
         if @isPanelVisible Sidebar.PANEL_APPEARANCE
+          @_resetApaTextureLibrary()
           _apaApplyCached()
           @_refreshAppearance sidebar: false
         else
@@ -265,7 +319,7 @@ define (require) ->
           @refreshInputValues()
 
       $(document).on "click", appearanceCancel, =>
-
+        @_resetApaTextureLibrary()
         _apaApplyCached()
         @_refreshAppearance sidebar: false
 
@@ -278,6 +332,13 @@ define (require) ->
         @_refreshAppearance panel: false
 
         @hidePanel Sidebar.PANEL_APPEARANCE, null
+
+    _resetApaTextureLibrary: ->
+      textureButton = $ "#{@getSel()} .apa-texture-button button"
+
+      if textureButton.hasClass "open"
+        textureButton.removeClass "open"
+        TextureLibrary.close()
 
     ###
     # Clear the property widget
@@ -555,15 +616,23 @@ define (require) ->
 
       # Build selector
       sidebarSquare = "#{@getSel()} .sb-appearance .sb-ap-sample"
+      sidebarOuter = "#{@getSel()} .sb-appearance"
       panelSquare = "#{@getSel()} .sb-seco-appearance .apa-top-sample"
+      panelOuter = "#{@getSel()} .sb-seco-appearance .apa-top"
 
       apSquareSelector = ""
       apSquareSelector += sidebarSquare if options.sidebar
       apSquareSelector += ", " if options.sidebar and options.panel
       apSquareSelector += panelSquare if options.panel
 
+      apOuterSelector = ""
+      apOuterSelector += sidebarOuter if options.sidebar
+      apOuterSelector += ", " if options.sidebar and options.panel
+      apOuterSelector += panelOuter if options.panel
+
       return unless apSquareSelector.length > 0
-      apSquare = $(apSquareSelector)
+      apSquare = $ apSquareSelector
+      apOuter = $ apOuterSelector
 
       # Grab existing color/texture info
       color = @_targetActor.getColor()
@@ -572,15 +641,23 @@ define (require) ->
 
       # Update square
       if texture
-        apSquare.removeClass "color"
-        apSquare.addClass("texture") unless apSquare.hasClass "texture"
+        apOuter.removeClass "color"
+        apOuter.addClass("texture") unless apOuter.hasClass "texture"
 
         apSquare.css background: "#fff url(#{texture.getURL()}) cover"
       else
-        apSquare.removeClass "texture"
-        apSquare.addClass("color") unless apSquare.hasClass "color"
+        apOuter.removeClass "texture"
+        apOuter.addClass("color") unless apOuter.hasClass "color"
 
         apSquare.css background: "rgb(#{color.r}, #{color.g}, #{color.b})"
+
+      # Update control mode
+      if texture
+        $("#{@getSel()} .apa-mode-color").hide()
+        $("#{@getSel()} .apa-mode-texture").show()
+      else
+        $("#{@getSel()} .apa-mode-color").show()
+        $("#{@getSel()} .apa-mode-texture").hide()
 
       # Update sliders/inputs
       $("#{@getSel()} .sb-seco-appearance .apa-sliders-rgb li").each (i, elm) =>
@@ -604,6 +681,9 @@ define (require) ->
       htmlCode += _getHexComponent color.b
 
       $("#{@getSel()} .sb-seco-appearance .apa-tabs input").val htmlCode
+
+      # Update switch
+      $("#{@getSel()} .apa-top-switch input").prop "checked", !!texture
 
     _refreshOpacity: ->
       opacity = @_targetActor.getOpacity()

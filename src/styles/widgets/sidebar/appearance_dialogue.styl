@@ -4,7 +4,7 @@
   a
     color #595959
 
-  .apa-top, .apa-tabs
+  .apa-top, .apa-tabs, .apa-mode-color, .apa-mode-texture
     padding 0
 
   .apa-top
@@ -23,6 +23,14 @@
       right 0
       top 0
       background-color #33b5e5
+      background-size cover !important // Will get overwritten if not !important
+
+    &.texture
+      height 64px
+
+      .apa-top-sample
+        height 64px
+        width 96px
 
     .apa-top-switch
       margin 16px 0 0 12px
@@ -99,3 +107,32 @@
 
     input[type=number]
       width 25%
+
+  .apa-mode-texture
+    font-family Tahoma, Arial
+    display none
+
+    .apa-texture-button
+      display block
+      height 24px
+      margin 8px
+
+      button
+        float right
+
+    .apa-texture-label
+      font-weight bold
+      padding-left 16px
+      font-size 11px
+
+    .apa-texture-tiling
+      padding 0 8px 16px 16px
+      font-size 11px
+
+      li
+        display inline-block
+        vertical-align top
+        margin-right 24px
+
+        label
+          margin-left 4px

@@ -206,34 +206,54 @@ define ->
         <div class="apa-top-sample"></div>
       </div>
 
-      <div class="apa-tabs">
-        <ul>
-          <a href="javascript:void(0)" class="active"><li>RGB</li></a>
-          <a href="javascript:void(0)"><li>HSV</li></a>
-        </ul>
+      <div class="apa-mode-color">
+        <div class="apa-tabs">
+          <ul>
+            <a href="javascript:void(0)" class="active"><li>RGB</li></a>
+            <a href="javascript:void(0)"><li>HSV</li></a>
+          </ul>
 
-        <div class="sb-control">
-          <i>#</i>
-          <input type="text" value="33b5e5" />
+          <div class="sb-control">
+            <i>#</i>
+            <input type="text" value="33b5e5" />
+          </div>
+        </div>
+
+        <div class="apa-controls">
+          <ul class="apa-sliders apa-sliders-rgb">
+            <li data-id="red">
+              <label>R</label>
+              <input type="range" min="0" max="255" />
+              <input type="number" value="150" min="0" max="255" />
+            </li>
+            <li data-id="green">
+              <label>G</label>
+              <input type="range" min="0" max="255" />
+              <input type="number" value="150" min="0" max="255" />
+            </li>
+            <li data-id="blue">
+              <label>B</label>
+              <input type="range" min="0" max="255" />
+              <input type="number" value="150" min="0" max="255" />
+            </li>
+          </ul>
         </div>
       </div>
 
-      <div class="apa-controls">
-        <ul class="apa-sliders apa-sliders-rgb">
-          <li data-id="red">
-            <label>R</label>
-            <input type="range" min="0" max="255" />
-            <input type="number" value="150" min="0" max="255" />
+      <div class="apa-mode-texture">
+        <div class="apa-texture-button">
+          <button>Select texture...</button>
+        </div>
+        <label class="apa-texture-label">Repeat Texture</label>
+        <ul class="apa-texture-tiling">
+          <li>
+            <input type="checkbox" />
+            <label>Horizontally</label>
           </li>
-          <li data-id="green">
-            <label>G</label>
-            <input type="range" min="0" max="255" />
-            <input type="number" value="150" min="0" max="255" />
-          </li>
-          <li data-id="blue">
-            <label>B</label>
-            <input type="range" min="0" max="255" />
-            <input type="number" value="150" min="0" max="255" />
+
+          <li>
+            <input type="checkbox" />
+            <label>Vertically</label>
           </li>
         </ul>
       </div>

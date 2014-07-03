@@ -124,7 +124,7 @@ define (require) ->
       y ||= (window.innerHeight / 2) - (h / 2)
 
       @getElement().offset top: y, left: x
-      @getElement().animate opacity: 1, @_animateSpeed, ->
+      @getElement().animate opacity: 1, @_animateSpeed, =>
         @_visible = true
 
     ###
@@ -132,7 +132,7 @@ define (require) ->
     ###
     hide: ->
       return unless @_visible
-      @getElement().animate opacity: 0, @_animateSpeed, ->
+      @getElement().animate opacity: 0, @_animateSpeed, =>
         @_visible = false
 
     ###
