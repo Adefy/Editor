@@ -26,13 +26,13 @@ define (require) ->
     ###
     constructor: (@ui, options) ->
       options ||= {}
-      options.direction ||= "top"
       param.required options.x
       param.required options.y
 
       super @ui, title: "Texture Library", extraClasses: ["texture-library"]
 
-      @setDirection options.direction
+      @_registerUploadListener()
+      @setDirection options.direction || "top"
       @makeDraggable "#{@getSel()} header"
       @setAnimateSpeed 300
 
@@ -42,19 +42,36 @@ define (require) ->
       TextureLibrary.ACTIVE_LIBRARY.kill() if TextureLibrary.ACTIVE_LIBRARY
       TextureLibrary.ACTIVE_LIBRARY = @
 
-      if options.direction == "top"
+      if @_direction == "top"
         options.x += -width + 24
         options.y += 28
-      else if options.direction == "left"
+      else if @_direction == "left"
         options.x += (width / 2) + 64
         options.y += 56
-      else if options.direction == "right"
+      else if @_direction == "right"
         options.x += -width - 24
 
       @show options.x, options.y
 
     render: ->
-      TextureLibraryTemplate textures: Project.current.getTextures()
+      textures = Project.current.getTextures().map (texture) ->
+        formatted =
+          name: texture.getName()
+          url: texture.getURL()
+
+        if texture.getSize() > 1048576
+          formatted.size = "#{Math.round(texture.getSize() / 1048576)}MB"
+        else
+          formatted.size = "#{Math.round(texture.getSize() / 1024)}KB"
+
+        formatted
+
+      TextureLibraryTemplate textures: textures
+
+    _registerUploadListener: ->
+      $("#{@getSel()} button.tl-upload, #{@getSel()} .tl-empty a").click =>
+        @ui.modals.showUploadTextures cb: (blob) =>
+          @refresh()
 
     ###
     # Set the direction we spawn from, to properly render the header
@@ -63,11 +80,16 @@ define (require) ->
     ###
     setDirection: (origin) ->
       return if origin != "left" && origin != "top" && origin != "right"
+      @_direction = origin
 
       $("#{@getSel()} header").removeClass "origin-top"
       $("#{@getSel()} header").removeClass "origin-left"
       $("#{@getSel()} header").removeClass "origin-right"
       $("#{@getSel()} header").addClass "origin-#{origin}"
+
+    refresh: ->
+      super()
+      @setDirection @_direction
 
     ###
     # Kill any active texture libraries
@@ -75,6 +97,14 @@ define (require) ->
     @close: ->
       TextureLibrary.ACTIVE_LIBRARY.kill() if TextureLibrary.ACTIVE_LIBRARY
       TextureLibrary.ACTIVE_LIBRARY = null
+
+    ###
+    # Check if there are any active texture libraries
+    #
+    # @return [Boolean] open
+    ###
+    @isOpen: ->
+      !!TextureLibrary.ACTIVE_LIBRARY
 
     ###
     # Bind a listener for item clicks. Listeners are automatically removed
@@ -100,9 +130,10 @@ define (require) ->
         if dimensions
           dimensionsStr = $(dimensions).text().replace("px", "").split "x"
 
-          info.dimensions =
-            w: Number dimensionsStr[0]
-            h: Number dimensionsStr[1]
+          if dimensionsStr.length == 2
+            info.dimensions =
+              w: Number dimensionsStr[0]
+              h: Number dimensionsStr[1]
 
         # Format filesize to bytes
         if filesize

@@ -10,14 +10,16 @@ define ->
     {{#if textures}}
     <ul class="tl-list">
 
+      {{#each textures}}
       <li class="tl-entry">
         <div class="tl-entry-img">
-          <div style="background-image: url(http://lorempixel.com/256/256)"></div>
+          <div style="background-image: url('{{url}}')"></div>
         </div>
-        <span class="tl-entry-filename">kitten_1.png</span>
-        <span class="tl-entry-dimensions">200 x 300 px</span>
-        <span class="tl-entry-filesize">234KB</span>
+        <span class="tl-entry-filename">{{name}}</span>
+        <span class="tl-entry-dimensions">-</span>
+        <span class="tl-entry-filesize">{{size}}</span>
       </li>
+      {{/each}}
 
     </ul>
     {{else}}

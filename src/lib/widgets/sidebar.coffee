@@ -182,7 +182,7 @@ define (require) ->
 
         # Grab existing color/texture info
         color = @_targetActor.getColor()
-        texture = _.find @ui.editor.project.textures, (texture) ->
+        texture = _.find @ui.editor.project.textures, (texture) =>
           texture.getUID() == @_targetActor.getTextureUID()
 
         # Show input section
@@ -636,7 +636,7 @@ define (require) ->
 
       # Grab existing color/texture info
       color = @_targetActor.getColor()
-      texture = _.find @ui.editor.project.textures, (texture) ->
+      texture = _.find @ui.editor.project.textures, (texture) =>
         texture.getUID() == @_targetActor.getTextureUID()
 
       # Update square

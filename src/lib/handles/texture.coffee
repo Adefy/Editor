@@ -19,18 +19,21 @@ define (require) ->
       param.required options
       param.required options.key
       param.required options.name
+      param.required options.size
 
       @_id = ID.objID("texture").prefixed
 
       @_uid = options.uid || ID.uID()
       @_name = options.name
+      @_size = options.size
 
       @setKey options.key
 
     ###
     # This is the ID used by handles inside the editor
     # NOTE* This ID can/will change everytime the editor is restarted
-    # @return [String]
+    #
+    # @return [String] id
     ###
     getID: -> @_id
 
@@ -38,13 +41,16 @@ define (require) ->
     # This ID is used to reference the texture in another object
     # Such as an Actor, this ID will remain the same on reload unlike
     # the _id
-    # @return [String]
+    #
+    # @return [String] uid
     ###
     getUID: -> @_uid
 
     getName: -> @_name
     setName: (@_name) -> @
+
     getURL: -> @_url
+    getSize: -> @_size
 
     ###
     # Delete context menu callback function
@@ -114,6 +120,7 @@ define (require) ->
         uid: @_uid
         name: @_name
         key: @_key
+        size: @_size
 
     ###
     # @param [Object] data
@@ -132,6 +139,8 @@ define (require) ->
         @_uid = ID.uID()
 
       @_name = data.name
+      @_size = data.size
+
       @setKey data.key
 
       @

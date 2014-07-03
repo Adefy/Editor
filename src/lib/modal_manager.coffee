@@ -386,14 +386,16 @@ define (require) ->
         textures = []
 
         for obj in blob
+
           texture = new Texture Project.current,
             key: obj.key
             name: obj.filename
+            size: obj.size
 
           @ui.editor.project.textures.push texture
           textures.push texture
 
-        @ui.workspace.loadTextures(textures)
+        @ui.workspace.loadTextures textures
         @ui.pushEvent "upload.textures", textures: textures
 
         cb blob if cb = options.cb
