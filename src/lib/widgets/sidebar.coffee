@@ -175,7 +175,7 @@ define (require) ->
 
       # Mode switch
       $(document).on "change", "#{apa_sel} .onoffswitch input", (e) =>
-        @_resetApaTextureLibrary()
+        TextureLibrary.close()
 
         square = $ "#{@getSel()} .sb-seco-appearance .apa-top-sample"
         outer = $ "#{@getSel()} .sb-seco-appearance .apa-top"
@@ -207,10 +207,9 @@ define (require) ->
       # Texture library
       $(document).on "click", "#{apa_sel} .apa-texture-button button", (e) =>
 
+        # The library close handler resets the button
         if $(e.target).hasClass "open"
           TextureLibrary.close()
-          $(e.target).removeClass "open"
-          $(e.target).text "Select texture..."
         else
           sample = $("#{apa_sel} .apa-top-sample")
 
@@ -225,6 +224,10 @@ define (require) ->
 
             @_targetActor.setTextureByUID item.uid
             TextureLibrary.close()
+
+          lib.setOnClose ->
+            $(e.target).removeClass "open"
+            $(e.target).text "Select texture..."
 
           $(e.target).addClass "open"
           $(e.target).text "Close library"
@@ -304,8 +307,9 @@ define (require) ->
         @togglePanel Sidebar.PANEL_SPAWN
 
       $(document).on "click", appearanceToggle, =>
+        TextureLibrary.close()
+
         if @isPanelVisible Sidebar.PANEL_APPEARANCE
-          @_resetApaTextureLibrary()
           _apaApplyCached()
           @_refreshAppearance sidebar: false
         else
@@ -323,7 +327,8 @@ define (require) ->
           @refreshInputValues()
 
       $(document).on "click", appearanceCancel, =>
-        @_resetApaTextureLibrary()
+
+        TextureLibrary.close()
         _apaApplyCached()
         @_refreshAppearance sidebar: false
 
@@ -332,17 +337,11 @@ define (require) ->
 
       $(document).on "click", appearanceApply, =>
 
+        TextureLibrary.close()
         _apaRefreshCache()
         @_refreshAppearance panel: false
 
         @hidePanel Sidebar.PANEL_APPEARANCE, null
-
-    _resetApaTextureLibrary: ->
-      textureButton = $ "#{@getSel()} .apa-texture-button button"
-
-      if textureButton.hasClass "open"
-        textureButton.removeClass "open"
-        TextureLibrary.close()
 
     ###
     # Clear the property widget
@@ -581,13 +580,37 @@ define (require) ->
         @refreshInputValues()
 
     ###
+    # Helper to tell us if the appearance panel actually needs a refresh. This
+    # includes the sample square on the main sidebar
+    #
+    # @return [Boolean] needsRefresh
+    ###
+    _apaNeedsRefresh: ->
+      @_apaCache ||= {}
+
+      color = @_targetActor.getColor()
+      textureUID = @_targetActor.getTextureUID()
+
+      @_apaCache.textureUID != textureUID || !_.isEqual @_apaCache.color, color
+
+    ###
+    # Update the internal cache used to determine we need a refresh
+    ###
+    _apaUpdateRefreshCache: ->
+      @_apaCache ||= {}
+
+      @_apaCache.color = @_targetActor.getColor()
+      @_apaCache.textureUID = @_targetActor.getTextureUID()
+      @
+
+    ###
     # Pull in new input values from our target actor
     ###
     refreshInputValues: ->
       return unless !!@_targetActor
 
       @_refreshRawInputs()
-      @_refreshAppearance()
+      @_refreshAppearance() if @_apaNeedsRefresh()
       @_refreshOpacity()
 
     _refreshRawInputs: ->
@@ -638,6 +661,8 @@ define (require) ->
       apSquare = $ apSquareSelector
       apOuter = $ apOuterSelector
 
+      @_apaUpdateRefreshCache()
+
       # Grab existing color/texture info
       color = @_targetActor.getColor()
       texture = _.find @ui.editor.project.textures, (texture) =>
@@ -648,9 +673,7 @@ define (require) ->
         apOuter.removeClass "color"
         apOuter.addClass("texture") unless apOuter.hasClass "texture"
 
-        apSquare.css
-          "background-image": "url(#{texture.getURL()})"
-          "background-color": "#fff"
+        apSquare.css "background-image": "url('#{texture.getURL()}')"
       else
         apOuter.removeClass "texture"
         apOuter.addClass("color") unless apOuter.hasClass "color"

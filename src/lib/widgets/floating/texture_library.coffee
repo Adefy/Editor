@@ -92,6 +92,10 @@ define (require) ->
       super()
       @setDirection @_direction
 
+    kill: ->
+      @_onCloseCb() if @_onCloseCb
+      super()
+
     ###
     # Kill any active texture libraries
     ###
@@ -147,3 +151,11 @@ define (require) ->
             info.filsize = Number(filesizeStr.split("m")[0]) * 1024 * 1024
 
         cb info
+
+    ###
+    # Register a listener for our close event
+    #
+    # @param [Method] cb
+    ###
+    setOnClose: (cb) ->
+      @_onCloseCb = cb
