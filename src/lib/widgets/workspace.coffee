@@ -249,22 +249,28 @@ define (require) ->
     # @param [Number] y y coordinate
     ###
     domToGL: (x, y) ->
-
-      # Bail
-      if @_are == undefined
-        AUtilLog.warn "Can't convert coords, are not up!"
-        return null
+      return AUtilLog.warn "Can't convert coords, are not up!" unless @_are
 
       canvasTop = $("#{@getSel()} canvas").offset().top
       canvasLeft = $("#{@getSel()} canvas").offset().left
 
       # TODO: Take into account camera coords
-
       {
         x: x - canvasLeft
         y: y - canvasTop
       }
 
+    glToDom: (x, y) ->
+      return AUtilLog.warn "Can't convert coords, are not up!" unless @_are
+
+      canvasTop = $("#{@getSel()} canvas").offset().top
+      canvasLeft = $("#{@getSel()} canvas").offset().left
+
+      # TODO: Take into account camera coords
+      {
+        x: x + canvasLeft
+        y: y + canvasTop
+      }
 
     ###
     # Generate workspace right-click ctx data object

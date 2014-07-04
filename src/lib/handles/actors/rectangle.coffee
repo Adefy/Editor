@@ -93,14 +93,16 @@ define (require) ->
     #
     # @return [Number] height
     ###
-    getHeight: -> @_properties.height.getValue()
+    getHeight: ->
+      @_properties.height.getValue()
 
     ###
     # Get rectangle width value
     #
     # @return [Number] width
     ###
-    getWidth: -> @_properties.width.getValue()
+    getWidth: ->
+      @_properties.width.getValue()
 
     ###
     # Instantiate our ARE actor

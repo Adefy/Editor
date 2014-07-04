@@ -10,22 +10,19 @@ define (require) ->
 
     @type: "number"
 
-    constructor: ->
+    constructor: (options) ->
+      options ||= {}
+
       super NumericProperty.type
 
-      @data_min = -Infinity
-      @data_max = Infinity
-      @data_float = true
-      @data_precision = 2
-      @data_placeholder = 0
-      @data_value = 0
+      setVal = (v, def) -> if v != undefined && v != null then v else def
 
-    setValue: (value) ->
-      return unless @validateValue value
-      value = @processValue value
-
-      @data_value = value
-      @onUpdate value
+      @data_min = setVal options.min, -Infinity
+      @data_max = setVal options.max, Infinity
+      @data_float = setVal options.float, true
+      @data_precision = setVal options.precision, 2
+      @data_placeholder = setVal options.placeholder, 0
+      @data_value = setVal options.value, 0
 
     validateValue: (value) ->
       return false if isNaN value

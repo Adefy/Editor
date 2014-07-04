@@ -12,11 +12,11 @@ define (require) ->
   AUtilLog = require "util/log"
   Handle = require "handles/handle"
   Bezier = require "handles/bezier"
-  Project = require "project"
+  BoundingBox = require "widgets/bounding_box"
 
-  CompositeProperty = require "handles/properties/composite"
   NumericProperty = require "handles/properties/numeric"
   BooleanProperty = require "handles/properties/boolean"
+  CompositeProperty = require "handles/properties/composite"
 
   # Base manipulateable class for actors
   window.BaseActor = class BaseActor extends Handle
@@ -111,18 +111,17 @@ define (require) ->
       @initPropertyTextureRepeat()
 
     ###
-    # Initialize Actor opacity properties
+    # Initialize Actor opacity property
     ###
     initPropertyOpacity: ->
       me = @
 
-      @_properties.opacity = new NumericProperty()
-      @_properties.opacity.setMin 0.0
-      @_properties.opacity.setMax 1.0
-      @_properties.opacity.setValue 1.0
-      @_properties.opacity.setPlaceholder 1.0
-      @_properties.opacity.setFloat true
-      @_properties.opacity.setPrecision config.precision.opacity
+      @_properties.opacity = new NumericProperty
+        min: 0, max: 0, value: 1
+        placeholder: 1
+        float: true
+        precision: config.precision.opacity
+
       @_properties.opacity.onUpdate = (opacity) =>
         @_AREActor.setOpacity opacity if @_AREActor
       @_properties.opacity.requestUpdate = ->
@@ -134,10 +133,10 @@ define (require) ->
     initPropertyRotation: ->
       me = @
 
-      @_properties.rotation = new NumericProperty()
-      @_properties.rotation.setMin 0
-      @_properties.rotation.setMax 360
-      @_properties.rotation.setPrecision config.precision.rotation
+      @_properties.rotation = new NumericProperty
+        min: 0, max: 360
+        precision: config.precision.rotation
+
       @_properties.rotation.onUpdate = (rotation) =>
         @_AREActor.setRotation -rotation if @_AREActor
       @_properties.rotation.requestUpdate = ->
@@ -151,22 +150,28 @@ define (require) ->
 
       @_properties.position = new CompositeProperty()
       @_properties.position.icon = config.icon.property_position
-      @_properties.position.x = new NumericProperty()
-      @_properties.position.y = new NumericProperty()
+      @_properties.position.x = new NumericProperty
+        precision: config.precision.position
+      @_properties.position.y = new NumericProperty
+        precision: config.precision.position
 
-      @_properties.position.x.setPrecision config.precision.position
       @_properties.position.x.onUpdate = (value) =>
         return unless @_AREActor
         position = @_AREActor.getPosition()
         position.x = value
         @_AREActor.setPosition position
 
-      @_properties.position.y.setPrecision config.precision.position
+      @_properties.position.x.requestUpdate = ->
+        @setValue me._AREActor.getPosition().x if me._AREActor
+
       @_properties.position.y.onUpdate = (value) =>
         return unless @_AREActor
         position = @_AREActor.getPosition()
         position.y = value
         @_AREActor.setPosition position
+
+      @_properties.position.y.requestUpdate = ->
+        @setValue me._AREActor.getPosition().y if me._AREActor
 
       @_properties.position.addProperty "x", @_properties.position.x
       @_properties.position.addProperty "y", @_properties.position.y
@@ -179,19 +184,16 @@ define (require) ->
 
       @_properties.layer = new CompositeProperty()
       @_properties.layer.icon = config.icon.property_layer
-      @_properties.layer.main = new NumericProperty()
-      @_properties.layer.main.setValue 0
-      @_properties.layer.main.setMin 0
-      @_properties.layer.main.setPrecision config.precision.layer
+      @_properties.layer.main = new NumericProperty
+        min: 0, value: 0
+        precision: config.precision.layer
 
       @_properties.layer.main.onUpdate = (layer) =>
         @_AREActor.setLayer layer if @_AREActor
 
-      @_properties.layer.physics = new NumericProperty()
-      @_properties.layer.physics.setValue 0
-      @_properties.layer.physics.setMin 0
-      @_properties.layer.physics.setMax 15
-      @_properties.layer.physics.setPrecision config.precision.physicsLayer
+      @_properties.layer.physics = new NumericProperty
+        min: 0, max: 15, value: 0
+        precision: config.precision.physicsLayer
 
       @_properties.layer.physics.validateValue = (val) ->
         val >= 0 && val < 16 && Math.round(val) == val
@@ -211,13 +213,11 @@ define (require) ->
       @_properties.color = new CompositeProperty()
       @_properties.color.icon = config.icon.property_color
 
-      @_properties.color.r = new NumericProperty()
-      @_properties.color.r.setMin 0
-      @_properties.color.r.setMax 255
-      @_properties.color.r.setFloat false
-      @_properties.color.r.setPlaceholder 255
-      @_properties.color.r.setValue 0
-      @_properties.color.r.setPrecision config.precision.color
+      @_properties.color.r = new NumericProperty
+        min: 0, max: 255, value: 0
+        float: false
+        placeholder: 255
+        precision: config.precision.color
 
       @_properties.color.g = new NumericProperty()
       @_properties.color.b = new NumericProperty()
@@ -264,32 +264,26 @@ define (require) ->
       @_properties.physics = new CompositeProperty()
       @_properties.physics.icon = config.icon.property_physics
 
-      @_properties.physics.mass = new NumericProperty()
-
-      @_properties.physics.mass.setMin 0
-      @_properties.physics.mass.setPlaceholder 50
-      @_properties.physics.mass.setValue 50
-      @_properties.physics.mass.setPrecision config.precision.physics_mass
+      @_properties.physics.mass = new NumericProperty
+        min: 0, value: 50
+        placeholder: 50
+        precision: config.precision.physics_mass
 
       @_properties.physics.mass.onUpdate = (mass) =>
         @_AREActor.setMass mass if @_AREActor
 
-      @_properties.physics.elasticity = new NumericProperty()
-      @_properties.physics.elasticity.setMin 0
-      @_properties.physics.elasticity.setMax 1
-      @_properties.physics.elasticity.setPrecision config.precision.physics_elasticity
-      @_properties.physics.elasticity.setPlaceholder 0.3
-      @_properties.physics.elasticity.setValue 0.3
+      @_properties.physics.elasticity = new NumericProperty
+        min: 0, max: 1, value: 0.3
+        placeholder: 0.3
+        precision: config.precision.physics_elasticity
 
       @_properties.physics.elasticity.onUpdate = (elasticity) =>
         @_AREActor.setElasticity elasticity if @_AREActor
 
-      @_properties.physics.friction = new NumericProperty()
-      @_properties.physics.friction.setMin 0
-      @_properties.physics.friction.setMax 1
-      @_properties.physics.friction.setPrecision config.precision.physics_friction
-      @_properties.physics.friction.setPlaceholder 0.2
-      @_properties.physics.friction.setValue 0.2
+      @_properties.physics.friction = new NumericProperty
+        min: 0, max: 1, value: 0.2
+        placeholder: 0.2
+        precision: config.precision.physics_friction
 
       @_properties.physics.friction.onUpdate = (friction) =>
         @_AREActor.setFriction friction if @_AREActor
@@ -323,11 +317,12 @@ define (require) ->
       me = @
 
       @_properties.textureRepeat = new CompositeProperty()
-      @_properties.textureRepeat.x = new NumericProperty()
-      @_properties.textureRepeat.x.setValue 1.0
-      @_properties.textureRepeat.x.setPlaceholder 1.0
-      @_properties.textureRepeat.x.setFloat true
-      @_properties.textureRepeat.x.setPrecision config.precision.texture_repeat
+      @_properties.textureRepeat.x = new NumericProperty
+        value: 1
+        placeholder: 1
+        float: true
+        precision: config.precision.texture_repeat
+
       @_properties.textureRepeat.y = new NumericProperty()
       @_properties.textureRepeat.y.clone @_properties.textureRepeat.x
 
@@ -351,6 +346,12 @@ define (require) ->
       @_properties.textureRepeat.addProperty "y", @_properties.textureRepeat.y
 
     ###
+    ##
+    # Accessors
+    ##
+    ###
+
+    ###
     # Get actor property by name
     #
     # @param [String] name
@@ -360,45 +361,15 @@ define (require) ->
       @_properties[name]
 
     ###
-    # Get the actor's name
-    # @return [String] name
-    ###
-    getName: -> @name
-
-    ###
-    # Helper to get the index into our prop buffer for the birth entry
+    # Get actor rotation
     #
-    # @return [Number] index
+    # @return [Number] angle in degrees
     ###
-    getBirthIndex: ->
-      Math.floor @lifetimeStart_ms
-
-    ###
-    # Get internal actors' id. Note that the actor must exist for this!
-    #
-    # @return [Number] id
-    ###
-    getActorId: ->
+    getRotation: ->
       if @_AREActor
-        @_AREActor.getId()
+        @_properties.rotation.getValue()
       else
         null
-
-    ###
-    # Get our internal actor
-    #
-    # @param [ARERawActor] actor
-    ###
-    getActor: -> @_AREActor
-
-    ###
-    # @param [Booleab] _visible
-    ###
-    getVisible: ->
-      if @_AREActor
-        @_AREActor.getVisible()
-      else
-        false
 
     ###
     # Return actor opacity
@@ -407,7 +378,7 @@ define (require) ->
     ###
     getOpacity: ->
       if @_AREActor
-        @_AREActor.getOpacity()
+        @_properties.opacity.getValue()
       else
         null
 
@@ -418,18 +389,7 @@ define (require) ->
     ###
     getPosition: ->
       if @_AREActor
-        @_AREActor.getPosition()
-      else
-        null
-
-    ###
-    # Get actor rotation
-    #
-    # @return [Number] angle in degrees
-    ###
-    getRotation: ->
-      if @_AREActor
-        @_properties.rotation.getValue()
+        @_properties.position.getValue()
       else
         null
 
@@ -452,9 +412,9 @@ define (require) ->
       }
 
     ###
-    # Return actor physics
+    # Return actor physics properties as an object
     #
-    # @return [Object] physics properties
+    # @return [Object] properties
     ###
     getPsyX: ->
 
@@ -464,23 +424,6 @@ define (require) ->
         elasticity: @_properties.physics.getProperty("elasticity").getValue()
         friction: @_properties.physics.getProperty("friction").getValue()
       }
-
-    ###
-    # Get buffer entry
-    #
-    # @param [Number] time
-    # @return [Object] entry prop buffer entry, may be undefined
-    ###
-    getBufferEntry: (time) -> @_propBuffer[Math.floor time]
-
-    ###
-    # Check if the specified value is our birth (floors it)
-    #
-    # @param [Number] value
-    # @return [Boolean] isBirth
-    ###
-    isBirth: (val) ->
-      Math.floor(val) == Math.floor(@lifetimeStart_ms)
 
     ###
     # @param [Boolean] visible
@@ -496,8 +439,8 @@ define (require) ->
     # @param [Number] y y coordinate
     ###
     setPosition: (x, y) ->
-      x = Number (param.required x).toFixed(@ACCURACY)
-      y = Number (param.required y).toFixed(@ACCURACY)
+      x = Number (param.required x).toFixed @ACCURACY
+      y = Number (param.required y).toFixed @ACCURACY
 
       @_properties.position.setValue x: x, y: y
       @updateInTime()
@@ -508,7 +451,7 @@ define (require) ->
     # @param [Number] angle
     ###
     setRotation: (angle) ->
-      angle = Number (param.required angle).toFixed(@ACCURACY)
+      angle = Number (param.required angle).toFixed @ACCURACY
 
       @_properties.rotation.setValue angle
       @updateInTime()
@@ -521,9 +464,9 @@ define (require) ->
     # @param [Number] b
     ###
     setColor: (r, g, b) ->
-      r = Number (param.required r).toFixed(@ACCURACY)
-      g = Number (param.required g).toFixed(@ACCURACY)
-      b = Number (param.required b).toFixed(@ACCURACY)
+      r = Number (param.required r).toFixed @ACCURACY
+      g = Number (param.required g).toFixed @ACCURACY
+      b = Number (param.required b).toFixed @ACCURACY
 
       @_properties.color.setValue r: r, g: g, b: b
       @clearTexture()
@@ -583,6 +526,68 @@ define (require) ->
       @_textureUID
 
     ###
+    # Get the actor's name
+    #
+    # @return [String] name
+    ###
+    getName: ->
+      @name
+
+    ###
+    # Helper to get the index into our prop buffer for the birth entry
+    #
+    # @return [Number] index
+    ###
+    getBirthIndex: ->
+      Math.floor @lifetimeStart_ms
+
+    ###
+    # Get internal actors' id. Note that the actor must exist for this!
+    #
+    # @return [Number] id
+    ###
+    getActorId: ->
+      if @_AREActor
+        @_AREActor.getId()
+      else
+        null
+
+    ###
+    # Get our internal actor
+    #
+    # @param [ARERawActor] actor
+    ###
+    getActor: ->
+      @_AREActor
+
+    ###
+    # @param [Booleab] _visible
+    ###
+    getVisible: ->
+      if @_AREActor
+        @_AREActor.getVisible()
+      else
+        false
+
+    ###
+    # Get buffer entry
+    #
+    # @param [Number] time
+    # @return [Object] entry prop buffer entry, may be undefined
+    ###
+    getBufferEntry: (time) ->
+      @_propBuffer[Math.floor time]
+
+    ###
+    # Check if the specified value is our birth (floors it)
+    #
+    # @param [Number] value
+    # @return [Boolean] isBirth
+    ###
+    isBirth: (val) ->
+      Math.floor(val) == Math.floor(@lifetimeStart_ms)
+
+    ###
     # Used when exporting, executes the corresponding property genAnimationOpts
     # method if one exists. Returns null if the property does not exist, or if
     # the property does not have a genAnimationOpts method.
@@ -614,6 +619,7 @@ define (require) ->
     ###
     timelineDeath: ->
       return unless @_alive
+
       @_alive = false
       @_AREActor.destroy()
       @_AREActor = null
@@ -626,6 +632,14 @@ define (require) ->
     ###
     _birth: ->
 
+      @_boundingBox = new BoundingBox @ui
+      @_AREActor.setOnOrientationChange (u) =>
+
+        if u.position
+          u.position = @ui.workspace.glToDom u.position.x, u.position.y
+
+        @_boundingBox.updateOrientation u
+
       # Make sure we have our texture (this lets us set the texture in the
       # constructor)
       @setTextureByUID @_textureUID if @_textureUID
@@ -635,7 +649,8 @@ define (require) ->
     #
     # @return [Boolean] alive
     ###
-    isAlive: -> @_alive
+    isAlive: ->
+      @_alive
 
     ###
     # Needs to be called after our are actor is instantiated, so we can prepare

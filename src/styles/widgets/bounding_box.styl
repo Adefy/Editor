@@ -1,0 +1,43 @@
+$bb_control_width = 6px
+$bb_control_margin = (($bb_control_width / 2)) * -1
+
+.bounding-box
+  position absolute
+
+  width 100px
+  height 100px
+
+  background transparent
+  margin -2px
+  border 1px solid red
+
+  .bb-control
+    width $bb_control_width
+    height $bb_control_width
+    background-color white
+    position absolute
+    border 1px solid #000
+
+    &:hover
+      cursor hand
+      cursor pointer
+
+    &.top-left
+      margin $bb_control_margin 0 0 $bb_control_margin
+      top 0
+      left 0
+
+    &.top-right
+      margin $bb_control_margin $bb_control_margin 0 0
+      top 0
+      right 0
+
+    &.bottom-left
+      margin 0 0 $bb_control_margin $bb_control_margin
+      bottom 0
+      left 0
+
+    &.bottom-right
+      margin 0 $bb_control_margin $bb_control_margin 0
+      bottom 0
+      right 0
