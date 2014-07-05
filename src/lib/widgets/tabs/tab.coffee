@@ -12,7 +12,6 @@ define (require) ->
     # @param [Object] options
     ###
     constructor: (@ui, options) ->
-      param.required options.parent
       super @ui, options
 
     ###

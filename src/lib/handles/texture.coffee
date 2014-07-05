@@ -15,12 +15,6 @@ define (require) ->
     # @param [Hash] options
     ###
     constructor: (@project, options) ->
-      param.required project
-      param.required options
-      param.required options.key
-      param.required options.name
-      param.required options.size
-
       @_id = ID.objID("texture").prefixed
 
       @_uid = options.uid || ID.uID()
@@ -150,8 +144,6 @@ define (require) ->
     # @return [self]
     ###
     @load: (project, data) ->
-      param.required project
-      param.required data
       texture = new Texture project, data
       texture.load data
 

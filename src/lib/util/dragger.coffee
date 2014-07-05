@@ -13,7 +13,7 @@ define (require) ->
     ###
     constructor: (selector, tolerance) ->
       @_tolerance = tolerance || 5
-      @_sel = param.required selector
+      @_sel = selector
 
       @clearUserData()
       @disableDragging()

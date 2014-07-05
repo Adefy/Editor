@@ -14,8 +14,8 @@ define (require) ->
     # @param [BaseActor] targetActor actor to apply textures to
     ###
     constructor: (@ui, options) ->
-      @_textures = param.required options.textures
-      @_actor = param.required options.actor
+      @_textures = options.textures
+      @_actor = options.actor
 
       super @ui, title: "Select Texture"
 

@@ -494,7 +494,6 @@ define (require) ->
     # @param [Boolean] apply if false, returns results without applying
     ###
     saveControl: (control, apply) ->
-      param.required control
       apply = !!apply
 
       return unless $(control).parent().hasClass "sb-control"
@@ -737,11 +736,6 @@ define (require) ->
     # @private
     ###
     generateControl: (data, value) ->
-      param.required data
-      param.required data.name
-      param.required value
-      param.required value.getType(), ["composite"]
-
       return unless @["renderControl_#{value.getType()}"]
 
       ndata =
@@ -760,12 +754,8 @@ define (require) ->
       name.charAt(0).toUpperCase() + name.substring 1
 
     renderControl_composite: (data, value) ->
-      param.required data
-
-      displayName = param.required data.name
+      displayName = data.name
       displayIcon = data.icon or config.icon.property_default
-
-      param.required value.getType(), ["composite"]
 
       # Build the control by recursing and concating the result
       properties = value.getProperties()
@@ -817,8 +807,8 @@ define (require) ->
         contents: contents
 
     renderControl_number: (data, value) ->
-      value = param.required value
-      displayName = param.required data.name
+      value = value
+      displayName = data.name
 
       TemplateNumericControl
         displayName: displayName
@@ -832,8 +822,8 @@ define (require) ->
         parent: data.parent or false
 
     renderControl_boolean: (data, value) ->
-      value = param.required value
-      displayName = param.required data.name
+      value = value
+      displayName = data.name
 
       TemplateBooleanControl
         displayName: displayName
@@ -843,8 +833,8 @@ define (require) ->
         parent: data.parent or false
 
     renderControl_text: (data, value) ->
-      value = param.required value
-      displayName = param.required data.name
+      value = value
+      displayName = data.name
 
       TemplateTextControl
         displayName: displayName

@@ -16,7 +16,7 @@ define (require) ->
     ###
     constructor: (selector, tolerance) ->
       @_tolerance = tolerance || 1
-      @_dragSel = @_sel = param.required selector
+      @_dragSel = @_sel = selector
 
       # Can be "x" or "y"
       @_constrain = null
@@ -139,11 +139,6 @@ define (require) ->
     # @param [Number] maxY
     ###
     setBounds: (minX, minY, maxX, maxY) ->
-      param.required minX
-      param.required minY
-      param.required maxX
-      param.required maxY
-
       @_bounds =
         minX: minX
         minY: minY
@@ -157,10 +152,9 @@ define (require) ->
     # @param [Number] y
     ###
     setBoundsOrigin: (x, y) ->
-      param.required x
-      param.required y
-
-      @_boundsOrigin = x: x, y: y
+      @_boundsOrigin =
+        x: x
+        y: y
 
     ###
     # Helper, bounds to the dimensions of the specified element
@@ -168,7 +162,7 @@ define (require) ->
     # @param [DOMElement] element
     ###
     constrainToElement: (element) ->
-      @_boundsElement = param.required element
+      @_boundsElement = element
 
     ###
     # Calls @constrainToElement() with our selectors' immediate parent

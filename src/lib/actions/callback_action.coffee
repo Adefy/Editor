@@ -8,5 +8,5 @@ define (require) ->
 
     constructor: (options) ->
       super()
-      @execute = param.required options.executeCB
-      @revert = param.required options.revertCB
+      @execute = options.executeCB
+      @revert = options.revertCB

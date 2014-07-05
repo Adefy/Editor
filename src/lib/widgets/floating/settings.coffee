@@ -32,9 +32,9 @@ define (require) ->
     #   @option [Methind] cb
     ###
     constructor: (@ui, options) ->
-      @_title = param.required options.title
-      @_settings = param.required options.settings
-      @_doneCB = param.required options.cb
+      @_title = options.title
+      @_settings = options.settings
+      @_doneCB = options.cb
 
       super @ui, title: "", extraClasses: ["settings-widget"]
 

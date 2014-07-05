@@ -20,8 +20,6 @@ define (requre) ->
     # @return [String] html
     ###
     genElement: (type, attributes, cb) ->
-      param.required type
-
       attributes ||= {}
       cb ||= -> ""
 

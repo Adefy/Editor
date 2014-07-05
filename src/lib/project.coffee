@@ -77,8 +77,6 @@ define (require) ->
     # @param [Method] onLoad cb called after the initial project load
     ###
     constructor: (@ui, creative, onLoad) ->
-      param.required ui
-      param.required creative
 
       unless Project.validateCreative creative
         return AUtilLog.error "Creative payload is not valid!"
@@ -233,7 +231,6 @@ define (require) ->
     # @return [Project] project
     ###
     loadSnapshot: (timestamp) ->
-      param.required timestamp
 
       snapshots = @getSnapshots()
       snapshotIndex = _.findIndex snapshots, (s) -> s.timestamp == timestamp
@@ -277,7 +274,6 @@ define (require) ->
     # @return [self]
     ###
     load: (data) ->
-      param.required data
       return unless Project.validateSave data
 
       try

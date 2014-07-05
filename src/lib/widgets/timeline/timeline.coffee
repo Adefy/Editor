@@ -157,8 +157,6 @@ define (require) ->
     # @param [Number] duration
     ###
     setDuration: (duration) ->
-      param.required duration
-
       unless duration > 0
         return AUtilLog.error "Invalid duration: #{duration}"
 
@@ -212,8 +210,6 @@ define (require) ->
     # @param [Number] time cursor time in ms
     ###
     setCursorTime: (time) ->
-      param.required time
-
       $("#timeline-cursor").css "left", "#{(100 * (time / @_duration))}%"
 
       setTimeout =>
@@ -295,8 +291,6 @@ define (require) ->
     # @private
     ###
     _onOuterClicked: (element) ->
-      param.required element
-
       index = Number $(element).attr "data-index"
 
       @switchSelectedActorByIndex index
@@ -569,7 +563,6 @@ define (require) ->
     #   @optional
     ###
     toggleActorExpandByIndex: (index, forceState) ->
-      param.required index
 
       actor = @_actors[index]
       return unless actor
@@ -594,7 +587,6 @@ define (require) ->
     #   @optional
     ###
     toggleActorVisibilityByIndex: (index, forceState) ->
-      param.required index
 
       actor = @_actors[index]
       return unless actor
@@ -614,7 +606,6 @@ define (require) ->
     # @param [Boolean] forceState
     ###
     toggleActorExpand: (actor, forceState) ->
-      param.required actor
 
       id = actor.getActorId()
       actorIndex = _.findIndex @_actors, (a) -> a.getActorId() == id
@@ -629,8 +620,6 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     addActor: (actor) ->
-      param.required actor
-
       @_actors.push actor
 
       @getElement(".timeline-actor-list").html @_renderActorList()
@@ -648,7 +637,6 @@ define (require) ->
     # @return [Boolean] success
     ###
     removeActor: (actor) ->
-      param.required actor
 
       id = actor.getActorId()
       actorIndex = _.findIndex @_actors, (a) -> a.getActorId() == id
@@ -666,7 +654,7 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     selectActor: (actor) ->
-      @_lastSelectedActor = param.required actor
+      @_lastSelectedActor = actor
       $("#{@_actorBodySelector(actor)} .actor-info").addClass("selected")
 
     ###
@@ -674,15 +662,12 @@ define (require) ->
     # @param [BaseActor] actor
     ###
     deselectActor: (actor) ->
-      param.required actor
       $("#{@_actorBodySelector(actor)} .actor-info").removeClass("selected")
 
     ###
     # @param [BaseActor] actor
     ###
     switchSelectedActor: (actor) ->
-      param.required actor
-
       @deselectActor @_lastSelectedActor if @_lastSelectedActor
       @selectActor actor
 
@@ -784,7 +769,6 @@ define (require) ->
     # @private
     ###
     _calcActorTimebar: (actor) ->
-      param.required actor
 
       #spaceW = $(@_spaceSelector()).width()
       {
@@ -803,9 +787,6 @@ define (require) ->
     # @private
     ###
     _calcActorKeyframes: (actor, timebarData) ->
-      param.required actor
-      param.required timebarData
-
       actorId = actor.getID()
 
       keyframes =
@@ -865,7 +846,6 @@ define (require) ->
     # @private
     ###
     _calcActorTimeProperties: (actor) ->
-      param.required actor
 
       actorId = actor.getID()
       timebarData = @_calcActorTimebar actor
@@ -923,7 +903,6 @@ define (require) ->
     # @privvate
     ###
     _renderActorListEntry: (actor) ->
-      param.required actor
 
       TemplateTimelineActor
         id: "actor-body-#{actor.getID()}"
@@ -969,7 +948,6 @@ define (require) ->
     # @private
     ###
     _renderActorTimebarEntry: (actor) ->
-      param.required actor
 
       actorId = actor.getID()
       index = _.findIndex @_actors, (a) -> a.getID() == actorId

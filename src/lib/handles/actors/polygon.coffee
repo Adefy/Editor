@@ -24,11 +24,7 @@ define (require) ->
     # @param [Boolean] manualInit optional, postInit() not called if true
     ###
     constructor: (@ui, birth, sides, radius, x, y, rotation, death, manualInit) ->
-      param.required @ui
-      param.required sides
-      radius = Math.abs param.required radius
-      param.required x
-      param.required y
+      radius = Math.abs radius
 
       throw new Error "Can't create an ngon with less than 3 sides" if sides < 3
 

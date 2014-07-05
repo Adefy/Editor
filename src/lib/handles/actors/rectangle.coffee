@@ -24,12 +24,6 @@ define (require) ->
     # @param [Boolean] manualInit optional, postInit() not called if true
     ###
     constructor: (@ui, birth, w, h, x, y, rotation, death, manualInit) ->
-      param.required @ui
-      param.required w
-      param.required h
-      param.required x
-      param.required y
-
       if w <= 0 or h <= 0 then throw new Error "Width/Height must be >0!"
 
       super @ui, birth, death

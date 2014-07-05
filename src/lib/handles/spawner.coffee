@@ -81,10 +81,9 @@ define (require) ->
     # @param [Object] options
     ###
     constructor: (@ui, options) ->
-      param.required options
 
       # Don't save this, as it is volatile (likely immediately deleted)
-      template = param.required options.templateHandle
+      template = options.templateHandle
 
       super @ui, template.getBirthTime(), template.getDeathTime()
 
@@ -473,7 +472,6 @@ define (require) ->
     # @return [BaseActor] actor
     ###
     _generateSpawn: (time) ->
-      param.required time
       @_seedIncrement++
 
       actor = window[@getSpawnableClassName()].load @ui, @dump()

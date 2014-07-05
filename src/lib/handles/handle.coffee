@@ -88,7 +88,6 @@ define (require) ->
     #
     # @param [Object] updatePacket object containing property:value pairs
     updateProperties: (updatePacket) ->
-      param.required updatePacket
 
       for property, value of updatePacket
         if @_properties[property]
@@ -102,8 +101,6 @@ define (require) ->
     # @param [Object] val
     ###
     setProperty: (key, val) ->
-      param.required key
-      param.required val
 
       # Prevent creation of new properties
       if @_properties[key] != undefined then @_properties[key] = val

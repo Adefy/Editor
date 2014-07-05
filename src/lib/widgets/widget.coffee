@@ -31,7 +31,7 @@ define (require) ->
     constructor: (@ui, options) ->
       options ||= {}
 
-      @_id = param.required options.id
+      @_id = options.id
       @_parent = options.parent || ".editor"
       @_classes = options.classes || []
       @_listeners = options.listeners || []

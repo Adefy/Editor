@@ -46,7 +46,6 @@ define (require) ->
     ###
     constructor: (@ui, options) ->
       return unless @enforceSingleton()
-      param.required @ui
 
       super @ui,
         id: ID.prefID("workspace")
@@ -235,7 +234,6 @@ define (require) ->
     # @param [BaseActor] handle
     ###
     addActor: (handle) ->
-      param.required handle
 
       @actorObjects.push handle
       @ui.pushEvent "workspace.add.actor", actor: handle

@@ -30,31 +30,8 @@ define (require) ->
     # @param [Boolean] buffer optionally enables eval buffering
     ###
     constructor: (@_start, @_end, @_degree, @_control, @_buffer) ->
-      param.required @_start
-      param.required @_end
-      param.required @_degree, [0, 1, 2]
-
-      # Set buffering
       @_buffer = !!@_buffer
       @_bufferData = {}
-
-      # Recyle param to check for coordinates
-      param.required @_start.x
-      param.required @_start.y
-      param.required @_end.x
-      param.required @_end.y
-
-      # Simplez brute control param validation
-      if @_degree > 0
-        param.required @_control
-
-        if @_degree > 1
-          param.required @_control[0].x
-          param.required @_control[0].y
-
-        if @_degree == 2
-          param.required @_control[1].x
-          param.required @_control[1].y
 
     ###
     # @return [Number]
@@ -94,7 +71,6 @@ define (require) ->
     # @param [Number] t position on the curve, 0.0 - 1.0
     # @return [Object] pos position as an object with (time, value) keys
     eval: (t) ->
-      param.required t
 
       # If buffering is enabled, buffer!
       if @_buffer

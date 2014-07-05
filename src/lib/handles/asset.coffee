@@ -15,8 +15,7 @@ define (require) ->
     # @param [Hash] options
     ###
     constructor: (parent, options) ->
-      param.required options
-      @_name = param.required options.name
+      @_name = options.name
       @_isDirectory = !!options.isDirectory
       @_disabled = options.disabled || []
 

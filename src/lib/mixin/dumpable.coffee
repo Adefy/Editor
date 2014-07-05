@@ -17,7 +17,6 @@ define (require) ->
     # @return [self]
     ###
     load: (data) ->
-      param.required data
       # data.dumpVersion
       @
 
@@ -36,7 +35,6 @@ define (require) ->
     # @param [String] raw
     ###
     deserialize: (raw) ->
-      param.required raw
       @load JSON.parse raw
 
 ###

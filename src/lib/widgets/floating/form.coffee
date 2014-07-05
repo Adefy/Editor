@@ -20,8 +20,8 @@ define (require) ->
     #   @option [Method] change optional, called on input change with delta and data
     ###
     constructor: (@ui, options) ->
-      @_title = param.required options.title
-      @_HTMLContent = param.required options.content
+      @_title = options.title
+      @_HTMLContent = options.content
       @_submitCB = options.cb
       @_changeCB = options.change
       @_validationCB = options.validation
@@ -77,7 +77,6 @@ define (require) ->
     # @param [DOMElement] input input that has changed
     ###
     changed: (input) ->
-      param.required input
       return unless @_changeCB
 
       data = @scrapeData()
@@ -121,5 +120,4 @@ define (require) ->
     # @param [String] error
     ###
     setError: (error) ->
-      param.required error
       @getElement(".modal-error").text error

@@ -25,7 +25,7 @@ define (require) ->
     # @param [Array<String>] extraClasses optional array of extra classes
     ###
     constructor: (@ui, options) ->
-      title = param.required options.title
+      title = options.title
       extraClasses = options.extraClasses || []
 
       super @ui,

@@ -36,8 +36,6 @@ define (require) ->
     # @param [Number] deathTime time we are destroyed, defaults to end of ad
     ###
     constructor: (@ui, birthTime, deathTime) ->
-      param.required @ui
-
       super()
 
       @_handleType = "BaseActor"
@@ -47,7 +45,7 @@ define (require) ->
       @_alive = false
       @_initialized = false # True after postInit() is called
 
-      @_birthTime = param.required birthTime
+      @_birthTime = birthTime
       @_deathTime = deathTime or @ui.timeline.getDuration()
 
       ###
@@ -486,7 +484,7 @@ define (require) ->
     # @param [Number] angle
     ###
     setRotation: (angle) ->
-      angle = Number (param.required angle).toFixed @ACCURACY
+      angle = Number(angle.toFixed @ACCURACY)
 
       @_properties.rotation.setValue angle
       @updateInTime()
@@ -499,9 +497,9 @@ define (require) ->
     # @param [Number] b
     ###
     setColor: (r, g, b) ->
-      r = Number (param.required r).toFixed @ACCURACY
-      g = Number (param.required g).toFixed @ACCURACY
-      b = Number (param.required b).toFixed @ACCURACY
+      r = Number(r.toFixed @ACCURACY)
+      g = Number(g.toFixed @ACCURACY)
+      b = Number(b.toFixed @ACCURACY)
 
       @_properties.color.setValue r: r, g: g, b: b
       @clearTexture()
@@ -634,9 +632,6 @@ define (require) ->
     # @return [Object] options output options
     ###
     genAnimationOpts: (property, anim, opts, component) ->
-      param.required property
-      param.required anim
-      param.required opts
       component ||= ""
 
       property = @_properties[property]
@@ -719,9 +714,6 @@ define (require) ->
     # @param [Array<String>] deltas array of property names
     ###
     serializeDeltasToBufferEntry: (time, deltas) ->
-      param.required time
-      param.required deltas
-
       @_propBuffer[Math.floor(time)] ||= {}
       _.extend @_propBuffer[Math.floor(time)], @_serializeProperties deltas
 
@@ -849,7 +841,7 @@ define (require) ->
     # @private
     ###
     _applyKnownState: (state) ->
-      state = Number param.required state
+      state = Number state
       return if state == @_lastTemporalState
 
       # Apply saved state. Find all stored states between our previous state
@@ -903,7 +895,6 @@ define (require) ->
     # @private
     ###
     _applyPropBuffer: (buffer) ->
-      param.required buffer
 
       for name, property of buffer
 
@@ -928,8 +919,8 @@ define (require) ->
     # @return [self]
     ###
     adjustLifetime: (options) ->
-      start = param.required options.start
-      end = param.required options.end
+      start = options.start
+      end = options.end
       scaleToFit = !!options.scaleToFit
 
       oldStart = @_birthTime
@@ -1165,9 +1156,6 @@ define (require) ->
     # @private
     ###
     setAnimationStart: (animation, startTime, startP) ->
-      param.required animation
-      param.required startTime
-      param.required startP
 
       if animation.components
         for c, componentVal of animation.components
@@ -1189,11 +1177,6 @@ define (require) ->
     # @return [Object] animation
     ###
     createNewAnimation: (options) ->
-      param.required options.start
-      param.required options.end
-      param.required options.startSnapshot
-      param.required options.endSnapshot
-
       animation = {}
 
       if options.endSnapshot.components
@@ -1350,7 +1333,6 @@ define (require) ->
     # @return [Object] animation
     ###
     getNearestAnimationTime: (source, options) ->
-      param.required source
       options ||= {}
       time = null
 
@@ -1381,7 +1363,7 @@ define (require) ->
     # @private
     ###
     findNearestState: (start, right, prop) ->
-      start = Number param.required start
+      start = Number start
       right = !!right
 
       nearest = -1

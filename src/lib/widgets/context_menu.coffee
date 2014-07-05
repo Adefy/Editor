@@ -23,9 +23,9 @@ define (require) ->
     # @param [Handle] properties context menu property definitions
     ###
     constructor: (@ui, options) ->
-      x = param.required options.x
-      y = param.required options.y
-      @_properties = param.required options.properties
+      x = options.x
+      y = options.y
+      @_properties = options.properties
 
       # NOTE: We convert the items hash into an array internally, for sorting!
       items = @_properties.functions

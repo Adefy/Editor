@@ -26,8 +26,6 @@ define (require) ->
     ###
     constructor: (@ui, options) ->
       options ||= {}
-      param.required options.x
-      param.required options.y
 
       super @ui, title: "Texture Library", extraClasses: ["texture-library"]
 
