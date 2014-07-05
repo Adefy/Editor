@@ -113,7 +113,7 @@ define (require) ->
           click: => alert "Unimplemented"
         ,
           label: "#{config.strings.export}..."
-          click: => @editor.fileExport()
+          click: =>
         ]
       ,
         label: config.strings.edit
