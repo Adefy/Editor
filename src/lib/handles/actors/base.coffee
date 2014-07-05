@@ -38,60 +38,15 @@ define (require) ->
     constructor: (@ui, birthTime, deathTime) ->
       super()
 
-      @_handleType = "BaseActor"
+      @setHandleType "BaseActor"
       @setName "Base Actor #{@_id_numeric}"
 
       @_AREActor = null
       @_alive = false
-      @_initialized = false # True after postInit() is called
+      @_initialized = false # True after _postInit() is called
 
-      @_birthTime = birthTime
-      @_deathTime = deathTime or @ui.timeline.getDuration()
-
-      ###
-      # Property buffer, holds values at different points in time. Current
-      # property values are calculated based on the current cursor position,
-      # nearest two values and the described bezier representing the transition
-      #
-      # NOTE: This gets relatively large for complex actor lifetimes
-      ###
-      @_propBuffer = {}
-
-      ###
-      # This saves the state of our actor at the current cursor time, before
-      # any modifications are made. Changes are calculated as the difference
-      # between this snapshot, and our properties object.
-      ###
-      @_propSnapshot = null
-
-      ###
-      # Holds information on the bezier function to use for value changes
-      # between states. If none is specified for a specific value change, the
-      # value is assumed to change instantaneously upon leaving the start state
-      #
-      # Keys are named by the point in time where the associated animation ends
-      # in ms. Values contain an array of individual animation objects, each
-      # containing an Bezier instance for each property changed between the
-      # start and end states
-      #
-      # If no control points are specified, linear interpolation is assumed
-      ###
-      ## TODO * Spin the mapping around, from Time Hash<String, Value> to
-      ## String Hash<Time, Value>
-      @_animations = {}
-
-      # Set to true if the cursor is to the right of our last prop buffer, and
-      # _capState() has been called
-      @_capped = false
-
-      # Time of the last update, used to save our properties when the cursor is
-      # moved. Note that this starts at our birth!
-      @_lastTemporalState = Math.floor @_birthTime
-
-      @enableTemporalUpdates()
-
-      # should this actor not spawn events when updating?
-      @_silentUpdate = false
+      @_birthTime = Math.floor birthTime
+      @_deathTime = Math.floor(deathTime or @ui.timeline.getDuration())
 
       @_ctx = _.extend @_ctx,
         copy:
@@ -101,18 +56,34 @@ define (require) ->
           name: config.strings.duplicate
           cb: => @_contextFuncDuplicate @
 
-      @initPropertyOpacity()
-      @initPropertyRotation()
-      @initPropertyPosition()
-      @initPropertyLayer()
-      @initPropertyColor()
-      @initPropertyPhysics()
-      @initPropertyTextureRepeat()
+      @_initProperties()
+
+    #####################################
+    #####################################
+    ### @mark Property Initialisation ###
+    #####################################
+    #####################################
+
+    ###
+    # Initialize all of our properties
+    # @private
+    ###
+    _initProperties: ->
+      return unless _.isEmpty @_properties
+
+      @_initPropertyOpacity()
+      @_initPropertyRotation()
+      @_initPropertyPosition()
+      @_initPropertyLayer()
+      @_initPropertyColor()
+      @_initPropertyPhysics()
+      @_initPropertyTextureRepeat()
 
     ###
     # Initialize Actor opacity property
+    # @private
     ###
-    initPropertyOpacity: ->
+    _initPropertyOpacity: ->
       me = @
 
       @_properties.opacity = new NumericProperty
@@ -128,8 +99,9 @@ define (require) ->
 
     ###
     # Initialize Actor rotation properties
+    # @private
     ###
-    initPropertyRotation: ->
+    _initPropertyRotation: ->
       me = @
 
       @_properties.rotation = new NumericProperty
@@ -143,8 +115,9 @@ define (require) ->
 
     ###
     # Initialize Actor position properties
+    # @private
     ###
-    initPropertyPosition: ->
+    _initPropertyPosition: ->
       me = @
 
       @_properties.position = new CompositeProperty()
@@ -177,8 +150,9 @@ define (require) ->
 
     ###
     # Initialize Actor layer properties
+    # @private
     ###
-    initPropertyLayer: ->
+    _initPropertyLayer: ->
       me = @
 
       @_properties.layer = new CompositeProperty()
@@ -205,8 +179,9 @@ define (require) ->
 
     ###
     # Initialize Actor color properties
+    # @private
     ###
-    initPropertyColor: ->
+    _initPropertyColor: ->
       me = @
 
       @_properties.color = new CompositeProperty()
@@ -256,8 +231,9 @@ define (require) ->
 
     ###
     # Initialize Actor physics properties
+    # @private
     ###
-    initPropertyPhysics: ->
+    _initPropertyPhysics: ->
       me = @
 
       @_properties.physics = new CompositeProperty()
@@ -311,8 +287,9 @@ define (require) ->
 
     ###
     # Initialize Actor texture_repeat properties
+    # @private
     ###
-    initPropertyTextureRepeat: ->
+    _initPropertyTextureRepeat: ->
       me = @
 
       @_properties.textureRepeat = new CompositeProperty()
@@ -344,11 +321,11 @@ define (require) ->
       @_properties.textureRepeat.addProperty "x", @_properties.textureRepeat.x
       @_properties.textureRepeat.addProperty "y", @_properties.textureRepeat.y
 
-    ###
-    ##
-    # Accessors
-    ##
-    ###
+    #####################################
+    #####################################
+    ### @mark Accessors #################
+    #####################################
+    #####################################
 
     ###
     # Set low level handle type. Don't use this unless you know what you are
@@ -398,10 +375,7 @@ define (require) ->
     # @return [Number] angle in degrees
     ###
     getRotation: ->
-      if @_AREActor
-        @_properties.rotation.getValue()
-      else
-        null
+      @_properties.rotation.getValue()
 
     ###
     # Return actor opacity
@@ -409,10 +383,7 @@ define (require) ->
     # @return [Number] opacity
     ###
     getOpacity: ->
-      if @_AREActor
-        @_properties.opacity.getValue()
-      else
-        null
+      @_properties.opacity.getValue()
 
     ###
     # Return actor position as (x,y) relative to the GL world
@@ -420,10 +391,7 @@ define (require) ->
     # @return [Object] position
     ###
     getPosition: ->
-      if @_AREActor
-        @_properties.position.getValue()
-      else
-        null
+      @_properties.position.getValue()
 
     ###
     # Return actor color as (r,g,b)
@@ -438,9 +406,9 @@ define (require) ->
       color = new AREColor3 colorRaw.r, colorRaw.g, colorRaw.b
 
       {
-        r: color.getR(float)
-        g: color.getG(float)
-        b: color.getB(float)
+        r: color.getR float
+        g: color.getG float
+        b: color.getB float
       }
 
     ###
@@ -449,7 +417,6 @@ define (require) ->
     # @return [Object] properties
     ###
     getPsyX: ->
-
       {
         enabled: @_properties.physics.getProperty("enabled").getValue()
         mass: @_properties.physics.getProperty("mass").getValue()
@@ -462,21 +429,17 @@ define (require) ->
     ###
     setVisible: (visible) ->
       @_AREActor.setVisible visible if @_AREActor
-      @updateInTime()
 
     ###
     # Set actor position, relative to the GL world!
     #
     # @param [Number] x x coordinate
     # @param [Number] y y coordinate
-    # @param [Boolean] silent optionally prevent update propogation
     ###
-    setPosition: (x, y, silent) ->
+    setPosition: (x, y) ->
       @_properties.position.setValue
-        x: Number x.toFixed(@ACCURACY)
-        y: Number y.toFixed(@ACCURACY)
-
-      @updateInTime silent
+        x: Number(x.toFixed @ACCURACY)
+        y: Number(y.toFixed @ACCURACY)
 
     ###
     # Set actor rotation
@@ -484,10 +447,7 @@ define (require) ->
     # @param [Number] angle
     ###
     setRotation: (angle) ->
-      angle = Number(angle.toFixed @ACCURACY)
-
-      @_properties.rotation.setValue angle
-      @updateInTime()
+      @_properties.rotation.setValue Number(angle.toFixed @ACCURACY)
 
     ###
     # Set actor color with composite values, 0-255
@@ -497,13 +457,12 @@ define (require) ->
     # @param [Number] b
     ###
     setColor: (r, g, b) ->
-      r = Number(r.toFixed @ACCURACY)
-      g = Number(g.toFixed @ACCURACY)
-      b = Number(b.toFixed @ACCURACY)
+      @_properties.color.setValue
+        r: Number(r.toFixed @ACCURACY)
+        g: Number(g.toFixed @ACCURACY)
+        b: Number(b.toFixed @ACCURACY)
 
-      @_properties.color.setValue r: r, g: g, b: b
       @clearTexture()
-      @updateInTime()
 
     ###
     # Check if we have a texture applied
@@ -522,7 +481,6 @@ define (require) ->
     clearTexture: ->
       @_AREActor.clearTexture() if @_AREActor
       @_textureUID = null
-      @updateInTime()
 
     ###
     # Set our texture with a full texture object
@@ -532,7 +490,6 @@ define (require) ->
     setTexture: (@_texture) ->
       @_textureUID = @_texture.getUID()
       @_AREActor.setTexture @_texture.getUID() if @_texture and @_AREActor
-      @updateInTime()
 
     ###
     # Set a texture by uid by searching the project textures
@@ -567,14 +524,6 @@ define (require) ->
       @name
 
     ###
-    # Helper to get the index into our prop buffer for the birth entry
-    #
-    # @return [Number] index
-    ###
-    getBirthIndex: ->
-      Math.floor @_birthTime
-
-    ###
     # Get internal actors' id. Note that the actor must exist for this!
     #
     # @return [Number] id
@@ -603,65 +552,51 @@ define (require) ->
         false
 
     ###
-    # Get buffer entry
+    # Get our living state
     #
-    # @param [Number] time
-    # @return [Object] entry prop buffer entry, may be undefined
+    # @return [Boolean] alive
     ###
-    getBufferEntry: (time) ->
-      @_propBuffer[Math.floor time]
+    isAlive: ->
+      @_alive
+
+    #####################################
+    #####################################
+    ### @mark Temporal Manipulation #####
+    #####################################
+    #####################################
 
     ###
-    # Check if the specified value is our birth (floors it)
+    # Needs to be called after our are actor is instantiated, so we can prepare
+    # our property buffer for proper use
     #
-    # @param [Number] value
-    # @return [Boolean] isBirth
+    # @private
     ###
-    isBirth: (val) ->
-      Math.floor(val) == Math.floor(@_birthTime)
+    _postInit: ->
+      return if @_initialized
+      @_initialized = true
+
+      @seekToBirth()
+
+      # Set up properties by grabbing initial values
+      @_properties[p].getValue() for p of @_properties
 
     ###
-    # Used when exporting, executes the corresponding property genAnimationOpts
-    # method if one exists. Returns null if the property does not exist, or if
-    # the property does not have a genAnimationOpts method.
-    #
-    # @param [String] property property name
-    # @param [Object] animation animation object
-    # @param [Object] options input options
-    # @param [String] component optional component name
-    # @return [Object] options output options
+    # Kill the actor, needs to be respawned later with a call to @birth()
     ###
-    genAnimationOpts: (property, anim, opts, component) ->
-      component ||= ""
-
-      property = @_properties[property]
-      return unless property
-
-      if property.getType() == "composite"
-        return unless property.getProperty(component).genAnimationOpts
-        property.getProperty(component).genAnimationOpts anim, opts
-      else
-        property.genAnimationOpts anim, opts if property.genAnimationOpts
-
-    ###
-    # Called when the cursor leaves our lifetime on the timeline. We delete
-    # our ARE actor if not already dead
-    ###
-    timelineDeath: ->
+    death: ->
       return unless @_alive
-
       @_alive = false
+
       @_AREActor.destroy()
       @_AREActor = null
 
     ###
-    # Virtual method that our children need to implement, called when our ARE
-    # actor needs to be instantiated
+    # Create the actor; can be killed later with a call to @death()
     #
-    # @private
+    # MUST be overriden by specialised actors, as we do not update our @_alive
+    # flag ourselves!
     ###
-    _birth: ->
-
+    birth: ->
       @_boundingBox = new BoundingBox @ui
       @_AREActor.setOnOrientationChange (u) =>
 
@@ -678,864 +613,62 @@ define (require) ->
       @setTextureByUID @_textureUID if @_textureUID
 
     ###
-    # Get our living state
-    #
-    # @return [Boolean] alive
-    ###
-    isAlive: ->
-      @_alive
-
-    ###
-    # Needs to be called after our are actor is instantiated, so we can prepare
-    # our property buffer for proper use
-    ###
-    postInit: ->
-      return if @_initialized
-      @_initialized = true
-
-      @_birth()
-
-      # Set up properties by grabbing initial values
-      @_properties[p].getValue() for p of @_properties
-
-      @updateInTime()
-
-    ###
-    # Seed the birth position in our property buffer with our current values
-    ###
-    seedBirth: ->
-      @_propBuffer[Math.floor(@_birthTime)] = @_serializeProperties()
-
-    ###
-    # Store the provided property deltas in a new buffer entry at the specified
-    # time
-    #
-    # @param [Number] time
-    # @param [Array<String>] deltas array of property names
-    ###
-    serializeDeltasToBufferEntry: (time, deltas) ->
-      @_propBuffer[Math.floor(time)] ||= {}
-      _.extend @_propBuffer[Math.floor(time)], @_serializeProperties deltas
-
-    ###
-    # Helper function to call a cb for each property. Useful to avoid writing
-    # composite-aware property iterating code.
-    #
-    # Callback is called in the form cb(property, composite) where property is
-    # the full property object, and composite is boolean
-    #
-    # @param [Object] properties properties object to parse
-    # @param [Method] cb callback to call with every property
-    ###
-    perProp: (properties, cb) ->
-      for name, property of properties
-
-        # Composite iterate over components
-        if property.getType() == "composite"
-          for name, component of property.getProperties()
-            cb component, true
-
-        # Call cb with property (non-composite)
-        else
-          cb property, false
-
-    ###
-    # Calls the default handle updateProperties() method, then updates us in
-    # time
-    #
-    # @param [Object] updates object containing property:value pairs
-    ###
-    updateProperties: (updates) ->
-      super updates
-      @updateInTime()
-
-    ###
-    # @return [BaseActor] self
-    ###
-    disableTemporalUpdates: ->
-      @_temporalUpdatesEnabled = false
-
-    ###
-    # @return [BaseActor] self
-    ###
-    enableTemporalUpdates: ->
-      @_temporalUpdatesEnabled = true
-
-    ###
-    # @return [Boolean] enabled
-    ###
-    areTemporalUpdatesEnabled: ->
-      @_temporalUpdatesEnabled
-
-    ###
     # Really, really ugly (FUGLY) method we need so spawners can register
-    # themselves after birth (they can't override @_birth....)
+    # themselves after birth (they can't override @birth....)
     #
-    # GET RID OF THIS
+    # @TODO GET RID OF THIS
+    # @private
     ###
     __fugly_postBirth: ->
 
     ###
-    # Materialize the actor from various stored value deltas (woah, that sounds
-    # epic). Essentially, update our prop buffer, and then the actors' current
-    # state
-    ###
-    updateInTime: (silent) ->
-      unless @_alive
-        @_birth()
-        @__fugly_postBirth()
-
-      return unless @_temporalUpdatesEnabled
-
-      cursor = @ui.timeline.getCursorTime()
-
-      if @_propSnapshot == null
-        @seedBirth()
-        seededBirth = true
-      else
-        seededBirth = false
-
-      @_updatePropBuffer()
-      @_updateActorState()
-      @_genSnapshot()
-
-      @seedBirth() if @isBirth(Math.floor cursor) and !seededBirth
-
-      # Save state
-      @_lastTemporalState = Number Math.floor(cursor)
-
-      unless @_silentUpdate or silent
-        @ui.pushEvent "actor.update.intime", actor: @
-
-    ###
-    # Generates a new snapshot from our current properties
-    # @private
-    ###
-    _genSnapshot: ->
-
-      @_propSnapshot = {}
-
-      for pName, property of @_properties
-
-        snapshot = {}
-
-        if property.getType() == "composite"
-          snapshot.components = {}
-
-          for cName, cValue of property.getProperties()
-            snapshot.components[cName] = value: cValue.getValue()
-
-        else
-          snapshot.value = property.getValue()
-
-        unless isNaN snapshot.value
-          snapshot.value = Number snapshot.value.toFixed @ACCURACY
-
-        @_propSnapshot[pName] = snapshot
-
-    ###
-    # Finds states between our last temporal state, and the supplied state, and
-    # applies them in order
+    # Seek the actor to the specified time; should be called by the timeline
+    # in sync with all of the other actors.
     #
-    # @param [Number] state
-    # @private
+    # @param [Number] time valid timeline time in ms
     ###
-    _applyKnownState: (state) ->
-      state = Number state
-      return if state == @_lastTemporalState
+    seekToTime: (time) ->
+      @_ensureExistenceMatchesTime time
+      return unless @isAlive()
 
-      # Apply saved state. Find all stored states between our previous state
-      # and the current one. Then sort, and finally apply in order.
-      #
-      # NOTE: The order of application varies depending on the direction in
-      #       time in which we moved!
-      right = state > @_lastTemporalState
-
-      # Figure out intermediary states
-      intermStates = []
-      next = @_lastTemporalState
-
-      while next != state and next != -1
-        next = @findNearestState next, right
-
-        if next != -1
-
-          # Ensure next hasn't overshot us
-          if (right and next <= state) or (!right and next >= state)
-            intermStates.push next
-
-      # Now sort accordingly
-      intermStates.sort (a, b) ->
-
-        # We moved back in time, lastTemporalState is in front of the state
-        if right == false
-          if a > b
-            -1
-          else if a < b
-            1
-          else
-            0
-
-        # We moved forwards in time, lastTemporalState is behind our state
-        else
-          if a > b
-            1
-          else if a < b
-            -1
-          else
-            0
-
-      # Now apply our states in the order presented
-      @_applyPropBuffer @_propBuffer[s] for s in intermStates
+      property.seekToTime time for name, property of @_properties
 
     ###
-    # Applies data in prop buffer entry
-    #
-    # @param [Object] buffer
-    # @private
+    # Equivalent of @seekToTime() with our birth time
     ###
-    _applyPropBuffer: (buffer) ->
-
-      for name, property of buffer
-
-        if property
-          if property.components
-            update = {}
-
-            for cName, cValue of property.components
-              update[cName] = cValue.value
-
-            @_properties[name].setValue update
-
-          else
-            @_properties[name].setValue property.value
+    seekToBirth: ->
+      @seekToTime @_birthTime
 
     ###
-    # @param [Object]
-    #   @property [Number] start
-    #   @property [Number] end
-    #   @property [Boolean] scaleToFit
-    #     @optional
-    # @return [self]
+    # Equivalent of @seekToTime() with our death time
     ###
-    adjustLifetime: (options) ->
-      start = options.start
-      end = options.end
-      scaleToFit = !!options.scaleToFit
-
-      oldStart = @_birthTime
-      oldEnd = @_deathTime
-
-      # nothing has changed
-      return if (oldStart == start) && (oldEnd == end)
-
-      @_birthTime = start
-      @_deathTime = end
-
-      animKeys = _.keys @_animations
-      propKeys = _.keys @_propBuffer
-
-      newAnimations = {}
-      newPropBuffer = {}
-
-      ratio = 1.0
-      if scaleToFit
-        ratio = (@_deathTime - @_birthTime) / (oldEnd - oldStart)
-
-      for time in propKeys
-        newPropBuffer[Math.floor(start + (time - oldStart) * ratio)] = @_propBuffer[time]
-
-      for time in animKeys
-        newAnimations[Math.floor(start + (time - oldStart) * ratio)] = @_animations[time]
-
-      @_propBuffer = newPropBuffer
-      @_animations = newAnimations
-
-      for key, animation of @_animations
-        for property of animation
-          @updateKeyframeTime property, key
+    seekToDeath: ->
+      @seekToTime @_deathTime
 
     ###
-    # Checks if the specified time is within our lifetime
+    # Make sure we are either alive or dead, as necessary for the specified time
     #
     # @param [Number] time
-    # @return [Boolean] inLifetime
     ###
-    inLifetime: (time) ->
-      time >= @_birthTime and time <= @_deathTime
-
-    ###
-    # Updates our state according to the current cursor position. Goes through
-    # our prop buffer, and calculates a new snapshot and property object
-    # accordingly.
-    #
-    # This is actually a tad complicated, as buffer entries are not full
-    # property snapshots. Instead, they are snapshots of properties modified
-    # at that point in time, with only our birth providing a full snapshot.
-    #
-    # Our properties object is fully specified initially using our birth
-    # snapshot. From then on, all changes are incremental. So if we have 5 buffer
-    # entries available and want to update our actor to the state specified
-    # by the 4th, we need to apply birth state, followed by our updates in
-    # the 2nd state, then 3rd, and finally 4th.
-    #
-    # Optimally however, we can remember our previous state, and only update
-    # using the buffer entries we've passed over. In this case, if we are on
-    # state 3 and want to move to state 5, we'd only apply state 4 inbetween.
-    #
-    # If we are, however, moving to a state that does not exist, we must
-    # apply to the nearest state, and then calculate value deltas accordingly.
-    # If we are not surrounded by two states (rare), our state is as specified
-    # by the previous one we applied. If we are though (most often), we must
-    # calculate new values using the specific bezier function each value
-    # requires.
-    #
-    # The bezier function we require is stored in _animations (for each property)
-    # with a name consisting of "end" where 'end' is the buffer entry for the
-    # end state
-    #
-    # THIS IS SPARTAAAAAAA
-    #
-    # @private
-    ###
-    _updateActorState: ->
-      cursor = Math.floor @ui.timeline.getCursorTime()
-      return unless @inLifetime cursor
-
-      # If it's our birth state, take a shortcut and just apply it directly
-      if cursor == Math.floor @_birthTime
-        return @_applyPropBuffer @_propBuffer[Math.floor @_birthTime]
-
-      # Find the nearest state to the left of ourselves
-      if @_propBuffer[cursor]
-        nearestState = cursor
-      else
-        nearestState = @findNearestState cursor
-
-      @_applyKnownState nearestState if nearestState != @_lastAppliedState
-      @_lastAppliedState = nearestState
-
-      # Return if we have nothing else to do (cursor is at a known state)
-      return if nearestState == cursor
-
-      # Next, bail if there are no states to the right of ourselves
-      return @_capState() if @findNearestState(cursor, true) == -1
-
-      @_capped = false
-
-      ##
-      ## Now the fun part; find all values defined to the right of us
-      ##
-      ## Varying stores objects containing a property name and end cap
-      varying = []
-
-      # Helper
-      _pushUnique = (p) ->
-        unique = true
-
-        for v in varying
-          if v == p.name
-            unique = false
-            break
-
-        varying.push p if unique
-
-      from = nearestState
-      while (from = @findNearestState(from, true)) != -1
-        for p of @_propBuffer[from]
-          _pushUnique { name: p, end: from }
-
-      ##
-      ## Now that we've built that list, go through and apply the delta of each
-      ## property to ourselves
-      ##
-      for v in varying
-
-        anim = @_animations[v.end]
-        _prop = @_properties[v.name]
-
-        # Sanity checks
-        # TODO: Refactor these into log messages + returns
-        unless _prop
-          AUtilLog.error "Expected actor to have prop #{v.name}!"
-          continue
-
-        unless anim
-          AUtilLog.error "Expected animation @ to exist #{v.end}!"
-          continue
-
-        continue unless anim[v.name]
-
-        # The property to be animated is composite. Apply the state change
-        # to each component individually.
-        if _prop.getType() == "composite"
-
-          val = {}
-
-          for c of _prop.getProperties()
-            _start = anim[v.name].components[c]._start.x
-
-            # Ensure animation starts before us
-            if _start <= cursor
-              t = (cursor - _start) / (v.end - _start)
-
-              val[c] = (anim[v.name].components[c].eval t).y
-
-          # Store new value
-          @_properties[v.name].setValue val
-
-        else
-          _start = anim[v.name]._start.x
-
-          if _start <= cursor
-            t = (cursor - _start) / (v.end - _start)
-
-            val = (anim[v.name].eval t).y
-
-            # Store new value
-            @_properties[v.name].setValue val
-
-    ###
-    # This gets called if the cursor is to the right of us, and it has not yet
-    # been called since the cursor has been in that state. It applies all buffer
-    # states in order
-    #
-    # @private
-    ###
-    _capState: ->
-      return if @_capped
-      @_capped = true
-
-      # Sort prop buffer entries
-      entries = _.keys(@_propBuffer).map (b) -> Number b
-      entries.sort (a, b) -> a - b
-
-      # Apply buffers in order
-      @_applyPropBuffer(@_propBuffer[entry]) for entry in entries
-
-    ###
-    # Returns an array containing the names of properties that have been
-    # modified since our last snapshot. Used in @_updatePropBuffer
-    #
-    # @return [Array<String>] delta
-    # @private
-    ###
-    _getPropertiesDelta: ->
-
-      # Check which properties have changed
-      # NOTE: We expect the prop snapshot to be valid, and contain the
-      #       structure required by each property in it!
-      delta = []
-      for name, snapshot of @_propSnapshot
-        modified = false
-
-        # Compare snapshot with live property
-        if @_properties[name].getType() == "composite"
-
-          # Iterate over components to detect modification
-          for cName, cValue of @_properties[name].getProperties()
-            if snapshot.components[cName].value != cValue.getValue()
-              modified = true
-
-        else if snapshot.value != @_properties[name].getValue()
-          modified = true
-
-        # Differs, ship to delta
-        delta.push name if modified
-
-      delta
-
-    ###
-    # Split the animation overlapping the specified time, and operating on the
-    # specified property. This replaces the animation (if there is one) with
-    # two new animations to the left & right of it.
-    #
-    # @param [Object] animation property animation object to modify
-    # @param [Object] startTime new start time
-    # @param [Object] startP start position prop buffer entry
-    # @private
-    ###
-    setAnimationStart: (animation, startTime, startP) ->
-
-      if animation.components
-        for c, componentVal of animation.components
-          componentVal._start.x = startTime
-          componentVal._start.y = startP.components[c].value
-
-      else
-        animation._start.x = startTime
-        animation._start.y = startP.value
-
-    ###
-    # Create a new animation object ready for our @_animations hash
-    #
-    # @param [Object] options
-    #   @option [Number] start start time
-    #   @option [Number] end end time
-    #   @option [Object] startSnapshot starting snapshot for property
-    #   @option [Object] endSnapshot ending snapshot for property
-    # @return [Object] animation
-    ###
-    createNewAnimation: (options) ->
-      animation = {}
-
-      if options.endSnapshot.components
-        unless options.endSnapshot.components and options.startSnapshot.components
-          throw new Error "Start and end snapshots don't both have components!"
-
-        animation.components = {}
-
-        for c, cVal of options.endSnapshot.components
-          startPoint = x: options.start, y: options.startSnapshot.components[c].value
-          endPoint = x: options.end, y: cVal.value
-
-          bezzie = new Bezier startPoint, endPoint, 0, [], false
-          animation.components[c] = bezzie
-      else
-        startPoint = x: options.start, y: options.startSnapshot.value
-        endPoint = x: options.end, y: options.endSnapshot.value
-
-        bezzie = new Bezier startPoint, endPoint, 0, [], false
-        animation = bezzie
-
-      animation
-
-    ###
-    # Calculates new prop buffer state, using current prop snapshot, cursor
-    # position and existing properties.
-    #
-    # @private
-    ###
-    _updatePropBuffer: ->
-
-      # If we have anything to save, ship to our buffer, and create a new
-      # animation entry.
-      #
-      # cursor is our last temporal state, since the current cursor position
-      # is not where the properties were set!
-      if (deltas = @_getPropertiesDelta()).length > 0
-
-        @serializeDeltasToBufferEntry @_lastTemporalState, deltas
-
-        ###
-        # Generate new animation entry for each changed property
-        ###
-        for p in deltas
-
-          deltaStartTime = @findNearestState @_lastTemporalState, false, p
-          deltaEndTime = @_lastTemporalState
-
-          ###
-          # Check if there is another animation after us; if so, update its
-          # starting point.
-          ###
-          if (nextAnim = @findNearestState(@_lastTemporalState, true, p)) != -1
-            if @_animations[nextAnim]
-              startTime = @_lastTemporalState
-              startP = @_propBuffer[@_lastTemporalState][p]
-
-              @setAnimationStart @_animations[nextAnim][p], startTime, startP
-
-          unless deltaStartTime == -1
-
-            ###
-            # Create a new transition if there is another state to the left
-            ###
-            @_animations[@_lastTemporalState] ||= {}
-            @_animations[@_lastTemporalState][p] = @createNewAnimation
-              start: deltaStartTime
-              end: deltaEndTime
-              startSnapshot: @_propBuffer[deltaStartTime][p]
-              endSnapshot: @_propBuffer[deltaEndTime][p]
-
-    ###
-    # Return animations array
-    #
-    # @return [Array<Object>] animations
-    ###
-    getAnimations: -> @_animations
-
-    ###
-    # Get animation by time
-    #
-    # @param [Number] time
-    # @return [Object] animation
-    ###
-    getAnimation: (time) -> @_animations[time]
-
-    ###
-    # Fetch time of preceding animation, null if there is none
-    #
-    # @param [Number] source search start time
-    # @param [String] property finetune by finiding the nearest property
-    #   @optional
-    # @return [Number] time
-    ###
-    findPrecedingAnimationTime: (source, property) ->
-      times = _.keys @_animations
-      times.sort (a, b) -> a - b
-
-      index = _.findIndex times, (t) -> Number(t) == source
-
-      if property != undefined
-        if (index > 0 && (index < times.length))
-          for i in [(index-1)..0]
-            time = times[i]
-            if @_animations[time] && @_animations[time][property]
-              return time
-        else
-          return _.find times.reverse(), (t) =>
-            source > Number(t) && (@_animations[t] && @_animations[t][property])
-      else
-        if (index > 0 && (index < times.length))
-          return times[index - 1]
-        else
-          return _.find times.reverse(), (t) -> source > Number(t)
-
-      null
-
-    ###
-    # Fetch time of preceding animation, null if there is none
-    #
-    # @param [Number] source search start time
-    # @param [String] property finetune by finiding the nearest property
-    #   @optional
-    # @return [Number] time
-    ###
-    findSucceedingAnimationTime: (source, property) ->
-      times = _.keys @_animations
-      times.sort (a, b) -> a - b
-
-      index = _.findIndex times, (t) -> Number(t) == source
-
-      if property != undefined
-        if (index >= 0 && (index < times.length-1))
-          for i in [(index+1)..(times.length-1)]
-            time = times[i]
-            if @_animations[time] && @_animations[time][property]
-              return time
-        else
-          return _.find times, (t) =>
-            Number(t) > source && (@_animations[t] && @_animations[t][property])
-      else
-        if (index >= 0 && (index < times.length-1))
-          return times[index + 1]
-        else
-          return _.find times, (t) -> Number(t) > source
-
-      null
-
-    ###
-    # Retrieve the nearest animation based on a source time
-    #
-    # @param [Number] source
-    # @param [Object] options
-    # @return [Object] animation
-    ###
-    getNearestAnimationTime: (source, options) ->
-      options ||= {}
-      time = null
-
-      if options.right
-        time = @findSucceedingAnimationTime(source, options.property)
-      else if options.left
-        time = @findPrecedingAnimationTime(source, options.property)
-      else
-        leftTime = @findPrecedingAnimationTime(source, options.property)
-        rightTime = @findSucceedingAnimationTime(source, options.property)
-
-        if (source - leftTime) < (rightTime - source)
-          time = leftTime
-        else
-          time = rightTime
-
-      time
-
-    ###
-    # Find the nearest prop buffer entry to the left/right of the supplied state
-    # An optional property can be passed in, adding its existence as a criteria
-    # for the returned state. Validation of the property is also performed
-    #
-    # @param [String] start prop buffer entry name to start from
-    # @param [Boolean] right search to the right, defaults to false
-    # @param [String] prop property name
-    # @return [Number] nearest key into @_propBuffer
-    # @private
-    ###
-    findNearestState: (start, right, prop) ->
-      start = Number start
-      right = !!right
-
-      nearest = -1
-
-      for time, buffer of @_propBuffer
-        time = Number time
-
-        if buffer
-          if right and (time > start) and (time < nearest or nearest == -1)
-            nearest = time if prop == null or buffer[prop]
-          else if !right and (time < start) and (time > nearest)
-            nearest = time if prop == null or buffer[prop]
-
-      nearest
-
-    ###
-    # @param [String] property name of the property to affect
-    # @param [Number] frametime the center frame time
-    # @private
-    ###
-    updateKeyframeTime: (property, frametime) ->
-
-      currentAnim = null
-
-      succAnim = @findSucceedingAnimationTime frametime, property
-      predAnim = @findPrecedingAnimationTime frametime, property
-
-      # if a current frame exists...
-      if @_animations[frametime]
-        currentAnim = frametime
-
-      # is there a current frame
-      if currentAnim != null && currentAnim != undefined && \
-       @_animations[currentAnim][property]
-        @mutatePropertyAnimation @_animations[currentAnim][property], (a) =>
-          a.setStartTime predAnim || Math.floor @_birthTime
-          a.setEndTime currentAnim
-
-      # is there a succeeding frame?
-      if succAnim != null && succAnim != undefined && \
-       @_animations[succAnim][property]
-        @mutatePropertyAnimation @_animations[succAnim][property], (a) =>
-          a.setStartTime currentAnim || predAnim || Math.floor @_birthTime
-          a.setEndTime succAnim
-
-    ###
-    # Move the keyframe at the specified time and of the specified property to
-    # the target time.
-    #
-    # NOTE: This does not check the validity of the transformation! Make SURE
-    #       the keyframe can be legally moved to the target time! It must not
-    #       cross over any other keyframes belonging to the same property.
-    #
-    # @param [String] property
-    # @param [Number] source source time
-    # @param [Number] destination target time
-    ###
-    transplantKeyframe: (property, source, destination) ->
-      source = Math.floor source
-      destination = Math.floor destination
-
-      ##
-      # If the source keyframe pos and destination keyframe pos are the same
-      # skip transplanting.
-      return if source == destination
-
-      ##
-      # Move prop buffer entry first
-      if @_propBuffer[source]
-        @_propBuffer[destination] ||= {}
-        @_propBuffer[destination][property] = @_propBuffer[source][property]
-
-        # Destroy the old property entry
-        delete @_propBuffer[source][property]
-
-        # If the property is now empty, delete it completely
-        if _.keys(@_propBuffer[source]).length == 0
-          delete @_propBuffer[source]
-
-      ##
-      # Now move the animation, update affected surrounding animations
-      if @_animations[source]
-        @_animations[destination] ||= {}
-        @_animations[destination][property] = @_animations[source][property]
-
-        # Destory the old property entry
-        delete @_animations[source][property]
-
-        # If the property is now empty, delete it completely
-        if _.keys(@_animations[source]).length == 0
-          delete @_animations[source]
-
-      # update all sorrounding keyframes for both the source and destination
-      @updateKeyframeTime property, source
-      @updateKeyframeTime property, destination
-
-    ###
-    # Runs the callback for each animation object found on the property
-    # animation; runs it for each component for composites (useful). The
-    # callback is given each animation object (Bezier)
-    #
-    # @param [Object] animationSet animation property entry
-    # @param [Method] cb
-    ###
-    mutatePropertyAnimation: (animationSet, cb) ->
-      if animationSet.components
-        _.each _.values(animationSet.components), (animation) -> cb animation
-      else
-        cb animationSet
-
-    ###
-    # Prepares our properties object for injection into the buffer. In essence,
-    # builds a new object containing only current values, and returns it for
-    # inclusion in the buffer.
-    #
-    # @param [Array<String>] delta array of property names to serialize
-    # @return [Object] serialProps properties ready to be buffered
-    # @private
-    ###
-    _serializeProperties: (delta) ->
-
-      # If no property names are supplied, serialize all properties
-      delta ||= []
-
-      # Go through and build an object for our buffer, simple
-      props = {}
-
-      for name, value of @_properties
-        needsSerialization = false
-
-        if delta.length == 0
-          needsSerialization = true
-        else
-          needsSerialization = _.find(delta, (d) -> d == name) != undefined
-
-        props[name] = value.getBufferSnapshot() if needsSerialization
-
-      props
-
-    ###
-    # Takes serialized properties at the specified cursor time, and de-serializes
-    # them; essentially reading out values and setting them appropriately in our
-    # live properties object.
-    #
-    # @param [String] time string index into our prop buffer (cursor time in ms)
-    # @private
-    ###
-    _deserializeProperties: (time) ->
-      props = @_propBuffer[time]
-
-      # Manually set property values
-      for p of props
-
-        # Set values component-wise if required, otherwise direct
-        if props[p].components
-          for c of props[p].components
-            @_properties[p].components[c]._value = props[p].components[c].value
-        else
-          @_properties[p]._value = props[p].value
+    _ensureExistenceMatchesTime: (time) ->
+      if @_alive and (time < @_birthTime or time >= @_deathTime)
+        @death()
+      else if not @_alive and (time >= @_birthTime and time < @_deathTime)
+        @birth()
+
+    #####################################
+    #####################################
+    ### @mark Utilities #################
+    #####################################
+    #####################################
 
     ###
     # Deletes us, muahahahaha. We notify the workspace, clear the properties
     # panel if it is targetting us, and destroy our actor.
     ###
     delete: ->
-      if @_AREActor
-        @_AREActor.destroy()
-        @_AREActor = null
-
-      # Notify the workspace
+      @death()
       @ui.workspace.notifyDemise @
-
       super()
 
     ###
@@ -1543,25 +676,8 @@ define (require) ->
     # @return [BaseActor]
     ###
     duplicate: ->
-
       dumpdata = @dump()
       window[dumpdata.type].load @ui, dumpdata
-
-    ###
-    # Set Texture context menu function
-    # @param [BaseActor] actor
-    ###
-    _contextFuncSetTexture: (actor) ->
-      @ui.modals.showSetTexture actor
-      @
-
-    ###
-    # Open a settings widget for texture repeat editing
-    # @param [BaseActor] actor
-    ###
-    _contextFuncSetTextureRepeat: (actor) ->
-      @ui.modals.showActorTextureRepeatSettings actor
-      @
 
     ###
     # Copy the current actor to the clipboard
@@ -1590,86 +706,16 @@ define (require) ->
       @
 
     ###
-    # Goes through and makes sure that our birth state contains an entry for
-    # each of our properties. Deletes buffer entries if they reference
-    # properties we don't have.
-    #
-    # This makes sure older saves can be loaded by newer actor code.
-    ###
-    _ensureBufferIntegrity: ->
-      @_ensureBirthIntegrity()
-      @_normalizePropBuffer()
-
-    ###
-    # Make sure each of our properties is represented in the prop buffer birth
-    # entry, and delete any foreign ones.
-    #
-    # WARNING: This uses the current values of our properties in case they are
-    #          found to be missing!
-    ###
-    _ensureBirthIntegrity: ->
-      birth = @_propBuffer[@getBirthIndex()]
-
-      for prop, propValue of @_properties
-
-        # Property exists, confirm composite nature if necessary
-        if birth[prop]
-          if birth[prop].components and propValue.getType() != "composite"
-
-            AUtilLog.warning "Invalid birth entry [#{prop}] expected composite"
-            AUtilLog.warning "Repairing birth entry"
-            birth[prop] = propValue.getBufferSnapshot()
-        else
-          AUtilLog.warning "Birth entry not found for [#{prop}], repairing.."
-          birth[prop] = propValue.getBufferSnapshot()
-
-    ###
-    # Go through and delete any entries in our prop buffer that don't exist in
-    # our properties hash. This makes loading old saves safer, in case of them
-    # including entries we no longer support
-    ###
-    _normalizePropBuffer: ->
-      for entry, buffer of @_propBuffer
-        for prop of buffer
-          unless @_properties[prop]
-            AUtilLog.warning "Unsupported property in prop buffer [#{prop}]"
-            AUtilLog.warning "Removing #{prop} from buffer entry #{entry}"
-            delete @_propBuffer[entry][prop]
-
-    ###
     # Dump actor into basic Object
     #
     # @return [Object] actorJSON
     ###
     dump: ->
-      data = super()
-
-      data.actorBaseVersion = "1.0.0"
-      data.propBuffer = _.clone @_propBuffer, true
-      data.birth = @_birthTime
-      data.death = @_deathTime
-      data.texture = @getTextureUID()
-      data.animations = {}
-
-      for time, properties of @_animations
-        animationSet = {}
-
-        for property, propAnimation of properties
-
-          if propAnimation.components
-            animationData = components: {}
-
-            for component, animation of propAnimation.components
-              animationData.components[component] = animation.dump()
-
-          else
-            animationData = propAnimation.dump()
-
-          animationSet[property] = animationData
-
-        data.animations[time] = animationSet
-
-      data
+      _.extend super(),
+        actorBaseVersion: "2.0.0"
+        birth: @getBirthTime()
+        death: @getDeathTime()
+        texture: @getTextureUID()
 
     ###
     # Loads properties, animations, and a prop buffer from a saved state
@@ -1678,76 +724,10 @@ define (require) ->
     # @return [self]
     ###
     load: (data) ->
-      dumpBirth = Math.floor data.birth
+      @_birthTime = data.birth
+      @_deathTime = data.death
 
-      # Clean dump property buffer and animation buffer
-      for time of data.propBuffer
-        if time < dumpBirth
-          delete data.propBuffer[time]
-        else
-          for property of data.propBuffer[time]
-            unless @_properties[property]
-              delete data.propBuffer[time][property]
-
-      for time of data.animations
-        if time < dumpBirth
-          delete data.animations[time]
-        else
-          for property of data.animations[time]
-            unless data.properties[property]
-              delete data.animations[time][property]
-
-      # Load basic properties
-      super data
-
-      # Load everything else
-      @_propBuffer = data.propBuffer
-
-      # Ensure the prop buffer contains entries for each of our properties (it
-      # won't if we've added something and are loading an older save)
-      @_ensureBufferIntegrity()
+      super data # Load basic properties
 
       @setTextureByUID data.texture if data.texture
-
-      @_animations = {}
-      for time, properties of data.animations
-        animationSet = {}
-
-        for property, propAnimation of properties
-
-          if propAnimation.components
-            animationData = components: {}
-
-            for component, animation of propAnimation.components
-              animationData.components[component] = Bezier.load animation
-
-          else
-            animationData = Bezier.load propAnimation
-
-          animationSet[property] = animationData
-
-        @_animations[time] = animationSet
-
       @
-
-class DreamyBaseActor
-
-  seekToTime: (time) ->
-    @updateLivingState time
-    return unless @isAlive()
-
-    property.seekToTime(time) for name, property of @_properties
-
-  updateLivingState: (time) ->
-    shouldBeAlive = @isAliveAtTime time
-    living = @isAlive()
-
-    if shouldBeAlive and not living
-      @birth()
-    else if not shouldBeAlive and living
-      @death()
-
-  setBirth: (birth) ->
-  setDeath: (death) ->
-
-  isDead: ->

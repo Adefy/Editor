@@ -21,7 +21,7 @@ define (require) ->
     # @param [Number] y y starting coordinate
     # @param [Number] rotation optional, angle in degrees
     # @param [Number] death optional death time specification
-    # @param [Boolean] manualInit optional, postInit() not called if true
+    # @param [Boolean] manualInit optional, @_postInit() not called if true
     ###
     constructor: (@ui, birth, sides, radius, x, y, rotation, death, manualInit) ->
       radius = Math.abs radius
@@ -40,7 +40,7 @@ define (require) ->
       @_properties.radius.setValue radius
       @_properties.rotation.setValue rotation or 0
 
-      @postInit() unless !!manualInit
+      @_postInit() unless !!manualInit
 
     ###
     # Initialize Actor sides property
@@ -96,7 +96,7 @@ define (require) ->
     # Instantiate our ARE actor
     # @private
     ###
-    _birth: ->
+    birth: ->
       return if @_alive
       @_alive = true
 

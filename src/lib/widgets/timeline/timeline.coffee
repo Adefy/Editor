@@ -258,33 +258,9 @@ define (require) ->
       index = $(element).attr "data-index"
       @toggleActorVisibilityByIndex index
 
-    ###
-    # When an actor live button is toggled
-    # @param [jQuery] actorElement
-    # @private
-    ###
-    _onActorToggleLive: (actorElement, propertyElement) ->
-      #
-
-    ###
-    # When an actor graph button is toggled
-    # @param [jQuery] actorElement
-    # @private
-    ###
-    _onActorToggleGraph: (actorElement, propertyElement) ->
-      #
-
     updateAllActorsInTime: ->
       t = @getCursorTime()
-
-      for a in @_actors
-
-        # Check if actor needs to die
-        if (t < a.getBirthTime() or t > a.getDeathTime()) and a.isAlive()
-          a.timelineDeath()
-
-        else if a.isAlive() or (t >= a.getBirthTime() and t <= a.getDeathTime())
-          a.updateInTime()
+      a.seekToTime t for a in @_actors
 
     ###
     # @param [jQuery] element
@@ -440,6 +416,7 @@ define (require) ->
       $(document).on "contextmenu", ".timeline .actor .title", (e) =>
         actorElement = $(e.target).closest ".actor"
         index = $(actorElement).attr "data-index"
+
         new ContextMenu @ui,
           x: e.pageX
           y: e.pageY
@@ -466,14 +443,6 @@ define (require) ->
 
       $(document).on "click", ".timeline .list .actor .visibility", (e) =>
         @_onActorToggleVisible $(e.target).closest ".actor"
-
-      $(document).on "click", ".timeline .list .actor .live", (e) =>
-        @_onActorToggleLive $(e.target).closest(".actor"),
-          $(e.target).closest(".property")
-
-      $(document).on "click", ".timeline .list .actor .graph", (e) =>
-        @_onActorToggleGraph $(e.target).closest(".actor"),
-          $(e.target).closest(".property")
 
       ##
       ## TODO: Move all of the control listeners into the timeline_control class

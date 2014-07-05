@@ -21,7 +21,7 @@ define (require) ->
     # @param [Number] y y starting coordinate
     # @param [Number] rotation optional, angle in degrees
     # @param [Number] death optional death time specification
-    # @param [Boolean] manualInit optional, postInit() not called if true
+    # @param [Boolean] manualInit optional, @_postInit() not called if true
     ###
     constructor: (@ui, birth, w, h, x, y, rotation, death, manualInit) ->
       if w <= 0 or h <= 0 then throw new Error "Width/Height must be >0!"
@@ -38,7 +38,7 @@ define (require) ->
       @_properties.height.setValue h
       @_properties.rotation.setValue rotation or 0
 
-      @postInit() unless !!manualInit
+      @_postInit() unless !!manualInit
 
     ###
     # Initialize Actor width property

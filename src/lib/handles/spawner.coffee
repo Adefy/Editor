@@ -4,6 +4,9 @@
   - "1.0.0": Initial
   - "1.1.0": Inherited from a RectangleActor
 
+@TODO
+  - Silence updates (removed @_silentUpdate from base actor)
+  - Disable temporal updates
 ###
 
 define (require) ->
@@ -189,7 +192,7 @@ define (require) ->
         "delete"
         "load"
         "dump"
-        "timelineDeath"
+        "death"
         "__fugly_postBirth"
       ]
 
@@ -376,7 +379,7 @@ define (require) ->
     # Called when we transition from life to death in time. De-registers us and
     # deletes all spawns
     ###
-    timelineDeath: ->
+    death: ->
       Spawner.unregisterSpawner @
 
       _.union(@_previewSpawns, @_spawns).map (spawn) -> spawn.delete()

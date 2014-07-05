@@ -418,9 +418,7 @@ define (require) ->
           return d.forceDragEnd() unless handle
 
           d.setTarget handle
-          d.setUserData
-            updateProperties: true
-            original: handle.getRotation()
+          d.setUserData original: handle.getRotation()
 
           toggleActorPhysics d, handle
 
@@ -462,7 +460,6 @@ define (require) ->
 
           d.setTarget handle
           d.setUserData
-            updateProperties: true
             original:
               x: handle.getPosition().x
               y: handle.getPosition().y
@@ -649,7 +646,7 @@ define (require) ->
 
       for o in @actorObjects
         @ui.pushEvent "workspace.remove.actor", actor: o
-        o.timelineDeath()
+        o.death()
         o.delete()
 
       @actorObjects.length = 0

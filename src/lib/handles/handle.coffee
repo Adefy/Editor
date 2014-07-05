@@ -81,18 +81,6 @@ define (require) ->
     ###
     getProperties: -> @_properties
 
-    # Called once new property values are ready for us, most often by the
-    # properties sidebar widget. The update can effect any number of our
-    # properties, so we just call their update() methods as needed, after
-    # validation
-    #
-    # @param [Object] updatePacket object containing property:value pairs
-    updateProperties: (updatePacket) ->
-
-      for property, value of updatePacket
-        if @_properties[property]
-          @_properties[property].setValue value
-
     ###
     # Set property in key, value form. Note that new properties can not be
     # created!
