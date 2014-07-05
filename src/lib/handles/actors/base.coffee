@@ -17,6 +17,7 @@ define (require) ->
   NumericProperty = require "handles/properties/numeric"
   BooleanProperty = require "handles/properties/boolean"
   CompositeProperty = require "handles/properties/composite"
+  Project = require "project"
 
   # Base manipulateable class for actors
   window.BaseActor = class BaseActor extends Handle
@@ -639,6 +640,9 @@ define (require) ->
           u.position = @ui.workspace.glToDom u.position.x, u.position.y
 
         @_boundingBox.updateOrientation u
+
+      @_AREActor.setOnSizeChange (u) =>
+        @_boundingBox.updateBounds u
 
       # Make sure we have our texture (this lets us set the texture in the
       # constructor)

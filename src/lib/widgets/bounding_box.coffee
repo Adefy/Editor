@@ -69,6 +69,11 @@ define (require) ->
       @getElement().height(height + 2)
       @updatePosition @_lastPosition
 
+    updateBounds: (bounds) ->
+      @getElement().width(bounds.w + 2)
+      @getElement().height(bounds.h + 2)
+      @updatePosition @_lastPosition
+
     updateRotation: (rotation) ->
       @_lastRotation = rotation
       @getElement().css transform: "rotate(#{rotation}rad)"

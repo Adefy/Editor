@@ -10,6 +10,8 @@ $bb_control_margin = (($bb_control_width / 2)) * -1
   background transparent
   margin -2px
   border 1px solid red
+  z-index $Z_bounding_box
+  pointer-events none
 
   .bb-control
     width $bb_control_width
@@ -17,9 +19,10 @@ $bb_control_margin = (($bb_control_width / 2)) * -1
     background-color white
     position absolute
     border 1px solid #000
+    z-index $Z_bounding_box_control
+    pointer-events auto
 
     &:hover
-      cursor hand
       cursor pointer
 
     &.top-left
@@ -41,3 +44,23 @@ $bb_control_margin = (($bb_control_width / 2)) * -1
       margin 0 $bb_control_margin $bb_control_margin 0
       bottom 0
       right 0
+
+    &.top
+      top 0
+      right 50%
+      margin $bb_control_margin $bb_control_margin 0 0
+
+    &.right
+      top 50%
+      right 0
+      margin $bb_control_margin $bb_control_margin 0 0
+
+    &.bottom
+      bottom 0
+      left 50%
+      margin 0 0 $bb_control_margin $bb_control_margin
+
+    &.left
+      top 50%
+      left 0
+      margin $bb_control_margin 0 0 $bb_control_margin
