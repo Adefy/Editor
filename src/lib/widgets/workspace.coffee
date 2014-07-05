@@ -481,14 +481,17 @@ define (require) ->
           handle.getActor().createPhysicsBody() if d.getUserData().hasPhysics
 
       @dragger.setOnDrag (d, deltaX, deltaY) =>
+        userData = d.getUserData()
+        target = d.getTarget()
 
         # Delay the drag untill we finish our pick
-        if d.getUserData() and d.getUserData().original
-          newX = d.getUserData().original.x + deltaX
-          newY = d.getUserData().original.y + deltaY
+        return unless userData and userData.original
 
-          d.getTarget().setPosition newX, newY
-          @ui.pushEvent "selected.actor.update", actor: d.getTarget()
+        newX = userData.original.x + deltaX
+        newY = userData.original.y + deltaY
+
+        target.setPosition newX, newY, true
+        @ui.pushEvent "selected.actor.update", actor: target
 
       # Actor picking!
       # NOTE: This should only be allowed when the scene is not being animated!
@@ -869,7 +872,7 @@ define (require) ->
     ###
     dump: ->
       actors = _.map @getActors(), (actor) -> actor.dump()
-      actors = _.without actors, (actor) -> actor.handleType == "Spawner"
+      actors = _.without actors, (actor) -> actor.getHandleType() == "Spawner"
 
       c = @getClearColor()
       clearColor =
@@ -909,7 +912,7 @@ define (require) ->
 
       # data.workspaceVersion >= "1.1.0"
       for actor in actors
-        actorClass = window[actor.handleType]
+        actorClass = window[actor.getHandleType()]
 
         if actorClass
           @addActor actorClass.load @ui, actor

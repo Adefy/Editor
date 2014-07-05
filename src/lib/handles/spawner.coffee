@@ -86,12 +86,12 @@ define (require) ->
       # Don't save this, as it is volatile (likely immediately deleted)
       template = param.required options.templateHandle
 
-      super @ui, template.lifetimeStart_ms, template.lifetimeEnd_ms
+      super @ui, template.getBirthTime(), template.getDeathTime()
 
       @_imitateHandle template
 
-      @handleType = "Spawner"
-      @setName "#{@handleType} #{@_id_numeric}"
+      @_handleType = "Spawner"
+      @setName "#{@_handleType} #{@_id_numeric}"
 
       @_uid = ID.uID()
 

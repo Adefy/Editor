@@ -74,7 +74,7 @@ define (require) ->
         if time
           @timeline.setCursorTime time
         else
-          @timeline.setCursorTime Math.floor actor.lifetimeEnd_ms
+          @timeline.setCursorTime Math.floor actor.getDeathTime()
 
       # else, jump to the nearest keyframe from any actor
       else
@@ -104,7 +104,7 @@ define (require) ->
         if time
           @timeline.setCursorTime time
         else
-          @timeline.setCursorTime Math.ceil actor.lifetimeStart_ms
+          @timeline.setCursorTime Math.ceil actor.getBirthTime()
 
       # else, jump to the nearest keyframe from any actor
       else

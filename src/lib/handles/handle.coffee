@@ -42,7 +42,7 @@ define (require) ->
 
       @name = "handle #{@_id_numeric}"
 
-      @handleType = "Handle"
+      @_handleType = "Handle"
 
     ###
     # Get our id. TODO: Consider giving us a base class, possible giving doing
@@ -128,7 +128,7 @@ define (require) ->
     dump: ->
       data = _.extend Dumpable::dump.call(@),
         handleVersion: "1.1.0"
-        handleType: @handleType
+        _handleType: @_handleType
         type: "#{@.constructor.name}"
         name: @name
         properties: {}
@@ -157,6 +157,6 @@ define (require) ->
 
   - "1.0.0": Initial
   - "1.0.1": Added name
-  - "1.1.0": Added handleType
+  - "1.1.0": Added _handleType
 
 ###

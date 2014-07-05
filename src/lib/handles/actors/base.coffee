@@ -32,23 +32,23 @@ define (require) ->
     # This serves as the base for the other actor classes
     #
     # @param [UIManager] ui
-    # @param [Number] lifetimeStart_ms time at which we are created, in ms
-    # @param [Number] lifetimeEnd_ms time we are destroyed, defaults to end of ad
+    # @param [Number] birthTime time at which we are created, in ms
+    # @param [Number] deathTime time we are destroyed, defaults to end of ad
     ###
-    constructor: (@ui, lifetimeStart, lifetimeEnd) ->
+    constructor: (@ui, birthTime, deathTime) ->
       param.required @ui
 
       super()
 
-      @handleType = "BaseActor"
+      @_handleType = "BaseActor"
+      @setName "Base Actor #{@_id_numeric}"
 
       @_AREActor = null
-      @setName "Base Actor #{@_id_numeric}"
       @_alive = false
       @_initialized = false # True after postInit() is called
 
-      @lifetimeStart_ms = param.required lifetimeStart
-      @lifetimeEnd_ms = lifetimeEnd or @ui.timeline.getDuration()
+      @_birthTime = param.required birthTime
+      @_deathTime = deathTime or @ui.timeline.getDuration()
 
       ###
       # Property buffer, holds values at different points in time. Current
@@ -88,7 +88,7 @@ define (require) ->
 
       # Time of the last update, used to save our properties when the cursor is
       # moved. Note that this starts at our birth!
-      @_lastTemporalState = Math.floor @lifetimeStart_ms
+      @_lastTemporalState = Math.floor @_birthTime
 
       @enableTemporalUpdates()
 
@@ -353,6 +353,39 @@ define (require) ->
     ###
 
     ###
+    # Set low level handle type. Don't use this unless you know what you are
+    # doing!
+    #
+    # @param [String] type
+    ###
+    setHandleType: (type) ->
+      @_handleType = type
+
+    ###
+    # Get the low level handle type
+    #
+    # @return [String] type
+    ###
+    getHandleType: ->
+      @_handleType
+
+    ###
+    # Get the time we are born, in MS
+    #
+    # @return [Number] time
+    ###
+    getBirthTime: ->
+      @_birthTime
+
+    ###
+    # Get the time we die, in MS
+    #
+    # @return [Number] time
+    ###
+    getDeathTime: ->
+      @_deathTime
+
+    ###
     # Get actor property by name
     #
     # @param [String] name
@@ -438,13 +471,14 @@ define (require) ->
     #
     # @param [Number] x x coordinate
     # @param [Number] y y coordinate
+    # @param [Boolean] silent optionally prevent update propogation
     ###
-    setPosition: (x, y) ->
-      x = Number (param.required x).toFixed @ACCURACY
-      y = Number (param.required y).toFixed @ACCURACY
+    setPosition: (x, y, silent) ->
+      @_properties.position.setValue
+        x: Number x.toFixed(@ACCURACY)
+        y: Number y.toFixed(@ACCURACY)
 
-      @_properties.position.setValue x: x, y: y
-      @updateInTime()
+      @updateInTime silent
 
     ###
     # Set actor rotation
@@ -540,7 +574,7 @@ define (require) ->
     # @return [Number] index
     ###
     getBirthIndex: ->
-      Math.floor @lifetimeStart_ms
+      Math.floor @_birthTime
 
     ###
     # Get internal actors' id. Note that the actor must exist for this!
@@ -586,7 +620,7 @@ define (require) ->
     # @return [Boolean] isBirth
     ###
     isBirth: (val) ->
-      Math.floor(val) == Math.floor(@lifetimeStart_ms)
+      Math.floor(val) == Math.floor(@_birthTime)
 
     ###
     # Used when exporting, executes the corresponding property genAnimationOpts
@@ -675,7 +709,7 @@ define (require) ->
     # Seed the birth position in our property buffer with our current values
     ###
     seedBirth: ->
-      @_propBuffer[Math.floor(@lifetimeStart_ms)] = @_serializeProperties()
+      @_propBuffer[Math.floor(@_birthTime)] = @_serializeProperties()
 
     ###
     # Store the provided property deltas in a new buffer entry at the specified
@@ -754,7 +788,7 @@ define (require) ->
     # epic). Essentially, update our prop buffer, and then the actors' current
     # state
     ###
-    updateInTime: ->
+    updateInTime: (silent) ->
       unless @_alive
         @_birth()
         @__fugly_postBirth()
@@ -778,7 +812,7 @@ define (require) ->
       # Save state
       @_lastTemporalState = Number Math.floor(cursor)
 
-      unless @_silentUpdate
+      unless @_silentUpdate or silent
         @ui.pushEvent "actor.update.intime", actor: @
 
     ###
@@ -898,14 +932,14 @@ define (require) ->
       end = param.required options.end
       scaleToFit = !!options.scaleToFit
 
-      oldStart = @lifetimeStart_ms
-      oldEnd = @lifetimeEnd_ms
+      oldStart = @_birthTime
+      oldEnd = @_deathTime
 
       # nothing has changed
       return if (oldStart == start) && (oldEnd == end)
 
-      @lifetimeStart_ms = start
-      @lifetimeEnd_ms = end
+      @_birthTime = start
+      @_deathTime = end
 
       animKeys = _.keys @_animations
       propKeys = _.keys @_propBuffer
@@ -915,7 +949,7 @@ define (require) ->
 
       ratio = 1.0
       if scaleToFit
-        ratio = (@lifetimeEnd_ms - @lifetimeStart_ms) / (oldEnd - oldStart)
+        ratio = (@_deathTime - @_birthTime) / (oldEnd - oldStart)
 
       for time in propKeys
         newPropBuffer[Math.floor(start + (time - oldStart) * ratio)] = @_propBuffer[time]
@@ -937,7 +971,7 @@ define (require) ->
     # @return [Boolean] inLifetime
     ###
     inLifetime: (time) ->
-      time >= @lifetimeStart_ms and time <= @lifetimeEnd_ms
+      time >= @_birthTime and time <= @_deathTime
 
     ###
     # Updates our state according to the current cursor position. Goes through
@@ -978,8 +1012,8 @@ define (require) ->
       return unless @inLifetime cursor
 
       # If it's our birth state, take a shortcut and just apply it directly
-      if cursor == Math.floor @lifetimeStart_ms
-        return @_applyPropBuffer @_propBuffer[Math.floor @lifetimeStart_ms]
+      if cursor == Math.floor @_birthTime
+        return @_applyPropBuffer @_propBuffer[Math.floor @_birthTime]
 
       # Find the nearest state to the left of ourselves
       if @_propBuffer[cursor]
@@ -1383,14 +1417,14 @@ define (require) ->
       if currentAnim != null && currentAnim != undefined && \
        @_animations[currentAnim][property]
         @mutatePropertyAnimation @_animations[currentAnim][property], (a) =>
-          a.setStartTime predAnim || Math.floor @lifetimeStart_ms
+          a.setStartTime predAnim || Math.floor @_birthTime
           a.setEndTime currentAnim
 
       # is there a succeeding frame?
       if succAnim != null && succAnim != undefined && \
        @_animations[succAnim][property]
         @mutatePropertyAnimation @_animations[succAnim][property], (a) =>
-          a.setStartTime currentAnim || predAnim || Math.floor @lifetimeStart_ms
+          a.setStartTime currentAnim || predAnim || Math.floor @_birthTime
           a.setEndTime succAnim
 
     ###
@@ -1419,10 +1453,10 @@ define (require) ->
       if @_propBuffer[source]
         @_propBuffer[destination] ||= {}
         @_propBuffer[destination][property] = @_propBuffer[source][property]
-        ##
+
         # Destroy the old property entry
         delete @_propBuffer[source][property]
-        ##
+
         # If the property is now empty, delete it completely
         if _.keys(@_propBuffer[source]).length == 0
           delete @_propBuffer[source]
@@ -1432,10 +1466,10 @@ define (require) ->
       if @_animations[source]
         @_animations[destination] ||= {}
         @_animations[destination][property] = @_animations[source][property]
-        ##
+
         # Destory the old property entry
         delete @_animations[source][property]
-        ##
+
         # If the property is now empty, delete it completely
         if _.keys(@_animations[source]).length == 0
           delete @_animations[source]
@@ -1566,7 +1600,7 @@ define (require) ->
     _contextFuncDuplicate: (actor) ->
 
       newActor = actor.duplicate()
-      newActor.setName(newActor.getName() + " copy")
+      newActor.setName "#{newActor.getName()} copy"
       pos = newActor.getPosition()
       newActor.setPosition pos.x + 16, pos.y + 16
 
@@ -1630,8 +1664,8 @@ define (require) ->
 
       data.actorBaseVersion = "1.0.0"
       data.propBuffer = _.clone @_propBuffer, true
-      data.birth = @lifetimeStart_ms
-      data.death = @lifetimeEnd_ms
+      data.birth = @_birthTime
+      data.death = @_deathTime
       data.texture = @getTextureUID()
       data.animations = {}
 
@@ -1714,10 +1748,24 @@ define (require) ->
 
       @
 
-    ###
-    # Open a settings widget for physics editing
-    # @param [BaseActor] actor
-    ###
-    _contextFuncEditPhysics: (actor) ->
-      @ui.modals.showEditActorPsyx actor
-      @
+class DreamyBaseActor
+
+  seekToTime: (time) ->
+    @updateLivingState time
+    return unless @isAlive()
+
+    property.seekToTime(time) for name, property of @_properties
+
+  updateLivingState: (time) ->
+    shouldBeAlive = @isAliveAtTime time
+    living = @isAlive()
+
+    if shouldBeAlive and not living
+      @birth()
+    else if not shouldBeAlive and living
+      @death()
+
+  setBirth: (birth) ->
+  setDeath: (death) ->
+
+  isDead: ->

@@ -272,7 +272,7 @@ define (require) ->
 
         # We need to grab properties from birth, so grab the appropriate prop
         # buffer entry
-        buff = a.getBufferEntry a.lifetimeStart_ms
+        buff = a.getBufferEntry a.getBirthTime()
 
         pos = buff.position.components
         col = buff.color.components

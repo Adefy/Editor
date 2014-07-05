@@ -34,7 +34,7 @@ define (require) ->
 
       super @ui, birth, death
 
-      @handleType = "RectangleActor"
+      @_handleType = "RectangleActor"
       @setName "Rectangle #{@_id_numeric}"
       @initPropertyWidth()
       @initPropertyHeight()

@@ -34,7 +34,7 @@ define (require) ->
 
       super @ui, birth, death
 
-      @handleType = "PolygonActor"
+      @_handleType = "PolygonActor"
       @setName "Polygon #{@_id_numeric}"
       @initPropertySides()
       @initPropertyRadius()

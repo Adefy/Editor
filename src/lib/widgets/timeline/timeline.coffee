@@ -73,7 +73,7 @@ define (require) ->
       @_bindListeners()
 
     ###
-    # @return [self]
+    # @return [Timeline] self
     ###
     postInit: ->
       super()
@@ -228,16 +228,16 @@ define (require) ->
     ###
     _checkActorLifetime: (actor) ->
       # Sanity check, actor must die after it is created
-      if actor.lifetimeEnd_ms < actor.lifetimeStart_ms
+      if actor.getDeathTime() < actor.getBirthTime()
         throw new Error "Actor lifetime end must come after lifetime start! " +\
-                        "start: #{actor.lifetimeStart_ms}, " +\
-                        "end: #{actor.lifetimeEnd_ms}"
+                        "start: #{actor.getBirthTime()}, " +\
+                        "end: #{actor.getDeathTime()}"
 
       # Make sure actors' lifetime is contained in our duration!
       #
       # TODO: In the future, we can allow for actor deaths after our duration,
       #       to ease timeline resizing.
-      if actor.lifetimeStart_ms < 0 or actor.lifetimeEnd_ms > @_duration
+      if actor.getBirthTime() < 0 or actor.getDeathTime() > @_duration
         throw new Error "Actor exists beyond our duration!"
 
       true
@@ -284,10 +284,10 @@ define (require) ->
       for a in @_actors
 
         # Check if actor needs to die
-        if (t < a.lifetimeStart_ms or t > a.lifetimeEnd_ms) and a.isAlive()
+        if (t < a.getBirthTime() or t > a.getDeathTime()) and a.isAlive()
           a.timelineDeath()
 
-        else if a.isAlive() or (t >= a.lifetimeStart_ms and t <= a.lifetimeEnd_ms)
+        else if a.isAlive() or (t >= a.getBirthTime() and t <= a.getDeathTime())
           a.updateInTime()
 
     ###
@@ -631,10 +631,6 @@ define (require) ->
     addActor: (actor) ->
       param.required actor
 
-      ## screw it!
-      #if actor.constructor.name.indexOf("Actor") == -1
-      #  throw new Error "Actor must be an instance of BaseActor!"
-
       @_actors.push actor
 
       @getElement(".timeline-actor-list").html @_renderActorList()
@@ -793,10 +789,10 @@ define (require) ->
       #spaceW = $(@_spaceSelector()).width()
       {
         #spaceW: spaceW
-        start: actor.lifetimeStart_ms
-        end: actor.lifetimeEnd_ms
-        left: "#{100 * (actor.lifetimeStart_ms / @_duration)}%"
-        length: "#{100 * ((actor.lifetimeEnd_ms - actor.lifetimeStart_ms) / @_duration)}%"
+        start: actor.getBirthTime()
+        end: actor.getDeathTime()
+        left: "#{100 * (actor.getBirthTime() / @_duration)}%"
+        length: "#{100 * ((actor.getDeathTime() - actor.getBirthTime()) / @_duration)}%"
       }
 
     ###
@@ -823,7 +819,7 @@ define (require) ->
 
       for time, anim of _animations
         # relative to actor start position
-        #offset = 100 * (actor.lifetimeStart_ms + Number(time)) / @_duration
+        #offset = 100 * (actor.getBirthTime() + Number(time)) / @_duration
         # absolute
         offset = 100 * Number(time) / @_duration
         offset = "#{offset}%"
@@ -1020,7 +1016,7 @@ define (require) ->
       TemplateTimelineBase options
 
     ###
-    # @return [self]
+    # @return [Timeline] self
     ###
     refresh: ->
       super()
@@ -1029,7 +1025,7 @@ define (require) ->
       @
 
     ###
-    # @return [self]
+    # @return [Timeline] self
     ###
     postRefresh: ->
       super()
@@ -1066,7 +1062,7 @@ define (require) ->
 
     ###
     # Update the state of the controls bar
-    # @return [self]
+    # @return [Timeline] self
     ###
     updateControls: ->
       @getElement("#timeline-control-fast-backward")
@@ -1084,7 +1080,8 @@ define (require) ->
 
     ###
     # Update the state of the actor body
-    # @return [self]
+    #
+    # @return [Timeline] self
     ###
     updateActorBody: (actor) ->
       actor ||= @_lastSelectedActor
@@ -1121,8 +1118,9 @@ define (require) ->
 
     ###
     # Update the state of the actor timebar
+    #
     # @param [BaseActor] actor
-    # @return [self]
+    # @return [Timeline] self
     ###
     updateActorTime: (actor) ->
       actor ||= @_lastSelectedActor
