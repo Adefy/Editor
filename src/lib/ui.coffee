@@ -5,7 +5,6 @@ define (require) ->
   param = require "util/param"
   config = require "config"
 
-  PropertyBar = require "widgets/property_bar"
   MenuBar = require "widgets/menubar"
   StatusBar = require "widgets/statusbar"
   Timeline = require "widgets/timeline/timeline"
@@ -29,7 +28,6 @@ define (require) ->
       @widgets = []
 
       @widgets.push @initializeMenu()
-      # @widgets.push @initializePropertyBar()
       @widgets.push @initializeTimeline()
       @widgets.push @initializeWorkspace()
       # @widgets.push @initializeStatusbar()
@@ -79,7 +77,6 @@ define (require) ->
 
     renderAll: -> widget.render() for widget in @widgets
 
-    initializePropertyBar: -> @propertyBar = new PropertyBar @
     initializeStatusbar: -> @statusbar = new StatusBar @, parent: "footer"
     initializeTimeline: -> @timeline = new Timeline @
 

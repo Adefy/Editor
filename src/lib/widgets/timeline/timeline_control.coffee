@@ -2,7 +2,7 @@ define (require) ->
 
   AUtilLog = require "util/log"
   param = require "util/param"
-  Workspace = require "widgets/workspace/workspace"
+  Workspace = require "widgets/workspace"
 
   class TimelineControl
 

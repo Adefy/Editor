@@ -9,7 +9,7 @@ define (require) ->
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
   TimelineControl = require "widgets/timeline/timeline_control"
-  Workspace = require "widgets/workspace/workspace"
+  Workspace = require "widgets/workspace"
 
   Dragger = require "util/dragger"
   Draggable = require "util/draggable"
