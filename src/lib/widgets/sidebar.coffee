@@ -257,8 +257,6 @@ define (require) ->
           unless isNaN $(d.getTarget()).attr "max"
             return if newVal > $(d.getTarget()).attr "max"
 
-        console.log newVal
-
         $(d.getTarget()).val newVal
         $(d.getTarget()).change()
 
