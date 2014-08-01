@@ -40,7 +40,10 @@ define ->
                style="left: {{ left }}; width: {{ width }}"
                data-start="{{start}}"
                data-end="{{end}}"
-               class="bar"></div>
+               class="bar">
+            <div class="bar-birth"></div>
+            <div class="bar-death"></div>
+          </div>
         </div>
        {{/if}}
       {{/each}}
