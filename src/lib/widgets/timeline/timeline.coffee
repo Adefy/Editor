@@ -952,6 +952,9 @@ define (require) ->
     # @return [String] html
     ###
     render: ->
+      return ""
+
+      ###
       options =
         id: "timeline-header"
         timelineId: @getID()
@@ -961,6 +964,7 @@ define (require) ->
 
       super() +
       TemplateTimelineBase options
+      ###
 
     ###
     # @return [Timeline] self
@@ -1161,6 +1165,9 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
+
+      return # Temporarily cripple old timeline
+
       switch type
         when "workspace.add.actor"
           @addActor params.actor
