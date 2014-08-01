@@ -12,7 +12,7 @@ define ->
   #   @property [String] value
   ###
   Handlebars.compile """
-    <div data-actorid="{{ actorid }}"
+    <li data-actorid="{{ actorid }}"
          data-index="{{ index }}"
          id="{{ id }}" class="actor">
 
@@ -22,20 +22,15 @@ define ->
         <div class="title">{{ title }}</div>
       </div>
 
-     {{#each properties}}
-      <div id="{{ id }}" class="actor-property row property">
+      <ul class="actor-properties">
+        {{#each properties}}
 
-        <div class="live">
-          <div class="button"><i class="fa fa-fw fa-clock-o"></i></div>
-        </div>
+        <li data-id="{{ id }}" class="row">
+          <div class="title">{{ title }}</div>
+          <div class="value">{{ value }}</div>
+        </li>
 
-        <div class="graph">
-          <div class="button"><i class="fa fa-fw fa-cog"></i></div>
-        </div>
-
-        <div class="title">{{ title }}</div>
-        <div class="value">{{ value }}</div>
-      </div>
-     {{/each}}
-    </div>
+        {{/each}}
+      </ul>
+    </li>
   """

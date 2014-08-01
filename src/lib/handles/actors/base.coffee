@@ -342,6 +342,17 @@ define (require) ->
     #####################################
 
     ###
+    # Checks if we have any keyframes
+    #
+    # @return [Boolean] isAnimated
+    ###
+    isAnimated: ->
+      for name, property of @_properties
+        return true if property.hasKeyframes()
+
+      false
+
+    ###
     # Set low level handle type. Don't use this unless you know what you are
     # doing!
     #

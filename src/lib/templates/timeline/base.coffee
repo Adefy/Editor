@@ -9,6 +9,7 @@ define ->
   # @property [HTML] timeContents Actor time & keyframes will go here
   ###
   Handlebars.compile """
+
     <div id="{{ id }}" class="header timeline-control-bar">
       <div id="timeline-cursor-time" class="current_time">{{ currentTime }}</div>
       <a id="timeline-control-fast-backward" class="control">
@@ -26,23 +27,40 @@ define ->
       <a id="timeline-control-fast-forward" class="control">
         <i class="fa fa-fw fa-fast-forward"></i>
       </a>
-      <div timelineid="{{timelineId}}" class="button toggle">
+      <div timelineid="{{timelineId}}" class="control right">
         <i class="fa fa-fw fa-toggle-down"></i>
       </div>
     </div>
+
     <div class="content">
+
       <div class="list">
-        {{! <div class="timebar"></div> }}
-        <div class="timeline-actor-list">
-          {{{ contents }}}
-        </div>
+        <section>
+          <label>Static Actors</label>
+          <div class="timeline-actor-list static-actors">
+            {{#each staticActorList}} {{{ this }}} {{/each}}
+          </div>
+        </section>
+
+        <section>
+          <label>Animated Actors</label>
+          <div class="timeline-actor-list animated-actors">
+            {{#each animatedActorList}} {{{ this }}} {{/each}}
+          </div>
+        </section>
       </div>
+
       <div class="time">
         <div id="timeline-cursor" class="cursor"></div>
-        {{! <div class="timebar"></div> }}
-        <div class="time-actors">
-          {{{ timeContents }}}
-        </div>
+
+        <section class="time-static-actors">
+          {{#each staticActorTimebars}} {{{ this }}} {{/each}}
+        </section>
+
+        <section class="time-animated-actors">
+          {{#each animatedActorTimebars}} {{{ this }}} {{/each}}
+        </section>
       </div>
+
     </div>
   """

@@ -64,6 +64,14 @@ define (require) ->
         times[startTimeIndex + 1]
 
     ###
+    # Check if we have more keyframes besides our birth
+    #
+    # @return [Boolean] hasKeyframes
+    ###
+    hasKeyframes: ->
+      _.keys(@_buffer).length > 1
+
+    ###
     # Fetch our birth time
     #
     # @return [Number] birth

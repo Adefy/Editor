@@ -75,15 +75,10 @@ define (require) ->
     # @return [Workspace] self
     ###
     postInit: ->
-      ## ARE overrides setting the renderer mode...
-      #mode = Storage.get("are.renderer.mode")
-      #mode = ARERenderer.rendererMode if mode == null
-      #ARERenderer.rendererMode = Number(mode)
 
       # The canvas is fullscreen, minus the mainbar
-      sectionElement = $(config.selector.content)
-      @_canvasWidth  = sectionElement.width()
-      @_canvasHeight = sectionElement.height()
+      @_canvasWidth  = $(config.selector.content).width()
+      @_canvasHeight = $(config.selector.content).height()
 
       # Create an ARE instance on ourselves
       AUtilLog.info "Initializing ARE..."

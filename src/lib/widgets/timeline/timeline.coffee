@@ -435,7 +435,7 @@ define (require) ->
       @_bindKeyframeDragging()
       @_bindTimebarDragging()
 
-      $(document).on "click", ".timeline .button.toggle", (e) =>
+      $(document).on "click", ".timeline .control.right", (e) =>
         @toggle()
 
       $(document).on "click", ".timeline .list .actor .expand", (e) =>
@@ -591,8 +591,16 @@ define (require) ->
     addActor: (actor) ->
       @_actors.push actor
 
-      @getElement(".timeline-actor-list").html @_renderActorList()
-      @getElement(".time-actors").html @_renderActorTimebar()
+      listEntry = @_renderActorListEntry actor
+      timebarEntry = @_renderActorTimebarEntry actor
+
+      if actor.isAnimated()
+        animatedClass = "animated-actors"
+      else
+        animatedClass = "static-actors"
+
+      @getElement(".timeline-actor-list.#{animatedClass}").append listEntry
+      @getElement(".time-#{animatedClass}").append timebarEntry
 
       @_updateScrollbar()
 
@@ -650,8 +658,8 @@ define (require) ->
     ###
     updateVisible: ->
       Storage.set "timeline.visible", @_visible
-      @getElement(".button.toggle i").toggleClass config.icon.toggle_down, @_visible
-      @getElement(".button.toggle i").toggleClass config.icon.toggle_up, !@_visible
+      @getElement(".control.right i").toggleClass config.icon.toggle_down, @_visible
+      @getElement(".control.right i").toggleClass config.icon.toggle_up, !@_visible
 
     ###
     # Toggle visibility of the sidebar with an optional animation
@@ -764,6 +772,18 @@ define (require) ->
         rotation: []
         color: []
         #physics: []
+      
+      ######
+      ######
+      ###### Bail early
+      ######
+      ######
+      return keyframes
+      ######
+      ######
+      ###### Bail early
+      ######
+      ######
 
       _animations = actor.getAnimations()
 
@@ -897,14 +917,15 @@ define (require) ->
         ]
 
     ###
-    # Render the actor list Should never be called by itself, only by @render()
+    # Render a list of actors for the detail view.
     #
+    # @param [Array<BaseActor>] actors
+    # @return [Array<String>] HTML individually rendered actor entries
     # @private
     ###
-    _renderActorList: ->
+    _renderActorList: (actors) ->
       @_actors.map (actor) =>
-        @_renderActorListEntry actor, false
-      .join ""
+        @_renderActorListEntry actor
 
     ###
     # Renders an individual actor timebar, used when registering new actors,
@@ -936,15 +957,15 @@ define (require) ->
         properties: properties
 
     ###
-    # Render the timeline space. Should never be called by itself, only by
-    # @render()
-    # @return [Void]
+    # Render an array of actor timebars
+    #
+    # @param [Array<BaseActor>] actors
+    # @return [Array<String>] HTML individually rendered actor timebars
     # @private
     ###
-    _renderActorTimebar: ->
-      @_actors.map (actor) =>
-        @_renderActorTimebarEntry actor, false
-      .join ""
+    _renderActorTimebars: (actors) ->
+      actors.map (actor) =>
+        @_renderActorTimebarEntry actor
 
     ###
     # Proper render function, fills in timeline internals.
@@ -952,19 +973,21 @@ define (require) ->
     # @return [String] html
     ###
     render: ->
-      return ""
 
-      ###
+      animatedActors = _.filter @_actors, (a) -> a.isAnimated()
+      staticActors = _.filter @_actors, (a) -> !a.isAnimated()
+
       options =
         id: "timeline-header"
         timelineId: @getID()
         currentTime: @_generateTimeString()
-        contents: @_renderActorList()
-        timeContents: @_renderActorTimebar()
+        staticActorList: @_renderActorList staticActors
+        animatedActorList: @_renderActorList animatedActors
+        staticActorTimebars: @_renderActorTimebars staticActors
+        animatedActorTimebars: @_renderActorTimebars animatedActors
 
       super() +
       TemplateTimelineBase options
-      ###
 
     ###
     # @return [Timeline] self
@@ -1165,8 +1188,6 @@ define (require) ->
     # @param [Object] params
     ###
     respondToEvent: (type, params) ->
-
-      return # Temporarily cripple old timeline
 
       switch type
         when "workspace.add.actor"
