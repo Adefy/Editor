@@ -641,7 +641,7 @@ define (require) ->
       return unless @_AREActor and !@_boundingBox
 
       @_boundingBox = new BoundingBox @ui
-      @_AREActor.setOnOrientationChange (u) =>
+      onOrientationChange = (u) =>
         return unless @_boundingBox
 
         if u.position
@@ -649,9 +649,18 @@ define (require) ->
 
         @_boundingBox.updateOrientation u
 
-      @_AREActor.setOnSizeChange (u) =>
+      onSizeChange = (u) =>
         return unless @_boundingBox
         @_boundingBox.updateBounds u
+
+      onOrientationChange
+        position: @_AREActor.getPosition()
+        rotation: @_AREActor.getRotation true
+
+      onSizeChange @_AREActor.getBounds()
+
+      @_AREActor.setOnOrientationChange onOrientationChange
+      @_AREActor.setOnSizeChange onSizeChange
 
     hideBoundingBox: ->
       return unless @_boundingBox
