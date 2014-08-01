@@ -25,10 +25,7 @@ define (require) ->
       @data_value = setVal options.value, 0
 
     validateValue: (value) ->
-      return false if isNaN value
-      return false unless value >= @getMin()
-      return false unless value <= @getMax()
-      true
+      !isNaN(value) and value >= @getMin() and value <= @getMax()
 
     processValue: (value) ->
       if @getFloat()

@@ -122,8 +122,6 @@ define (require) ->
     # @param [Object] value
     ###
     setValue: (value) ->
-      unless @validateValue
-        console.log "Val value null: #{@getType()}"
       return unless @validateValue value
       value = @processValue value
 

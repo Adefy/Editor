@@ -20,8 +20,8 @@ define ->
       {{/if}}
 
       name="{{ name }}"
-      data-max="{{ max }}"
-      data-min="{{ min }}"
+      max="{{ max }}"
+      min="{{ min }}"
       data-float="{{ float }}"
       placeholder="{{ placeholder }}"
       value="{{ value }}"

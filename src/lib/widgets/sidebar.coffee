@@ -245,7 +245,21 @@ define (require) ->
         $(d.getTarget()).css "cursor", "e-resize"
 
       @dragger.setOnDrag (d, deltaX, deltaY) =>
-        $(d.getTarget()).val d.getUserData().initialValue + deltaX
+        newVal = d.getUserData().initialValue + deltaX
+
+        # Bounds check for numbers
+        if $(d.getTarget()).attr("type") == "number"
+          return if isNaN newVal
+
+          unless isNaN $(d.getTarget()).attr "min"
+            return if newVal < $(d.getTarget()).attr "min"
+
+          unless isNaN $(d.getTarget()).attr "max"
+            return if newVal > $(d.getTarget()).attr "max"
+
+        console.log newVal
+
+        $(d.getTarget()).val newVal
         $(d.getTarget()).change()
 
       @dragger.setOnDragEnd (d) ->
