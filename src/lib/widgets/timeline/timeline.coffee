@@ -1043,7 +1043,7 @@ define (require) ->
       properties = @_calcActorTimeProperties actor
       timebarData = @_calcActorTimebar actor
 
-      timebar = baseElement.find(".bar")
+      timebar = @getElement ".bar"
       timebar.css
         left: timebarData.left
         width: timebarData.length

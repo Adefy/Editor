@@ -633,10 +633,34 @@ define (require) ->
       return unless @_alive
       @_alive = false
 
-      @_boundingBox.remove()
-      @_boundingBox = null
+      @hideBoundingBox()
       @_AREActor.destroy()
       @_AREActor = null
+
+    showBoundingBox: ->
+      return unless @_AREActor and !@_boundingBox
+
+      @_boundingBox = new BoundingBox @ui
+      @_AREActor.setOnOrientationChange (u) =>
+        return unless @_boundingBox
+
+        if u.position
+          u.position = @ui.workspace.glToDom u.position.x, u.position.y
+
+        @_boundingBox.updateOrientation u
+
+      @_AREActor.setOnSizeChange (u) =>
+        return unless @_boundingBox
+        @_boundingBox.updateBounds u
+
+    hideBoundingBox: ->
+      return unless @_boundingBox
+
+      @_boundingBox.remove()
+      @_boundingBox = null
+
+    boundingBoxVisible: ->
+      !!@_boundingBox
 
     ###
     # Create the actor; can be killed later with a call to @death()
@@ -645,16 +669,7 @@ define (require) ->
     # flag ourselves!
     ###
     birth: ->
-      @_boundingBox = new BoundingBox @ui
-      @_AREActor.setOnOrientationChange (u) =>
-
-        if u.position
-          u.position = @ui.workspace.glToDom u.position.x, u.position.y
-
-        @_boundingBox.updateOrientation u
-
-      @_AREActor.setOnSizeChange (u) =>
-        @_boundingBox.updateBounds u
+      @showBoundingBox()
 
       # Make sure we have our texture (this lets us set the texture in the
       # constructor)

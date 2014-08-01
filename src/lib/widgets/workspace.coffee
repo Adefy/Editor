@@ -185,11 +185,18 @@ define (require) ->
       @
 
     ###
-    # Sets the selectedActor instance
-    # @param [Id] actorId
-    # @return [Workspace] self
+    # Set a new selector actor
+    #
+    # @param [BaseActor] actor
     ###
     setSelectedActor: (actor) ->
+
+      currentActor = _.find @actorObjects, (a) ->
+        a.getID() == Workspace._selectedActorID
+
+      currentActor.hideBoundingBox() if currentActor
+      actor.showBoundingBox()
+
       Workspace._selectedActorID = actor.getID()
 
     ###
@@ -231,6 +238,7 @@ define (require) ->
     addActor: (handle) ->
 
       @actorObjects.push handle
+      @setSelectedActor handle
       @ui.pushEvent "workspace.add.actor", actor: handle
       @
 
