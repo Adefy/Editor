@@ -30,8 +30,8 @@ define (require) ->
 
       @_handleType = "RectangleActor"
       @setName "Rectangle #{@_id_numeric}"
-      @initPropertyWidth()
-      @initPropertyHeight()
+      @initPropertyWidth @getBirthTime(), @getDeathTime()
+      @initPropertyHeight @getBirthTime(), @getDeathTime()
 
       @_properties.position.setValue x: x, y: y
       @_properties.width.setValue w
@@ -43,9 +43,9 @@ define (require) ->
     ###
     # Initialize Actor width property
     ###
-    initPropertyWidth: ->
+    initPropertyWidth: (birth, death) ->
       me = @
-      @_properties.width = new NumericProperty()
+      @_properties.width = new NumericProperty birth: birth, death: death
       @_properties.width.setVisibleInSidebar true
       @_properties.width.setMin 0
       @_properties.width.setPlaceholder 100
@@ -64,9 +64,9 @@ define (require) ->
     ###
     # Initialize Actor height property
     ###
-    initPropertyHeight: ->
+    initPropertyHeight: (birth, death) ->
       me = @
-      @_properties.height = new NumericProperty()
+      @_properties.height = new NumericProperty birth: birth, death: death
       @_properties.height.setVisibleInSidebar true
       @_properties.height.setMin 0
       @_properties.height.setPlaceholder 100
@@ -102,7 +102,7 @@ define (require) ->
     # Instantiate our ARE actor
     # @private
     ###
-    _birth: ->
+    birth: ->
       return if @_alive
       @_alive = true
 

@@ -12,11 +12,63 @@ define (require) ->
   ###
   class HandleProperty extends Dumpable
 
-    constructor: (type) ->
+    ###
+    # @param [String] type
+    # @param [Number] birth
+    # @param [Number] death
+    ###
+    constructor: (type, birth, death) ->
 
       @data_type = type
       @data_value = null
+      @data_buffer = []
+      @_birth = birth or 0
+      @_death = death or 1000
       @visible_in_sidebar = false
+
+    seekToTime: (time) ->
+
+    ###
+    # Fetch our birth time
+    #
+    # @return [Number] birth
+    ###
+    getBirth: -> @_birth
+
+    ###
+    # Fetch our death time
+    #
+    # @return [Number] death
+    ###
+    getBirth: -> @_death
+
+    ###
+    # Set a new birth time. Keyframes occuring before this point are destroyed.
+    #
+    # @param [Number] birth
+    # @return [Boolean] success
+    ###
+    setBirth: (birth) ->
+      return false if birth < 0 or birth >= @_death
+
+      # @todo...
+
+      @_birth = birth
+      true
+
+    ###
+    # Set a new death time. Keyframes occuring after this point are destroyed.
+    #
+    # @param [Number] death
+    # @return [Boolean] success
+    ###
+    setBirth: (death) ->
+      return false if death <= @_birth
+
+      # @todo...
+      
+      @_death = death
+      true
 
     ###
     # Fetch type
@@ -70,6 +122,8 @@ define (require) ->
     # @param [Object] value
     ###
     setValue: (value) ->
+      unless @validateValue
+        console.log "Val value null: #{@getType()}"
       return unless @validateValue value
       value = @processValue value
 

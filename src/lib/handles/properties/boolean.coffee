@@ -10,17 +10,11 @@ define (require) ->
 
     @type: "boolean"
 
-    constructor: ->
-      super BooleanProperty.type
+    constructor: (options) ->
+      super BooleanProperty.type, options.birth, options.death
 
       @data_placeholder = true
       @data_value = false
-
-    setValue: (value) ->
-      return unless @validateValue value
-
-      @data_value = value
-      @onUpdate value
 
     validateValue: (value) ->
       return false if value != false and value != true

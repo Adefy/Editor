@@ -13,7 +13,7 @@ define (require) ->
     constructor: (options) ->
       options ||= {}
 
-      super NumericProperty.type
+      super NumericProperty.type, options.birth, options.death
 
       setVal = (v, def) -> if v != undefined && v != null then v else def
 

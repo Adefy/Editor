@@ -32,8 +32,8 @@ define (require) ->
 
       @_handleType = "PolygonActor"
       @setName "Polygon #{@_id_numeric}"
-      @initPropertySides()
-      @initPropertyRadius()
+      @initPropertySides @getBirthTime(), @getDeathTime()
+      @initPropertyRadius @getBirthTime(), @getDeathTime()
 
       @_properties.position.setValue x: x, y: y
       @_properties.sides.setValue sides
@@ -45,8 +45,8 @@ define (require) ->
     ###
     # Initialize Actor sides property
     ###
-    initPropertySides: ->
-      @_properties.sides = new NumericProperty()
+    initPropertySides: (birth, death) ->
+      @_properties.sides = new NumericProperty birth: birth, death: death
       @_properties.sides.setVisibleInSidebar true
       @_properties.sides.setMin 3
       @_properties.sides.setPlaceholder 5
@@ -63,8 +63,8 @@ define (require) ->
     ###
     # Initialize Actor radius property
     ###
-    initPropertyRadius: ->
-      @_properties.radius = new NumericProperty()
+    initPropertyRadius: (birth, death) ->
+      @_properties.radius = new NumericProperty birth: birth, death: death
       @_properties.radius.setVisibleInSidebar true
       @_properties.radius.setMin 0
       @_properties.radius.setPlaceholder 50

@@ -22,8 +22,16 @@ define (require) ->
 
     @type: "composite"
 
-    constructor: ->
-      super CompositeProperty.type
+    ###
+    # @NOTE: We don't store any temporal data! We expect to have the same
+    # children throughout our lifetime. All calls to seekToTime() fall through
+    # to our children. Our own birth and death are never modified by @setBirth
+    # or @setDeath, the calls simply pass through to all children.
+    #
+    # @param [Object] options
+    ###
+    constructor: (options) ->
+      super CompositeProperty.type, options.birth, options.death
       @_properties = {}
 
     addProperty: (id, property) ->
@@ -38,6 +46,40 @@ define (require) ->
     setProperties: (properties) ->
       @_properties = properties
 
+    seekToTime: (time) ->
+      for id, property of @_properties
+        property.seekToTime time
+
+    ###
+    # Set birth time for all of our children. The first set that fails causes
+    # us to return false.
+    #
+    # @param [Number] birth
+    # @return [Boolean] success
+    ###
+    setBirth: (birth) ->
+      for id, property of @_properties
+        unless property.setBirth birth
+          return false
+
+      @_birth = birth
+      true
+
+    ###
+    # Set death time for all of our children. The first set that fails causes
+    # us to return false.
+    #
+    # @param [Number] death
+    # @return [Boolean] success
+    ###
+    setDeath: (death) ->
+      for id, property of @_properties
+        unless property.setDeath death
+          return false
+
+      @_death = death
+      true
+
     ###
     # Requests an update for each child property
     ###
@@ -49,12 +91,13 @@ define (require) ->
     # Pass a new value to each child property through a hash, of the form
     # { id: value }
     #
+    # @NOTE: We don't store or update our own temporal data!
+    #
     # @param [Object] data
     ###
     setValue: (data) ->
       for id, value of data
-        if @_properties[id]
-          @_properties[id].setValue value
+        @_properties[id]?.setValue value
 
     ###
     # Get the values of all children in a hash, stored by ID

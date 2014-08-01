@@ -56,7 +56,7 @@ define (require) ->
           name: config.strings.duplicate
           cb: => @_contextFuncDuplicate @
 
-      @_initProperties()
+      @_initProperties @_birthTime, @_deathTime
 
     #####################################
     #####################################
@@ -68,25 +68,26 @@ define (require) ->
     # Initialize all of our properties
     # @private
     ###
-    _initProperties: ->
+    _initProperties: (birth, death) ->
       return unless _.isEmpty @_properties
 
-      @_initPropertyOpacity()
-      @_initPropertyRotation()
-      @_initPropertyPosition()
-      @_initPropertyLayer()
-      @_initPropertyColor()
-      @_initPropertyPhysics()
-      @_initPropertyTextureRepeat()
+      @_initPropertyOpacity birth, death
+      @_initPropertyRotation birth, death
+      @_initPropertyPosition birth, death
+      @_initPropertyLayer birth, death
+      @_initPropertyColor birth, death
+      @_initPropertyPhysics birth, death
+      @_initPropertyTextureRepeat birth, death
 
     ###
     # Initialize Actor opacity property
     # @private
     ###
-    _initPropertyOpacity: ->
+    _initPropertyOpacity: (birth, death) ->
       me = @
 
       @_properties.opacity = new NumericProperty
+        birth: birth, death: death
         min: 0, max: 0, value: 1
         placeholder: 1
         float: true
@@ -101,10 +102,11 @@ define (require) ->
     # Initialize Actor rotation properties
     # @private
     ###
-    _initPropertyRotation: ->
+    _initPropertyRotation: (birth, death) ->
       me = @
 
       @_properties.rotation = new NumericProperty
+        birth: birth, death: death
         min: 0, max: 360
         precision: config.precision.rotation
 
@@ -117,14 +119,16 @@ define (require) ->
     # Initialize Actor position properties
     # @private
     ###
-    _initPropertyPosition: ->
+    _initPropertyPosition: (birth, death) ->
       me = @
 
-      @_properties.position = new CompositeProperty()
+      @_properties.position = new CompositeProperty birth: birth, death: death
       @_properties.position.icon = config.icon.property_position
       @_properties.position.x = new NumericProperty
+        birth: birth, death: death
         precision: config.precision.position
       @_properties.position.y = new NumericProperty
+        birth: birth, death: death
         precision: config.precision.position
 
       @_properties.position.x.onUpdate = (value) =>
@@ -152,12 +156,13 @@ define (require) ->
     # Initialize Actor layer properties
     # @private
     ###
-    _initPropertyLayer: ->
+    _initPropertyLayer: (birth, death) ->
       me = @
 
-      @_properties.layer = new CompositeProperty()
+      @_properties.layer = new CompositeProperty birth: birth, death: death
       @_properties.layer.icon = config.icon.property_layer
       @_properties.layer.main = new NumericProperty
+        birth: birth, death: death
         min: 0, value: 0
         precision: config.precision.layer
 
@@ -165,6 +170,7 @@ define (require) ->
         @_AREActor.setLayer layer if @_AREActor
 
       @_properties.layer.physics = new NumericProperty
+        birth: birth, death: death
         min: 0, max: 15, value: 0
         precision: config.precision.physicsLayer
 
@@ -181,20 +187,21 @@ define (require) ->
     # Initialize Actor color properties
     # @private
     ###
-    _initPropertyColor: ->
+    _initPropertyColor: (birth, death) ->
       me = @
 
-      @_properties.color = new CompositeProperty()
+      @_properties.color = new CompositeProperty birth: birth, death: death
       @_properties.color.icon = config.icon.property_color
 
       @_properties.color.r = new NumericProperty
+        birth: birth, death: death
         min: 0, max: 255, value: 0
         float: false
         placeholder: 255
         precision: config.precision.color
 
-      @_properties.color.g = new NumericProperty()
-      @_properties.color.b = new NumericProperty()
+      @_properties.color.g = new NumericProperty birth: birth, death: death
+      @_properties.color.b = new NumericProperty birth: birth, death: death
       @_properties.color.g.clone @_properties.color.r
       @_properties.color.b.clone @_properties.color.r
 
@@ -233,13 +240,14 @@ define (require) ->
     # Initialize Actor physics properties
     # @private
     ###
-    _initPropertyPhysics: ->
+    _initPropertyPhysics: (birth, death) ->
       me = @
 
-      @_properties.physics = new CompositeProperty()
+      @_properties.physics = new CompositeProperty birth: birth, death: death
       @_properties.physics.icon = config.icon.property_physics
 
       @_properties.physics.mass = new NumericProperty
+        birth: birth, death: death
         min: 0, value: 50
         placeholder: 50
         precision: config.precision.physics_mass
@@ -248,6 +256,7 @@ define (require) ->
         @_AREActor.setMass mass if @_AREActor
 
       @_properties.physics.elasticity = new NumericProperty
+        birth: birth, death: death
         min: 0, max: 1, value: 0.3
         placeholder: 0.3
         precision: config.precision.physics_elasticity
@@ -256,6 +265,7 @@ define (require) ->
         @_AREActor.setElasticity elasticity if @_AREActor
 
       @_properties.physics.friction = new NumericProperty
+        birth: birth, death: death
         min: 0, max: 1, value: 0.2
         placeholder: 0.2
         precision: config.precision.physics_friction
@@ -264,7 +274,8 @@ define (require) ->
         @_AREActor.setFriction friction if @_AREActor
 
 
-      @_properties.physics.enabled = new BooleanProperty()
+      @_properties.physics.enabled = new BooleanProperty
+        birth: birth, death: death
       @_properties.physics.enabled.setValue false
 
       @_properties.physics.enabled.onUpdate = (enabled) =>
@@ -289,17 +300,20 @@ define (require) ->
     # Initialize Actor texture_repeat properties
     # @private
     ###
-    _initPropertyTextureRepeat: ->
+    _initPropertyTextureRepeat: (birth, death) ->
       me = @
 
-      @_properties.textureRepeat = new CompositeProperty()
+      @_properties.textureRepeat = new CompositeProperty
+        birth: birth, death: death
       @_properties.textureRepeat.x = new NumericProperty
+        birth: birth, death: death
         value: 1
         placeholder: 1
         float: true
         precision: config.precision.texture_repeat
 
-      @_properties.textureRepeat.y = new NumericProperty()
+      @_properties.textureRepeat.y = new NumericProperty
+        birth: birth, death: death
       @_properties.textureRepeat.y.clone @_properties.textureRepeat.x
 
       @_properties.textureRepeat.x.onUpdate = (xRepeat) =>
