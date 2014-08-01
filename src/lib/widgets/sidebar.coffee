@@ -576,7 +576,7 @@ define (require) ->
           top: $("#{@getSel()} .sb-appearance").position().top
 
       # We need to perform a refresh anyways, to update the rest of the sidebar
-      @refreshInputValues()
+      @refreshInputValues true
 
     ###
     # Update target actor. An in-place refresh is made if the actor is already
@@ -616,12 +616,14 @@ define (require) ->
 
     ###
     # Pull in new input values from our target actor
+    #
+    # @param [Boolean] forceApperance force refresh of appearance square
     ###
-    refreshInputValues: ->
+    refreshInputValues: (forceApperance) ->
       return unless !!@_targetActor
 
       @_refreshRawInputs()
-      @_refreshAppearance() if @_apaNeedsRefresh()
+      @_refreshAppearance() if @_apaNeedsRefresh() or !!forceApperance
       @_refreshOpacity()
 
     _refreshRawInputs: ->
