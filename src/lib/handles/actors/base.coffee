@@ -612,6 +612,8 @@ define (require) ->
       return unless @_alive
       @_alive = false
 
+      @_boundingBox.remove()
+      @_boundingBox = null
       @_AREActor.destroy()
       @_AREActor = null
 
