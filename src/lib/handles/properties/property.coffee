@@ -45,23 +45,26 @@ define (require) ->
     # @return [Number] nearest
     ###
     getNearestTime: (time) ->
-      return -1 if time < @_birth or time > @_death
+      if time < @_birth or time > @_death
+        console.warn "Can't find nearest time, outside of lifetime: #{time}"
+        return -1
 
       if !!@_buffer[time]
         time
       else
 
         # At birth, no other times to our left
-        return -1 if time == @_birth
+        return @_birth if time == @_birth
 
         times = _.keys @_buffer
         times.sort (a, b) -> b - a
         startTimeIndex = _.findIndex times, (t) -> t == time
 
         # No other times to our left
-        return -1 if startTimeIndex >= times.length - 1
-
-        times[startTimeIndex + 1]
+        if startTimeIndex >= times.length - 1
+          times[startTimeIndex]
+        else
+          times[startTimeIndex + 1]
 
     ###
     # Check if we have more keyframes besides our birth
@@ -70,6 +73,23 @@ define (require) ->
     ###
     hasKeyframes: ->
       _.keys(@_buffer).length > 1
+
+    ###
+    # Get an array of our keyframes, sorted in ascending order
+    #
+    # @return [Array<Number>] keyframes
+    ###
+    getKeyframeTimes: ->
+      times = _.keys(@_buffer).map (t) -> Number t
+      times.sort()
+
+    ###
+    # Get our keyframe time/value hash
+    #
+    # @return [Object] keyframes
+    ###
+    getKeyframes: ->
+      @_buffer
 
     ###
     # Fetch our birth time

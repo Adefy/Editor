@@ -21,32 +21,30 @@ define ->
          data-index="{{ index }}"
          id="{{ id }}"
          class="actor">
-      {{#each properties}}
-       {{#if isProperty}}
-        <div id="{{ id }}" data-property="{{name}}" class="row property keyframes">
 
-         {{#each keyframes}}
+      <div class="row">
+        <div id="{{ id }}"
+             style="left: {{ left }}; width: {{ width }}"
+             data-start="{{start}}"
+             data-end="{{end}}"
+             class="bar">
+          <div class="bar-birth"></div>
+          <div class="bar-death"></div>
+
+          {{#each properties}}
+          {{#each keyframes}}
           <div id="{{ id }}"
                style="left: {{ left }}"
                data-index="{{index}}"
                data-property="{{../name}}"
-               data-time="{{ time }}"  class="keyframe"></div>
-         {{/each}}
+               data-time="{{ time }}"
+               class="keyframe">
+          </div>
+          {{/each}}
+          {{/each}}
 
         </div>
-       {{else}}
-        <div class="row">
-          <div id="{{ id }}"
-               style="left: {{ left }}; width: {{ width }}"
-               data-start="{{start}}"
-               data-end="{{end}}"
-               class="bar">
-            <div class="bar-birth"></div>
-            <div class="bar-death"></div>
-          </div>
-        </div>
-       {{/if}}
-      {{/each}}
+      </div>
 
     </div>
   """

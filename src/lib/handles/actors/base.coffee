@@ -353,6 +353,27 @@ define (require) ->
       false
 
     ###
+    # Fetch a compiled hash of our property keyframes. The hash is structured
+    # with time keys holding arrays of keyframe definitions
+    ###
+    getKeyframes: ->
+      keyframes = {}
+
+      for name, property of @_properties
+        times = property.getKeyframeTimes()
+        keys = property.getKeyframes()
+
+        if times.length > 1
+          for time in times
+            if time != @getBirthTime() and time != @getDeathTime()
+              keyframes[time] ||= []
+              keyframes[time].push
+                property: name
+                value: keys[time]
+
+      keyframes
+
+    ###
     # Set low level handle type. Don't use this unless you know what you are
     # doing!
     #

@@ -217,27 +217,6 @@ define (require) ->
         @updateAllActorsInTime()
       , 0
 
-    ###
-    # Validates an actor's lifetime
-    # @param [BaseActor] actor
-    # @private
-    ###
-    _checkActorLifetime: (actor) ->
-      # Sanity check, actor must die after it is created
-      if actor.getDeathTime() < actor.getBirthTime()
-        throw new Error "Actor lifetime end must come after lifetime start! " +\
-                        "start: #{actor.getBirthTime()}, " +\
-                        "end: #{actor.getDeathTime()}"
-
-      # Make sure actors' lifetime is contained in our duration!
-      #
-      # TODO: In the future, we can allow for actor deaths after our duration,
-      #       to ease timeline resizing.
-      if actor.getBirthTime() < 0 or actor.getDeathTime() > @_duration
-        throw new Error "Actor exists beyond our duration!"
-
-      true
-
     ## UI-TRIGGERS
 
     ###
@@ -757,68 +736,50 @@ define (require) ->
       }
 
     ###
-    # @return [Object]
-    #   @property [Array<Object>] *
-    #     @property [String] id
-    #     @property [Number] left
+    # @return [Object] keyframes
     # @private
     ###
     _calcActorKeyframes: (actor, timebarData) ->
       actorId = actor.getID()
 
-      keyframes =
+      keyframesProcessed =
         opacity: []
         position: []
         rotation: []
         color: []
-        #physics: []
-      
-      ######
-      ######
-      ###### Bail early
-      ######
-      ######
-      return keyframes
-      ######
-      ######
-      ###### Bail early
-      ######
-      ######
 
-      _animations = actor.getAnimations()
+      keyframes = actor.getKeyframes()
 
-      for time, anim of _animations
-        # relative to actor start position
-        #offset = 100 * (actor.getBirthTime() + Number(time)) / @_duration
-        # absolute
+      for time, frameset of keyframes
         offset = 100 * Number(time) / @_duration
         offset = "#{offset}%"
 
-        if anim.opacity
-          keyframes["opacity"].push
-            id: "actor-#{actorId}-key-opacity-#{keyframes["opacity"].length}"
-            left: offset
-            time: time
+        for frame in frameset
+          if frame.property == "opacity"
+            keyframesProcessed.opacity.push
+              id: "#{actorId}-opacity"
+              left: offset
+              time: time
 
-        if anim.position
-          keyframes["position"].push
-            id: "actor-#{actorId}-key-position-#{keyframes["position"].length}"
-            left: offset
-            time: time
+          if frame.property == "position"
+            keyframesProcessed.position.push
+              id: "#{actorId}-position"
+              left: offset
+              time: time
 
-        if anim.rotation
-          keyframes["rotation"].push
-            id: "actor-#{actorId}-key-rotation-#{keyframes["rotation"].length}"
-            left: offset
-            time: time
+          if frame.property == "rotation"
+            keyframesProcessed.rotation.push
+              id: "#{actorId}-rotation"
+              left: offset
+              time: time
 
-        if anim.color
-          keyframes["color"].push
-            id: "actor-#{actorId}-key-color-#{keyframes["color"].length}"
-            left: offset
-            time: time
+          if frame.property == "color"
+            keyframesProcessed.color.push
+              id: "#{actorId}-color"
+              left: offset
+              time: time
 
-      keyframes
+      keyframesProcessed
 
     ###
     # @return [Array<Object>]
@@ -840,46 +801,23 @@ define (require) ->
       timebarData = @_calcActorTimebar actor
       keyframes = @_calcActorKeyframes actor, timebarData
 
-      properties = []
-      # The actor's timebar
-      properties.push
-        id: "actor-time-bar-#{actorId}"
-        isProperty: false
-        left: timebarData.left
-        width: timebarData.length
-        start: timebarData.start
-        end: timebarData.end
-
-      properties.push
+      [
         id: "actor-time-property-opacity-#{actorId}"
         name: "opacity"
-        isProperty: true
-        keyframes: keyframes["opacity"]
-
-      properties.push
+        keyframes: keyframes.opacity
+      ,
         id: "actor-time-property-position-#{actorId}"
         name: "position"
-        isProperty: true
-        keyframes: keyframes["position"]
-
-      properties.push
+        keyframes: keyframes.position
+      ,
         id: "actor-time-property-rotation-#{actorId}"
         name: "rotation"
-        isProperty: true
-        keyframes: keyframes["rotation"]
-
-      properties.push
+        keyframes: keyframes.rotation
+      ,
         id: "actor-time-property-color-#{actorId}"
         name: "color"
-        isProperty: true
-        keyframes: keyframes["color"]
-
-      #properties.push
-      #  id: "actor-time-property-physics-#{actorId}"
-      #  isProperty: true
-      #  keyframes: keyframes["physics"]
-
-      properties
+        keyframes: keyframes.color
+      ]
 
     ## RENDER
 
@@ -938,13 +876,10 @@ define (require) ->
     # @private
     ###
     _renderActorTimebarEntry: (actor) ->
-
       actorId = actor.getID()
       index = _.findIndex @_actors, (a) -> a.getID() == actorId
-
-      return false unless @_checkActorLifetime actor
-
       properties = @_calcActorTimeProperties actor
+      timebarData = @_calcActorTimebar actor
 
       ##
       ## TODO: Check that something has actually changed before sending the HTML
@@ -955,6 +890,10 @@ define (require) ->
         actorid: actorId
         index: index
         properties: properties
+        left: timebarData.left
+        width: timebarData.length
+        start: timebarData.start
+        end: timebarData.end
 
     ###
     # Render an array of actor timebars
@@ -1102,60 +1041,45 @@ define (require) ->
 
       timeSelector = @_actorTimeSelector actor
       properties = @_calcActorTimeProperties actor
+      timebarData = @_calcActorTimebar actor
+
+      timebar = baseElement.find(".bar")
+      timebar.css
+        left: timebarData.left
+        width: timebarData.length
+      timebar.attr "data-start", timebarData.start
+      timebar.attr "data-end",   timebarData.end
 
       for property in properties
         baseElement = $("#{timeSelector} ##{property.id}")
-        if property.isProperty
-          keyframes = property.keyframes
+        keyframes = property.keyframes
+        elements = baseElement.find(".keyframe")
 
-          ## hard refresh
-          #elem = $("#{timeSelector} ##{property.id}")
-          #elem.empty()
-          #for keyframe in keyframes
-          #  elem.append TemplateTimelineKeyframe
-          #    id: keyframe.id
-          #    index: keyframe.index
-          #    property: property.name
-          #    time: keyframe.time
-          #    left: keyframe.left
+        elementsLength = elements.length
+        keyframesLength = keyframes.length
 
-          # soft refresh
+        # adjust the size of the keyframes container
+        if keyframesLength < elementsLength
+          diff = elementsLength - keyframes.length
+          elements[i].remove() for i in [0...diff]
 
-          elements = baseElement.find(".keyframe")
-
-          elementsLength = elements.length
-          keyframesLength = keyframes.length
-
-          # adjust the size of the keyframes container
-          if keyframesLength < elementsLength
-            diff = elementsLength - keyframes.length
-            elements[i].remove() for i in [0...diff]
-
-          elements = baseElement.find(".keyframe")
-          for i in [0...keyframes.length]
-            keyframe = keyframes[i]
-            element = $(elements[i])
-            if element.length > 0
-              element.attr "id",            keyframe.id
-              element.attr "data-index",    keyframe.index
-              element.attr "data-property", keyframe.property
-              element.attr "data-time",     keyframe.time
-              element.css left: keyframe.left
-            else
-              baseElement.append TemplateTimelineKeyframe
-                id: keyframe.id
-                index: keyframe.index
-                property: keyframe.property
-                time: keyframe.time
-                left: keyframe.left
-
-        else
-          element = baseElement.find(".bar")
-          element.css
-            left: property.left
-            width: property.width
-          element.attr "data-start", property.start
-          element.attr "data-end",   property.end
+        elements = baseElement.find(".keyframe")
+        for i in [0...keyframes.length]
+          keyframe = keyframes[i]
+          element = $(elements[i])
+          if element.length > 0
+            element.attr "id",            keyframe.id
+            element.attr "data-index",    keyframe.index
+            element.attr "data-property", keyframe.property
+            element.attr "data-time",     keyframe.time
+            element.css left: keyframe.left
+          else
+            baseElement.append TemplateTimelineKeyframe
+              id: keyframe.id
+              index: keyframe.index
+              property: keyframe.property
+              time: keyframe.time
+              left: keyframe.left
 
       @
 
