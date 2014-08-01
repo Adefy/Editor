@@ -21,12 +21,47 @@ define (require) ->
 
       @data_type = type
       @data_value = null
-      @data_buffer = []
+      @_buffer = {}
       @_birth = birth or 0
       @_death = death or 1000
+      @_currentTime = @_birth
       @visible_in_sidebar = false
 
     seekToTime: (time) ->
+      time = Number time
+
+      # Snap to the nearest buffered time to our left
+      time = @getNearestTime time
+      return unless time != @_currentTime
+
+      @setValue @_buffer[time], true
+      @_currentTime = time
+
+    ###
+    # Finds the closest time in the left direction from the specified time.
+    # Returns -1 if no such time is found (birth, or no left state)
+    #
+    # @param [Number] time
+    # @return [Number] nearest
+    ###
+    getNearestTime: (time) ->
+      return -1 if time < @_birth or time > @_death
+
+      if !!@_buffer[time]
+        time
+      else
+
+        # At birth, no other times to our left
+        return -1 if time == @_birth
+
+        times = _.keys @_buffer
+        times.sort (a, b) -> b - a
+        startTimeIndex = _.findIndex times, (t) -> t == time
+
+        # No other times to our left
+        return -1 if startTimeIndex >= times.length - 1
+
+        times[startTimeIndex + 1]
 
     ###
     # Fetch our birth time
@@ -66,7 +101,7 @@ define (require) ->
       return false if death <= @_birth
 
       # @todo...
-      
+
       @_death = death
       true
 
@@ -120,10 +155,13 @@ define (require) ->
     # Update our value. Validation and processing is done, and onUpdate() called
     #
     # @param [Object] value
+    # @param [Boolean] skipBuffer optionally skip our temporal buffer
     ###
-    setValue: (value) ->
+    setValue: (value, skipBuffer) ->
       return unless @validateValue value
       value = @processValue value
+
+      @_buffer[@_currentTime] = value unless skipBuffer
 
       @data_value = value
       @onUpdate value
