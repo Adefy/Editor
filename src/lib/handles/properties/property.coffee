@@ -25,46 +25,66 @@ define (require) ->
       @_birth = birth or 0
       @_death = death or 1000
       @_currentTime = @_birth
+      @_lastSeek = null
       @visible_in_sidebar = false
 
     seekToTime: (time) ->
-      time = Number time
+      return unless @timeWithinLifetime time
+      time = Math.floor Number(time)
 
-      # Snap to the nearest buffered time to our left
-      time = @getNearestTime time
-      return unless time != @_currentTime
+      frameLeft = @getNearestTimeLeft time
+      frameRight = @getNearestTimeRight time
 
-      @setValue @_buffer[time], true
+      fullDelta = @_buffer[frameRight] - @_buffer[frameLeft]
+      frameDistance = frameRight - frameLeft
+      dt = time - frameLeft
+      delta = fullDelta * (dt / frameDistance)
+
+      interpolated = @_buffer[frameLeft] + delta
+      @setValue interpolated, true
+
       @_currentTime = time
 
     ###
     # Finds the closest time in the left direction from the specified time.
-    # Returns -1 if no such time is found (birth, or no left state)
     #
     # @param [Number] time
     # @return [Number] nearest
     ###
-    getNearestTime: (time) ->
-      if time < @_birth or time > @_death
-        console.warn "Can't find nearest time, outside of lifetime: #{time}"
-        return -1
+    getNearestTimeLeft: (time) ->
+      time = Math.floor Number(time)
+      return time if @_buffer[time]
 
-      if !!@_buffer[time]
-        time
+      times = _.keys @_buffer
+      times.sort (a, b) -> b - a
+      leftTime = _.find times, (t) -> t < time
+
+      if leftTime == -1
+        @_birth
       else
+        leftTime
 
-        # At birth, no other times to our left
-        return @_birth if time == @_birth
+    ###
+    # Finds the closest time in the right direction from the specified time.
+    #
+    # @param [Number] time
+    # @return [Number] nearest
+    ###
+    getNearestTimeRight: (time) ->
+      time = Math.floor Number(time)
+      return time if @_buffer[time]
 
-        times = _.keys @_buffer
-        times.sort (a, b) -> b - a
-        startTimeIndex = _.findIndex times, (t) -> t == time
+      times = _.keys @_buffer
+      times.sort (a, b) -> a - b
+      rightTime = _.find times, (t) -> t > time
 
-        # No other times to our left
-        if startTimeIndex >= times.length - 1
-          times[startTimeIndex]
-        else
-          times[startTimeIndex + 1]
+      if rightTime == -1
+        @_death
+      else
+        rightTime
+
+    timeWithinLifetime: (time) ->
+      time >= @_birth and time <= @_death
 
     ###
     # Check if we have more keyframes besides our birth

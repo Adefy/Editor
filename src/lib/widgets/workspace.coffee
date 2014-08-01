@@ -239,6 +239,7 @@ define (require) ->
 
       @actorObjects.push handle
       @setSelectedActor handle
+      window.a = handle
       @ui.pushEvent "workspace.add.actor", actor: handle
       @
 
