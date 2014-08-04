@@ -209,7 +209,11 @@ define (require) ->
       return unless @validateValue value
       value = @processValue value
 
-      @_buffer[@_currentTime] = value unless skipBuffer
+      unless skipBuffer
+
+        # Make sure it is a new value
+        if @_buffer[@getNearestTimeLeft @_currentTime] != value
+          @_buffer[@_currentTime] = value
 
       @data_value = value
       @onUpdate value
