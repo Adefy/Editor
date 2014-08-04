@@ -9,6 +9,15 @@
     padding-top 24px
 
     .actor
+
+      &.expanded
+        overflow visible
+
+        .row
+          position inherit
+          overflow visible
+          height auto
+
       .bar
         position absolute
         height 4px
@@ -28,6 +37,13 @@
         .bar-death
           right 0
 
+      .property-keyframes
+        height 24px
+        display inline-block
+        vertical-align top
+        width 100%
+        position relative
+
       .keyframe
         position absolute
         display inline-block
@@ -36,9 +52,7 @@
         margin-left -3px
         width 8px
         height 8px
-        background #666
-        box-shadow inset 0 0 1px rgba(255,255,255,.35)
-        background linear-gradient(-45deg, #aaa, #666)
+        background #0099cc
         -webkit-transform rotate(45deg)
 
         &:hover

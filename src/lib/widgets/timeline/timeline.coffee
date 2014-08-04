@@ -881,6 +881,8 @@ define (require) ->
       properties = @_calcActorTimeProperties actor
       timebarData = @_calcActorTimebar actor
 
+      console.log properties
+
       ##
       ## TODO: Check that something has actually changed before sending the HTML
       ##
@@ -1049,6 +1051,10 @@ define (require) ->
         width: timebarData.length
       timebar.attr "data-start", timebarData.start
       timebar.attr "data-end",   timebarData.end
+
+      console.log "Updating actor time ---"
+      console.log properties
+      console.log "---"
 
       for property in properties
         baseElement = $("#{timeSelector} ##{property.id}")

@@ -88,6 +88,36 @@ define (require) ->
         property.requestUpdate()
 
     ###
+    # Get an array of our keyframes, sorted in ascending order. This is a
+    # combination of the keyframe times on our child properties.
+    #
+    # @return [Array<Number>] keyframes
+    ###
+    getKeyframeTimes: ->
+      compiledTimes = _.values(@_properties).map (v) -> v.getKeyframeTimes()
+      times = _.reduce compiledTimes, (reduced, set) ->
+        reduced = _.union reduced, set
+      times.sort()
+      times
+
+    ###
+    # Get our keyframe time/value hash. Extracted from our children.
+    #
+    # @return [Object] keyframes
+    ###
+    getKeyframes: ->
+      keyframes = {}
+
+      for name, property of @_properties
+        keys = property.getKeyframes()
+
+        for time, entry of keys
+          keyframes[time] ||= {}
+          keyframes[time][name] = entry
+
+      keyframes
+
+    ###
     # Pass a new value to each child property through a hash, of the form
     # { id: value }
     #

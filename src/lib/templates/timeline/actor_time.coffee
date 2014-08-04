@@ -30,21 +30,24 @@ define ->
              class="bar">
           <div class="bar-birth"></div>
           <div class="bar-death"></div>
+        </div>
 
+        <section>
           {{#each properties}}
-          {{#each keyframes}}
-          <div id="{{ id }}"
-               style="left: {{ left }}"
-               data-index="{{index}}"
-               data-property="{{../name}}"
-               data-time="{{ time }}"
-               class="keyframe">
+          <div id="{{ id }}" class="property-keyframes">
+            {{#each keyframes}}
+            <div id="{{ id }}"
+                 style="left: {{ left }}"
+                 data-index="{{index}}"
+                 data-property="{{../name}}"
+                 data-time="{{ time }}"
+                 class="keyframe">
+            </div>
+            {{/each}}
           </div>
           {{/each}}
-          {{/each}}
+        </section>
 
-        </div>
       </div>
-
     </div>
   """
