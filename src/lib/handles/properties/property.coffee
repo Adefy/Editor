@@ -93,6 +93,8 @@ define (require) ->
     # @param [Number] targetTime
     ###
     moveKeyframe: (sourceTime, targetTime) ->
+      sourceTime = Math.floor Number(sourceTime)
+      targetTime = Math.floor Number(targetTime)
       return unless !!@_buffer[sourceTime]
 
       @_buffer[targetTime] = _.clone @_buffer[sourceTime]
