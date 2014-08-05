@@ -755,36 +755,39 @@ define (require) ->
         color: []
 
       keyframes = actor.getKeyframes()
+      uniqueFrameID = 0
 
       for time, frameset of keyframes
         offset = 100 * Number(time) / @_duration
         offset = "#{offset}%"
 
         for frame in frameset
+          uniqueFrameID++
+
           if frame.property == "opacity"
             keyframesProcessed.opacity.push
-              id: "#{actorId}-opacity"
+              id: "#{actorId}-opacity-#{uniqueFrameID}"
               left: offset
               time: time
               name: "opacity"
 
           if frame.property == "position"
             keyframesProcessed.position.push
-              id: "#{actorId}-position"
+              id: "#{actorId}-position-#{uniqueFrameID}"
               left: offset
               time: time
               name: "position"
 
           if frame.property == "rotation"
             keyframesProcessed.rotation.push
-              id: "#{actorId}-rotation"
+              id: "#{actorId}-rotation-#{uniqueFrameID}"
               left: offset
               time: time
               name: "rotation"
 
           if frame.property == "color"
             keyframesProcessed.color.push
-              id: "#{actorId}-color"
+              id: "#{actorId}-color-#{uniqueFrameID}"
               left: offset
               time: time
               name: "color"
