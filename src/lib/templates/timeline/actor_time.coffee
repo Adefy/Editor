@@ -39,7 +39,7 @@ define ->
             <div id="{{ id }}"
                  style="left: {{ left }}"
                  data-index="{{index}}"
-                 data-property="{{../name}}"
+                 data-property="{{name}}"
                  data-time="{{ time }}"
                  class="keyframe">
             </div>

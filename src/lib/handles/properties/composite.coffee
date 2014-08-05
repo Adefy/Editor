@@ -51,6 +51,19 @@ define (require) ->
         property.seekToTime time
 
     ###
+    # Calls @moveKeyFrame() on all of our child properties with the provided
+    # times.
+    #
+    # Any existing keyframes at the target time are overwritten!
+    #
+    # @param [Number] sourceTime
+    # @param [Number] targetTime
+    ###
+    moveKeyframe: (sourceTime, targetTime) ->
+      for id, property of @_properties
+        property.moveKeyframe sourceTime, targetTime
+
+    ###
     # Set birth time for all of our children. The first set that fails causes
     # us to return false.
     #

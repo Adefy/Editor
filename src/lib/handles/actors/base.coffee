@@ -47,6 +47,7 @@ define (require) ->
 
       @_birthTime = Math.floor birthTime
       @_deathTime = Math.floor(deathTime or @ui.timeline.getDuration())
+      @_lastSeek = @_birthTime
 
       @_ctx = _.extend @_ctx,
         copy:
@@ -704,6 +705,14 @@ define (require) ->
       return unless @isAlive()
 
       property.seekToTime time for name, property of @_properties
+      @_lastSeek = time
+
+    ###
+    # Seek to the previous time we already seeked to. Useful after a keyframe
+    # change.
+    ###
+    reseek: ->
+      @seekToTime @_lastSeek
 
     ###
     # Equivalent of @seekToTime() with our birth time

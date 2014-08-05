@@ -9,10 +9,10 @@ define (require) ->
     # Initializes listeners
     #
     # @param [String] selector selector to listen for mouse movements on
-    # @param [Number] tolerance drag tolerance in pixels, default 5
+    # @param [Number] tolerance drag tolerance in pixels, default 1
     ###
     constructor: (selector, tolerance) ->
-      @_tolerance = tolerance || 5
+      @_tolerance = tolerance || 1
       @_sel = selector
 
       @clearUserData()

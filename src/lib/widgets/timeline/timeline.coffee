@@ -258,7 +258,7 @@ define (require) ->
     _bindKeyframeDragging: ->
       return if @keyframeDragger
 
-      @keyframeDragger = new Dragger ".actor .keyframes > .keyframe"
+      @keyframeDragger = new Dragger ".actor .property-keyframes > .keyframe"
 
       @keyframeDragger.setOnDragStart (d) ->
         d.setUserData "startTime": Number $(d.getTarget()).attr "data-time"
@@ -267,13 +267,12 @@ define (require) ->
       @keyframeDragger.setOnDrag (d, deltaX, deltaY) =>
 
         id = $(d.getTarget()).attr "id"
-
         keyframeTime = d.getUserDataValue "startTime"
-        property = $(d.getTarget()).parent().attr("data-property")
-
         targetTime = keyframeTime + (deltaX * @getTimePerPixel())
 
+        ###
         # Cache the actor to speed things up
+        ###
         unless d.getUserDataValue "actor"
           actorId = $(d.getTarget()).closest(".actor").attr "data-actorid"
           actor = _.find @_actors, (a) -> a.getID() == actorId
@@ -284,14 +283,18 @@ define (require) ->
         else
           actor = d.getUserDataValue "actor"
 
+        window.a = d.getTarget()
+        propertyName = $(d.getTarget()).attr "data-property"
+        property = actor.getProperty propertyName
+        return AUtilLog.error "Invalid property: #{property}" unless property
+
+        ###
         # Cache keyframe boundary information
+        ###
         unless d.getUserDataValue "boundaries"
-
           boundaries =
-            left: actor.findNearestState keyframeTime, false, property
-            right: actor.findNearestState keyframeTime, true, property
-
-          boundaries.right = @getDuration() if boundaries.right == -1
+            left: property.getNearestTimeLeft keyframeTime
+            right: property.getNearestTimeRight keyframeTime
 
           d.setUserDataValue "boundaries", boundaries
         else
@@ -301,8 +304,11 @@ define (require) ->
 
         source = d.getUserDataValue("lastUpdate") or keyframeTime
 
-        actor.transplantKeyframe property, source, targetTime
-        actor.updateInTime()
+        ###
+        # Actual keyframe transplant. Yay
+        ###
+        property.moveKeyframe source, targetTime
+        actor.reseek()
 
         d.setUserDataValue "lastUpdate", Math.floor targetTime
 
@@ -760,24 +766,28 @@ define (require) ->
               id: "#{actorId}-opacity"
               left: offset
               time: time
+              name: "opacity"
 
           if frame.property == "position"
             keyframesProcessed.position.push
               id: "#{actorId}-position"
               left: offset
               time: time
+              name: "position"
 
           if frame.property == "rotation"
             keyframesProcessed.rotation.push
               id: "#{actorId}-rotation"
               left: offset
               time: time
+              name: "rotation"
 
           if frame.property == "color"
             keyframesProcessed.color.push
               id: "#{actorId}-color"
               left: offset
               time: time
+              name: "color"
 
       keyframesProcessed
 
@@ -880,8 +890,6 @@ define (require) ->
       index = _.findIndex @_actors, (a) -> a.getID() == actorId
       properties = @_calcActorTimeProperties actor
       timebarData = @_calcActorTimebar actor
-
-      console.log properties
 
       ##
       ## TODO: Check that something has actually changed before sending the HTML
@@ -1052,10 +1060,6 @@ define (require) ->
       timebar.attr "data-start", timebarData.start
       timebar.attr "data-end",   timebarData.end
 
-      console.log "Updating actor time ---"
-      console.log properties
-      console.log "---"
-
       for property in properties
         baseElement = $("#{timeSelector} ##{property.id}")
         keyframes = property.keyframes
@@ -1070,20 +1074,18 @@ define (require) ->
           elements[i].remove() for i in [0...diff]
 
         elements = baseElement.find(".keyframe")
-        for i in [0...keyframes.length]
-          keyframe = keyframes[i]
+        for keyframe, i in keyframes
           element = $(elements[i])
+
           if element.length > 0
             element.attr "id",            keyframe.id
-            element.attr "data-index",    keyframe.index
-            element.attr "data-property", keyframe.property
+            element.attr "data-property", keyframe.name
             element.attr "data-time",     keyframe.time
             element.css left: keyframe.left
           else
             baseElement.append TemplateTimelineKeyframe
               id: keyframe.id
-              index: keyframe.index
-              property: keyframe.property
+              property: keyframe.name
               time: keyframe.time
               left: keyframe.left
 

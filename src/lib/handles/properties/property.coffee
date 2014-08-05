@@ -83,6 +83,21 @@ define (require) ->
       else
         rightTime
 
+    ###
+    # Move the keyframe found in our buffer at the source time to the provided
+    # target time. If the keyframe is not found, nothing happens.
+    #
+    # Any existing keyframe at the target time is overwritten!
+    #
+    # @param [Number] sourceTime
+    # @param [Number] targetTime
+    ###
+    moveKeyframe: (sourceTime, targetTime) ->
+      return unless !!@_buffer[sourceTime]
+
+      @_buffer[targetTime] = _.clone @_buffer[sourceTime]
+      delete @_buffer[sourceTime]
+
     timeWithinLifetime: (time) ->
       time >= @_birth and time <= @_death
 
