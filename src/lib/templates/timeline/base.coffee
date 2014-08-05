@@ -51,7 +51,10 @@ define ->
       </div>
 
       <div class="time">
-        <div id="timeline-cursor" class="cursor"></div>
+        <div id="timeline-cursor" class="cursor">
+          <div class="cursor-top"></div>
+        </div>
+        <div class="time-delimit"></div>
 
         <section class="time-static-actors">
           {{#each staticActorTimebars}} {{{ this }}} {{/each}}

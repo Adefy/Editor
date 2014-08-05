@@ -22,8 +22,19 @@
     cursor ew-resize
     background-color black
 
+    .cursor-top
+      position absolute
+      top 0
+      margin-left -11px
+      border-left 12px solid transparent
+      border-right 12px solid transparent
+      border-top 12px solid black
+
     &:hover
       background-color #0099cc
+
+      .cursor-top
+        border-top 12px solid #0099cc
 
   .row
     height 24px

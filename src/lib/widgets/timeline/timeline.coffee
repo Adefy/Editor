@@ -161,7 +161,7 @@ define (require) ->
         return AUtilLog.error "Invalid duration: #{duration}"
 
       @_duration = duration
-      @render()
+      @regenerateTimelineTicks()
 
     ###
     # Get current preview FPS
@@ -510,6 +510,29 @@ define (require) ->
                                      @getElement(".header").height()
 
       @_updateScrollbar()
+
+    ###
+    # Clear out and re-generate the time ticks at the top of the timeline
+    ###
+    regenerateTimelineTicks: ->
+      container = @getElement ".time-delimit"
+      timeSpace = @_spaceSelector()
+
+      # Ticks are 40px wide including the padding on the left
+      tickValue = @_duration / 10
+      tickSpacing = Math.floor($(timeSpace).width() / 10) - 34.5
+
+      container.html ""
+
+      for i in [0...10]
+        container.append """
+        <div class="tick">
+          <div class="tick-visual"></div>
+          <div class="tick-value">#{((tickValue * i) / 1000).toFixed 2}s</div>
+        </div>
+        """
+
+      @getElement(".time-delimit .tick").css "margin-right": tickSpacing
 
     ###
     # @param [Number] index
@@ -955,6 +978,7 @@ define (require) ->
     ###
     postRefresh: ->
       super()
+      @regenerateTimelineTicks()
       @
 
     ## UPDATE
