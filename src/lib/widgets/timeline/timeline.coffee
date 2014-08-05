@@ -1113,8 +1113,7 @@ define (require) ->
     # Updates all actors in the timeline
     ###
     _updateAllActors: ->
-      for actor in @_actors
-        @updateActor actor
+      @updateActor actor for actor in @_actors
 
     ## EVENTS
 

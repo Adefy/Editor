@@ -33,10 +33,10 @@ define (require) ->
       @initPropertyWidth @getBirthTime(), @getDeathTime()
       @initPropertyHeight @getBirthTime(), @getDeathTime()
 
-      @_properties.position.setValue x: x, y: y
-      @_properties.width.setValue w
-      @_properties.height.setValue h
-      @_properties.rotation.setValue rotation or 0
+      @_properties.position.setValue x: x, y: y, true
+      @_properties.width.setValue w, true
+      @_properties.height.setValue h, true
+      @_properties.rotation.setValue (rotation or 0), true
 
       @_postInit() unless !!manualInit
 
@@ -49,10 +49,10 @@ define (require) ->
       @_properties.width.setVisibleInSidebar true
       @_properties.width.setMin 0
       @_properties.width.setPlaceholder 100
-      @_properties.width.setValue 1
+      @_properties.width.setValue 1, true
       @_properties.width.setPrecision config.precision.width
       @_properties.width.requestUpdate = ->
-        @setValue me._AREActor.getWidth() if me._AREActor
+        @setValue me._AREActor.getWidth(), true if me._AREActor
 
       @_properties.width.onUpdate = (width) =>
         @_AREActor.setWidth width if @_AREActor
@@ -70,10 +70,10 @@ define (require) ->
       @_properties.height.setVisibleInSidebar true
       @_properties.height.setMin 0
       @_properties.height.setPlaceholder 100
-      @_properties.height.setValue 1
+      @_properties.height.setValue 1, true
       @_properties.height.setPrecision config.precision.height
       @_properties.height.requestUpdate = ->
-        @setValue me._AREActor.getHeight() if me._AREActor
+        @setValue me._AREActor.getHeight(), true if me._AREActor
 
       @_properties.height.onUpdate = (height) =>
         @_AREActor.setHeight height if @_AREActor

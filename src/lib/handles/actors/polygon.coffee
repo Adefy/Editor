@@ -35,10 +35,10 @@ define (require) ->
       @initPropertySides @getBirthTime(), @getDeathTime()
       @initPropertyRadius @getBirthTime(), @getDeathTime()
 
-      @_properties.position.setValue x: x, y: y
-      @_properties.sides.setValue sides
-      @_properties.radius.setValue radius
-      @_properties.rotation.setValue rotation or 0
+      @_properties.position.setValue x: x, y: y, true
+      @_properties.sides.setValue sides, true
+      @_properties.radius.setValue radius, true
+      @_properties.rotation.setValue (rotation or 0), true
 
       @_postInit() unless !!manualInit
 
@@ -51,7 +51,7 @@ define (require) ->
       @_properties.sides.setMin 3
       @_properties.sides.setPlaceholder 5
       @_properties.sides.setFloat false
-      @_properties.sides.setValue 3
+      @_properties.sides.setValue 3, true
       @_properties.sides.setPrecision config.precision.sides
       @_properties.sides.onUpdate = (sides) =>
         @_AREActor.setSegments sides if @_AREActor
@@ -68,7 +68,7 @@ define (require) ->
       @_properties.radius.setVisibleInSidebar true
       @_properties.radius.setMin 0
       @_properties.radius.setPlaceholder 50
-      @_properties.radius.setValue 10
+      @_properties.radius.setValue 10, true
       @_properties.radius.setPrecision config.precision.radius
       @_properties.radius.onUpdate = (radius) =>
         @_AREActor.setRadius radius if @_AREActor

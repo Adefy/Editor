@@ -97,7 +97,7 @@ define (require) ->
       @_properties.opacity.onUpdate = (opacity) =>
         @_AREActor.setOpacity opacity if @_AREActor
       @_properties.opacity.requestUpdate = ->
-        @setValue me._AREActor.getOpacity() if me._AREActor
+        @setValue me._AREActor.getOpacity(), true if me._AREActor
 
     ###
     # Initialize Actor rotation properties
@@ -114,7 +114,7 @@ define (require) ->
       @_properties.rotation.onUpdate = (rotation) =>
         @_AREActor.setRotation -rotation if @_AREActor
       @_properties.rotation.requestUpdate = ->
-        @setValue me._AREActor.getRotation() if me._AREActor
+        @setValue me._AREActor.getRotation(), true if me._AREActor
 
     ###
     # Initialize Actor position properties
@@ -139,7 +139,7 @@ define (require) ->
         @_AREActor.setPosition position
 
       @_properties.position.x.requestUpdate = ->
-        @setValue me._AREActor.getPosition().x if me._AREActor
+        @setValue me._AREActor.getPosition().x, true if me._AREActor
 
       @_properties.position.y.onUpdate = (value) =>
         return unless @_AREActor
@@ -148,7 +148,7 @@ define (require) ->
         @_AREActor.setPosition position
 
       @_properties.position.y.requestUpdate = ->
-        @setValue me._AREActor.getPosition().y if me._AREActor
+        @setValue me._AREActor.getPosition().y, true if me._AREActor
 
       @_properties.position.addProperty "x", @_properties.position.x
       @_properties.position.addProperty "y", @_properties.position.y
@@ -225,13 +225,13 @@ define (require) ->
         @_AREActor.setColor color
 
       @_properties.color.r.requestUpdate = ->
-        @setValue me._AREActor.getColor().getR() if me._AREActor
+        @setValue me._AREActor.getColor().getR(), true if me._AREActor
 
       @_properties.color.g.requestUpdate = ->
-        @setValue me._AREActor.getColor().getG() if me._AREActor
+        @setValue me._AREActor.getColor().getG(), true if me._AREActor
 
       @_properties.color.b.requestUpdate = ->
-        @setValue me._AREActor.getColor().getB() if me._AREActor
+        @setValue me._AREActor.getColor().getB(), true if me._AREActor
 
       @_properties.color.addProperty "r", @_properties.color.r
       @_properties.color.addProperty "g", @_properties.color.g
@@ -277,7 +277,7 @@ define (require) ->
 
       @_properties.physics.enabled = new BooleanProperty
         birth: birth, death: death
-      @_properties.physics.enabled.setValue false
+      @_properties.physics.enabled.setValue false, true
 
       @_properties.physics.enabled.onUpdate = (enabled) =>
         return unless @_AREActor
@@ -328,10 +328,10 @@ define (require) ->
           @_AREActor.setTextureRepeat texRep.x, yRepeat
 
       @_properties.textureRepeat.x.requestUpdate = ->
-        @setValue me._AREActor.getTextureRepeat().x if me._AREActor
+        @setValue me._AREActor.getTextureRepeat().x, true if me._AREActor
 
       @_properties.textureRepeat.y.requestUpdate = ->
-        @setValue me._AREActor.getTextureRepeat().y if me._AREActor
+        @setValue me._AREActor.getTextureRepeat().y, true if me._AREActor
 
       @_properties.textureRepeat.addProperty "x", @_properties.textureRepeat.x
       @_properties.textureRepeat.addProperty "y", @_properties.textureRepeat.y
