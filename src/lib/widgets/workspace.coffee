@@ -911,7 +911,7 @@ define (require) ->
 
       # data.workspaceVersion >= "1.1.0"
       for actor in actors
-        actorClass = window[actor.getHandleType()]
+        actorClass = window[actor.handleType]
 
         if actorClass
           @addActor actorClass.load @ui, actor

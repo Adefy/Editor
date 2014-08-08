@@ -678,8 +678,12 @@ define (require) ->
 
       # Grab existing color/texture info
       color = @_targetActor.getColor()
-      texture = _.find @ui.editor.project.textures, (texture) =>
-        texture.getUID() == @_targetActor.getTextureUID()
+
+      # We may be called during load, at which point the project is not yet
+      # available to us.
+      if @ui.editor.project
+        texture = _.find @ui.editor.project.textures, (texture) =>
+          texture.getUID() == @_targetActor.getTextureUID()
 
       # Update square
       if texture

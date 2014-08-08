@@ -88,7 +88,10 @@ define (require) ->
       # Don't save this, as it is volatile (likely immediately deleted)
       template = options.templateHandle
 
-      super @ui, template.getBirthTime(), template.getDeathTime()
+      birth = template.getBirthTime()
+      death = template.getDeathTime()
+
+      super @ui, birth, death
 
       @_imitateHandle template
 
@@ -119,12 +122,12 @@ define (require) ->
 
       delete @_ctx.makeSpawner
 
-      @_initPropertyState()
-      @_initPropertyParticles()
-      @_initPropertyDirection()
-      @_initPropertyVelocity()
-      @_initPropertyVelocityRange()
-      @_overridePhysicsProperty()
+      @_initPropertyState birth, death
+      @_initPropertyParticles birth, death
+      @_initPropertyDirection birth, death
+      @_initPropertyVelocity birth, death
+      @_initPropertyVelocityRange birth, death
+      @_overridePhysicsProperty birth, death
 
       window.s ||= []
       window.s.push @
@@ -184,6 +187,8 @@ define (require) ->
     #
     # NOTE: This should probably only be called once! Preferably in our
     #       constructor
+    #
+    # @param [BaseActor] handle
     ###
     _imitateHandle: (handle) ->
 
@@ -204,6 +209,9 @@ define (require) ->
         unless "#{@[name]}" == "#{method}" or _.contains keepMethods, name
           @[name] = _.clone method, true
 
+      birth = handle.getBirthTime()
+      death = handle.getDeathTime()
+
       # Update our own properties to match
       for name, property of handle._properties
 
@@ -220,11 +228,11 @@ define (require) ->
             @_properties[name] = property
           else
             if property.type == "composite"
-              @_properties[name] = new CompositeProperty()
+              @_properties[name] = new CompositeProperty birth: birth, death: death
             else if property.type == "number"
-              @_properties[name] = new NumericProperty()
+              @_properties[name] = new NumericProperty birth: birth, death: death
             else if property.type == "boolean"
-              @_properties[name] = new BooleanProperty()
+              @_properties[name] = new BooleanProperty birth: birth, death: death
 
             @_properties[name].load property if @_properties[name]
 
@@ -245,23 +253,25 @@ define (require) ->
     ###
     # Initialize our particles property
     ###
-    _initPropertyParticles: ->
-      @_properties.particles = new CompositeProperty()
+    _initPropertyParticles: (birth, death) ->
+      @_properties.particles = new CompositeProperty birth: birth, death: death
 
-      @_properties.particles.seed = new NumericProperty()
+      @_properties.particles.seed = new NumericProperty birth: birth, death: death
       @_properties.particles.seed.setPrecision 0
       @_properties.particles.seed.setValue Math.floor(Math.random() * 0xFFFF)
 
-      @_properties.particles.max = new NumericProperty()
+      @_properties.particles.max = new NumericProperty birth: birth, death: death
       @_properties.particles.max.setPrecision 0
       @_properties.particles.max.setValue 50
 
-      @_properties.particles.frequency = new NumericProperty()
+      @_properties.particles.frequency = new NumericProperty
+        birth: birth, death: death
       @_properties.particles.frequency.setMin 50
       @_properties.particles.frequency.setPrecision 0
       @_properties.particles.frequency.setValue 50
 
-      @_properties.particles.lifetime = new NumericProperty()
+      @_properties.particles.lifetime = new NumericProperty
+        birth: birth, death: death
       @_properties.particles.lifetime.setMin 100
       @_properties.particles.lifetime.setPrecision 0
       @_properties.particles.lifetime.setValue 700
@@ -274,10 +284,10 @@ define (require) ->
     ###
     # Setup properties in charge of enabling us throughout time
     ###
-    _initPropertyState: ->
-      @_properties.state = new CompositeProperty()
-      @_properties.state.active = new BooleanProperty()
-      @_properties.state.preview = new BooleanProperty()
+    _initPropertyState: (birth, death) ->
+      @_properties.state = new CompositeProperty birth: birth, death: death
+      @_properties.state.active = new BooleanProperty birth: birth, death: death
+      @_properties.state.preview = new BooleanProperty birth: birth, death: death
 
       @_properties.state.active.setValue false
       @_properties.state.preview.setValue false
@@ -289,11 +299,11 @@ define (require) ->
     # Set up the property that specifies the end of a vector starting at our
     # origin, representing the direction of initial spawns
     ###
-    _initPropertyDirection: ->
-      @_properties.direction = new CompositeProperty()
-      @_properties.direction.x = new NumericProperty()
+    _initPropertyDirection: (birth, death) ->
+      @_properties.direction = new CompositeProperty birth: birth, death: death
+      @_properties.direction.x = new NumericProperty birth: birth, death: death
       @_properties.direction.x.setValue 0
-      @_properties.direction.y = new NumericProperty()
+      @_properties.direction.y = new NumericProperty birth: birth, death: death
       @_properties.direction.y.setValue 10
 
       @_properties.direction.addProperty "x", @_properties.direction.x
@@ -303,11 +313,11 @@ define (require) ->
     # Set up the property responsible for the initial velocity of spawns.
     # Units are pixels/s
     ###
-    _initPropertyVelocity: ->
-      @_properties.velocity = new CompositeProperty()
-      @_properties.velocity.x = new NumericProperty()
+    _initPropertyVelocity: (birth, death) ->
+      @_properties.velocity = new CompositeProperty birth: birth, death: death
+      @_properties.velocity.x = new NumericProperty birth: birth, death: death
       @_properties.velocity.x.setValue 0
-      @_properties.velocity.y = new NumericProperty()
+      @_properties.velocity.y = new NumericProperty birth: birth, death: death
       @_properties.velocity.y.setValue 0
 
       @_properties.velocity.addProperty "x", @_properties.velocity.x
@@ -316,11 +326,14 @@ define (require) ->
     ###
     # Set up the property by which spawn velocity is randomly offset
     ###
-    _initPropertyVelocityRange: ->
-      @_properties.velocityRange = new CompositeProperty()
-      @_properties.velocityRange.x = new NumericProperty()
+    _initPropertyVelocityRange: (birth, death) ->
+      @_properties.velocityRange = new CompositeProperty
+        birth: birth, death: death
+      @_properties.velocityRange.x = new NumericProperty
+        birth: birth, death: death
       @_properties.velocityRange.x.setValue 2
-      @_properties.velocityRange.y = new NumericProperty()
+      @_properties.velocityRange.y = new NumericProperty
+        birth: birth, death: death
       @_properties.velocityRange.y.setValue 2
 
       @_properties.velocityRange.addProperty "x", @_properties.velocityRange.x
