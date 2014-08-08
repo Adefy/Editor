@@ -32,6 +32,11 @@ define (require) ->
       return unless @timeWithinLifetime time
       time = Math.floor Number(time)
 
+      # If we are currently at our birth, and no value has been set in the
+      # buffer, use our current value for our birth state
+      if @_currentTime == @_birth and _.keys(@_buffer).length == 0
+        @_buffer[@_birth] = @data_value
+
       frameLeft = @getNearestTimeLeft time
       frameRight = @getNearestTimeRight time
 
