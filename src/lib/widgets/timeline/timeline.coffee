@@ -259,7 +259,6 @@ define (require) ->
       return if @keyframeDragger
 
       @keyframeDragger = new Dragger ".actor .property-keyframes > .keyframe"
-
       @keyframeDragger.setOnDragStart (d) ->
         d.setUserData "startTime": Number $(d.getTarget()).attr "data-time"
 
@@ -283,7 +282,6 @@ define (require) ->
         else
           actor = d.getUserDataValue "actor"
 
-        window.a = d.getTarget()
         propertyName = $(d.getTarget()).attr "data-property"
         property = actor.getProperty propertyName
         return AUtilLog.error "Invalid property: #{property}" unless property

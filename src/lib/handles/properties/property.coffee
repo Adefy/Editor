@@ -58,7 +58,6 @@ define (require) ->
     ###
     getNearestTimeLeft: (time) ->
       time = Math.floor Number(time)
-      return time if @_buffer[time]
 
       times = _.keys @_buffer
       times.sort (a, b) -> b - a
@@ -77,7 +76,6 @@ define (require) ->
     ###
     getNearestTimeRight: (time) ->
       time = Math.floor Number(time)
-      return time if @_buffer[time]
 
       times = _.keys @_buffer
       times.sort (a, b) -> a - b
