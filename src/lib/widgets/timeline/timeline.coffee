@@ -518,21 +518,18 @@ define (require) ->
       container = @getElement ".time-delimit"
       timeSpace = @_spaceSelector()
 
-      # Ticks are 40px wide including the padding on the left
       tickValue = @_duration / 10
-      tickSpacing = Math.floor($(timeSpace).width() / 10) - 34.5
+      tickWidth = $(timeSpace).width() / 10
 
       container.html ""
 
       for i in [0...10]
         container.append """
-        <div class="tick">
+        <div class="tick" style="width: #{tickWidth}px">
           <div class="tick-visual"></div>
           <div class="tick-value">#{((tickValue * i) / 1000).toFixed 2}s</div>
         </div>
         """
-
-      @getElement(".time-delimit .tick").css "margin-right": tickSpacing
 
     ###
     # @param [Number] index
@@ -914,8 +911,10 @@ define (require) ->
     _renderActorTimebarEntry: (actor) ->
       actorId = actor.getID()
       index = _.findIndex @_actors, (a) -> a.getID() == actorId
+
       properties = @_calcActorTimeProperties actor
       timebarData = @_calcActorTimebar actor
+      keyMarkers = @_getKeyframeMarkerTimes properties
 
       ##
       ## TODO: Check that something has actually changed before sending the HTML
@@ -925,11 +924,23 @@ define (require) ->
         id: "actor-time-#{actorId}"
         actorid: actorId
         index: index
+        keyframeIndicators: keyMarkers
         properties: properties
         left: timebarData.left
         width: timebarData.length
         start: timebarData.start
         end: timebarData.end
+
+    ###
+    # Generate a list of keyframe marker times for an array of properties. These
+    # times signify the position on the timebar where a marker should be shown.
+    #
+    # @param [Array<Object>] properties
+    # @return [Array<Number>] markers
+    ###
+    _getKeyframeMarkerTimes: (properties) ->
+      keyframeLists = _.map properties, (p) -> p.keyframes.map (k) -> k?.left
+      _.uniq _.reduce keyframeLists, (all, keys) -> all.concat keys
 
     ###
     # Render an array of actor timebars
@@ -1076,45 +1087,51 @@ define (require) ->
       actor ||= @_lastSelectedActor
       return unless actor
 
-      timeSelector = @_actorTimeSelector actor
-      properties = @_calcActorTimeProperties actor
+      @resizeActorTimebar actor
+      @refreshActorKeyframes actor
+
+      @
+
+    ###
+    # Update the extents of the actor's timebar
+    #
+    # @param [BaseActor] actor
+    ###
+    resizeActorTimebar: (actor) ->
       timebarData = @_calcActorTimebar actor
 
-      timebar = @getElement ".bar"
+      timebar = @getElement "#{@_actorTimeSelector actor} .bar"
       timebar.css
         left: timebarData.left
         width: timebarData.length
       timebar.attr "data-start", timebarData.start
       timebar.attr "data-end",   timebarData.end
 
+      @
+
+    refreshActorKeyframes: (actor) ->
+      properties = @_calcActorTimeProperties actor
+      markers = @_getKeyframeMarkerTimes properties
+      timeSelector = @_actorTimeSelector actor
+
+      # Remove existing keyframe markers (from timebar and property rows)
+      $("#{timeSelector} .keyframe").remove()
+
       for property in properties
-        baseElement = $("#{timeSelector} ##{property.id}")
-        keyframes = property.keyframes
-        elements = baseElement.find(".keyframe")
+        propertyContainer = $("#{timeSelector} ##{property.id}")
 
-        elementsLength = elements.length
-        keyframesLength = keyframes.length
+        # Re-generate them
+        for keyframe in property.keyframes
+          propertyContainer.append TemplateTimelineKeyframe
+            id: keyframe.id
+            property: keyframe.name
+            time: keyframe.time
+            left: keyframe.left
 
-        # adjust the size of the keyframes container
-        if keyframesLength < elementsLength
-          diff = elementsLength - keyframes.length
-          elements[i].remove() for i in [0...diff]
-
-        elements = baseElement.find(".keyframe")
-        for keyframe, i in keyframes
-          element = $(elements[i])
-
-          if element.length > 0
-            element.attr "id",            keyframe.id
-            element.attr "data-property", keyframe.name
-            element.attr "data-time",     keyframe.time
-            element.css left: keyframe.left
-          else
-            baseElement.append TemplateTimelineKeyframe
-              id: keyframe.id
-              property: keyframe.name
-              time: keyframe.time
-              left: keyframe.left
+      for marker in markers
+        $("#{timeSelector} .bar").append """
+        <div style="left: #{marker}" class="keyframe"></div>
+        """
 
       @
 

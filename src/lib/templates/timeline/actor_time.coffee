@@ -30,6 +30,11 @@ define ->
              class="bar">
           <div class="bar-birth"></div>
           <div class="bar-death"></div>
+
+          {{#each keyframeIndicators}}
+          <div style="left: {{this}}" class="keyframe"></div>
+          {{/each}}
+
         </div>
 
         <section>
@@ -37,11 +42,11 @@ define ->
           <div id="{{ id }}" class="property-keyframes">
             {{#each keyframes}}
             <div id="{{ id }}"
-                 style="left: {{ left }}"
-                 data-index="{{index}}"
-                 data-property="{{name}}"
-                 data-time="{{ time }}"
-                 class="keyframe">
+              style="left: {{ left }}"
+              data-index="{{index}}"
+              data-property="{{name}}"
+              data-time="{{ time }}"
+              class="keyframe">
             </div>
             {{/each}}
           </div>
