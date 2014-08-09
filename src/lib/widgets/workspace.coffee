@@ -392,22 +392,7 @@ define (require) ->
         e.preventDefault()
         false
 
-    ###
-    # Initializes dragging settings and attaches listeners
-    ###
-    _bindActorDragging: ->
-
-      toggleActorPhysics = (d, handle) ->
-
-        if handle.getActor().hasPhysics()
-          handle.getActor().destroyPhysicsBody()
-          d.setUserDataValue "hasPhysics", true
-        else
-          d.setUserDataValue "hasPhysics", false
-
-      ###
-      # Rotate Actor
-      ###
+    _bindActorClickRotate: ->
       @draggerRotate = new Dragger ".workspace .editor-canvas"
 
       @draggerRotate.setCheckDrag (e) =>
@@ -423,7 +408,11 @@ define (require) ->
           d.setTarget handle
           d.setUserData original: handle.getRotation()
 
-          toggleActorPhysics d, handle
+          if handle.getActor().hasPhysics()
+            handle.getActor().destroyPhysicsBody()
+            d.setUserDataValue "hasPhysics", true
+          else
+            d.setUserDataValue "hasPhysics", false
 
           document.body.style.cursor = "pointer"
 
@@ -446,14 +435,26 @@ define (require) ->
 
           @ui.pushEvent "selected.actor.update", actor: d.getTarget()
 
-      ###
-      # Move actor
-      ###
+    _bindActorClickSelect: ->
+
+      # Actor picking!
+      # NOTE: This should only be allowed when the scene is not being animated!
+      $(".workspace .editor-canvas").click (e) =>
+        return if @dragger.isDragging()
+        return if e.shiftKey
+
+        @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
+          return unless @isValidPick r, g, b
+
+          actor = @getActorFromPick r, g, b
+          if actor
+            @setSelectedActor actor
+            @ui.pushEvent "workspace.selected.actor", actor: actor
+
+    _bindActorClickMove: ->
+
       @dragger = new Dragger ".workspace .editor-canvas"
-
-      @dragger.setCheckDrag (e) =>
-        !e.shiftKey && !e.ctrlKey
-
+      @dragger.setCheckDrag (e) => !e.shiftKey && !e.ctrlKey
       @dragger.setOnDragStart (d) =>
         @performPick @domToGL(d.getStart().x, d.getStart().y), (r, g, b) =>
           return d.forceDragEnd() unless @isValidPick r, g, b
@@ -467,7 +468,11 @@ define (require) ->
               x: handle.getPosition().x
               y: handle.getPosition().y
 
-          toggleActorPhysics d, handle
+          if handle.getActor().hasPhysics()
+            handle.getActor().destroyPhysicsBody()
+            d.setUserDataValue "hasPhysics", true
+          else
+            d.setUserDataValue "hasPhysics", false
 
           document.body.style.cursor = "pointer"
 
@@ -491,59 +496,47 @@ define (require) ->
         target.setPosition newX, newY, true
         @ui.pushEvent "selected.actor.update", actor: target
 
-      # Actor picking!
-      # NOTE: This should only be allowed when the scene is not being animated!
-      $(".workspace .editor-canvas").click (e) =>
-        return if @dragger.isDragging()
-        return if e.shiftKey
-
-        @performPick @domToGL(e.pageX, e.pageY), (r, g, b) =>
-          return unless @isValidPick r, g, b
-
-          actor = @getActorFromPick r, g, b
-          if actor
-            @setSelectedActor actor
-            @ui.pushEvent "workspace.selected.actor", actor: actor
-
     ###
     # Register listeners
     ###
     _bindListeners: ->
 
-      @_bindActorDragging()
+      @_bindActorClickSelect()
+      @_bindActorClickMove()
+      @_bindActorClickRotate()
+      @_bindWorkspaceDrag()
       @_bindContextClick()
+      @_bindTextureDrop()
 
-      ###
-      # Workspace drag
-      ###
+    _bindWorkspaceDrag: ->
+
       $(document).mousemove (e) =>
         return unless @_workspaceDrag
 
-        x = @_workspaceDrag.x
-        y = @_workspaceDrag.y
-
+        # Move camera
         camPos = @_are.getRenderer().getCameraPosition()
-        camPos.x += x - e.pageX
-        camPos.y += y - e.pageY
+        camPos.x += @_workspaceDrag.x - e.pageX
+        camPos.y += @_workspaceDrag.y - e.pageY
 
-        @_workspaceDrag =
-          x: e.pageX
-          y: e.pageY
+        # Update actors with bounding boxes. This is probably faster than
+        # filtering and maping? Although that is more elegant.
+        for actor in @actorObjects
+          if actor.boundingBoxVisible()
+            actor.refreshBoundingBox()
 
-      $(document).mouseup (e) =>
-        return unless @_workspaceDrag
+        @_workspaceDrag = x: e.pageX, y: e.pageY
 
-        @_workspaceDrag = null
+      $(document).mouseup (e) => @_workspaceDrag = null
 
       $(document).on "mousedown", ".workspace .editor-canvas", (e) =>
-        if e.shiftKey && !e.ctrlKey && !@_workspaceDrag
-          @_workspaceDrag =
-            x: e.pageX
-            y: e.pageY
+        return unless e.shiftKey && !e.ctrlKey && !@_workspaceDrag
+        @_workspaceDrag = x: e.pageX, y: e.pageY
 
-      ###
-      # Setup texture drops
-      ###
+    ###
+    # When an image is dropped onto the workspace, a rectangle actor is spawned
+    # with that image as its texture, and resized accordingly.
+    ###
+    _bindTextureDrop: ->
       $(@_sel).on "dragover", (e) ->
         if _.contains e.originalEvent.dataTransfer.types, "image/texture"
           e.preventDefault()

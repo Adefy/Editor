@@ -654,11 +654,15 @@ define (require) ->
         return unless @_boundingBox
         @_boundingBox.updateBounds u
 
-      onOrientationChange
-        position: @_AREActor.getPosition()
-        rotation: @_AREActor.getRotation true
+      # Bind refresh handler
+      @refreshBoundingBox = =>
+        onOrientationChange
+          position: @_AREActor.getPosition()
+          rotation: @_AREActor.getRotation true
 
-      onSizeChange @_AREActor.getBounds()
+        onSizeChange @_AREActor.getBounds()
+
+      @refreshBoundingBox()
 
       @_AREActor.setOnOrientationChange onOrientationChange
       @_AREActor.setOnSizeChange onSizeChange
@@ -671,6 +675,13 @@ define (require) ->
 
     boundingBoxVisible: ->
       !!@_boundingBox
+
+    ###
+    # Stub for docs; this method is overwritten by @showBoundingBox()
+    #
+    # Refreshes the orientation and bounds of our bounding box, if we have one.
+    ###
+    refreshBoundingBox: ->
 
     ###
     # Create the actor; can be killed later with a call to @death()
