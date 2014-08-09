@@ -8,7 +8,6 @@ define (require) ->
   aformat = require "util/format"
   Widget = require "widgets/widget"
   ContextMenu = require "widgets/context_menu"
-  TimelineControl = require "widgets/timeline/timeline_control"
   Workspace = require "widgets/workspace"
 
   Dragger = require "util/dragger"
@@ -26,11 +25,6 @@ define (require) ->
   class Timeline extends Widget
 
     ###
-    # @type [Boolean]
-    ###
-    @__staticInitialized: false
-
-    ###
     # Creates a timeline at the bottom of the screen. Note that it is absolutely
     # positioned, and adds padding to the body accordingly.
     #
@@ -41,7 +35,6 @@ define (require) ->
     ###
     constructor: (@ui, options) ->
       options ||= {}
-      return unless @enforceSingleton()
 
       super @ui,
         id: ID.prefID("timeline")
@@ -53,28 +46,14 @@ define (require) ->
       unless @_duration > 0
         return AUtilLog.error "Invalid duration: #{@_duration}"
 
-      @_control = new TimelineControl @
-
       @_previewFPS = 30
       @_playbackID = null
-
-      @controlState =
-        fast_backward: false
-        backward: false
-        play: false
-        forward: false
-        fast_forward: false
-
-      # Actor array, access through addActor/removeActor
       @_actors = []
 
       @resize 256
-
       @_bindListeners()
+      @_resetControlState()
 
-    ###
-    # @return [Timeline] self
-    ###
     postInit: ->
       super()
 
@@ -85,18 +64,11 @@ define (require) ->
       else
         @hide()
 
-      @
-
-    ###
-    # Checks if a timeline has already been created, and returns false if one
-    # has. Otherwise, sets a flag preventing future calls from returning true
-    ###
-    enforceSingleton: ->
-      if Timeline.__exists
-        AUtilLog.warn "A timeline already exists, refusing to initialize!"
-        return false
-
-      Timeline.__exists = true
+    #####################################
+    #####################################
+    ### @mark Selector generators #######
+    #####################################
+    #####################################
 
     ###
     # Returns the time space css selector
@@ -114,30 +86,37 @@ define (require) ->
 
     ###
     # @param [BaseActor] actor
+    # @return [String] selector
     ###
     _actorBodySelector: (actor) ->
       "#{@_bodySelector()} #actor-body-#{actor.getID()}.actor"
 
     ###
     # @param [BaseActor] actor
+    # @return [String] selector
     ###
     _actorTimeSelector: (actor) ->
       "#{@_spaceSelector()} #actor-time-#{actor.getID()}.actor"
 
     ###
     # returns the scrollbar selector
-    # @return [String]
+    # @return [String] selector
     ###
-    _scrollbarSelector: -> "#{@_sel} .content"
+    _scrollbarSelector: ->
+      "#{@_sel} .content"
 
     ###
     # Returns the scrollbar element
-    # @return [jQuery]
+    # @return [HTMLElement] element
     ###
     _scrollbarElement: ->
       $(@_scrollbarSelector())
 
-    ## ATTRIBUTES
+    #####################################
+    #####################################
+    ### @mark Accessors #################
+    #####################################
+    #####################################
 
     ###
     # @return [Array<BaseActor>] actors
@@ -217,11 +196,30 @@ define (require) ->
         @updateAllActorsInTime()
       , 0
 
-    ## UI-TRIGGERS
+    ###
+    # Resets our internal control state, controlling the active state of the
+    # control buttons.
+    ###
+    _resetControlState: ->
+
+      @controlState =
+        "fast-backward": false
+        backward: false
+        play: false
+        forward: false
+        "fast-forward": false
+
+      @updateControls()
+
+    #####################################
+    #####################################
+    ### @mark Event listeners ###########
+    #####################################
+    #####################################
 
     ###
     # When an actor expand button is pressed this function is called
-    # @param [jQuery] element
+    # @param [HTMLElement] element
     # @private
     ###
     _onActorToggleExpand: (element) ->
@@ -230,7 +228,7 @@ define (require) ->
 
     ###
     # When an actor visibility button is pressed this function is called
-    # @param [jQuery] element
+    # @param [HTMLElement] element
     # @private
     ###
     _onActorToggleVisible: (element) ->
@@ -242,7 +240,7 @@ define (require) ->
       a.seekToTime t for a in @_actors
 
     ###
-    # @param [jQuery] element
+    # @param [HTMLElement] element
     # @private
     ###
     _onOuterClicked: (element) ->
@@ -393,9 +391,10 @@ define (require) ->
         actor.updateInTime()
 
     ###
-    # @private
+    # Binds the context menu that appears when an actor is right-clicked in our
+    # actor list. The contents of it depend on the specific actor.
     ###
-    _bindContextClick: ->
+    _bindActorCtxClick: ->
       $(document).on "contextmenu", ".timeline .actor .title", (e) =>
         actorElement = $(e.target).closest ".actor"
         index = $(actorElement).attr "data-index"
@@ -414,10 +413,13 @@ define (require) ->
     ###
     _bindListeners: ->
 
-      @_bindContextClick()
+      @_bindActorCtxClick()
       @_bindKeyframeDragging()
       @_bindTimebarDragging()
+      @_bindTimelineControls()
+      @_bindDraggableCursor()
 
+    _bindTimelineControls: ->
       $(document).on "click", ".timeline .control.right", (e) =>
         @toggle()
 
@@ -427,35 +429,27 @@ define (require) ->
       $(document).on "click", ".timeline .list .actor .visibility", (e) =>
         @_onActorToggleVisible $(e.target).closest ".actor"
 
-      ##
-      ## TODO: Move all of the control listeners into the timeline_control class
-      ##
-
       # Outer timebar
       $(document).on "click", ".timeline .list .actor .title", (e) =>
         @_onOuterClicked $(e.target).closest ".actor"
 
       # Timeline playback controls
       $(document).on "click", "#timeline-control-fast-backward", (e) =>
-        @_control.onClickFastBackward e
-        @updateControls()
+        @onClickFastBackward e
 
       $(document).on "click", "#timeline-control-forward", (e) =>
-        @_control.onClickForward e
-        @updateControls()
+        @onClickForward e
 
       $(document).on "click", "#timeline-control-play", (e) =>
-        @_control.onClickPlay e
-        @updateControls()
+        @onClickPlay e
 
       $(document).on "click", "#timeline-control-backward", (e) =>
-        @_control.onClickBackward e
-        @updateControls()
+        @onClickBackward e
 
       $(document).on "click", "#timeline-control-fast-forward", (e) =>
-        @_control.onClickFastForward e
-        @updateControls()
+        @onClickFastForward e
 
+    _bindDraggableCursor: ->
       @_cursorDraggable = new Draggable "#timeline-cursor"
       @_cursorDraggable.constrainToX()
       @_cursorDraggable.constrainToElement ".timeline .content .time"
@@ -476,8 +470,6 @@ define (require) ->
 
     ###
     # Kills the interval and NULLs the playbackID
-    # @friend [TimelineControl]
-    # @private
     ###
     clearPlaybackID: ->
       clearInterval @_playbackID
@@ -1021,21 +1013,10 @@ define (require) ->
 
     ###
     # Update the state of the controls bar
-    # @return [Timeline] self
     ###
     updateControls: ->
-      @getElement("#timeline-control-fast-backward")
-        .toggleClass("active", @controlState.fast_backward)
-      @getElement("#timeline-control-backward")
-        .toggleClass("active", @controlState.backward)
-      @getElement("#timeline-control-play")
-        .toggleClass("active", @controlState.play)
-      @getElement("#timeline-control-forward")
-        .toggleClass("active", @controlState.forward)
-      @getElement("#timeline-control-fast-forward")
-        .toggleClass("active", @controlState.fast_forward)
-
-      @
+      for key, state of @controlState
+        @getElement("#timeline-control-#{key}")?.toggleClass "active", state
 
     ###
     # Update the state of the actor body
@@ -1154,7 +1135,115 @@ define (require) ->
     _updateAllActors: ->
       @updateActor actor for actor in @_actors
 
-    ## EVENTS
+    _endPlayback: ->
+      @clearPlaybackID()
+      @setCursorTime 0
+      @_updateAllActors()
+
+    _pausePlayback: ->
+      @clearPlaybackID()
+      @_updateAllActors()
+
+    ###
+    # Playback toggle button clicked (play/pause)
+    ###
+    onClickPlay: ->
+
+      # If currently playing, remove the interval
+      if @_playbackID != undefined and @_playbackID != null
+        @_pausePlayback()
+        return
+
+      frameRate = 1000 / @getPreviewFPS()
+
+      # Play the ad at 30 frames per second
+      @_playbackStart = @getCursorTime()
+      @_playbackID = setInterval =>
+        nextTime = @getCursorTime() + frameRate
+        if nextTime > @_duration then nextTime = @_duration
+
+        @setCursorTime nextTime
+
+        if nextTime >= @_duration then @_endPlayback()
+
+      , frameRate
+
+      @controlState.play = true
+      @updateControls()
+
+    ###
+    # Forward playback button clicked (next keyframe)
+    ###
+    onClickForward: ->
+      cursorTime = Number(@getCursorTime()|0)+1
+      actorID = Workspace.getSelectedActorID()
+
+      # if an actor is selected, jump to their nearest keyframe
+      if actorID != null and actorID != undefined
+        actor = _.find @getActors(), (a) -> a.getID() == actorID
+        return unless actor
+
+        time = actor.getNearestAnimationTime(cursorTime, right: true)
+
+        if time
+          @setCursorTime time
+        else
+          @setCursorTime Math.floor actor.getDeathTime()
+
+      # else, jump to the nearest keyframe from any actor
+      else
+        pairs = _.map @getActors(), (actor) ->
+          [actor, actor.getNearestAnimationTime(cursorTime, right: true)]
+
+        if minimum = _.min(pairs, (pair) -> (pair[1] || 0) - cursorTime)
+          if time = minimum[1]
+            @setCursorTime time
+
+      @updateControls()
+
+    ###
+    # Backward playback button clicked (prev keyframe)
+    ###
+    onClickBackward: ->
+      cursorTime = Number(@getCursorTime()|0)-1
+      actorID = Workspace.getSelectedActorID()
+
+      # if an actor is selected, jump to their nearest keyframe
+      if actorID != null and actorID != undefined
+        actor = _.find @getActors(), (a) -> a.getID() == actorID
+        return unless actor
+
+        time = actor.getNearestAnimationTime(cursorTime, left: true)
+
+        if time
+          @setCursorTime time
+        else
+          @setCursorTime Math.ceil actor.getBirthTime()
+
+      # else, jump to the nearest keyframe from any actor
+      else
+        pairs = _.map @getActors(), (actor) ->
+          [actor, actor.getNearestAnimationTime(cursorTime, left: true)]
+
+        if minimum = _.min(pairs, (pair) -> cursorTime - (pair[1] || 0))
+          if time = minimum[1]
+            @setCursorTime time
+
+      @updateControls()
+
+    onClickFastBackward: ->
+      @setCursorTime 0
+      @updateControls()
+
+    onClickFastForward: ->
+      @setCursorTime @getDuration()
+      @updateControls()
+
+    #####################################
+    #####################################
+    ### @mark Utilities #################
+    #####################################
+    #####################################
 
     ###
     # @param [String] type
@@ -1178,9 +1267,6 @@ define (require) ->
           @updateActor params.actor
         when "selected.actor.update"
           @updateActor params.actor
-
-
-    ## Serialization
 
     ###
     # @return [Object] data

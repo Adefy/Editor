@@ -36,14 +36,14 @@ define ->
 
       <div class="list">
         <section>
-          <label>Static Actors</label>
+          <label class="timeline-label static-actors">Static Actors</label>
           <div class="timeline-actor-list static-actors">
             {{#each staticActorList}} {{{ this }}} {{/each}}
           </div>
         </section>
 
         <section>
-          <label>Animated Actors</label>
+          <label class="timeline-label animated-actors">Animated Actors</label>
           <div class="timeline-actor-list animated-actors">
             {{#each animatedActorList}} {{{ this }}} {{/each}}
           </div>

@@ -7,7 +7,7 @@ define (require) ->
 
   MenuBar = require "widgets/menubar"
   StatusBar = require "widgets/statusbar"
-  Timeline = require "widgets/timeline/timeline"
+  Timeline = require "widgets/timeline"
   Workspace = require "widgets/workspace"
   Sidebar = require "widgets/sidebar"
   ModalManager = require "modal_manager"
