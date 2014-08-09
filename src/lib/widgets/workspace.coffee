@@ -268,10 +268,9 @@ define (require) ->
       canvasTop = $("#{@getSel()} canvas").offset().top
       canvasLeft = $("#{@getSel()} canvas").offset().left
 
-      # TODO: Take into account camera coords
       {
-        x: x + canvasLeft
-        y: y + canvasTop
+        x: x + canvasLeft - @_are.getRenderer().getCameraPosition().x
+        y: y + canvasTop - @_are.getRenderer().getCameraPosition().y
       }
 
     ###
