@@ -100,7 +100,7 @@ define (require) ->
 
       @_uid = ID.uID()
 
-      @_actorRandomSpawnDelta = new Vec2(0, 0)
+      @_actorRandomSpawnDelta = new Vec2 0, 0
 
       @_spawns = []
       @_previewSpawns = []

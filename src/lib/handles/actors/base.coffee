@@ -679,7 +679,6 @@ define (require) ->
     # flag ourselves!
     ###
     birth: ->
-      @showBoundingBox()
 
       # Make sure we have our texture (this lets us set the texture in the
       # constructor)
