@@ -36,11 +36,3 @@ define (require) ->
     ###
     deserialize: (raw) ->
       @load JSON.parse raw
-
-###
-@Changlog
-
-  - "1.0.0": Initial
-  - "1.1.0": dumpVersion bump
-
-###

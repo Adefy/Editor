@@ -1,14 +1,3 @@
-###
-@ChangeLog
-
-  - "1.0.0": Initial
-  - "1.1.0": Inherited from a RectangleActor
-
-@TODO
-  - Silence updates (removed @_silentUpdate from base actor)
-  - Disable temporal updates
-###
-
 define (require) ->
 
   AUtilLog = require "util/log"

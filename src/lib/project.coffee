@@ -301,14 +301,3 @@ define (require) ->
       @ui.timeline.load dump.timeline
 
       @
-
-###
-@Changelog
-
-  - "0.1.0": Array<Object> @textures
-  - "0.2.0": @textures is now an Array<Texture>
-  - "0.3.0": Added @uid
-  - "0.3.1": Added name, dateDumped, dateStarted and saveCount
-  - "0.4.0": Refactored save architecture to utilize platform API
-
-###

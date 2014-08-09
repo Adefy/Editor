@@ -337,10 +337,3 @@ define (require) ->
         @[setter] value if @[setter]
 
       @
-
-###
-@Changlog
-
-  - "1.0.0": Initial
-
-###

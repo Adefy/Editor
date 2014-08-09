@@ -136,12 +136,3 @@ define (require) ->
         @_properties[name].load property if @_properties[name]
 
       @
-
-###
-@Changelog
-
-  - "1.0.0": Initial
-  - "1.0.1": Added name
-  - "1.1.0": Added _handleType
-
-###

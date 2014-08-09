@@ -146,12 +146,3 @@ define (require) ->
     @load: (project, data) ->
       texture = new Texture project, data
       texture.load data
-
-###
-@ChangeLog
-
-  - "1.0.0": Initial
-  - "1.1.0": Added uid
-  - "1.2.0": dumpVersion bump changes
-
-###

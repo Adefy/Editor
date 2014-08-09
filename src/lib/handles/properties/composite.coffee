@@ -219,10 +219,3 @@ define (require) ->
             @addProperty id, newProperty
 
       @
-
-###
-@Changlog
-
-  - "1.0.0": Initial
-
-###

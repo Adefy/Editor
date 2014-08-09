@@ -1,9 +1,3 @@
-###
-@Changelog
-
-  - "1.0.0": Initial
-###
-
 define (require) ->
 
   config = require "config"

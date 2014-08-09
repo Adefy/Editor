@@ -28,7 +28,6 @@ define (require) ->
   TemplateModalWorkspaceScreenSize = require "templates/modal/screen_size"
   TemplateModalOpenProject = require "templates/modal/open_project"
 
-  ChangeLog = require "info_change_log"
   Version = require "version"
 
   class ModalManager extends EditorSuperClass
@@ -486,12 +485,3 @@ define (require) ->
         title: "About"
         content: TemplateModalHelpAbout
           version: Version.STRING
-
-    ###
-    # @return [Modal]
-    ###
-    showHelpChangeLog: ->
-
-      new Modal @ui,
-        title: "Change Log"
-        content: TemplateModalHelpChangeLog changes: ChangeLog.changes

@@ -309,13 +309,3 @@ define (require) ->
       # done to have Dumpable load properly
       asset.load data
       asset
-
-###
-@Changelog
-
-  - "1.0.0": Initial
-  - "1.1.0":
-    version has been renamed to assetVersion this is to prevent name clashes
-    with super classes who use "version" for their dumps as well
-
-###

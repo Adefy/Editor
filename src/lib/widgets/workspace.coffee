@@ -1,14 +1,3 @@
-###
-@Changlog
-
-  - "1.0.0": Initial
-  - "1.1.0": Added proper actor exporting
-  - "1.2.0": Added CamPos
-  - "1.3.0": Added Spawners
-  - "1.4.0": Added Spawners
-  - "1.5.0": Clear Color is now saved
-
-###
 define (require) ->
 
   config = require "config"
