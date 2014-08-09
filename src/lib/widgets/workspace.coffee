@@ -493,33 +493,52 @@ define (require) ->
       @_bindActorClickSelect()
       @_bindActorClickMove()
       @_bindActorClickRotate()
-      @_bindWorkspaceDrag()
+      @_bindCameraControls()
       @_bindContextClick()
       @_bindTextureDrop()
 
-    _bindWorkspaceDrag: ->
+    ###
+    # Sets up camera panning and zooming, when dragging with SHIFT or CMD/CTRL
+    # pressed.
+    ###
+    _bindCameraControls: ->
 
-      $(document).mousemove (e) =>
-        return unless @_workspaceDrag
-
-        # Move camera
-        camPos = @_are.getRenderer().getCameraPosition()
-        camPos.x += @_workspaceDrag.x - e.pageX
-        camPos.y += @_workspaceDrag.y - e.pageY
-
-        # Update actors with bounding boxes. This is probably faster than
-        # filtering and maping? Although that is more elegant.
-        for actor in @actorObjects
-          if actor.boundingBoxVisible()
-            actor.refreshBoundingBox()
-
-        @_workspaceDrag = x: e.pageX, y: e.pageY
-
-      $(document).mouseup (e) => @_workspaceDrag = null
+      # We store the previous cursor position in @_lastPos, to apply a delta
+      $(document).mouseup (e) =>
+        @_lastPos = @_startPos = @_startScale = null
+        @_cameraAction = pan: false, zoom: false
 
       $(document).on "mousedown", ".workspace .editor-canvas", (e) =>
-        return unless e.shiftKey && !e.ctrlKey && !@_workspaceDrag
-        @_workspaceDrag = x: e.pageX, y: e.pageY
+        return unless !@_startPos # Only reset if we aren't already dragging
+
+        @_startPos = x: e.pageX, y: e.pageY
+        @_lastPos = x: e.pageX, y: e.pageY
+        @_startScale = _.clone @_are.getRenderer().getCameraScale()
+        @_cameraAction =
+          pan: e.shiftKey
+          zoom: e.ctrlKey or e.metaKey
+
+      $(document).mousemove (e) =>
+        return unless @_startPos
+
+        if @_cameraAction.pan
+          camPos = @_are.getRenderer().getCameraPosition()
+          camPos.x += @_lastPos.x - e.pageX
+          camPos.y += @_lastPos.y - e.pageY
+
+        if @_cameraAction.zoom
+          camScale = @_are.getRenderer().getCameraScale()
+
+          # We keep the camera scale the same across all axes
+          delta = (@_startPos.x - e.pageX) / 500
+          camScale.x = @_startScale.x + delta
+          camScale.y = @_startScale.y + delta
+
+        # Update actors with bounding boxes.
+        for actor in @actorObjects
+          actor.refreshBoundingBox() if actor.boundingBoxVisible()
+
+        @_lastPos = x: e.pageX, y: e.pageY
 
     ###
     # When an image is dropped onto the workspace, a rectangle actor is spawned
@@ -861,12 +880,14 @@ define (require) ->
         b: c.getB()
 
       _.extend super(),
-        workspaceVersion: "1.5.1"
+        workspaceVersion: "1.5.2"
         camPos:                                                        # v1.2.0
           x: @_are.getRenderer().getCameraPosition().x
           y: @_are.getRenderer().getCameraPosition().y
+        camScale:                                                      # v1.5.2
+          x: @_are.getRenderer().getCameraScale().x
+          y: @_are.getRenderer().getCameraScale().y
         actors: actors                                                 # v1.1.0
-        #spawners: spawners                                             # v1.4.0
         clearColor: clearColor                                         # v1.5.0
 
     ###
@@ -879,11 +900,14 @@ define (require) ->
       if (data.workspaceVersion >= "1.2.0") || \
        ((data.dumpVersion == "1.0.0") && (data.version >= "1.2.0"))
 
-        @_are.getRenderer().setCameraPosition data.camPos
+        @_are.getRenderer().setCameraPosition data.camPos      
 
       if data.workspaceVersion >= "1.5.0"
         col = data.clearColor
         @setClearColor col.r, col.g, col.b
+
+      if data.workspaceVersion >= "1.5.2"
+        @_are.getRenderer().setCameraScale data.camScale
 
       # We merged actor and spawner collections after 1.4.0
       actors = data.actors
