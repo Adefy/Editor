@@ -234,32 +234,30 @@ define (require) ->
 
     ###
     # Converts document-relative coordinates to ARE coordinates
-    # NOTE: This does not currently take into account any camera transformation!
     #
     # @param [Number] x x coordinate
     # @param [Number] y y coordinate
     ###
     domToGL: (x, y) ->
-      return AUtilLog.warn "Can't convert coords, are not up!" unless @_are
-
       canvasTop = $("#{@getSel()} canvas").offset().top
       canvasLeft = $("#{@getSel()} canvas").offset().left
 
-      # TODO: Take into account camera coords
       {
         x: x - canvasLeft
         y: y - canvasTop
       }
 
     glToDom: (x, y) ->
-      return AUtilLog.warn "Can't convert coords, are not up!" unless @_are
-
       canvasTop = $("#{@getSel()} canvas").offset().top
       canvasLeft = $("#{@getSel()} canvas").offset().left
+      canvasWidth = $("#{@getSel()} canvas").width()
+      canvasHeight = $("#{@getSel()} canvas").height()
+
+      zF = @_are.getRenderer().getCameraZoom()
 
       {
-        x: x + canvasLeft - @_are.getRenderer().getCameraPosition().x
-        y: y + canvasTop - @_are.getRenderer().getCameraPosition().y
+        x: (x + canvasLeft + ((canvasWidth / 2) - @_are.getRenderer().getCameraPosition().x)) * zF
+        y: (y + canvasTop + ((canvasHeight / 2) - @_are.getRenderer().getCameraPosition().y)) * zF
       }
 
     ###
@@ -443,7 +441,7 @@ define (require) ->
     _bindActorClickMove: ->
 
       @dragger = new Dragger ".workspace .editor-canvas"
-      @dragger.setCheckDrag (e) => !e.shiftKey && !e.ctrlKey
+      @dragger.setCheckDrag (e) => !e.shiftKey && !e.ctrlKey && !e.metaKey
       @dragger.setOnDragStart (d) =>
         @performPick @domToGL(d.getStart().x, d.getStart().y), (r, g, b) =>
           return d.forceDragEnd() unless @isValidPick r, g, b
@@ -513,7 +511,7 @@ define (require) ->
 
         @_startPos = x: e.pageX, y: e.pageY
         @_lastPos = x: e.pageX, y: e.pageY
-        @_startScale = _.clone @_are.getRenderer().getCameraScale()
+        @_startZoom = @_are.getRenderer().getCameraZoom()
         @_cameraAction =
           pan: e.shiftKey
           zoom: e.ctrlKey or e.metaKey
@@ -525,14 +523,11 @@ define (require) ->
           camPos = @_are.getRenderer().getCameraPosition()
           camPos.x += @_lastPos.x - e.pageX
           camPos.y += @_lastPos.y - e.pageY
+          @_are.getRenderer().setCameraPosition camPos
 
         if @_cameraAction.zoom
-          camScale = @_are.getRenderer().getCameraScale()
-
-          # We keep the camera scale the same across all axes
-          delta = (@_startPos.x - e.pageX) / 500
-          camScale.x = @_startScale.x + delta
-          camScale.y = @_startScale.y + delta
+          delta = (e.pageX - @_startPos.x) / 500
+          @_are.getRenderer().setCameraZoom @_startZoom + delta
 
         # Update actors with bounding boxes.
         for actor in @actorObjects
@@ -884,9 +879,7 @@ define (require) ->
         camPos:                                                        # v1.2.0
           x: @_are.getRenderer().getCameraPosition().x
           y: @_are.getRenderer().getCameraPosition().y
-        camScale:                                                      # v1.5.2
-          x: @_are.getRenderer().getCameraScale().x
-          y: @_are.getRenderer().getCameraScale().y
+        zoom: @_are.getRenderer().getCameraZoom()                      # v1.5.2
         actors: actors                                                 # v1.1.0
         clearColor: clearColor                                         # v1.5.0
 
@@ -907,7 +900,7 @@ define (require) ->
         @setClearColor col.r, col.g, col.b
 
       if data.workspaceVersion >= "1.5.2"
-        @_are.getRenderer().setCameraScale data.camScale
+        @_are.getRenderer().setCameraZoom data.zoom
 
       # We merged actor and spawner collections after 1.4.0
       actors = data.actors

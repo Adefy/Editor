@@ -644,9 +644,14 @@ define (require) ->
 
         @_boundingBox.updateOrientation u
 
-      onSizeChange = (u) =>
+      onSizeChange = (bounds) =>
         return unless @_boundingBox
-        @_boundingBox.updateBounds u
+
+        zoom = @ui.workspace.getARE().getRenderer().getCameraZoom()
+
+        @_boundingBox.updateBounds
+          w: bounds.w / zoom
+          h: bounds.h / zoom
 
       # Bind refresh handler
       @refreshBoundingBox = =>
