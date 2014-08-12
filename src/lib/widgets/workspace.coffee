@@ -254,10 +254,11 @@ define (require) ->
       canvasHeight = $("#{@getSel()} canvas").height()
 
       zF = @_are.getRenderer().getCameraZoom()
+      camPos = @_are.getRenderer().getCameraPosition()
 
       {
-        x: (x + canvasLeft + ((canvasWidth / 2) - @_are.getRenderer().getCameraPosition().x)) * zF
-        y: (y + canvasTop + ((canvasHeight / 2) - @_are.getRenderer().getCameraPosition().y)) * zF
+        x: ((x - camPos.x) / zF) + canvasLeft + (canvasWidth / 2)
+        y: ((y - camPos.y) / zF) + canvasTop + (canvasHeight / 2)
       }
 
     ###
