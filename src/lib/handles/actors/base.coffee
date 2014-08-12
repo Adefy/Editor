@@ -30,10 +30,10 @@ define (require) ->
     # @param [Number] deathTime time we are destroyed, defaults to end of ad
     ###
     constructor: (@ui, birthTime, deathTime) ->
-      super()
+      super ui
 
       @setHandleType "BaseActor"
-      @setName "Base Actor #{@_id_numeric}"
+      @name = "Base Actor #{@_id_numeric}"
 
       @_AREActor = null
       @_alive = false
@@ -367,6 +367,20 @@ define (require) ->
                 value: keys[time]
 
       keyframes
+
+    ###
+    # Set the actor's name. We need to override this to send out a different
+    # event than the default handle behavior.
+    #
+    # @param [String] name
+    # @param [Boolean] silent silence the rename event, optional
+    # @return [BaseActor] self
+    ###
+    setName: (@name, silent) ->
+      unless silent
+        @ui.pushEvent "renamed.actor", actor: @
+
+      @
 
     ###
     # Set low level handle type. Don't use this unless you know what you are

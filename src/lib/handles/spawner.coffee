@@ -12,7 +12,7 @@ define (require) ->
   NumericProperty = require "handles/properties/numeric"
   BooleanProperty = require "handles/properties/boolean"
 
-  SettingsWidget = require "widgets/floating/settings"
+  DropdownWidget = require "widgets/floating/dropdown"
 
   window.Spawner = class Spawner extends BaseActor
 
@@ -598,11 +598,11 @@ define (require) ->
 
     ###
     # Pop open our settings dialog
-    # @return [SettingsWidget] settingsWidget
+    # @return [DropdownWidget] DropdownWidget
     ###
     openConfigureDialog: ->
 
-      new SettingsWidget @ui,
+      new DropdownWidget @ui,
         title: "Particle System"
         settings: [
           label: "Lifetime"

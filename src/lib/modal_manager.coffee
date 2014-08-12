@@ -15,7 +15,7 @@ define (require) ->
 
   FloatingTextureSelect = require "widgets/floating/texture_select"
   Modal = require "widgets/floating/form"
-  SettingsWidget = require "widgets/floating/settings"
+  DropdownWidget = require "widgets/floating/dropdown"
 
   TemplateModalAddTextures = require "templates/modal/add_textures"
   TemplateModalBackgroundColor = require "templates/modal/background_color"
@@ -37,13 +37,13 @@ define (require) ->
 
     ###
     # Shows the Texture Repeat settings modal
-    # @return [SettingsWidget] settings
+    # @return [DropdownWidget] settings
     ###
     showActorTextureRepeatSettings: (actor) ->
 
       texRep = actor.getProperty("textureRepeat")
 
-      new SettingsWidget @ui,
+      new DropdownWidget @ui,
         title: "Texture Repeat"
         settings: [
           label: "X-Repeat"
@@ -60,64 +60,6 @@ define (require) ->
         ]
         cb: (data) =>
           texRep.setValue x: data.x_rep, y: data.y_rep
-
-    ###
-    # @param [Handle] handle
-    # @param [Object] options
-    #   @optional
-    #   @property [Array<String>] unique
-    #     @optional
-    #   @property [Function] cb
-    #     @optional
-    # @return [Modal]
-    ###
-    showRename: (handle, options) ->
-      options ||= {}
-
-      nameId = ID.prefID "fileName"
-
-      _html = TemplateModalRename
-        nameId: nameId
-        name: handle.getName()
-
-      new Modal @ui,
-        title: "Rename"
-        mini: true
-        content: _html
-
-        cb: (data) =>
-          # Submission
-          name = data[nameId]
-
-          if cb = options.cb
-            cb handle, name
-          else
-            handle.setName name
-            if handle instanceof Asset
-              @ui.pushEvent "renamed.asset", asset: handle
-            else if handle instanceof BaseActor
-              @ui.pushEvent "renamed.actor", actor: handle
-            else if handle instanceof Handle
-              @ui.pushEvent "renamed.handle", handle: handle
-
-        validation: (data) =>
-          # Validation
-          name = data[nameId]
-
-          if cb = options.validate
-            cb handle, name
-          else
-            if options.unique
-              isUnique = _.all options.unique, (n) -> n != name
-              return "Name must be unique!" unless isUnique
-
-            unless name.length > 0 then return "Name must be longer than 0"
-            true
-
-        change: (deltaName, deltaVal, data) =>
-          #$("input[name=\"#{nameId}\"]").val deltaVal
-
-        ## MODALS
 
     ###
     # Show dialog box for setting the preview framerate
@@ -400,11 +342,11 @@ define (require) ->
         cb blob if cb = options.cb
 
     ###
-    # @return [SettingsWidget] settings
+    # @return [DropdownWidget] settings
     ###
     showPrefSettings: ->
 
-      new SettingsWidget @ui,
+      new DropdownWidget @ui,
         title: "Preferences"
         settings: [
           label: "Autosave Frequency (s)"
@@ -432,7 +374,7 @@ define (require) ->
     ###
     showEditActorPsyx: (actor) ->
 
-      new SettingsWidget @ui,
+      new DropdownWidget @ui,
         title: "Actor Physics"
         settings: [
           label: "Mass"

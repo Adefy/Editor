@@ -217,11 +217,23 @@ define (require) ->
       @
 
     ###
-    # Rename
+    # Rename an asset
+    #
     # @param [Asset] asset
     ###
     contextFuncRenameAsset: (asset) ->
-      window.AdefyEditor.ui.modals.showRename asset
+      new DropdownWidget @ui,
+        title: "Rename"
+        settings: [
+          type: String
+          label: "Name"
+          placeholder: "Enter a name"
+          value: @name
+          id: "name"
+        ]
+        cb: (results) =>
+          asset.setName results.name
+          window.AdefyEditor.ui.pushEvent "renamed.asset", asset: asset
       @
 
     ###

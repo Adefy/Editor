@@ -1,13 +1,13 @@
 define (require) ->
 
   param = require "util/param"
-  SettingsWidgetTemplate = require "templates/modal/settings"
+  DropdownWidgetTemplate = require "templates/modal/dropdown"
   FloatingWidget = require "widgets/floating_widget"
 
   ###
   # Specialized settings widget, drops down from the top of the screen
   ###
-  class SettingsWidget extends FloatingWidget
+  class DropdownWidget extends FloatingWidget
 
     ###
     # Construct a settings widget with the supplied settings hash and callback
@@ -21,6 +21,7 @@ define (require) ->
     #   id: "foober"
     #   min: 0
     #   max: 1000
+    #   cb: -> ...
     # }, ...]
     #
     # The callback is passed a hash of results, with keys being the ids of the
@@ -29,7 +30,7 @@ define (require) ->
     # @param [Object] options
     #   @option [String] title
     #   @option [Array<Object>] settings
-    #   @option [Methind] cb
+    #   @option [Method] cb
     ###
     constructor: (@ui, options) ->
       @_title = options.title
@@ -56,7 +57,7 @@ define (require) ->
         else
           setting.computedType = "text"
 
-      SettingsWidgetTemplate
+      DropdownWidgetTemplate
         settings: settings
         title: @_title
 

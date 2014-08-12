@@ -6,6 +6,7 @@ define (require) ->
 
   EditorSuperClass = require "superclass"
   Dumpable = require "mixin/dumpable"
+  DropdownWidget = require "widgets/floating/dropdown"
 
   # Base class for all elements that can be manipulated by the editor
   window.Handle = class Handle extends EditorSuperClass
@@ -17,8 +18,10 @@ define (require) ->
     # as a base class. Properties are setup here, so set up the property object
     # on extending classes after calling super(). Note that you can un-set
     # properties internally after this is done
+    #
+    # @param [UIManager] ui
     ###
-    constructor: ->
+    constructor: (@ui) ->
 
       # User modifiable properties
       # Set handle-global properties here
@@ -28,8 +31,21 @@ define (require) ->
       @_ctx =
         rename:
           name: "#{config.strings.rename}..."
-          cb: => window.AdefyEditor.ui.modals.showRename @
           prepend: true
+          cb: =>
+
+            new DropdownWidget @ui,
+              title: "Rename"
+              settings: [
+                type: String
+                label: "Name"
+                placeholder: "Enter a name"
+                value: @name
+                id: "name"
+              ]
+              cb: (results) =>
+                @setName results.name
+
         del:
           name: config.strings.delete
           cb: => @delete()
@@ -61,9 +77,11 @@ define (require) ->
     ###
     # Set the handle's name
     # @param [String] name
-    # @return [self]
+    # @return [Handle] self
     ###
-    setName: (@name) -> @
+    setName: (@name) ->
+      @ui.pushEvent "renamed.handle", handle: @
+      @
 
     ###
     # Cleans us up. Any classes extending us should also extend this method, and

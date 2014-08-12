@@ -5,6 +5,7 @@ define (require) ->
 
   EditorSuperClass = require "superclass"
   Dumpable = require "mixin/dumpable"
+  DropdownWidget = require "widgets/floating/dropdown"
 
   class Texture extends EditorSuperClass
 
@@ -62,22 +63,22 @@ define (require) ->
     ###
     # Rename context menu callback function
     # @param [Texture] texture
-    # @return [self]
+    # @return [Texture] self
     ###
     contextFuncRename: (texture) ->
-      window.AdefyEditor.ui.modals.showRename texture,
-        cb: (t, name) =>
-          t.setName(name)
-          window.AdefyEditor.ui.pushEvent "rename.texture", texture: t
+      new DropdownWidget @ui,
+        title: "Rename"
+        settings: [
+          type: String
+          label: "Name"
+          placeholder: "Enter a name"
+          value: @name
+          id: "name"
+        ]
+        cb: (results) =>
+          texture.setName results.name
+          window.AdefyEditor.ui.pushEvent "rename.texture", texture: texture
 
-        validate: (t, name) =>
-          return "Name must be longer than 3 characters" if name.length <= 3
-
-          if @project
-            isNotUnique = _.any @project.textures, (t2) -> t2._name == name
-            return "Name must be unique" if isNotUnique
-
-          true
       @
 
     ###
