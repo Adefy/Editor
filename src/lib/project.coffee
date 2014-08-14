@@ -94,6 +94,9 @@ define (require) ->
       ###
       @textures = []
 
+      console.log "WARNING: Not loading save!"
+      return
+
       # Load active save, if there is one, but do it after the current chain
       # of execution; otherwise, we won't be tied to objects like the current
       # Editor class

@@ -241,10 +241,15 @@ define (require) ->
     domToGL: (x, y) ->
       canvasTop = $("#{@getSel()} canvas").offset().top
       canvasLeft = $("#{@getSel()} canvas").offset().left
+      canvasWidth = $("#{@getSel()} canvas").width()
+      canvasHeight = $("#{@getSel()} canvas").height()
+
+      zF = @_are.getRenderer().getCameraZoom()
+      camPos = @_are.getRenderer().getCameraPosition()
 
       {
-        x: x - canvasLeft
-        y: y - canvasTop
+        x: ((x - (canvasWidth / 2) - canvasLeft) * zF) + camPos.x
+        y: ((y - (canvasHeight / 2) - canvasTop) * zF) + camPos.y
       }
 
     glToDom: (x, y) ->
@@ -270,10 +275,7 @@ define (require) ->
     ###
     getWorkspaceCtxMenu: (x, y) ->
       time = @ui.timeline.getCursorTime()
-      pos = @domToGL(x, y)
-
-      pos.x += @_are.getRenderer().getCameraPosition().x
-      pos.y += @_are.getRenderer().getCameraPosition().y
+      pos = @domToGL x, y
 
       functions =
         rectActor:
@@ -291,9 +293,7 @@ define (require) ->
           name: config.strings.paste
           cb: =>
 
-            pos = @domToGL(x, y)
-            pos.x += @_are.getRenderer().getCameraPosition().x
-            pos.y += @_are.getRenderer().getCameraPosition().y
+            pos = @domToGL x, y
 
             newActor = @ui.editor.clipboard.data.duplicate()
             newActor.setPosition pos.x, pos.y
@@ -477,6 +477,11 @@ define (require) ->
 
         # Delay the drag untill we finish our pick
         return unless userData and userData.original
+
+        # Scale delta by current zoom level
+        zF = @_are.getRenderer().getCameraZoom()
+        deltaX *= zF
+        deltaY *= zF
 
         newX = userData.original.x + deltaX
         newY = userData.original.y + deltaY
@@ -745,7 +750,7 @@ define (require) ->
     # @private
     # Helper function to perform a pick at the specified canvas coordinates
     #
-    # @param [Object] position hash with x, y values
+    # @param [Object] position absolute actor position
     # @param [Method] cb callback to call afterwards, passing r/g/b
     ###
     performPick: (pos, cb) ->
@@ -755,9 +760,15 @@ define (require) ->
         return @_pickQueue.push pos: pos, cb: cb
 
       @_pickInProgress = true
+      renderer = @_are.getRenderer()
+
+      zF = renderer.getCameraZoom()
+      camPos = renderer.getCameraPosition()
+      canvasWidth = $("#{@getSel()} canvas").width()
+      canvasHeight = $("#{@getSel()} canvas").height()
 
       # Request a pick render from ARE, continue once we get it
-      switch @_are.getRenderer().getActiveRendererMode()
+      switch renderer.getActiveRendererMode()
         when ARERenderer.RENDER_MODE_NULL
           AUtilLog.warn "You can't perform a pick with a null renderer"
         when ARERenderer.RENDER_MODE_CANVAS
@@ -779,9 +790,14 @@ define (require) ->
 
             pick = new Uint8Array 4
 
+            # We have to convert the position into relative screen coordinates
+            pos.x = ((pos.x - camPos.x) / zF) + (canvasWidth / 2)
+            pos.y = ((pos.y - camPos.y) / zF) + (canvasHeight / 2)
+
+            # Flip
             pos.y = @_are.getHeight() - pos.y
 
-            gl = @_are.getRenderer().getGL()
+            gl = renderer.getGL()
             gl.bindFramebuffer gl.FRAMEBUFFER, @_pickBuffer
             gl.readPixels pos.x, pos.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pick
             gl.bindFramebuffer gl.FRAMEBUFFER, null
