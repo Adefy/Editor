@@ -1,0 +1,24 @@
+// Contains everything interesting, including workspace and sidebars
+.workspace
+  position absolute
+  width 100%
+  height 100%
+  overflow hidden
+
+.editor-canvas
+
+  display block
+  margin 0 auto
+  position relative
+
+  canvas
+    position absolute
+
+  .canvas-overlay, .canvas-overlay-center
+    position absolute
+    background-color rgba(0, 0, 0, 0.1)
+    z-index $Z_canvas_overlay
+
+  .canvas-overlay-center
+    background-color transparent
+    box-shadow 0 0 1px rgba(0, 0, 0, 0.35)

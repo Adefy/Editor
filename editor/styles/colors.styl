@@ -1,0 +1,115 @@
+/*
+  Color definitions for the editor
+  This is split up into sections, with the color pallete at the top
+  Each section defines its own variables to be used in other files
+
+  Keep the names descriptive, length is not an issue. We should be able to
+  skin the editor by only modifying this file
+
+  Variations on colors should be named with a one-letter prefix when possible
+    blue  = blue
+    lblue = light blue
+    mblue = medium blue
+    dblue = dark blue
+    etc
+*/
+
+////// Global color pallete
+$lblue = #33b5E5
+$dblue = #0099cc
+
+$gray = #363636
+$mgray = #303030
+$dgray = #262626
+$dmgray = #232323
+$ddgray = #161616
+$white = #dfdfdf
+
+$lred = #ff4444
+$red = #cc0000
+
+$lorange = #ffbb33
+$orange = #ff8800
+
+$lgreen = #99cc00
+$green = #669900
+
+$lpurple = #aa66cc
+$purple = #9933cc
+
+// Dividers
+$col_divider_bot = $ddgray
+$col_divider_top = $gray
+
+////// Sidebar colors
+// widgets/AWigetSidebar.styl
+$col_sidebar_bg = $dgray
+$col_sidebar_bg2 = $gray
+$col_sidebar_color = $white
+$col_sidebar_hr_bg = $lblue
+$col_sidebar_obj_name_hover_bg = #202020
+$col_sidebar_property_input_focus_border = $dblue
+$col_sidebar_property_input_focus_bg = $gray
+$col_sidebar_property_save_bg = #202020
+$col_sidebar_property_save_col = $dblue
+$col_sidebar_obj_catname_color = $dblue
+$col_sidebar_property_label = $dblue
+$col_sidebar_property_input = $white
+
+////// Mainbar colors
+// widgets/AWidgetMainbar.styl
+$col_mainbar_bg = $dgray
+$col_mainbar_color = $white
+$col_mainbar_decorator_bg = $dblue
+$col_mainbar_link_hover_bg = $gray
+$col_mainbar_primary_open_bg = #464646
+$col_mainbar_secondary_hover_bg = #333
+$col_mainbar_secondary_hover_color = #333
+$col_mainbar_secondary_section_border = $gray
+
+////// Context menu colors
+// widgets/AWidgetContextMenu.styl
+$col_cm_bg_highlight_label = #444
+$col_cm_bg_highlight = $col_mainbar_secondary_hover_bg
+
+$col_ctxmenu_bg = #464646
+$col_ctxmenu_hover_bg = #565656
+$col_ctxmenu_hover_color = #99cc00
+
+////// Base actor manipulatable colors
+// manipulatables/AMBaseActor.styl
+$col_amba_selected_bg = $dblue
+
+////// Workspace colors
+$col_workspace_bg = $white
+
+////// Workspace controlbar colors
+$col_awcb_bg = $dgray
+$col_awcb_section_bg = $lblue
+$col_awcb_section_title_bg = $dblue
+$col_awcb_control_on_hover = $dblue
+$col_awcb_status_bg = #99cc00
+$col_awcb_off_bg = $mgray
+
+////// Timeline colors
+$col_timeline_bg = $mgray
+$col_timeline_divider_bot = rgba(0,0,0,.15)
+$col_timeline_actors_bg = $dgray
+$col_timeline_actors_col = $white
+$col_timeline_toolbar_col = $white
+
+////// Default timebar colors
+$col_timebar_1 = red
+$col_timebar_2 = blue
+$col_timebar_3 = green
+$col_timebar_4 = orange
+
+.atimebar-color-1-bg { background-color: $col_timebar_1; }
+.atimebar-color-2-bg { background-color: $col_timebar_2; }
+.atimebar-color-3-bg { background-color: $col_timebar_3; }
+.atimebar-color-4-bg { background-color: $col_timebar_4; }
+
+.atimebar-color-1 { color: $col_timebar_1; }
+.atimebar-color-2 { color: $col_timebar_2; }
+.atimebar-color-3 { color: $col_timebar_3; }
+.atimebar-color-4 { color: $col_timebar_4; }

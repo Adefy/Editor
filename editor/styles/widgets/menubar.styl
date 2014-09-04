@@ -1,0 +1,73 @@
+// Top navigation bar, holds the logo and menu items
+.menubar
+  z-index $Z_amainbar
+  position relative
+  display block
+  width 100%
+
+  background linear-gradient(top, #292929, #242424)
+  box-shadow 0 1px 0 0 #353535 inset
+  border-bottom 1px solid #000
+
+  font-family Tahoma, Arial
+
+  *
+    display block
+    vertical-align top
+
+  .mb-decorater
+    height 3px
+    width 100%
+    position relative
+    background-color $col_mainbar_decorator_bg
+    border-bottom 1px solid $col_divider_bot
+
+  .mb-section-end
+    border none
+    border-bottom 1px solid rgba(0,0,0,.15)
+    box-shadow 0 1px rgba(255,255,255,.1)
+
+  .mb-primary
+    z-index $Z_amainbar_primary
+    position relative
+    margin 0
+    padding 0 16px
+
+    a
+      display inline-block
+
+      font-size 12px
+      color #cecece
+      line-height 14px
+      height 25px
+      padding 4px 8px
+      text-shadow rgba(41, 42, 43, 1) 0px 1px 0px
+
+      &.mb-right
+        float right
+
+      &:hover
+        background-color #333
+        box-shadow 1px -1px 0 0 black, -1px 0 0 0 black, 0 1px 0 0 rgba(255,255,255,.15) inset
+        color #d4d4d4
+
+      &.open
+        background-color #494949
+        box-shadow 1px 0 0 0 black inset, 1px 0 0 0 black, 0 1px 0 0 rgba(255,255,255,.15) inset
+
+        z-index $Z_amainbar_secondary_plus_one
+
+      > *
+        display inline-block
+        vertical-align top
+
+      i, img
+        margin 2px 4px 0 0
+        height 12px
+
+  // The actual menu. It is styled by the floating-menu class
+  .mb-secondary
+    z-index $Z_amainbar_secondary
+    position absolute
+    min-width 120px
+    display none
