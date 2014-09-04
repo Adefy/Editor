@@ -1,0 +1,6 @@
+development:
+  sessions:
+    default:
+      database: adefy_editor
+      hosts:
+        - localhost:27017

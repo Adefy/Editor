@@ -1,0 +1,47 @@
+doctype html
+html lang="en"
+  head
+    meta charset="utf-8"
+    title Adefy Editor
+
+    / We need this, otherwise pace.js won't get past 99% most of the time
+    javascript:
+      window.paceOptions = { eventLag: false }
+
+    script src="/components/pace/pace.min.js" 
+    link rel="stylesheet" href="/components/pace/themes/pace-theme-minimal.css" 
+
+    link rel="icon" href="/img/favicon.png" type="image/png"
+
+    link rel="stylesheet" href="/styles/style.css"
+    link rel="stylesheet" href="/components/fontawesome/css/font-awesome.min.css"
+
+    / Payload used to properly load up the creative as a Project
+    javascript:
+      window.ADEFY_EDITOR_CREATIVE_PAYLOAD = {};
+
+  body.editor
+    header
+    section.main
+    footer
+
+    / Vendor libs
+    script src="/components/jquery/dist/jquery.min.js" 
+    script src="/components/jquery.mousewheel/jquery.mousewheel.js" 
+    script src="/components/perfect-scrollbar/min/perfect-scrollbar.min.js" 
+    script src="/components/handlebars/handlebars.min.js" 
+    script src="/components/async/lib/async.js" 
+
+    / Adefy libraries
+    script src="/components/adefyre/build/are-prod-full.min.js" 
+
+    / Load lodash after ARE to override underscore
+    script src="/components/lodash/dist/lodash.min.js" 
+
+    script src="//api.filepicker.io/v1/filepicker.js" 
+
+    javascript:
+      filepicker.setKey "Aw0cpCnEeTLe23CePFWT4z" 
+
+    / Load us up!
+    script src="/components/requirejs/require.js" data-main="/coffee/main.js" 
