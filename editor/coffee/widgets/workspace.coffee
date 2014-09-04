@@ -72,8 +72,8 @@ define (require) ->
       # Create an ARE instance on ourselves
       AUtilLog.info "Initializing ARE..."
 
-      ARE.config.deps.physics.chipmunk = "/editor/components/chipmunk/cp.js"
-      ARE.config.deps.physics.physics_worker = "/editor/components/adefyre/build/lib/physics/worker.js"
+      ARE.config.deps.physics.chipmunk = "/components/chipmunk/cp.js"
+      ARE.config.deps.physics.physics_worker = "/components/adefyre/build/lib/physics/worker.js"
 
       @_are = window.AdefyRE.Engine().initialize @_canvasWidth, @_canvasHeight, =>
 
