@@ -57,11 +57,9 @@ define (require) ->
     # @return [self]
     ###
     init: ->
-      @project = new Project @ui, window.ADEFY_EDITOR_CREATIVE_PAYLOAD, (p) =>
-        p.loadNewestSnapshot()
-
+      payload = window.ADEFY_EDITOR_CREATIVE_PAYLOAD
+      @project = new Project @ui, payload, (p) => p.loadNewestSnapshot()
       @startAutosaveTask()
-
       @
 
     ###

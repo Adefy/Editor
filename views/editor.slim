@@ -18,7 +18,13 @@ html lang="en"
 
     / Payload used to properly load up the creative as a Project
     javascript:
-      window.ADEFY_EDITOR_CREATIVE_PAYLOAD = {};
+      window.ADEFY_EDITOR_CREATIVE_PAYLOAD = {
+        name: "Untitled Project",
+        slugifiedName: "untitled-project",
+        activeSave: 0,
+        saves: [],
+        owner: "i-need-to-populate-this-properly"
+      };
 
   body.editor
     header

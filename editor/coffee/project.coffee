@@ -45,7 +45,6 @@ define (require) ->
       return false unless fieldCheck "owner"
       return false unless fieldCheck "slugifiedName"
       return false unless fieldCheck "saves"
-      return false unless fieldCheck "exports"
 
       for save in creative.saves
         return false unless Project.validateSave save
@@ -93,9 +92,6 @@ define (require) ->
       #   @property [String] filename
       ###
       @textures = []
-
-      console.log "WARNING: Not loading save!"
-      return
 
       # Load active save, if there is one, but do it after the current chain
       # of execution; otherwise, we won't be tied to objects like the current
