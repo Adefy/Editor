@@ -171,7 +171,7 @@ define (require) ->
       ,
         label: config.strings.texture_library
         right: true
-        image: "/editor/img/favicon.png"
+        image: "/img/favicon.png"
         click: (e) =>
 
           if TextureLibrary.isOpen()
