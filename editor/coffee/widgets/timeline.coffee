@@ -1019,11 +1019,11 @@ define (require) ->
         @getElement("#timeline-control-#{key}")?.toggleClass "active", state
 
     ###
-    # Update the state of the actor body
+    # Update the state of the actor list entry
     #
     # @return [Timeline] self
     ###
-    updateActorBody: (actor) ->
+    updateActorListEntry: (actor) ->
       actor ||= @_lastSelectedActor
       return unless actor
 
@@ -1062,7 +1062,7 @@ define (require) ->
     # @param [BaseActor] actor
     # @return [Timeline] self
     ###
-    updateActorTime: (actor) ->
+    updateActorTimebar: (actor) ->
       actor ||= @_lastSelectedActor
       return unless actor
 
@@ -1126,8 +1126,8 @@ define (require) ->
       actor ||= @_lastSelectedActor
       return unless actor
 
-      @updateActorBody actor
-      @updateActorTime actor
+      @updateActorListEntry actor
+      @updateActorTimebar actor
 
     ###
     # Updates all actors in the timeline

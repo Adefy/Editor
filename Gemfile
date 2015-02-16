@@ -10,6 +10,7 @@ gem "slim"
 gem "warden", "~> 1.2.1"
 gem "bcrypt"
 gem "stylus"
+gem "sinatra-assetpack"
 
 group :development do
   gem "better_errors"

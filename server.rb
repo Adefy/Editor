@@ -6,6 +6,7 @@ require "fileutils"
 require "sinatra/reloader"
 require "sinatra/json"
 require "sinatra/content_for"
+require "sinatra/assetpack"
 require "better_errors"
 require "pathname"
 require "stylus"
@@ -13,22 +14,6 @@ require "stylus/tilt"
 
 require_relative "models/user"
 require_relative "lib/warden"
-
-class CoffeeHandler < Sinatra::Base
-  set :views, "#{File.dirname(__FILE__)}/editor/coffee"
-
-  get "/coffee/*.js" do
-    coffee params[:splat].first.to_sym
-  end
-end
-
-class StylusHandler < Sinatra::Base
-  set :views, "#{File.dirname(__FILE__)}/editor/styles"
-
-  get "/styles/*.css" do
-    stylus params[:splat].first.to_sym
-  end
-end
 
 class Editor < Sinatra::Base
   register Sinatra::Reloader
@@ -41,14 +26,21 @@ class Editor < Sinatra::Base
   set :server, :thin
   set :port, 5813
 
-  use CoffeeHandler
-  use StylusHandler
   use Rack::MethodOverride
   use Rack::Session::Cookie, secret: "woahwoahwoahwoah"
   use Rack::Flash
 
-  # Protect the editor with warden
   register Sinatra::WardenAuth
+  register Sinatra::AssetPack
+
+  assets {
+    serve "/coffee", from: "#{File.dirname(__FILE__)}/editor/coffee"
+    serve "/styles", from: "#{File.dirname(__FILE__)}/editor/styles"
+
+    js_compression  :yui
+    css_compression :yui
+    cache_dynamic_assets true
+  }
 
   get "/" do
     slim :editor
